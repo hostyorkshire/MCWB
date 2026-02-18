@@ -82,7 +82,7 @@ python3 weather_bot.py
 ### Command Line Options
 
 ```
-usage: weather_bot.py [-h] [-n NODE_ID] [-d] [-i] [-l LOCATION]
+usage: weather_bot.py [-h] [-n NODE_ID] [-c CHANNEL] [-d] [-i] [-l LOCATION]
 
 MeshCore Weather Bot - UK Weather via mesh radio network
 
@@ -90,10 +90,24 @@ optional arguments:
   -h, --help            show this help message and exit
   -n NODE_ID, --node-id NODE_ID
                         Node ID for this bot (default: weather_bot)
+  -c CHANNEL, --channel CHANNEL
+                        Channel to broadcast responses on (optional)
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -l LOCATION, --location LOCATION
                         Get weather for a specific location and exit
+```
+
+#### Channel Broadcasting
+
+The weather bot can broadcast responses to a specific channel:
+
+```bash
+# Broadcast weather responses on the 'weather' channel
+python3 weather_bot.py --channel weather --interactive
+
+# Run without channel (default - broadcast to all)
+python3 weather_bot.py --interactive
 ```
 
 ## Command Format
@@ -113,13 +127,50 @@ Core library for MeshCore mesh radio network communication. Provides:
 - Message sending and receiving
 - Message handler registration
 - Node management
+- **Channel-based broadcasting and filtering**
+
+### Channel Support
+
+MeshCore now supports broadcasting messages to specific channels. This allows you to:
+- Send messages to specific channels for organized communication
+- Filter incoming messages by channel
+- Create separate communication streams (e.g., weather, news, alerts)
+
+#### Broadcasting to a Channel
+
+```python
+from meshcore import MeshCore
+
+mesh = MeshCore("my_node")
+mesh.start()
+
+# Send to a specific channel
+mesh.send_message("Weather alert!", "text", channel="weather")
+
+# Send without channel (broadcast to all)
+mesh.send_message("General message", "text")
+```
+
+#### Filtering Messages by Channel
+
+```python
+# Listen only to messages on the 'weather' channel
+mesh.set_channel_filter("weather")
+
+# Listen to all channels (default)
+mesh.set_channel_filter(None)
+```
 
 ### meshcore_send.py
 
 Command-line utility for sending messages via MeshCore:
 
 ```bash
+# Send without channel
 python3 meshcore_send.py "wx London" --node-id sender_node
+
+# Send to a specific channel
+python3 meshcore_send.py "Weather update" --node-id sender_node --channel weather
 ```
 
 ## Examples
@@ -150,6 +201,28 @@ Temp: 10.2°C (feels like 8.9°C)
 Humidity: 68%
 Wind: 12.1 km/h at 180°
 Precipitation: 0.0 mm
+```
+
+### Example 3: Broadcasting to a Channel
+```bash
+# Start weather bot broadcasting on 'weather' channel
+$ python3 weather_bot.py --channel weather --interactive
+Weather Bot started. Send 'wx [location]' to get weather.
+Example: wx London
+Listening for messages...
+
+Enter command (or 'quit' to exit): wx London
+
+Weather for London, GB
+Conditions: Partly cloudy
+Temp: 12.5°C (feels like 11.2°C)
+Humidity: 75%
+Wind: 15.3 km/h at 230°
+Precipitation: 0.0 mm
+# Response broadcast on 'weather' channel
+
+# Send a message to the weather channel
+$ python3 meshcore_send.py "wx Manchester" --channel weather --node-id user_node
 ```
 
 ## Raspberry Pi Zero 2 Setup
