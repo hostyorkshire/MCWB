@@ -1,0 +1,17 @@
+[Unit]
+Description=MeshCore Weather Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/MCWB
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
