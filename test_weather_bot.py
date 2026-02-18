@@ -25,6 +25,7 @@ def test_command_parsing():
         ("wx  Birmingham  ", "Birmingham"),
         ("hello", None),
         ("wx", None),
+        ("weather", None),
     ]
     
     for command, expected in test_cases:
