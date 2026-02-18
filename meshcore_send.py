@@ -6,10 +6,12 @@ This is a simple command-line utility for sending messages through the MeshCore 
 
 import sys
 import argparse
+from typing import Optional
 from meshcore import MeshCore, MeshCoreMessage
 
 
-def send_message(node_id: str, content: str, message_type: str = "text", debug: bool = False):
+def send_message(node_id: str, content: str, message_type: str = "text", 
+                 channel: Optional[str] = None, debug: bool = False):
     """
     Send a message via MeshCore network
     
@@ -17,6 +19,7 @@ def send_message(node_id: str, content: str, message_type: str = "text", debug: 
         node_id: Unique identifier for this node
         content: Message content to send
         message_type: Type of message (default: "text")
+        channel: Optional channel to broadcast to
         debug: Enable debug output
         
     Returns:
@@ -25,7 +28,7 @@ def send_message(node_id: str, content: str, message_type: str = "text", debug: 
     mesh = MeshCore(node_id, debug=debug)
     mesh.start()
     
-    message = mesh.send_message(content, message_type)
+    message = mesh.send_message(content, message_type, channel)
     
     mesh.stop()
     
@@ -56,6 +59,11 @@ def main():
     )
     
     parser.add_argument(
+        "-c", "--channel",
+        help="Channel to broadcast to (optional)"
+    )
+    
+    parser.add_argument(
         "-d", "--debug",
         action="store_true",
         help="Enable debug output"
@@ -68,11 +76,13 @@ def main():
         node_id=args.node_id,
         content=args.content,
         message_type=args.type,
+        channel=args.channel,
         debug=args.debug
     )
     
     if not args.debug:
-        print(f"Message sent: {message.content}")
+        channel_info = f" on channel '{args.channel}'" if args.channel else ""
+        print(f"Message sent{channel_info}: {message.content}")
     
     return 0
 
