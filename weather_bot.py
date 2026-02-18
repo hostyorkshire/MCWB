@@ -61,16 +61,18 @@ WEATHER_CODES = {
 class WeatherBot:
     """Weather Bot for MeshCore network"""
     
-    def __init__(self, node_id: str = "weather_bot", debug: bool = False):
+    def __init__(self, node_id: str = "weather_bot", debug: bool = False, channel: Optional[str] = None):
         """
         Initialize Weather Bot
         
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
+            channel: Optional channel to broadcast responses on
         """
         self.mesh = MeshCore(node_id, debug=debug)
         self.debug = debug
+        self.channel = channel
         
         # Open-Meteo API endpoints
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
@@ -280,8 +282,9 @@ class WeatherBot:
         Args:
             content: Response message content
         """
-        self.log(f"Sending response: {content}")
-        self.mesh.send_message(content, "text")
+        channel_info = f" on channel '{self.channel}'" if self.channel else ""
+        self.log(f"Sending response{channel_info}: {content}")
+        self.mesh.send_message(content, "text", self.channel)
         
         # Also print to console for visibility
         print(f"\n{content}\n")
@@ -342,6 +345,11 @@ def main():
     )
     
     parser.add_argument(
+        "-c", "--channel",
+        help="Channel to broadcast responses on (optional)"
+    )
+    
+    parser.add_argument(
         "-d", "--debug",
         action="store_true",
         help="Enable debug output"
@@ -361,7 +369,7 @@ def main():
     args = parser.parse_args()
     
     # Create bot instance
-    bot = WeatherBot(node_id=args.node_id, debug=args.debug)
+    bot = WeatherBot(node_id=args.node_id, debug=args.debug, channel=args.channel)
     
     if args.location:
         # One-shot mode: get weather for location and exit

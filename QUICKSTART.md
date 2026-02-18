@@ -81,7 +81,20 @@ Then type commands like:
 
 ### Send Message via MeshCore
 ```bash
+# Send message without channel
 python3 meshcore_send.py "wx London" --node-id my_node
+
+# Send message to a specific channel
+python3 meshcore_send.py "wx London" --node-id my_node --channel weather
+```
+
+### Run Weather Bot on a Specific Channel
+```bash
+# Start bot broadcasting responses on 'weather' channel
+python3 weather_bot.py --interactive --channel weather
+
+# Run bot with custom node ID and channel
+python3 weather_bot.py --node-id my_weather_bot --channel weather
 ```
 
 ## Supported Commands

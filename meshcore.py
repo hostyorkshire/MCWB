@@ -14,20 +14,24 @@ class MeshCoreMessage:
     """Represents a message in the MeshCore network"""
     
     def __init__(self, sender: str, content: str, message_type: str = "text", 
-                 timestamp: Optional[float] = None):
+                 timestamp: Optional[float] = None, channel: Optional[str] = None):
         self.sender = sender
         self.content = content
         self.message_type = message_type
         self.timestamp = timestamp or time.time()
+        self.channel = channel
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary"""
-        return {
+        data = {
             "sender": self.sender,
             "content": self.content,
             "type": self.message_type,
             "timestamp": self.timestamp
         }
+        if self.channel:
+            data["channel"] = self.channel
+        return data
     
     def to_json(self) -> str:
         """Convert message to JSON string"""
@@ -40,7 +44,8 @@ class MeshCoreMessage:
             sender=data.get("sender", "unknown"),
             content=data.get("content", ""),
             message_type=data.get("type", "text"),
-            timestamp=data.get("timestamp")
+            timestamp=data.get("timestamp"),
+            channel=data.get("channel")
         )
     
     @classmethod
@@ -65,12 +70,23 @@ class MeshCore:
         self.debug = debug
         self.message_handlers = {}
         self.running = False
+        self.channel_filter = None  # None means listen to all channels
         
     def log(self, message: str):
         """Log debug messages"""
         if self.debug:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             print(f"[{timestamp}] MeshCore [{self.node_id}]: {message}")
+    
+    def set_channel_filter(self, channel: Optional[str]):
+        """
+        Set channel filter for receiving messages
+        
+        Args:
+            channel: Channel name to filter on, or None to receive all channels
+        """
+        self.channel_filter = channel
+        self.log(f"Channel filter set to: {channel if channel else 'all channels'}")
     
     def register_handler(self, message_type: str, handler: Callable):
         """
@@ -83,13 +99,14 @@ class MeshCore:
         self.message_handlers[message_type] = handler
         self.log(f"Registered handler for message type: {message_type}")
     
-    def send_message(self, content: str, message_type: str = "text") -> MeshCoreMessage:
+    def send_message(self, content: str, message_type: str = "text", channel: Optional[str] = None) -> MeshCoreMessage:
         """
         Send a message via MeshCore network
         
         Args:
             content: Message content
             message_type: Type of message
+            channel: Optional channel to broadcast to
             
         Returns:
             MeshCoreMessage object
@@ -97,10 +114,12 @@ class MeshCore:
         message = MeshCoreMessage(
             sender=self.node_id,
             content=content,
-            message_type=message_type
+            message_type=message_type,
+            channel=channel
         )
         
-        self.log(f"Sending message: {message.to_json()}")
+        channel_info = f" on channel '{channel}'" if channel else ""
+        self.log(f"Sending message{channel_info}: {message.to_json()}")
         
         # In a real implementation, this would transmit via radio
         # For now, we'll simulate by returning the message
@@ -113,7 +132,13 @@ class MeshCore:
         Args:
             message: MeshCoreMessage object to process
         """
-        self.log(f"Received message from {message.sender}: {message.content}")
+        # Apply channel filter if set
+        if self.channel_filter and message.channel != self.channel_filter:
+            self.log(f"Ignoring message from channel '{message.channel}' (filter: '{self.channel_filter}')")
+            return
+        
+        channel_info = f" on channel '{message.channel}'" if message.channel else ""
+        self.log(f"Received message from {message.sender}{channel_info}: {message.content}")
         
         # Check if we have a handler for this message type
         if message.message_type in self.message_handlers:
@@ -142,15 +167,27 @@ if __name__ == "__main__":
     mesh = MeshCore("node_001", debug=True)
     
     def text_handler(message: MeshCoreMessage):
-        print(f"Text message from {message.sender}: {message.content}")
+        channel_info = f" on channel '{message.channel}'" if message.channel else ""
+        print(f"Text message from {message.sender}{channel_info}: {message.content}")
     
     mesh.register_handler("text", text_handler)
     mesh.start()
     
-    # Send a test message
-    msg = mesh.send_message("Hello, MeshCore!", "text")
+    # Send a test message without channel
+    msg1 = mesh.send_message("Hello, MeshCore!", "text")
     
-    # Simulate receiving the message
-    mesh.receive_message(msg)
+    # Send a test message with channel
+    msg2 = mesh.send_message("Weather broadcast", "text", channel="weather")
+    
+    # Simulate receiving the messages
+    mesh.receive_message(msg1)
+    mesh.receive_message(msg2)
+    
+    # Test channel filtering
+    print("\nSetting channel filter to 'weather'...")
+    mesh.set_channel_filter("weather")
+    
+    mesh.receive_message(msg1)  # Should be ignored
+    mesh.receive_message(msg2)  # Should be processed
     
     mesh.stop()
