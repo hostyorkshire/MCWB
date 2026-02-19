@@ -182,10 +182,76 @@ python3 meshcore_send.py "Weather update" --node-id sender_node --channel weathe
 python3 meshcore_send.py "wx London" --node-id sender_node --port /dev/ttyUSB0 --channel weather
 ```
 
+## Recommended Hardware for Raspberry Pi Zero 2 W
+
+The Raspberry Pi Zero 2 W has a **micro USB OTG port** (the port closest to the centre of
+the board) which can act as a USB host when used with a micro USB OTG adapter.  The other
+micro USB port is power-only.
+
+To connect a LoRa board via USB you need:
+- A **micro USB OTG adapter** (male micro USB → female USB-A)
+- A **USB-A to micro USB cable** to connect the LoRa board to the adapter
+
+### Recommended board: LILYGO TTGO LoRa32
+
+The **LILYGO TTGO LoRa32 V1.6.1** (SX1276, 868 MHz for UK/EU) is the recommended
+choice for this project on a Pi Zero 2 W — it has official MeshCore firmware support,
+connects over USB with no extra wiring, and is powered directly from the Pi:
+
+| Feature | Detail |
+|---------|--------|
+| Chip | ESP32 + SX1276 |
+| USB interface | CP2102 USB-to-UART (appears as `/dev/ttyUSB0`) |
+| Frequency | 868 MHz (UK/EU) |
+| MeshCore support | ✅ Official firmware available |
+| Power via USB | ✅ Powered directly from the Pi OTG port |
+| Form factor | Small – breadboard and case friendly |
+
+Flash it with the [MeshCore firmware for TTGO LoRa32](https://github.com/ripplebiz/MeshCore)
+before connecting to the Pi.
+
+### Alternative: LILYGO T-Beam
+
+The **LILYGO T-Beam v1.1** is another popular choice.  It adds an onboard GPS module
+and battery connector, which is useful if you want the Pi Zero 2 W + LoRa node to be
+portable.  It also uses a CP2102 or CH9102 chip so it shows up as `/dev/ttyUSB0`.
+
+### Wiring
+
+```
+Pi Zero 2 W                      LILYGO TTGO LoRa32 / T-Beam
+──────────────────────────────────────────────────────────────
+micro USB OTG port
+  └── micro USB OTG adapter
+        └── USB-A to micro USB cable  ──►  micro USB port
+                                            (powers the board and
+                                             creates /dev/ttyUSB0)
+```
+
+### Starting the weather bot with the LoRa board attached
+
+```bash
+# 868 MHz UK band, default baud rate 9600
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
+```
+
+If the device does not appear as `/dev/ttyUSB0` run `dmesg | tail` immediately after
+plugging it in to see which port the kernel assigned (it may be `/dev/ttyACM0` on boards
+that use the CH9102 chip).
+
+You may also need to add your user to the `dialout` group so Python can open the port
+without `sudo`:
+
+```bash
+sudo usermod -aG dialout $USER
+# log out and back in for the change to take effect
+```
+
 ## LoRa Radio Integration
 
-The bot communicates over LoRa using a serial-connected LoRa module (e.g. EBYTE E32,
-SX1276-based boards) attached to the Raspberry Pi via USB or UART.
+The bot communicates over LoRa using a serial-connected LoRa module (e.g. LILYGO TTGO
+LoRa32, LILYGO T-Beam, or any SX1276-based board) attached to the Raspberry Pi via USB
+or UART.
 
 ### Message Format over LoRa
 

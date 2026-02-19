@@ -1,5 +1,43 @@
 # Quick Start Guide - MeshCore Weather Bot
 
+## Recommended LoRa Hardware (Pi Zero 2 W via Micro USB)
+
+The easiest board to use with a Raspberry Pi Zero 2 W is the **LILYGO TTGO LoRa32 V1.6.1**
+(868 MHz for UK/EU).  It connects to the Pi via USB and appears as `/dev/ttyUSB0`
+automatically — no soldering or GPIO wiring required.
+
+### What you need
+
+| Item | Notes |
+|------|-------|
+| LILYGO TTGO LoRa32 V1.6.1 | 868 MHz variant for UK/EU; SX1276 chip |
+| Micro USB OTG adapter | Plugs into the Pi's data micro USB port (the one closest to the centre) |
+| USB-A to micro USB cable | Connects the OTG adapter to the LoRa board |
+
+> **Note:** the Pi Zero 2 W has *two* micro USB ports.  The one closest to the centre is
+> the **OTG (data) port** — use this one.  The other port is power-only.
+
+### Quick wiring diagram
+
+```
+Pi Zero 2 W (micro USB OTG port)
+  └── micro USB OTG adapter (male micro USB → female USB-A)
+        └── USB-A to micro USB cable
+              └── LILYGO TTGO LoRa32 (micro USB port)
+```
+
+Flash [MeshCore firmware](https://github.com/ripplebiz/MeshCore) onto the TTGO board
+before connecting it to the Pi.
+
+Add your user to the `dialout` group so the serial port can be opened without `sudo`:
+
+```bash
+sudo usermod -aG dialout $USER
+# log out and back in for the change to take effect
+```
+
+---
+
 ## Installation on Raspberry Pi Zero 2
 
 ### 1. Update System
@@ -96,7 +134,7 @@ python3 meshcore_send.py "wx London" --node-id my_node --port /dev/ttyUSB0 --cha
 # Start bot broadcasting responses on 'weather' channel (simulation mode)
 python3 weather_bot.py --interactive --channel weather
 
-# Start bot with LoRa hardware on /dev/ttyUSB0
+# Start bot with LILYGO TTGO LoRa32 on /dev/ttyUSB0 (868 MHz UK/EU)
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
 
 # Run bot with custom node ID and channel
