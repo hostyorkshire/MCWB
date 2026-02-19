@@ -216,6 +216,24 @@ The **LILYGO T-Beam v1.1** is another popular choice.  It adds an onboard GPS mo
 and battery connector, which is useful if you want the Pi Zero 2 W + LoRa node to be
 portable.  It also uses a CP2102 or CH9102 chip so it shows up as `/dev/ttyUSB0`.
 
+### Alternative: DollaTek ESP32 SX1276 Wireless Bridge
+
+The **DollaTek ESP32 SX1276 Wireless Bridge** (a resold [Heltec Wireless Bridge](https://heltec.org/project/wireless-bridge/)) **can work** with MCWB, but check two things before buying:
+
+| Feature | Detail |
+|---------|--------|
+| Chip | ESP32 + SX1276 |
+| USB interface | CP2102 USB-to-UART (appears as `/dev/ttyUSB0`) |
+| Frequency | **470 MHz default (China band) — must buy the 868 MHz variant for UK/EU** |
+| MeshCore support | ✅ Supported — use the **Heltec Wireless Bridge** firmware profile |
+| Power via USB | ✅ Powered directly from the Pi OTG port |
+
+> ⚠️ **Frequency warning:** The standard DollaTek Wireless Bridge listing ships at **470 MHz**, which is outside the UK and EU LoRa band (863–870 MHz) and is illegal to operate in the UK or EU.  Make sure the listing and the board's technical specification sheet explicitly state **868 MHz** before purchasing.
+
+Flash it with the MeshCore firmware choosing the **Heltec Wireless Bridge** board target:
+[MeshCore firmware releases](https://github.com/ripplebiz/MeshCore/releases) — download the
+Heltec Wireless Bridge `.bin` and flash via the web flasher or `esptool.py`.
+
 ### Wiring
 
 ```

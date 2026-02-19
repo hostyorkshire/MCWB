@@ -29,6 +29,22 @@ Pi Zero 2 W (micro USB OTG port)
 Flash [MeshCore firmware](https://github.com/ripplebiz/MeshCore) onto the TTGO board
 before connecting it to the Pi.
 
+### DollaTek ESP32 SX1276 Wireless Bridge — will it work?
+
+**Yes**, the DollaTek Wireless Bridge (a Heltec-designed board) uses the same ESP32 + SX1276
+combination and its CP2102 chip means it shows up as `/dev/ttyUSB0` automatically, just
+like the TTGO LoRa32.
+
+Two things to check before buying:
+
+1. **Frequency band** — the standard listing ships at **470 MHz** (China band).  You need
+   the **868 MHz** variant for legal UK/EU use.  Verify this in the board's technical
+   specification sheet, not just the product title — listings can be misleading.  Contact
+   the seller to confirm the frequency before purchasing if unsure.
+2. **Firmware profile** — flash MeshCore using the **Heltec Wireless Bridge** target, not
+   the TTGO LoRa32 target.  Grab the correct `.bin` from the
+   [MeshCore releases page](https://github.com/ripplebiz/MeshCore/releases).
+
 Add your user to the `dialout` group so the serial port can be opened without `sudo`:
 
 ```bash
