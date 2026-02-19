@@ -82,7 +82,7 @@ python3 weather_bot.py
 ### Command Line Options
 
 ```
-usage: weather_bot.py [-h] [-n NODE_ID] [-c CHANNEL] [-d] [-i] [-l LOCATION]
+usage: weather_bot.py [-h] [-n NODE_ID] [-c CHANNEL] [-p PORT] [-b BAUD] [-d] [-i] [-l LOCATION]
 
 MeshCore Weather Bot - UK Weather via mesh radio network
 
@@ -92,6 +92,9 @@ optional arguments:
                         Node ID for this bot (default: weather_bot)
   -c CHANNEL, --channel CHANNEL
                         Channel to broadcast responses on (optional)
+  -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
+                        When omitted the bot runs in simulation mode.
+  -b BAUD, --baud BAUD  Baud rate for LoRa serial connection (default: 9600)
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -l LOCATION, --location LOCATION
@@ -105,6 +108,9 @@ The weather bot can broadcast responses to a specific channel:
 ```bash
 # Broadcast weather responses on the 'weather' channel
 python3 weather_bot.py --channel weather --interactive
+
+# Run with LoRa hardware on /dev/ttyUSB0
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
 
 # Run without channel (default - broadcast to all)
 python3 weather_bot.py --interactive
@@ -166,12 +172,44 @@ mesh.set_channel_filter(None)
 Command-line utility for sending messages via MeshCore:
 
 ```bash
-# Send without channel
+# Send without channel (simulation mode)
 python3 meshcore_send.py "wx London" --node-id sender_node
 
-# Send to a specific channel
+# Send to a specific channel (simulation mode)
 python3 meshcore_send.py "Weather update" --node-id sender_node --channel weather
+
+# Send via LoRa hardware
+python3 meshcore_send.py "wx London" --node-id sender_node --port /dev/ttyUSB0 --channel weather
 ```
+
+## LoRa Radio Integration
+
+The bot communicates over LoRa using a serial-connected LoRa module (e.g. EBYTE E32,
+SX1276-based boards) attached to the Raspberry Pi via USB or UART.
+
+### Message Format over LoRa
+
+Messages are transmitted as newline-delimited JSON:
+
+```json
+{"sender":"weather_bot","content":"wx York","type":"text","timestamp":1234567890.0,"channel":"weather"}
+```
+
+### Connecting a LoRa Module
+
+1. Connect your LoRa serial module to the Pi (e.g., `/dev/ttyUSB0` or `/dev/ttyAMA0`).
+2. Start the weather bot with `--port` and, optionally, `--baud`:
+
+```bash
+# Listen for 'wx <location>' requests and reply – all over LoRa
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
+
+# From another node: send a weather query over LoRa
+python3 meshcore_send.py "wx London" --port /dev/ttyUSB0 --channel weather --node-id user_node
+```
+
+3. When **`--port` is omitted** the bot starts in *simulation mode*: messages are logged
+   but not transmitted over radio. This is ideal for testing without hardware.
 
 ## Examples
 

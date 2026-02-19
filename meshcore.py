@@ -6,8 +6,19 @@ This module provides the core functionality for communicating via MeshCore mesh 
 
 import json
 import time
+import threading
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
+
+try:
+    import serial
+    from serial import SerialException
+    SERIAL_AVAILABLE = True
+except ImportError:
+    SERIAL_AVAILABLE = False
+    # Provide a fallback so SerialException can be caught safely without pyserial installed
+    class SerialException(Exception):  # type: ignore[no-redef]
+        pass
 
 
 class MeshCoreMessage:
@@ -58,19 +69,29 @@ class MeshCoreMessage:
 class MeshCore:
     """Main MeshCore communication handler"""
     
-    def __init__(self, node_id: str, debug: bool = False):
+    def __init__(self, node_id: str, debug: bool = False,
+                 serial_port: Optional[str] = None, baud_rate: int = 9600):
         """
         Initialize MeshCore
         
         Args:
             node_id: Unique identifier for this node
             debug: Enable debug output
+            serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0). When None,
+                         the node operates in simulation mode (no actual radio transmission).
+            baud_rate: Baud rate for LoRa serial connection (default: 9600)
         """
         self.node_id = node_id
         self.debug = debug
         self.message_handlers = {}
         self.running = False
         self.channel_filter = None  # None means listen to all channels
+
+        # LoRa serial connection
+        self.serial_port = serial_port
+        self.baud_rate = baud_rate
+        self._serial = None
+        self._listener_thread = None
         
     def log(self, message: str):
         """Log debug messages"""
@@ -121,8 +142,18 @@ class MeshCore:
         channel_info = f" on channel '{channel}'" if channel else ""
         self.log(f"Sending message{channel_info}: {message.to_json()}")
         
-        # In a real implementation, this would transmit via radio
-        # For now, we'll simulate by returning the message
+        if self._serial and self._serial.is_open:
+            # Transmit over LoRa via serial port
+            try:
+                data = (message.to_json() + "\n").encode("utf-8")
+                self._serial.write(data)
+                self.log(f"LoRa TX: {message.to_json()}")
+            except SerialException as e:
+                self.log(f"LoRa TX error: {e}")
+        else:
+            # Simulation mode - no radio hardware attached
+            self.log("Simulation mode: message not transmitted over radio")
+        
         return message
     
     def receive_message(self, message: MeshCoreMessage):
@@ -147,14 +178,66 @@ class MeshCore:
         else:
             self.log(f"No handler for message type: {message.message_type}")
     
+    def _connect_serial(self):
+        """Open the serial port for the LoRa module"""
+        if not SERIAL_AVAILABLE:
+            self.log("pyserial is not installed. Install with: pip install pyserial")
+            return
+        try:
+            self._serial = serial.Serial(self.serial_port, self.baud_rate, timeout=1)
+            self.log(f"LoRa connected on {self.serial_port} at {self.baud_rate} baud")
+        except SerialException as e:
+            self.log(f"Failed to open serial port {self.serial_port}: {e}")
+            self._serial = None
+
+    def _start_listener(self):
+        """Start background thread to listen for incoming LoRa messages"""
+        self._listener_thread = threading.Thread(
+            target=self._listen_loop, daemon=True, name="lora-listener"
+        )
+        self._listener_thread.start()
+        self.log("LoRa listener thread started")
+
+    def _listen_loop(self):
+        """
+        Background loop: read lines from the LoRa serial port, parse them as
+        JSON-encoded MeshCoreMessage objects and dispatch to registered handlers.
+        """
+        while self.running and self._serial and self._serial.is_open:
+            try:
+                raw = self._serial.readline()
+                if not raw:
+                    continue
+                line = raw.decode("utf-8", errors="ignore").strip()
+                if not line:
+                    continue
+                self.log(f"LoRa RX: {line}")
+                try:
+                    message = MeshCoreMessage.from_json(line)
+                    self.receive_message(message)
+                except (json.JSONDecodeError, KeyError) as e:
+                    self.log(f"Could not parse LoRa message: {e} | raw: {line}")
+            except SerialException as e:
+                self.log(f"LoRa serial read error: {e}")
+                break
+
     def start(self):
         """Start the MeshCore listener"""
         self.running = True
+        if self.serial_port:
+            self._connect_serial()
+            if self._serial and self._serial.is_open:
+                self._start_listener()
         self.log("MeshCore started")
     
     def stop(self):
         """Stop the MeshCore listener"""
         self.running = False
+        if self._listener_thread and self._listener_thread.is_alive():
+            self._listener_thread.join(timeout=2)
+        if self._serial and self._serial.is_open:
+            self._serial.close()
+            self.log(f"LoRa serial port {self.serial_port} closed")
         self.log("MeshCore stopped")
     
     def is_running(self) -> bool:

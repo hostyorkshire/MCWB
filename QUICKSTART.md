@@ -81,17 +81,23 @@ Then type commands like:
 
 ### Send Message via MeshCore
 ```bash
-# Send message without channel
+# Send message without channel (simulation mode)
 python3 meshcore_send.py "wx London" --node-id my_node
 
-# Send message to a specific channel
+# Send message to a specific channel (simulation mode)
 python3 meshcore_send.py "wx London" --node-id my_node --channel weather
+
+# Send message via LoRa hardware
+python3 meshcore_send.py "wx London" --node-id my_node --port /dev/ttyUSB0 --channel weather
 ```
 
 ### Run Weather Bot on a Specific Channel
 ```bash
-# Start bot broadcasting responses on 'weather' channel
+# Start bot broadcasting responses on 'weather' channel (simulation mode)
 python3 weather_bot.py --interactive --channel weather
+
+# Start bot with LoRa hardware on /dev/ttyUSB0
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
 
 # Run bot with custom node ID and channel
 python3 weather_bot.py --node-id my_weather_bot --channel weather
