@@ -61,7 +61,9 @@ WEATHER_CODES = {
 class WeatherBot:
     """Weather Bot for MeshCore network"""
     
-    def __init__(self, node_id: str = "weather_bot", debug: bool = False, channel: Optional[str] = None):
+    def __init__(self, node_id: str = "weather_bot", debug: bool = False,
+                 channel: Optional[str] = None, serial_port: Optional[str] = None,
+                 baud_rate: int = 9600):
         """
         Initialize Weather Bot
         
@@ -69,8 +71,11 @@ class WeatherBot:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
             channel: Optional channel to broadcast responses on
+            serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
+                         When None, the bot operates in simulation mode.
+            baud_rate: Baud rate for LoRa serial connection (default: 9600)
         """
-        self.mesh = MeshCore(node_id, debug=debug)
+        self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
         self.channel = channel
         
@@ -362,6 +367,19 @@ def main():
     )
     
     parser.add_argument(
+        "-p", "--port",
+        help="Serial port for LoRa module (e.g., /dev/ttyUSB0). "
+             "When omitted the bot runs in simulation mode (no radio hardware required)."
+    )
+    
+    parser.add_argument(
+        "-b", "--baud",
+        type=int,
+        default=9600,
+        help="Baud rate for LoRa serial connection (default: 9600)"
+    )
+    
+    parser.add_argument(
         "-l", "--location",
         help="Get weather for a specific location and exit"
     )
@@ -369,7 +387,8 @@ def main():
     args = parser.parse_args()
     
     # Create bot instance
-    bot = WeatherBot(node_id=args.node_id, debug=args.debug, channel=args.channel)
+    bot = WeatherBot(node_id=args.node_id, debug=args.debug, channel=args.channel,
+                     serial_port=args.port, baud_rate=args.baud)
     
     if args.location:
         # One-shot mode: get weather for location and exit

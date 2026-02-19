@@ -11,7 +11,8 @@ from meshcore import MeshCore, MeshCoreMessage
 
 
 def send_message(node_id: str, content: str, message_type: str = "text", 
-                 channel: Optional[str] = None, debug: bool = False):
+                 channel: Optional[str] = None, debug: bool = False,
+                 serial_port: Optional[str] = None, baud_rate: int = 9600):
     """
     Send a message via MeshCore network
     
@@ -21,11 +22,14 @@ def send_message(node_id: str, content: str, message_type: str = "text",
         message_type: Type of message (default: "text")
         channel: Optional channel to broadcast to
         debug: Enable debug output
+        serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
+                     When None, runs in simulation mode.
+        baud_rate: Baud rate for LoRa serial connection (default: 9600)
         
     Returns:
         MeshCoreMessage object representing the sent message
     """
-    mesh = MeshCore(node_id, debug=debug)
+    mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
     mesh.start()
     
     message = mesh.send_message(content, message_type, channel)
@@ -64,6 +68,19 @@ def main():
     )
     
     parser.add_argument(
+        "-p", "--port",
+        help="Serial port for LoRa module (e.g., /dev/ttyUSB0). "
+             "When omitted, the message is sent in simulation mode."
+    )
+    
+    parser.add_argument(
+        "-b", "--baud",
+        type=int,
+        default=9600,
+        help="Baud rate for LoRa serial connection (default: 9600)"
+    )
+    
+    parser.add_argument(
         "-d", "--debug",
         action="store_true",
         help="Enable debug output"
@@ -77,7 +94,9 @@ def main():
         content=args.content,
         message_type=args.type,
         channel=args.channel,
-        debug=args.debug
+        debug=args.debug,
+        serial_port=args.port,
+        baud_rate=args.baud
     )
     
     if not args.debug:
