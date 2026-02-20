@@ -16,9 +16,12 @@ from datetime import datetime
 _FRAME_OUT = 0x3E       # '>' radio→app outbound frame start byte
 _FRAME_IN = 0x3C        # '<' app→radio inbound frame start byte
 _CMD_APP_START = 1      # Initialize companion radio session
+_CMD_GET_DEVICE_TIME = 5    # Request current device time (RTC)
 _CMD_SYNC_NEXT_MSG = 10 # Fetch next queued message
 _CMD_SEND_CHAN_MSG = 3   # Send a channel (flood) text message
+_RESP_CURR_TIME = 9         # Response: current device time (4-byte UNIX timestamp)
 _PUSH_MSG_WAITING = 0x83    # Push: a new message has been queued
+_PUSH_MSG_ACK = 0x88        # Push: message acknowledgment notification
 _RESP_CONTACT_MSG = 7       # Response: direct (contact) message received
 _RESP_CHANNEL_MSG = 8       # Response: channel message received
 _RESP_NO_MORE_MSGS = 10     # Response: message queue is empty
@@ -353,11 +356,25 @@ class MeshCore:
         """
         code = payload[0]
 
-        if code == _PUSH_MSG_WAITING:
+        if code == _CMD_GET_DEVICE_TIME:
+            # Companion radio requests current device time.
+            # Respond with RESP_CURR_TIME containing 4-byte UNIX timestamp.
+            self.log("MeshCore: device time requested, responding…")
+            timestamp = int(time.time()).to_bytes(4, "little")
+            response = bytes([_RESP_CURR_TIME]) + timestamp
+            self._send_command(response)
+
+        elif code == _PUSH_MSG_WAITING:
             # Companion radio signals that a new message has been received;
             # request it immediately.
             self.log("MeshCore: message waiting, fetching…")
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
+
+        elif code == _PUSH_MSG_ACK:
+            # Companion radio sends message acknowledgment notification.
+            # This confirms that a previously sent message was received by the mesh network.
+            self.log("MeshCore: message acknowledgment received")
+            # No further action needed; ACK is informational
 
         elif code == _RESP_CHANNEL_MSG:
             # RESP_CODE_CHANNEL_MSG_RECV:
