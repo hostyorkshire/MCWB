@@ -33,12 +33,12 @@ def test_html_encoded_json():
 
     # Test cases with HTML entities
     test_lines = [
-        # HTML-encoded JSON (common scenario)
-        (valid_json.replace("{", "&lt;{").encode("utf-8") + b'\n'),  # &lt; before {
-        (valid_json.replace("}", "}&gt;").encode("utf-8") + b'\n'),  # &gt; after }
-        (valid_json.replace("&", "&amp;").encode("utf-8") + b'\n'),  # &amp; in content
-        # The problematic line from the issue (HTML-encoded data with > prefix)
-        (b'&gt;' + valid_json.encode("utf-8") + b'\n'),
+        # These test cases have HTML entities that make them invalid JSON after decoding
+        (valid_json.replace("{", "&lt;{").encode("utf-8") + b'\n'),  # Becomes <{...} (invalid)
+        (valid_json.replace("}", "}&gt;").encode("utf-8") + b'\n'),  # Becomes ...}> (invalid)
+        (valid_json.replace("&", "&amp;").encode("utf-8") + b'\n'),  # Valid JSON with &amp; in content
+        # The problematic pattern from the issue (> prefix after HTML decoding)
+        (b'&gt;' + valid_json.encode("utf-8") + b'\n'),  # Becomes >{...} (invalid)
         # Normal valid message for comparison
         (valid_json.encode("utf-8") + b'\n'),
     ]
