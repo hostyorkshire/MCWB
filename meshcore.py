@@ -66,6 +66,11 @@ class MeshCoreMessage:
         return cls.from_dict(data)
 
 
+# Standard serial baud rates accepted for preflight validation
+VALID_BAUD_RATES = {110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200,
+                    38400, 57600, 115200, 128000, 256000}
+
+
 class MeshCore:
     """Main MeshCore communication handler"""
     
@@ -183,8 +188,22 @@ class MeshCore:
         if not SERIAL_AVAILABLE:
             self.log("pyserial is not installed. Install with: pip install pyserial")
             return
+        # Preflight: reject baud rates that are not in the known-valid set
+        if self.baud_rate not in VALID_BAUD_RATES:
+            self.log(
+                f"Invalid baud rate {self.baud_rate}. "
+                f"Valid rates: {sorted(VALID_BAUD_RATES)}"
+            )
+            return
         try:
-            self._serial = serial.Serial(self.serial_port, self.baud_rate, timeout=1)
+            self._serial = serial.Serial(
+                self.serial_port, self.baud_rate, timeout=1,
+                rtscts=False, dsrdtr=False,
+            )
+            # Deassert RTS and DTR to prevent unintended resets on ESP32/Arduino
+            # LoRa devices that use these lines as a reset trigger.
+            self._serial.rts = False
+            self._serial.dtr = False
             self.log(f"LoRa connected on {self.serial_port} at {self.baud_rate} baud")
         except SerialException as e:
             self.log(f"Failed to open serial port {self.serial_port}: {e}")
