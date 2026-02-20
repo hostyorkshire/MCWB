@@ -25,6 +25,9 @@ def test_garbled_data_not_logged():
 
     # Simulate the exact problematic data from the issue
     garbled_data = '7v7^Aȟn%\'qx/~(:+v&lt;_̼f}#DFjH.9R"c6Kc bfO39.s,[jn[rH_Zb&gt;SF)=7.d&gt;D8'
+    # After HTML unescaping, this becomes:
+    import html
+    garbled_data_unescaped = html.unescape(garbled_data)
     
     # Create a valid message for comparison
     valid_msg = MeshCoreMessage("sender", "valid content", "text")
@@ -56,10 +59,10 @@ def test_garbled_data_not_logged():
     # Check results
     print(f"\nCaptured output:\n{output}")
     
-    # The garbled data should NOT appear in "LoRa RX:" logs
+    # The garbled data (either escaped or unescaped) should NOT appear in "LoRa RX:" logs
     garbled_in_lora_rx = False
     for line in output.split('\n'):
-        if 'LoRa RX:' in line and garbled_data in line:
+        if 'LoRa RX:' in line and (garbled_data in line or garbled_data_unescaped in line):
             garbled_in_lora_rx = True
             break
     
