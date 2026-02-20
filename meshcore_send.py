@@ -7,15 +7,15 @@ This is a simple command-line utility for sending messages through the MeshCore 
 import sys
 import argparse
 from typing import Optional
-from meshcore import MeshCore, MeshCoreMessage
+from meshcore import MeshCore
 
 
-def send_message(node_id: str, content: str, message_type: str = "text", 
+def send_message(node_id: str, content: str, message_type: str = "text",
                  channel: Optional[str] = None, debug: bool = False,
                  serial_port: Optional[str] = None, baud_rate: int = 9600):
     """
     Send a message via MeshCore network
-    
+
     Args:
         node_id: Unique identifier for this node
         content: Message content to send
@@ -25,17 +25,17 @@ def send_message(node_id: str, content: str, message_type: str = "text",
         serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                      When None, runs in simulation mode.
         baud_rate: Baud rate for LoRa serial connection (default: 9600)
-        
+
     Returns:
         MeshCoreMessage object representing the sent message
     """
     mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
     mesh.start()
-    
+
     message = mesh.send_message(content, message_type, channel)
-    
+
     mesh.stop()
-    
+
     return message
 
 
@@ -44,50 +44,50 @@ def main():
     parser = argparse.ArgumentParser(
         description="Send messages via MeshCore mesh radio network"
     )
-    
+
     parser.add_argument(
         "content",
         help="Message content to send"
     )
-    
+
     parser.add_argument(
         "-n", "--node-id",
         default="sender_node",
         help="Node ID for this sender (default: sender_node)"
     )
-    
+
     parser.add_argument(
         "-t", "--type",
         default="text",
         help="Message type (default: text)"
     )
-    
+
     parser.add_argument(
         "-c", "--channel",
         help="Channel to broadcast to (optional)"
     )
-    
+
     parser.add_argument(
         "-p", "--port",
         help="Serial port for LoRa module (e.g., /dev/ttyUSB0). "
              "When omitted, the message is sent in simulation mode."
     )
-    
+
     parser.add_argument(
         "-b", "--baud",
         type=int,
         default=9600,
         help="Baud rate for LoRa serial connection (default: 9600)"
     )
-    
+
     parser.add_argument(
         "-d", "--debug",
         action="store_true",
         help="Enable debug output"
     )
-    
+
     args = parser.parse_args()
-    
+
     # Send the message
     message = send_message(
         node_id=args.node_id,
@@ -98,11 +98,11 @@ def main():
         serial_port=args.port,
         baud_rate=args.baud
     )
-    
+
     if not args.debug:
         channel_info = f" on channel '{args.channel}'" if args.channel else ""
         print(f"Message sent{channel_info}: {message.content}")
-    
+
     return 0
 
 

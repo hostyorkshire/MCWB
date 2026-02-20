@@ -7,9 +7,7 @@ physical LoRa hardware attached.
 
 import sys
 import json
-import threading
-import time
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 from meshcore import MeshCore, MeshCoreMessage
 
 
@@ -46,7 +44,7 @@ def test_send_over_lora():
     mesh._serial = mock_serial  # inject mock
     mesh.running = True
 
-    msg = mesh.send_message("wx York", "text", channel="weather")
+    mesh.send_message("wx York", "text", channel="weather")
 
     # Verify serial.write was called with JSON-encoded message + newline
     assert mock_serial.write.called, "serial.write should have been called"
