@@ -32,7 +32,7 @@ def test_meshcore_serial_params():
 
 
 def test_send_over_lora():
-    """Test that send_message writes JSON to serial port when connected"""
+    """Test that send_message writes a binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port"""
     print("=" * 60)
     print("TEST 2: Send Message Over LoRa")
     print("=" * 60)
@@ -46,18 +46,24 @@ def test_send_over_lora():
 
     mesh.send_message("wx York", "text", channel="weather")
 
-    # Verify serial.write was called with JSON-encoded message + newline
+    # Verify serial.write was called with a binary MeshCore companion protocol frame
     assert mock_serial.write.called, "serial.write should have been called"
     written_bytes = mock_serial.write.call_args[0][0]
-    written_str = written_bytes.decode("utf-8")
-    assert written_str.endswith("\n"), "Transmitted data should end with newline"
 
-    parsed = json.loads(written_str.strip())
-    assert parsed["content"] == "wx York"
-    assert parsed["channel"] == "weather"
-    assert parsed["sender"] == "lora_sender"
-    print("✓ send_message writes JSON message to serial port")
-    print(f"  Transmitted: {written_str.strip()}")
+    # Frame format (app→radio):  0x3C '<' + uint16_LE(length) + payload
+    assert written_bytes[0:1] == b'\x3c', "Frame must start with '<' (0x3C) inbound marker"
+    length = int.from_bytes(written_bytes[1:3], "little")
+    assert len(written_bytes) == 3 + length, "Frame length field must match actual payload size"
+
+    # Payload: CMD_SEND_CHANNEL_TXT_MSG(1) + txt_type(1) + channel_idx(1) + ts(4) + text
+    payload = written_bytes[3:]
+    assert payload[0] == 3, "Payload must begin with CMD_SEND_CHANNEL_TXT_MSG (3)"
+    assert payload[1] == 0, "txt_type must be 0 (plain text)"
+    assert payload[2] == 0, "channel_idx must be 0 (public channel)"
+    text = payload[7:].decode("utf-8")
+    assert text == "wx York", f"Message text mismatch: expected 'wx York', got '{text}'"
+    print("✓ send_message writes binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port")
+    print(f"  Frame (hex): {written_bytes.hex()}")
 
     print()
 
@@ -378,6 +384,176 @@ def test_valid_baud_rates_accepted():
     print()
 
 
+def _build_binary_frame(payload: bytes) -> bytes:
+    """Build a radio→app binary frame: 0x3E + uint16_LE(len) + payload."""
+    return bytes([0x3E]) + len(payload).to_bytes(2, "little") + payload
+
+
+def _build_channel_msg_frame(text: str, channel_idx: int = 0, path_len: int = 0,
+                              txt_type: int = 0, timestamp: int = 0) -> bytes:
+    """Build a RESP_CODE_CHANNEL_MSG_RECV (code 8) binary frame."""
+    payload = bytes([8, channel_idx, path_len, txt_type]) + timestamp.to_bytes(4, "little") + text.encode("utf-8")
+    return _build_binary_frame(payload)
+
+
+def _build_push_msg_waiting_frame() -> bytes:
+    """Build a PUSH_CODE_MSG_WAITING (code 0x83) binary frame."""
+    return _build_binary_frame(bytes([0x83]))
+
+
+def test_receive_binary_channel_message():
+    """Test that a binary CHANNEL_MSG_RECV frame from a MeshCore device is processed"""
+    print("=" * 60)
+    print("TEST 11: Receive Binary Channel Message (MeshCore protocol)")
+    print("=" * 60)
+
+    received = []
+
+    def handler(message):
+        received.append(message)
+
+    mesh = MeshCore("bot_node", debug=False)
+    mesh.register_handler("text", handler)
+    mesh.running = True
+
+    mock_serial = MagicMock()
+    mock_serial.is_open = True
+
+    # Simulate a channel message: "Tim Bristol: wx London"
+    # This is how MeshCore firmware formats channel messages (sender: message)
+    frame = _build_channel_msg_frame("Tim Bristol: wx London")
+
+    lines = [frame]
+
+    def readline_side_effect():
+        readline_side_effect.count += 1
+        if readline_side_effect.count <= len(lines):
+            return lines[readline_side_effect.count - 1]
+        mesh.running = False
+        return b""
+
+    readline_side_effect.count = 0
+    mock_serial.readline.side_effect = lambda: readline_side_effect()
+    mesh._serial = mock_serial
+
+    mesh._listen_loop()
+
+    assert len(received) == 1, f"Expected 1 message, got {len(received)}"
+    assert received[0].sender == "Tim Bristol", f"Expected sender 'Tim Bristol', got '{received[0].sender}'"
+    assert received[0].content == "wx London", f"Expected content 'wx London', got '{received[0].content}'"
+    print(f"✓ Binary CHANNEL_MSG_RECV frame parsed correctly")
+    print(f"  sender='{received[0].sender}', content='{received[0].content}'")
+    print()
+
+
+def test_receive_binary_channel_message_no_sender_prefix():
+    """Test a binary channel message where the text has no sender prefix"""
+    print("=" * 60)
+    print("TEST 12: Binary Channel Message Without Sender Prefix")
+    print("=" * 60)
+
+    received = []
+
+    def handler(message):
+        received.append(message)
+
+    mesh = MeshCore("bot_node", debug=False)
+    mesh.register_handler("text", handler)
+    mesh.running = True
+
+    mock_serial = MagicMock()
+    mock_serial.is_open = True
+
+    # Message without sender prefix (older firmware or direct format)
+    frame = _build_channel_msg_frame("wx York")
+
+    lines = [frame]
+
+    def readline_side_effect():
+        readline_side_effect.count += 1
+        if readline_side_effect.count <= len(lines):
+            return lines[readline_side_effect.count - 1]
+        mesh.running = False
+        return b""
+
+    readline_side_effect.count = 0
+    mock_serial.readline.side_effect = lambda: readline_side_effect()
+    mesh._serial = mock_serial
+
+    mesh._listen_loop()
+
+    assert len(received) == 1, f"Expected 1 message, got {len(received)}"
+    assert received[0].content == "wx York", f"Expected 'wx York', got '{received[0].content}'"
+    print(f"✓ Binary channel message without sender prefix handled correctly")
+    print(f"  content='{received[0].content}'")
+    print()
+
+
+def test_push_msg_waiting_triggers_sync():
+    """Test that PUSH_CODE_MSG_WAITING causes a CMD_SYNC_NEXT_MESSAGE to be sent"""
+    print("=" * 60)
+    print("TEST 13: PUSH_MSG_WAITING Triggers CMD_SYNC_NEXT_MESSAGE")
+    print("=" * 60)
+
+    mesh = MeshCore("bot_node", debug=False)
+    mesh.running = True
+
+    mock_serial = MagicMock()
+    mock_serial.is_open = True
+
+    lines = [_build_push_msg_waiting_frame()]
+
+    def readline_side_effect():
+        readline_side_effect.count += 1
+        if readline_side_effect.count <= len(lines):
+            return lines[readline_side_effect.count - 1]
+        mesh.running = False
+        return b""
+
+    readline_side_effect.count = 0
+    mock_serial.readline.side_effect = lambda: readline_side_effect()
+    mesh._serial = mock_serial
+
+    mesh._listen_loop()
+
+    # CMD_SYNC_NEXT_MESSAGE frame: 0x3C + len(1 LE) + 0x0A
+    assert mock_serial.write.called, "write() should be called for CMD_SYNC_NEXT_MESSAGE"
+    written = mock_serial.write.call_args[0][0]
+    assert written[0:1] == b'\x3c', "Frame start byte must be '<' (0x3C)"
+    assert written[3:4] == b'\x0a', "Command byte must be CMD_SYNC_NEXT_MESSAGE (0x0A)"
+    print("✓ PUSH_MSG_WAITING triggers CMD_SYNC_NEXT_MESSAGE command")
+    print(f"  Sent frame (hex): {written.hex()}")
+    print()
+
+
+def test_connect_serial_sends_app_start():
+    """Test that _connect_serial sends CMD_APP_START to initialise the companion radio"""
+    print("=" * 60)
+    print("TEST 14: _connect_serial Sends CMD_APP_START")
+    print("=" * 60)
+
+    with patch("meshcore.SERIAL_AVAILABLE", True), \
+         patch("meshcore.serial") as mock_serial_module:
+
+        mock_port = MagicMock()
+        mock_port.is_open = True
+        mock_serial_module.Serial.return_value = mock_port
+        mock_serial_module.SerialException = Exception
+
+        mesh = MeshCore("lora_bot", serial_port="/dev/ttyUSB0", baud_rate=9600, debug=False)
+        mesh._connect_serial()
+
+        assert mock_port.write.called, "write() must be called during _connect_serial"
+        # First write should be CMD_APP_START frame
+        first_write = mock_port.write.call_args_list[0][0][0]
+        assert first_write[0:1] == b'\x3c', "CMD_APP_START frame must start with '<'"
+        assert first_write[3:4] == b'\x01', "First command byte must be CMD_APP_START (0x01)"
+        print("✓ _connect_serial sends CMD_APP_START on connection")
+        print(f"  CMD_APP_START frame (hex): {first_write.hex()}")
+
+    print()
+
+
 def main():
     """Run all LoRa serial tests"""
     print("\n")
@@ -398,6 +574,10 @@ def main():
         test_rts_dtr_deasserted_after_connect()
         test_invalid_baud_rate_rejected()
         test_valid_baud_rates_accepted()
+        test_receive_binary_channel_message()
+        test_receive_binary_channel_message_no_sender_prefix()
+        test_push_msg_waiting_triggers_sync()
+        test_connect_serial_sends_app_start()
 
         print("=" * 60)
         print("✅ All LoRa serial tests passed!")
