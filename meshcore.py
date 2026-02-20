@@ -11,6 +11,21 @@ import html
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 
+# MeshCore companion radio binary protocol constants (USB/serial framing)
+# Reference: https://github.com/meshcore-dev/MeshCore/wiki/Companion-Radio-Protocol
+_FRAME_OUT = 0x3E       # '>' radio→app outbound frame start byte
+_FRAME_IN = 0x3C        # '<' app→radio inbound frame start byte
+_CMD_APP_START = 1      # Initialize companion radio session
+_CMD_SYNC_NEXT_MSG = 10 # Fetch next queued message
+_CMD_SEND_CHAN_MSG = 3   # Send a channel (flood) text message
+_PUSH_MSG_WAITING = 0x83    # Push: a new message has been queued
+_RESP_CONTACT_MSG = 7       # Response: direct (contact) message received
+_RESP_CHANNEL_MSG = 8       # Response: channel message received
+_RESP_NO_MORE_MSGS = 10     # Response: message queue is empty
+_RESP_CONTACT_MSG_V3 = 16   # V3 variant of contact message (includes SNR)
+_RESP_CHANNEL_MSG_V3 = 17   # V3 variant of channel message (includes SNR)
+_MAX_FRAME_SIZE = 300       # Maximum valid frame payload size in bytes
+
 try:
     import serial
     from serial import SerialException
@@ -150,11 +165,17 @@ class MeshCore:
         self.log(f"Sending message{channel_info}: {message.to_json()}")
 
         if self._serial and self._serial.is_open:
-            # Transmit over LoRa via serial port
+            # Transmit over LoRa using the MeshCore companion radio binary protocol.
+            # CMD_SEND_CHANNEL_TXT_MSG: code(1) + txt_type(1) + channel_idx(1)
+            #                           + timestamp uint32_LE(4) + text
+            # channel_idx=0 is the public (default) channel; named channels in this
+            # Python layer map to the single public channel of the companion radio.
             try:
-                data = (message.to_json() + "\n").encode("utf-8")
-                self._serial.write(data)
-                self.log(f"LoRa TX: {message.to_json()}")
+                ts_bytes = int(time.time()).to_bytes(4, "little")
+                cmd_data = bytes([_CMD_SEND_CHAN_MSG, 0, 0]) + ts_bytes + content.encode("utf-8")
+                frame = bytes([_FRAME_IN]) + len(cmd_data).to_bytes(2, "little") + cmd_data
+                self._serial.write(frame)
+                self.log(f"LoRa TX channel msg: {content}")
             except SerialException as e:
                 self.log(f"LoRa TX error: {e}")
         else:
@@ -207,6 +228,15 @@ class MeshCore:
             self._serial.rts = False
             self._serial.dtr = False
             self.log(f"LoRa connected on {self.serial_port} at {self.baud_rate} baud")
+            # Initialise MeshCore companion radio protocol session.
+            # CMD_APP_START frame payload layout (protocol reference §App Commands):
+            #   byte 0:   command code = 0x01 (CMD_APP_START)
+            #   byte 1:   app_ver = 0x03  (request V3 message format with SNR field)
+            #   bytes 2-7: reserved = 6 ASCII spaces (as used by official meshcore-py)
+            #   bytes 8+: app_name = "MCWB" (identifies this bot to the companion radio)
+            self._send_command(b"\x01\x03      MCWB")
+            # Drain any messages that queued while we were offline.
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
         except SerialException as e:
             self.log(f"Failed to open serial port {self.serial_port}: {e}")
             self._serial = None
@@ -221,14 +251,32 @@ class MeshCore:
 
     def _listen_loop(self):
         """
-        Background loop: read lines from the LoRa serial port, parse them as
-        JSON-encoded MeshCoreMessage objects and dispatch to registered handlers.
+        Background loop: read data from the LoRa serial port and dispatch messages.
+
+        Handles both the MeshCore companion radio binary framing protocol
+        (frames starting with 0x3E '>') and legacy newline-delimited JSON for
+        simulation / inter-Python-node communication.
         """
         while self.running and self._serial and self._serial.is_open:
             try:
                 raw = self._serial.readline()
                 if not raw:
                     continue
+
+                # ----------------------------------------------------------------
+                # MeshCore companion radio binary protocol
+                # Frame format (outbound, radio→app):
+                #   0x3E ('>')  - frame start
+                #   uint16 LE   - payload length
+                #   bytes       - payload (first byte = response/push code)
+                # ----------------------------------------------------------------
+                if raw[0] == _FRAME_OUT:
+                    self._handle_binary_frame(raw)
+                    continue
+
+                # ----------------------------------------------------------------
+                # Legacy JSON path (simulation mode / inter-Python communication)
+                # ----------------------------------------------------------------
                 line = raw.decode("utf-8", errors="ignore").strip()
                 if not line:
                     continue
@@ -256,6 +304,123 @@ class MeshCore:
             except SerialException as e:
                 self.log(f"LoRa serial read error: {e}")
                 break
+
+    # ------------------------------------------------------------------
+    # MeshCore companion radio binary protocol helpers
+    # ------------------------------------------------------------------
+
+    def _send_command(self, cmd_data: bytes):
+        """
+        Send a binary command frame to the companion radio.
+
+        Inbound frame format (app→radio):  0x3C + uint16_LE(len) + payload
+        """
+        if self._serial and self._serial.is_open:
+            frame = bytes([_FRAME_IN]) + len(cmd_data).to_bytes(2, "little") + cmd_data
+            try:
+                self._serial.write(frame)
+                self.log(f"LoRa CMD: {cmd_data.hex()}")
+            except SerialException as e:
+                self.log(f"LoRa CMD error: {e}")
+
+    def _handle_binary_frame(self, raw: bytes):
+        """
+        Parse a binary MeshCore companion radio frame received via readline().
+
+        The frame may not be byte-perfect when read via readline() (which stops
+        at 0x0A) but works reliably for typical short text messages that do not
+        contain embedded newline bytes.
+        """
+        if len(raw) < 3:
+            self.log("Binary frame too short to contain a length header")
+            return
+        length = int.from_bytes(raw[1:3], "little")
+        if length == 0 or length > _MAX_FRAME_SIZE:
+            self.log(f"Binary frame length {length} out of range, skipping")
+            return
+        payload = raw[3: 3 + length]
+        if not payload:
+            return
+        self._parse_binary_frame(payload)
+
+    def _parse_binary_frame(self, payload: bytes):
+        """
+        Dispatch a received companion radio frame payload based on its code byte.
+
+        Handles push notifications and message-delivery responses.
+        After each received message the next queued message is requested so
+        that the entire message queue is drained automatically.
+        """
+        code = payload[0]
+
+        if code == _PUSH_MSG_WAITING:
+            # Companion radio signals that a new message has been received;
+            # request it immediately.
+            self.log("MeshCore: message waiting, fetching…")
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
+
+        elif code == _RESP_CHANNEL_MSG:
+            # RESP_CODE_CHANNEL_MSG_RECV:
+            # channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+            if len(payload) >= 8:
+                text = payload[8:].decode("utf-8", "ignore")
+                self._dispatch_channel_message(text)
+            # Fetch the next queued message
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
+
+        elif code == _RESP_CHANNEL_MSG_V3:
+            # RESP_CODE_CHANNEL_MSG_RECV_V3 (includes SNR prefix):
+            # SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+            if len(payload) >= 12:
+                text = payload[12:].decode("utf-8", "ignore")
+                self._dispatch_channel_message(text)
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
+
+        elif code == _RESP_CONTACT_MSG:
+            # RESP_CODE_CONTACT_MSG_RECV:
+            # pubkey_prefix(6) + path_len(1) + txt_type(1) + timestamp(4) + text
+            if len(payload) >= 13:
+                sender = payload[1:7].hex()
+                text = payload[13:].decode("utf-8", "ignore")
+                msg = MeshCoreMessage(sender=sender, content=text, message_type="text")
+                self.receive_message(msg)
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
+
+        elif code == _RESP_CONTACT_MSG_V3:
+            # RESP_CODE_CONTACT_MSG_RECV_V3:
+            # SNR(1) + reserved(2) + pubkey_prefix(6) + path_len(1) + txt_type(1) + timestamp(4) + text
+            if len(payload) >= 16:
+                sender = payload[4:10].hex()
+                text = payload[16:].decode("utf-8", "ignore")
+                msg = MeshCoreMessage(sender=sender, content=text, message_type="text")
+                self.receive_message(msg)
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
+
+        elif code == _RESP_NO_MORE_MSGS:
+            self.log("MeshCore: message queue empty")
+
+        else:
+            self.log(f"MeshCore: unhandled frame code {code:#04x}")
+
+    def _dispatch_channel_message(self, text: str):
+        """
+        Create and dispatch a MeshCoreMessage from a received channel text.
+
+        MeshCore firmware prepends the sender's advertised name to the channel
+        message text in the format ``"sender_name: message_text"``.  This
+        method splits on the first ``": "`` to expose a clean *sender* and
+        *content* to the registered message handlers.
+        """
+        colon = text.find(": ")
+        if colon > 0:
+            sender = text[:colon]
+            content = text[colon + 2:]
+        else:
+            sender = "channel"
+            content = text
+        self.log(f"LoRa RX channel msg from {sender}: {content}")
+        msg = MeshCoreMessage(sender=sender, content=content, message_type="text")
+        self.receive_message(msg)
 
     def start(self):
         """Start the MeshCore listener"""
