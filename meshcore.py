@@ -239,7 +239,8 @@ class MeshCore:
                 self.log(f"LoRa RX: {line}")
                 # Only attempt JSON parsing for lines that look like JSON objects.
                 # Raw LoRa frames from non-MeshCore devices are silently skipped.
-                if not line.startswith("{"):
+                # Additional validation: must start with { AND end with }
+                if not (line.startswith("{") and line.endswith("}")):
                     self.log(f"Ignoring non-JSON LoRa data")
                     continue
                 try:
