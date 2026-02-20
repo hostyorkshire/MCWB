@@ -240,13 +240,14 @@ class MeshCore:
                 # Decode HTML entities (e.g. &gt; -> >, &amp; -> &) that may be present
                 # in data from certain LoRa systems or transport layers
                 line = html.unescape(line)
-                self.log(f"LoRa RX: {line}")
                 # Only attempt JSON parsing for lines that look like JSON objects.
                 # Raw LoRa frames from non-MeshCore devices are silently skipped.
                 # Additional validation: must start with { AND end with }
                 if not (line.startswith("{") and line.endswith("}")):
                     self.log(f"Ignoring non-JSON LoRa data")
                     continue
+                # Log only after validating it looks like JSON to avoid logging garbled data
+                self.log(f"LoRa RX: {line}")
                 try:
                     message = MeshCoreMessage.from_json(line)
                     self.receive_message(message)
