@@ -103,6 +103,26 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
 python3 weather_bot.py --node-id my_weather_bot --channel weather
 ```
 
+## Running Tests
+
+Verify the installation by running the test suite:
+
+```bash
+# Test basic functionality
+python3 examples.py
+
+# Test LoRa serial communication
+python3 test_lora_serial.py
+
+# Test channel functionality
+python3 test_channel_functionality.py
+
+# Test channel examples
+python3 example_channels.py
+```
+
+All tests run in simulation mode (no hardware required) and should complete successfully.
+
 ## Supported Commands
 
 - `wx [location]` - Get weather for location
@@ -181,6 +201,11 @@ sudo systemctl stop weather_bot
 
 ### Background Process
 ```bash
+# Find the process and kill it
+ps aux | grep weather_bot.py | grep -v grep
+kill <PID>
+
+# Or use pkill (if available)
 pkill -f weather_bot.py
 ```
 
