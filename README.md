@@ -82,21 +82,23 @@ python3 weather_bot.py
 ### Command Line Options
 
 ```
-usage: weather_bot.py [-h] [-n NODE_ID] [-c CHANNEL] [-p PORT] [-b BAUD] [-d] [-i] [-l LOCATION]
+usage: weather_bot.py [-h] [-n NODE_ID] [-c CHANNEL] [-d] [-i] [-p PORT]
+                      [-b BAUD] [-l LOCATION]
 
 MeshCore Weather Bot - UK Weather via mesh radio network
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -n NODE_ID, --node-id NODE_ID
                         Node ID for this bot (default: weather_bot)
   -c CHANNEL, --channel CHANNEL
                         Channel to broadcast responses on (optional)
-  -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
-                        When omitted the bot runs in simulation mode.
-  -b BAUD, --baud BAUD  Baud rate for LoRa serial connection (default: 9600)
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
+  -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
+                        When omitted the bot runs in simulation mode
+                        (no radio hardware required).
+  -b BAUD, --baud BAUD  Baud rate for LoRa serial connection (default: 9600)
   -l LOCATION, --location LOCATION
                         Get weather for a specific location and exit
 ```
@@ -349,6 +351,37 @@ The bot translates WMO weather codes to human-readable descriptions:
          │  (Radio TX/RX)  │
          └─────────────────┘
 ```
+
+## Testing
+
+The project includes comprehensive test suites to verify functionality:
+
+### Run All Tests
+
+```bash
+# Test LoRa serial communication
+python3 test_lora_serial.py
+
+# Test channel functionality
+python3 test_channel_functionality.py
+
+# Test weather bot features
+python3 test_weather_bot.py
+
+# Run example demonstrations
+python3 examples.py
+python3 example_channels.py
+```
+
+### Test Coverage
+
+- **test_lora_serial.py**: Tests LoRa serial port communication, message transmission/reception, RTS/DTR control, baud rate validation
+- **test_channel_functionality.py**: Tests channel-based broadcasting and filtering
+- **test_weather_bot.py**: Tests weather bot message handling and command parsing
+- **examples.py**: Demonstrates basic usage patterns
+- **example_channels.py**: Demonstrates channel-based communication
+
+All tests use mock objects and simulation mode, so no hardware is required.
 
 ## Troubleshooting
 

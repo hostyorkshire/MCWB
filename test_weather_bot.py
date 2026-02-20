@@ -14,9 +14,9 @@ def test_command_parsing():
     print("=" * 60)
     print("TEST 1: Command Parsing")
     print("=" * 60)
-    
+
     bot = WeatherBot(debug=False)
-    
+
     test_cases = [
         ("wx London", "London"),
         ("weather Manchester", "Manchester"),
@@ -27,12 +27,12 @@ def test_command_parsing():
         ("wx", None),
         ("weather", None),
     ]
-    
+
     for command, expected in test_cases:
         result = bot.parse_weather_command(command)
         status = "✓" if result == expected else "✗"
         print(f"{status} '{command}' -> {result} (expected: {expected})")
-    
+
     print()
 
 
@@ -41,15 +41,15 @@ def test_weather_code_descriptions():
     print("=" * 60)
     print("TEST 2: Weather Code Descriptions")
     print("=" * 60)
-    
+
     bot = WeatherBot(debug=False)
-    
+
     test_codes = [0, 1, 2, 3, 45, 51, 61, 63, 71, 80, 95]
-    
+
     for code in test_codes:
         description = bot.get_weather_description(code)
         print(f"Code {code:2d}: {description}")
-    
+
     print()
 
 
@@ -58,9 +58,9 @@ def test_weather_formatting():
     print("=" * 60)
     print("TEST 3: Weather Response Formatting")
     print("=" * 60)
-    
+
     bot = WeatherBot(debug=False)
-    
+
     # Mock location data
     location_data = {
         "name": "London",
@@ -68,7 +68,7 @@ def test_weather_formatting():
         "latitude": 51.5074,
         "longitude": -0.1278
     }
-    
+
     # Mock weather data
     weather_data = {
         "current": {
@@ -81,7 +81,7 @@ def test_weather_formatting():
             "weather_code": 2
         }
     }
-    
+
     response = bot.format_weather_response(location_data, weather_data)
     print(response)
     print()
@@ -92,21 +92,21 @@ def test_message_handling():
     print("=" * 60)
     print("TEST 4: Message Handling")
     print("=" * 60)
-    
+
     bot = WeatherBot(debug=True)
     bot.start()
-    
+
     # Test with a weather command (will fail due to network, but shows handling)
-    msg = MeshCoreMessage(
+    MeshCoreMessage(
         sender="test_user",
         content="wx London",
         message_type="text"
     )
-    
+
     print("\nProcessing: 'wx London'")
     print("-" * 40)
     # Note: This will fail with network error in sandbox, but shows the flow
-    
+
     bot.stop()
     print()
 
@@ -116,26 +116,26 @@ def test_meshcore_integration():
     print("=" * 60)
     print("TEST 5: MeshCore Integration")
     print("=" * 60)
-    
+
     from meshcore import MeshCore
-    
+
     # Test basic MeshCore functionality
     mesh = MeshCore("test_node", debug=True)
-    
+
     print("\nStarting MeshCore...")
     mesh.start()
-    
+
     print("\nSending test message...")
     msg = mesh.send_message("Test weather request", "text")
-    
+
     print("\nSimulating message reception...")
-    
+
     def test_handler(message):
         print(f"Handler received: {message.content}")
-    
+
     mesh.register_handler("text", test_handler)
     mesh.receive_message(msg)
-    
+
     print("\nStopping MeshCore...")
     mesh.stop()
     print()
@@ -148,13 +148,13 @@ def main():
     print("║" + " " * 10 + "MCWB - MeshCore Weather Bot Tests" + " " * 14 + "║")
     print("╚" + "=" * 58 + "╝")
     print()
-    
+
     try:
         test_command_parsing()
         test_weather_code_descriptions()
         test_weather_formatting()
         test_meshcore_integration()
-        
+
         print("=" * 60)
         print("All component tests completed!")
         print("=" * 60)
@@ -164,9 +164,9 @@ def main():
         print("  python3 weather_bot.py --location 'London'")
         print("  python3 weather_bot.py --interactive")
         print()
-        
+
         return 0
-        
+
     except Exception as e:
         print(f"Error during testing: {e}")
         import traceback
