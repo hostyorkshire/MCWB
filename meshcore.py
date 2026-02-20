@@ -7,6 +7,7 @@ This module provides the core functionality for communicating via MeshCore mesh 
 import json
 import time
 import threading
+import html
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
 
@@ -236,6 +237,9 @@ class MeshCore:
                 line = "".join(c for c in line if c.isprintable())
                 if not line:
                     continue
+                # Decode HTML entities (e.g. &gt; -> >, &amp; -> &) that may be present
+                # in data from certain LoRa systems or transport layers
+                line = html.unescape(line)
                 self.log(f"LoRa RX: {line}")
                 # Only attempt JSON parsing for lines that look like JSON objects.
                 # Raw LoRa frames from non-MeshCore devices are silently skipped.
