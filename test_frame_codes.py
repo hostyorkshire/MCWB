@@ -10,6 +10,22 @@ from unittest.mock import MagicMock
 from meshcore import MeshCore
 
 
+def create_frame(code: int, data: bytes = b'') -> bytes:
+    """
+    Helper function to create a MeshCore binary frame.
+    
+    Args:
+        code: Frame code byte
+        data: Additional payload data (optional)
+    
+    Returns:
+        Complete binary frame with FRAME_OUT header and length
+    """
+    frame_payload = bytes([code]) + data
+    frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
+    return frame
+
+
 def test_cmd_get_device_time():
     """Test handling of CMD_GET_DEVICE_TIME (0x05)"""
     print("=" * 60)
@@ -25,9 +41,7 @@ def test_cmd_get_device_time():
     mesh._serial = mock_serial
     
     # Simulate receiving CMD_GET_DEVICE_TIME frame (0x05)
-    # Frame format: 0x3E (FRAME_OUT) + length(2 bytes LE) + payload(code=0x05)
-    frame_payload = bytes([0x05])  # CMD_GET_DEVICE_TIME
-    frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
+    frame = create_frame(0x05)
     
     # Set up mock to return the frame
     mock_serial.readline.return_value = frame
@@ -78,11 +92,8 @@ def test_push_msg_ack():
     mock_serial.is_open = True
     mesh._serial = mock_serial
     
-    # Simulate receiving PUSH_MSG_ACK frame (0x88)
-    # Frame format: 0x3E (FRAME_OUT) + length(2 bytes LE) + payload(code=0x88 + ack_data)
-    # For this test, we'll just send the code with minimal payload
-    frame_payload = bytes([0x88, 0x00, 0x00, 0x00, 0x00])  # PUSH_MSG_ACK with dummy ack data
-    frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
+    # Simulate receiving PUSH_MSG_ACK frame (0x88) with dummy ack data
+    frame = create_frame(0x88, bytes([0x00, 0x00, 0x00, 0x00]))
     
     # Set up mock to return the frame
     mock_serial.readline.return_value = frame
@@ -121,8 +132,7 @@ def test_no_unhandled_errors():
     test_codes = [0x05, 0x88]
     
     for code in test_codes:
-        frame_payload = bytes([code]) + bytes(4)  # code + some data
-        frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
+        frame = create_frame(code, bytes(4))
         
         # This should not raise any exception or log "unhandled"
         try:
