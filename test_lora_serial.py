@@ -239,7 +239,9 @@ def test_start_stop_with_mock_serial():
         mesh = MeshCore("lora_bot", serial_port="/dev/ttyUSB0", baud_rate=9600, debug=False)
         mesh.start()
 
-        mock_serial_module.Serial.assert_called_once_with("/dev/ttyUSB0", 9600, timeout=1)
+        mock_serial_module.Serial.assert_called_once_with(
+            "/dev/ttyUSB0", 9600, timeout=1, rtscts=False, dsrdtr=False,
+        )
         assert mesh._listener_thread is not None
         assert mesh._listener_thread.is_alive()
         print("✓ start() opens serial port and spawns listener thread")
@@ -247,6 +249,82 @@ def test_start_stop_with_mock_serial():
         mesh.stop()
         assert not mesh.running
         print("✓ stop() sets running=False and closes serial port")
+
+    print()
+
+
+def test_rts_dtr_deasserted_after_connect():
+    """Test that RTS and DTR are set to False after opening the serial port"""
+    print("=" * 60)
+    print("TEST 8: RTS and DTR Deasserted After Connect")
+    print("=" * 60)
+
+    with patch("meshcore.SERIAL_AVAILABLE", True), \
+         patch("meshcore.serial") as mock_serial_module:
+
+        mock_port = MagicMock()
+        mock_port.is_open = True
+        mock_port.readline.return_value = b""
+        mock_serial_module.Serial.return_value = mock_port
+        mock_serial_module.SerialException = Exception
+
+        mesh = MeshCore("lora_bot", serial_port="/dev/ttyUSB0", baud_rate=9600, debug=False)
+        mesh._connect_serial()
+
+        # Verify RTS and DTR were explicitly set to False
+        assert mock_port.rts is False, "RTS should be deasserted (False)"
+        assert mock_port.dtr is False, "DTR should be deasserted (False)"
+        print("✓ RTS set to False after port open (prevents unintended device resets)")
+        print("✓ DTR set to False after port open (prevents unintended device resets)")
+
+    print()
+
+
+def test_invalid_baud_rate_rejected():
+    """Test that an invalid baud rate prevents the serial port from being opened"""
+    print("=" * 60)
+    print("TEST 9: Invalid Baud Rate Rejected (Preflight)")
+    print("=" * 60)
+
+    with patch("meshcore.SERIAL_AVAILABLE", True), \
+         patch("meshcore.serial") as mock_serial_module:
+
+        mock_serial_module.SerialException = Exception
+
+        mesh = MeshCore("lora_bot", serial_port="/dev/ttyUSB0", baud_rate=12345, debug=False)
+        mesh._connect_serial()
+
+        mock_serial_module.Serial.assert_not_called()
+        assert mesh._serial is None, "_serial should remain None for invalid baud rate"
+        print("✓ Serial port not opened for non-standard baud rate 12345")
+
+    print()
+
+
+def test_valid_baud_rates_accepted():
+    """Test that all standard baud rates pass the preflight check"""
+    print("=" * 60)
+    print("TEST 10: Valid Baud Rates Accepted (Preflight)")
+    print("=" * 60)
+
+    from meshcore import VALID_BAUD_RATES
+
+    for baud in sorted(VALID_BAUD_RATES):
+        with patch("meshcore.SERIAL_AVAILABLE", True), \
+             patch("meshcore.serial") as mock_serial_module:
+
+            mock_port = MagicMock()
+            mock_port.is_open = True
+            mock_serial_module.Serial.return_value = mock_port
+            mock_serial_module.SerialException = Exception
+
+            mesh = MeshCore("node", serial_port="/dev/ttyUSB0", baud_rate=baud, debug=False)
+            mesh._connect_serial()
+
+            mock_serial_module.Serial.assert_called_once()
+            assert mesh._serial is not None, f"Serial should open for valid baud rate {baud}"
+
+    print(f"✓ All {len(VALID_BAUD_RATES)} standard baud rates accepted")
 
     print()
 
@@ -267,6 +345,9 @@ def main():
         test_invalid_lora_data_ignored()
         test_channel_filter_applied_to_lora_messages()
         test_start_stop_with_mock_serial()
+        test_rts_dtr_deasserted_after_connect()
+        test_invalid_baud_rate_rejected()
+        test_valid_baud_rates_accepted()
 
         print("=" * 60)
         print("✅ All LoRa serial tests passed!")
