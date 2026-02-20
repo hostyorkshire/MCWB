@@ -104,10 +104,23 @@ def test_push_msg_ack():
     # Parse the frame
     mesh._handle_binary_frame(frame)
     
-    # For PUSH_MSG_ACK, we should just log it but not crash or show "unhandled"
-    # The test passes if we reach here without exceptions
+    # Verify that CMD_SYNC_NEXT_MSG (0x0a) is sent to fetch queued messages
+    assert mock_serial.write.called, "Expected CMD_SYNC_NEXT_MSG to be sent after ACK"
+    
+    # Get the command that was sent
+    cmd_frame = mock_serial.write.call_args[0][0]
+    
+    # Parse command frame: 0x3C + length(2) + payload
+    assert cmd_frame[0] == 0x3C, "Command should start with FRAME_IN (0x3C)"
+    
+    # Extract payload
+    payload_length = int.from_bytes(cmd_frame[1:3], "little")
+    payload = cmd_frame[3:3+payload_length]
+    
+    assert payload[0] == 0x0a, f"Command should be CMD_SYNC_NEXT_MSG (0x0a), got {payload[0]:#04x}"
     
     print(f"✓ PUSH_MSG_ACK (0x88) handled correctly")
+    print(f"✓ CMD_SYNC_NEXT_MSG (0x0a) sent to fetch queued messages")
     print(f"✓ No 'unhandled frame code' error logged")
     print()
     
