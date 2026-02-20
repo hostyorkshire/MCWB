@@ -231,7 +231,17 @@ class MeshCore:
                 line = raw.decode("utf-8", errors="ignore").strip()
                 if not line:
                     continue
+                # Remove embedded control characters (e.g. \r, \x00) that can
+                # corrupt terminal output when raw LoRa radio frames are received.
+                line = "".join(c for c in line if c.isprintable())
+                if not line:
+                    continue
                 self.log(f"LoRa RX: {line}")
+                # Only attempt JSON parsing for lines that look like JSON objects.
+                # Raw LoRa frames from non-MeshCore devices are silently skipped.
+                if not line.startswith("{"):
+                    self.log(f"Ignoring non-JSON LoRa data")
+                    continue
                 try:
                     message = MeshCoreMessage.from_json(line)
                     self.receive_message(message)

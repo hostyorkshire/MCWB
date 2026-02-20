@@ -171,6 +171,57 @@ def test_invalid_lora_data_ignored():
     print()
 
 
+def test_binary_control_chars_sanitized():
+    """Test that binary LoRa data with embedded control characters is handled safely"""
+    print("=" * 60)
+    print("TEST 5b: Binary / Control-Character Data Sanitized")
+    print("=" * 60)
+
+    received = []
+
+    def handler(message):
+        received.append(message)
+
+    valid_msg = MeshCoreMessage("sender", "wx York", "text")
+
+    mesh = MeshCore("bot_node", debug=False)
+    mesh.register_handler("text", handler)
+    mesh.running = True
+
+    mock_serial = MagicMock()
+    mock_serial.is_open = True
+
+    lines = [
+        # Raw LoRa AT-command response (no JSON, no control chars)
+        b">08\n",
+        # Binary frame with embedded \r that would corrupt terminal output
+        b"jad3\x0d\x00binary\x1b\n",
+        # Another non-JSON line starting with printable ASCII
+        b"+L 1p\r\n_gx*\x02A2h\n",
+        # Valid JSON message that must still be dispatched
+        (valid_msg.to_json() + "\n").encode("utf-8"),
+    ]
+
+    def readline_side_effect():
+        readline_side_effect.count += 1
+        if readline_side_effect.count <= len(lines):
+            return lines[readline_side_effect.count - 1]
+        mesh.running = False
+        return b""
+
+    readline_side_effect.count = 0
+    mock_serial.readline.side_effect = lambda: readline_side_effect()
+    mesh._serial = mock_serial
+
+    mesh._listen_loop()
+
+    assert len(received) == 1, f"Expected 1 valid message, got {len(received)}"
+    assert received[0].content == "wx York"
+    print("✓ Binary data with control characters handled safely; valid message dispatched")
+
+    print()
+
+
 def test_channel_filter_applied_to_lora_messages():
     """Test channel filtering works for messages received from LoRa"""
     print("=" * 60)
@@ -341,6 +392,7 @@ def main():
         test_simulation_mode_no_write()
         test_receive_message_from_lora()
         test_invalid_lora_data_ignored()
+        test_binary_control_chars_sanitized()
         test_channel_filter_applied_to_lora_messages()
         test_start_stop_with_mock_serial()
         test_rts_dtr_deasserted_after_connect()
