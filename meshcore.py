@@ -298,7 +298,9 @@ class MeshCore:
             # channel_idx as long as no explicit (non-matching) channel name is set.
             is_default_channel = (message.channel_idx == 0 and message.channel is None)
             is_matching_channel_name = (message.channel in self.channel_filter)
-            is_unnamed_channel = (message.channel_idx is not None and message.channel_idx > 0 and message.channel is None)
+            # Check for non-zero channel_idx with no channel name (from LoRa radios)
+            # Note: explicit None check required to avoid TypeError on comparison
+            is_unnamed_channel = (message.channel is None and message.channel_idx is not None and message.channel_idx > 0)
             
             if not is_default_channel and not is_matching_channel_name and not is_unnamed_channel:
                 channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
