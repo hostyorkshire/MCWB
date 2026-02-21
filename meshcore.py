@@ -356,7 +356,11 @@ class MeshCore:
         """
         code = payload[0]
 
-        if code == _CMD_GET_DEVICE_TIME:
+        if code == 0x00:
+            # NOP/keepalive frame from companion radio - ignore silently
+            pass
+
+        elif code == _CMD_GET_DEVICE_TIME:
             # Companion radio requests current device time.
             # Respond with RESP_CURR_TIME containing 4-byte UNIX timestamp.
             self.log("MeshCore: device time requested, responding…")
