@@ -174,24 +174,24 @@ def test_reply_channel():
         bot.mesh.send_message = track_send
         bot.mesh.start()
 
-        # Test 1: Message from default channel (idx=0) - bot should reply on configured channel
+        # Test 1: Message from default channel (idx=0) - bot should reply on same channel
         print("\n1. Message from default channel (idx=0, bot configured with 'default'):")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None, channel_idx=0)
         sent_messages.clear()
         bot.handle_message(msg)
-        # Bot with --channel configured should ALWAYS reply on configured channel
+        # Bot replies on the channel where message came from to ensure user sees response
         assert len(sent_messages) == 1
-        assert sent_messages[0]['channel'] == 'default', f"Expected channel='default', got {sent_messages[0]['channel']}"
-        print("   ✓ Bot replied on configured 'default' channel")
+        assert sent_messages[0]['channel_idx'] == 0, f"Expected channel_idx=0, got {sent_messages[0]['channel_idx']}"
+        print("   ✓ Bot replied on channel_idx 0 (where message came from)")
 
-        # Test 2: Message from named channel - bot with configured channel should use configured channel
+        # Test 2: Message from named channel - bot should reply on same channel_idx
         mock_get.side_effect = [geocoding_response, weather_response]
         print("\n2. Message from 'weather' channel (bot configured with 'default'):")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel="weather", channel_idx=1)
         sent_messages.clear()
         bot.handle_message(msg)
-        assert len(sent_messages) == 1 and sent_messages[0]['channel'] == 'default'
-        print("   ✓ Bot replied on configured 'default' channel")
+        assert len(sent_messages) == 1 and sent_messages[0]['channel_idx'] == 1
+        print("   ✓ Bot replied on channel_idx 1 (where message came from)")
 
         bot.mesh.stop()
     print()
