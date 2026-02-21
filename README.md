@@ -76,8 +76,17 @@ python3 weather_bot.py --location "London"
 Run the bot as a daemon to listen for mesh network messages:
 
 ```bash
+# Basic usage - accepts queries from all channels, replies where they came from
 python3 weather_bot.py
+
+# With LoRa hardware
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
+
+# With debug output
+python3 weather_bot.py -d
 ```
+
+**Note:** The `--channel` parameter is **optional** and typically not needed. The bot automatically accepts queries from all channels and replies on the same channel where each query came from.
 
 ### Command Line Options
 
@@ -92,9 +101,13 @@ options:
   -n NODE_ID, --node-id NODE_ID
                         Node ID for this bot (default: weather_bot)
   -c CHANNEL, --channel CHANNEL
-                        Channel(s) to broadcast responses on. Can be a single
-                        channel or comma-separated list (e.g., 'weather' or
-                        'weather,alerts')
+                        Optional: Channel(s) for bot-initiated broadcasts.
+                        The bot accepts queries from ALL channels and replies
+                        on the same channel where each query came from.
+                        This parameter is reserved for future features.
+                        Can be a single channel or comma-separated list
+                        (e.g., 'weather' or 'weather,alerts').
+                        Typically not needed for normal operation.
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
@@ -105,39 +118,32 @@ options:
                         Get weather for a specific location and exit
 ```
 
-#### Channel Broadcasting
+#### How the Bot Handles Channels
 
-The weather bot intelligently handles channel responses with priority logic:
+The weather bot now uses a simple, reliable approach:
 
-1. **Replies to incoming channel** - If a message comes from a specific channel, the bot replies to that same channel
-2. **Falls back to configured channels** - If no incoming channel, uses the `--channel` parameter
-3. **Broadcasts to all** - If neither incoming nor configured channels exist
+**✅ Accepts queries from ANY channel**
+- Users can send "wx London" from the default channel
+- Users can send "wx London" from #weather channel  
+- Users can send "wx London" from any other channel
+- The bot processes ALL weather queries
 
+**✅ Replies on the SAME channel**
+- If query came from channel_idx 0 (default), reply goes to channel_idx 0
+- If query came from channel_idx 1 (#weather), reply goes to channel_idx 1
+- This ensures users always receive their responses
+
+**Example:**
 ```bash
-# Configure fallback channel (bot replies to incoming channel or falls back to 'weather')
-python3 weather_bot.py --channel weather --interactive
+# Run the bot (no --channel needed)
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 
-# Configure multiple fallback channels
-python3 weather_bot.py --channel weather,alerts --interactive
-
-# Configure multiple channels with spaces (use quotes)
-python3 weather_bot.py --channel "weather, alerts, emergency" --interactive
-
-# Run with LoRa hardware and fallback channels
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather,alerts
-
-# Run without configured channel (bot replies to incoming channel or broadcasts to all)
-python3 weather_bot.py --interactive
+# User1 sends "wx London" from default channel → Gets reply on default channel
+# User2 sends "wx York" from #weather → Gets reply on #weather
+# User3 sends "wx Leeds" from #alerts → Gets reply on #alerts
 ```
 
-**Example behavior:**
-```
-User sends: "wx London" on channel 'localweather'
-Bot replies: Sends response to 'localweather' (same channel)
-
-User sends: "wx York" with no channel, bot configured with --channel weather
-Bot replies: Sends response to 'weather' (configured fallback)
-```
+The `--channel` parameter is optional and reserved for future bot-initiated broadcasts (like scheduled weather updates).
 
 ## Command Format
 

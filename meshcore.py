@@ -137,14 +137,15 @@ class MeshCore:
 
     def set_channel_filter(self, channels):
         """
-        Set channel configuration for the bot.
+        Configure channel mappings for the bot.
         
-        NOTE: This method is deprecated for filtering incoming messages.
-        The bot now accepts messages from ALL channels and replies on the same
-        channel where each message came from, ensuring users receive responses
-        regardless of their channel configuration.
+        This method sets up channel name to channel_idx mappings that the bot
+        will use for sending messages. It does NOT filter incoming messages -
+        the bot accepts messages from all channels and replies on the same
+        channel where each message came from.
         
-        This method now only sets up channel mappings for bot-initiated broadcasts.
+        This is primarily used for bot-initiated broadcasts (e.g., scheduled
+        announcements, alerts) where the bot needs to send to specific channels.
 
         Args:
             channels: Channel name (str), list of channel names, or None
