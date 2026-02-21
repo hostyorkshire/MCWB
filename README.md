@@ -107,23 +107,36 @@ options:
 
 #### Channel Broadcasting
 
-The weather bot can broadcast responses to one or more channels:
+The weather bot intelligently handles channel responses with priority logic:
+
+1. **Replies to incoming channel** - If a message comes from a specific channel, the bot replies to that same channel
+2. **Falls back to configured channels** - If no incoming channel, uses the `--channel` parameter
+3. **Broadcasts to all** - If neither incoming nor configured channels exist
 
 ```bash
-# Broadcast weather responses on a single channel
+# Configure fallback channel (bot replies to incoming channel or falls back to 'weather')
 python3 weather_bot.py --channel weather --interactive
 
-# Broadcast to multiple channels (e.g., 'weather' and 'wxtest')
+# Configure multiple fallback channels
 python3 weather_bot.py --channel weather,wxtest --interactive
 
-# Broadcast to multiple channels with spaces (use quotes)
+# Configure multiple channels with spaces (use quotes)
 python3 weather_bot.py --channel "weather, wxtest, alerts" --interactive
 
-# Run with LoRa hardware broadcasting to multiple channels
+# Run with LoRa hardware and fallback channels
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather,wxtest
 
-# Run without channel (default - broadcast to all)
+# Run without configured channel (bot replies to incoming channel or broadcasts to all)
 python3 weather_bot.py --interactive
+```
+
+**Example behavior:**
+```
+User sends: "wx London" on channel 'localweather'
+Bot replies: Sends response to 'localweather' (same channel)
+
+User sends: "wx York" with no channel, bot configured with --channel weather
+Bot replies: Sends response to 'weather' (configured fallback)
 ```
 
 ## Command Format

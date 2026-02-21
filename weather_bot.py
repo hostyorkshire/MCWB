@@ -68,8 +68,10 @@ class WeatherBot:
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Optional channel(s) to broadcast responses on. Can be a single channel
-                     or comma-separated list of channels (e.g., "weather,wxtest")
+            channel: Optional fallback channel(s) for responses. The bot prioritizes replying 
+                     to the channel where messages originate. If no incoming channel exists,
+                     responses are sent to these fallback channels. Can be a single channel
+                     or comma-separated list (e.g., "weather,wxtest")
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
@@ -378,8 +380,9 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel(s) to broadcast responses on. Can be a single channel or "
-             "comma-separated list (e.g., 'weather' or 'weather,wxtest')"
+        help="Fallback channel(s) for responses when incoming message has no channel. "
+             "Bot prioritizes replying to the channel where messages originate. "
+             "Can be a single channel or comma-separated list (e.g., 'weather' or 'weather,wxtest')"
     )
 
     parser.add_argument(
