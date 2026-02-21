@@ -360,6 +360,12 @@ class MeshCore:
             # NOP/keepalive frame from companion radio - ignore silently
             pass
 
+        elif code == _CMD_APP_START:
+            # CMD_APP_START echo/acknowledgment from companion radio.
+            # The radio may echo this command during session initialization.
+            # No action needed - session is already initialized.
+            self.log("MeshCore: APP_START acknowledged by companion radio")
+
         elif code == _CMD_GET_DEVICE_TIME:
             # Companion radio requests current device time.
             # Respond with RESP_CURR_TIME containing 4-byte UNIX timestamp.
