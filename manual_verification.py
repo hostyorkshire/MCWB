@@ -25,7 +25,7 @@ print("Command: python3 weather_bot.py -n WX_BOT --port /dev/ttyUSB1")
 print("         --baud 115200 --channel weather -d")
 print()
 print("Expected behavior:")
-print("  • Messages on channel_idx 0 (default) should be IGNORED")
+print("  • Messages on channel_idx 0 (default) should be PROCESSED")
 print("  • Messages on channel_idx 1+ should be PROCESSED")
 print("  • Bot should reply on the same channel_idx where message came from")
 print()
@@ -49,12 +49,12 @@ bot.mesh.message_handlers["text"] = tracking_handler
 # Test 1: Simulate message from channel_idx 0 (from the log)
 print("\n[2] Simulating message from channel_idx 0 (default channel)...")
 print("    Binary frame: CHANNEL_MSG on channel_idx 0")
-print("    LoRa RX channel msg from M3UXC on channel_idx 0: Wx leeds")
+print("    LoRa RX channel msg from USER1 on channel_idx 0: Wx leeds")
 print()
 
 messages_processed.clear()
 msg_from_default = MeshCoreMessage(
-    sender="M3UXC",
+    sender="USER1",
     content="Wx leeds",
     message_type="text",
     channel=None,
@@ -64,23 +64,23 @@ msg_from_default = MeshCoreMessage(
 bot.mesh.receive_message(msg_from_default)
 
 print("\n[3] Checking if message was processed...")
-if len(messages_processed) == 0:
-    print("    ✅ SUCCESS: Message from channel_idx 0 was correctly IGNORED")
-    print("    This is the FIX - bot no longer processes default channel messages")
-    print("    when configured with a specific channel.")
+if len(messages_processed) > 0:
+    print("    ✅ SUCCESS: Message from channel_idx 0 was correctly PROCESSED")
+    print("    This is the FIX - bot now processes default channel messages")
+    print("    even when configured with a specific channel.")
 else:
-    print("    ❌ FAILURE: Message from channel_idx 0 was processed")
+    print("    ❌ FAILURE: Message from channel_idx 0 was not processed")
     print("    This would be the OLD BEHAVIOR (bug)")
 
 # Test 2: Simulate message from channel_idx 1 (weather channel)
 print("\n[4] Simulating message from channel_idx 1 (weather channel)...")
 print("    Binary frame: CHANNEL_MSG on channel_idx 1")
-print("    LoRa RX channel msg from M3UXC on channel_idx 1: Wx leeds")
+print("    LoRa RX channel msg from USER1 on channel_idx 1: Wx leeds")
 print()
 
 messages_processed.clear()
 msg_from_weather = MeshCoreMessage(
-    sender="M3UXC",
+    sender="USER1",
     content="Wx leeds",
     message_type="text",
     channel=None,
@@ -102,15 +102,17 @@ print("\n" + "=" * 80)
 print("SUMMARY")
 print("=" * 80)
 print("\nThe fix successfully resolves the issue where:")
-print("  • Bot with --channel weather was accepting messages from default channel")
-print("  • Bot was replying on channel_idx 0 instead of configured channel")
+print("  • Bot with --channel weather was rejecting messages from default channel")
+print("  • Users couldn't query the bot without configuring their radio channels")
 print()
 print("After the fix:")
-print("  • Bot with --channel weather ignores messages from channel_idx 0")
-print("  • Bot only processes messages from:")
+print("  • Bot with --channel weather accepts messages from all channels")
+print("  • Bot processes messages from:")
+print("    - Channel_idx 0 (default/public channel)")
 print("    - Channel_idx 1+ (unnamed channels from LoRa radios)")
 print("    - Matching channel names (e.g., 'weather')")
+print("  • Bot replies on the same channel_idx where the message came from")
 print()
-print("This ensures the bot acts as a dedicated service for the configured")
-print("channel, not responding to messages from other channels.")
+print("This allows users to query the bot from any channel while the bot")
+print("is configured to organize its responses on a specific channel.")
 print("=" * 80)

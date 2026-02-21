@@ -46,7 +46,7 @@ def test_channel_reply_behavior():
         original_send(content, msg_type, channel, channel_idx)
     bot.mesh.send_message = tracking_send
     
-    print("TEST 1: Message from default channel (channel_idx 0) - should be IGNORED")
+    print("TEST 1: Message from default channel (channel_idx 0) - should be ACCEPTED")
     print("-" * 70)
     processed.clear()
     sent_messages.clear()
@@ -60,10 +60,15 @@ def test_channel_reply_behavior():
     )
     bot.mesh.receive_message(msg1)
     
-    if len(processed) == 0:
-        print("✅ PASS: Message from default channel was correctly ignored\n")
+    if len(processed) > 0:
+        print("✅ PASS: Message from default channel was correctly processed")
+        if len(sent_messages) > 0 and sent_messages[0]['channel_idx'] == 0:
+            print("✅ PASS: Bot replied on channel_idx 0 (where message came from)\n")
+        else:
+            print("❌ FAIL: Bot did not reply on channel_idx 0\n")
+            return False
     else:
-        print("❌ FAIL: Message from default channel was processed\n")
+        print("❌ FAIL: Message from default channel was not processed\n")
         return False
     
     print("TEST 2: Message from channel_idx 1 (unnamed) - should be ACCEPTED")
@@ -126,7 +131,7 @@ if __name__ == "__main__":
     if success:
         print("✅ ALL TESTS PASSED")
         print("\nVerified behavior:")
-        print("  • Bot with --channel weather ignores default channel (idx 0)")
+        print("  • Bot with --channel weather accepts messages from default channel (idx 0)")
         print("  • Bot accepts messages from non-zero channel_idx")
         print("  • Bot accepts messages from matching channel name")
         print("  • Bot replies on the channel where message came from")

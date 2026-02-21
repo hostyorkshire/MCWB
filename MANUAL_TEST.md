@@ -11,7 +11,7 @@ python3 weather_bot.py -n WX_BOT --channel weather -d
 - Users monitoring 'weather' channel see the reply
 
 **Test Command:**
-Simulate a message from M3UXC on channel_idx 0: "Wx barnsley"
+Simulate a message from USER1 on channel_idx 0: "Wx barnsley"
 
 **Expected Log Output:**
 ```
@@ -31,7 +31,7 @@ python3 weather_bot.py -n WX_BOT --channel alerts -d
 - Users monitoring 'alerts' channel see the reply
 
 **Test Command:**
-Simulate a message from M3UXC on channel_idx 0: "Wx Birmingham"
+Simulate a message from USER1 on channel_idx 0: "Wx Birmingham"
 
 **Expected Log Output:**
 ```
@@ -51,7 +51,7 @@ python3 weather_bot.py -n WX_BOT -d
 - Standard behavior for unconfigured bot
 
 **Test Command:**
-Simulate a message from M3UXC on channel_idx 0: "Wx Leeds"
+Simulate a message from USER1 on channel_idx 0: "Wx Leeds"
 
 **Expected Log Output:**
 ```
