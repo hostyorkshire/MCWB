@@ -180,9 +180,9 @@ def test_reply_channel():
         sent_messages.clear()
         bot.handle_message(msg)
         # Bot should reply on channel_idx=0, not on configured 'default' channel
-        # This is checked by verifying send_message was called (the test doesn't track channel_idx)
         assert len(sent_messages) == 1
-        print("   ✓ Bot replied (on default channel_idx=0)")
+        assert sent_messages[0]['channel_idx'] == 0, f"Expected channel_idx=0, got {sent_messages[0]['channel_idx']}"
+        print("   ✓ Bot replied on default channel_idx=0")
 
         # Test 2: Message from named channel - bot with configured channel should use configured channel
         mock_get.side_effect = [geocoding_response, weather_response]
