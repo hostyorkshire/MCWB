@@ -4,7 +4,9 @@ Test handling of frame code 0x00 (NOP/keepalive)
 This addresses the issue: "MeshCore [WX_BOT]: MeshCore: unhandled frame code 0x00"
 """
 
+import io
 import sys
+from contextlib import redirect_stdout
 from unittest.mock import MagicMock
 from meshcore import MeshCore
 
@@ -54,10 +56,11 @@ def test_frame_code_0x00():
         return False
     
     # Verify that no commands were sent (NOP should be silent)
-    if mock_serial.write.called:
-        print("✓ No response sent (as expected for NOP/keepalive)")
+    if not mock_serial.write.called:
+        print("✓ Frame handled silently (no response sent)")
     else:
-        print("✓ Frame handled silently")
+        print("✗ Unexpected: Response was sent for NOP frame")
+        return False
     
     print("✓ No 'unhandled frame code 0x00' error logged")
     print()
@@ -104,11 +107,6 @@ def test_no_unhandled_error_logged():
     print("=" * 60)
     print("TEST: No 'Unhandled Frame Code' Error for 0x00")
     print("=" * 60)
-    
-    # Capture log output by testing with debug=True
-    import io
-    import sys
-    from contextlib import redirect_stdout
     
     mesh = MeshCore("WX_BOT", debug=True)
     mesh.running = True
