@@ -14,17 +14,19 @@ from meshcore import MeshCoreMessage
 
 def test_default_channel_reply_priority():
     """
-    Test that messages from default channel (idx=0) get replies on default channel (idx=0),
-    even when bot is configured with --channel weather.
+    Test that messages from default channel (idx=0) get replies on configured channel
+    when bot is configured with --channel weather.
+    
+    NEW BEHAVIOR: Bot with --channel always replies on configured channel.
     """
     print("=" * 70)
-    print("TEST: Default Channel Reply Priority")
+    print("TEST: Bot with --channel replies on configured channel")
     print("=" * 70)
     print()
     print("Scenario: Bot started with --channel weather")
     print("  - Receives message on channel_idx 0 (default)")
-    print("  - Should reply on channel_idx 0 (where message came from)")
-    print("  - NOT on 'weather' channel (configured)")
+    print("  - Should reply on 'weather' channel (configured)")
+    print("  - This is the NEW expected behavior")
     print()
     
     # Create bot with configured channel 'weather'
@@ -76,18 +78,20 @@ def test_default_channel_reply_priority():
     print(f"  Channel_idx used: {sent['channel_idx']}")
     print()
     
-    # Expected: Bot should reply on channel_idx 0 (default), not 'weather'
-    if sent['channel_idx'] == 0:
-        print("✅ PASS: Bot correctly replied on channel_idx 0 (default)")
+    # Expected: Bot should reply on 'weather' channel (configured), not channel_idx 0
+    # NEW BEHAVIOR: Bot with --channel always replies on configured channel
+    if sent['channel'] == 'weather':
+        print("✅ PASS: Bot correctly replied on 'weather' channel (configured)")
         print()
-        print("This ensures users on default channel see the reply!")
+        print("This implements the NEW requirement!")
+        print("Users monitoring 'weather' channel will see the reply!")
         return True
     else:
-        print("❌ FAIL: Bot should reply on channel_idx 0")
-        print(f"  Expected: channel_idx=0")
+        print("❌ FAIL: Bot should reply on 'weather' channel")
+        print(f"  Expected: channel='weather'")
         print(f"  Got: channel={sent['channel']}, channel_idx={sent['channel_idx']}")
         print()
-        print("Users on default channel won't see the reply!")
+        print("The bot is not using the new behavior!")
         return False
 
 
@@ -184,10 +188,12 @@ def main():
             print("✅ ALL TESTS PASSED")
             print()
             print("The bot now:")
-            print("  1. Replies on default channel (idx=0) for messages from there")
+            print("  1. Replies on configured channel even for messages from default channel")
             print("  2. Replies on configured channels for messages from those channels")
             print()
-            print("This ensures users on any channel can see bot replies!")
+            print("This implements the NEW requirement:")
+            print("  'even with weather or wx channel is set in command'")
+            print("  the bot replies on the configured channel!")
         else:
             print("❌ SOME TESTS FAILED")
             if not test1_success:
