@@ -16,7 +16,7 @@ from meshcore import MeshCoreMessage
 
 def test_bot_replies_on_configured_channel():
     """
-    Test that bot configured with --channel wxtest replies on wxtest channel,
+    Test that bot configured with --channel alerts replies on alerts channel,
     not on default channel (channel_idx 0) where message came from.
     """
     print()
@@ -53,8 +53,8 @@ def test_bot_replies_on_configured_channel():
         
         mock_get.side_effect = [geocoding_response, weather_response]
         
-        # Create bot with --channel wxtest
-        bot = WeatherBot(node_id="WX_BOT", debug=True, channel="wxtest")
+        # Create bot with --channel alerts
+        bot = WeatherBot(node_id="WX_BOT", debug=True, channel="alerts")
         
         # Track what channel the bot replies on
         sent_messages = []
@@ -82,7 +82,7 @@ def test_bot_replies_on_configured_channel():
         )
         
         print("Simulating message from logs:")
-        print(f"  Bot configured with: --channel wxtest")
+        print(f"  Bot configured with: --channel alerts")
         print(f"  Message from: {msg.sender}")
         print(f"  Message content: {msg.content}")
         print(f"  Message channel_idx: {msg.channel_idx}")
@@ -100,22 +100,22 @@ def test_bot_replies_on_configured_channel():
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
         
-        # The bot should reply on 'wxtest' channel (its configured channel)
+        # The bot should reply on 'alerts' channel (its configured channel)
         # NOT on channel_idx 0 (where message came from)
-        if sent['channel'] == 'wxtest':
+        if sent['channel'] == 'alerts':
             print("✅ SUCCESS!")
             print()
-            print("Bot correctly replied on 'wxtest' channel")
+            print("Bot correctly replied on 'alerts' channel")
             print("(the channel it was configured with)")
             print()
             print("This meets the requirement:")
-            print("  'the bot is working in the wxtest channel'")
+            print("  Bot with --channel always replies on configured channel")
             print()
-            print("Users monitoring the wxtest channel will see the reply!")
+            print("Users monitoring the alerts channel will see the reply!")
             success = True
         else:
             print("❌ FAILED!")
-            print(f"  Expected: channel='wxtest'")
+            print(f"  Expected: channel='alerts'")
             print(f"  Got: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
             print()
             print("Bot is not replying on the configured channel!")
@@ -242,7 +242,7 @@ def main():
             print("Summary:")
             print("  • Bot with --channel replies on configured channel ✓")
             print("  • Bot without --channel replies on incoming channel ✓")
-            print("  • The requirement is met: 'bot is working in the wxtest channel' ✓")
+            print("  • Channel reply behavior working correctly ✓")
         else:
             print("❌ SOME TESTS FAILED")
             if not success1:

@@ -71,7 +71,7 @@ class WeatherBot:
             channel: Channel(s) to listen to and respond on. When specified, the bot acts as a
                      dedicated service for these channels - it will ONLY process messages sent to
                      these channels and will reply on the same channel. Can be a single channel
-                     or comma-separated list (e.g., "weather" or "weather,wxtest"). When None,
+                     or comma-separated list (e.g., "weather" or "weather,alerts"). When None,
                      the bot listens to ALL channels.
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
@@ -413,7 +413,7 @@ def main():
         help="Channel(s) to listen to and respond on. When specified, the bot acts as a "
              "dedicated service for these channels - it will ONLY process messages sent to "
              "these channels. Can be a single channel or comma-separated list "
-             "(e.g., 'weather' or 'weather,wxtest'). When omitted, bot listens to ALL channels."
+             "(e.g., 'weather' or 'weather,alerts'). When omitted, bot listens to ALL channels."
     )
 
     parser.add_argument(

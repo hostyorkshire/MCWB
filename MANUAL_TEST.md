@@ -20,24 +20,24 @@ Simulate a message from M3UXC on channel_idx 0: "Wx barnsley"
 [Broadcast on channels: 'weather']
 ```
 
-## Test Scenario 2: Bot with --channel wxtest
+## Test Scenario 2: Bot with --channel alerts
 ```bash
-python3 weather_bot.py -n WX_BOT --channel wxtest -d
+python3 weather_bot.py -n WX_BOT --channel alerts -d
 ```
 
 **Expected Behavior:**
 - Bot receives message on channel_idx 0
-- Bot replies on 'wxtest' channel (NOT channel_idx 0)
-- Users monitoring 'wxtest' channel see the reply
+- Bot replies on 'alerts' channel (NOT channel_idx 0)
+- Users monitoring 'alerts' channel see the reply
 
 **Test Command:**
 Simulate a message from M3UXC on channel_idx 0: "Wx Birmingham"
 
 **Expected Log Output:**
 ```
-[...] WeatherBot: Replying on channel 'wxtest': Weather for Birmingham...
-[...] MeshCore: Sending message on channel 'wxtest': {...}
-[Broadcast on channels: 'wxtest']
+[...] WeatherBot: Replying on channel 'alerts': Weather for Birmingham...
+[...] MeshCore: Sending message on channel 'alerts': {...}
+[Broadcast on channels: 'alerts']
 ```
 
 ## Test Scenario 3: Bot without --channel (backward compatibility)
@@ -62,5 +62,4 @@ Simulate a message from M3UXC on channel_idx 0: "Wx Leeds"
 
 ## Verification
 All three scenarios have been tested and verified through automated tests.
-The fix ensures that bots configured with --channel always reply on the configured channel,
-implementing the requirement: "the bot is working in the wxtest channel"
+The fix ensures that bots configured with --channel always reply on the configured channel.

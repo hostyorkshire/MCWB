@@ -94,7 +94,7 @@ options:
   -c CHANNEL, --channel CHANNEL
                         Channel(s) to broadcast responses on. Can be a single
                         channel or comma-separated list (e.g., 'weather' or
-                        'weather,wxtest')
+                        'weather,alerts')
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
@@ -118,13 +118,13 @@ The weather bot intelligently handles channel responses with priority logic:
 python3 weather_bot.py --channel weather --interactive
 
 # Configure multiple fallback channels
-python3 weather_bot.py --channel weather,wxtest --interactive
+python3 weather_bot.py --channel weather,alerts --interactive
 
 # Configure multiple channels with spaces (use quotes)
-python3 weather_bot.py --channel "weather, wxtest, alerts" --interactive
+python3 weather_bot.py --channel "weather, alerts, emergency" --interactive
 
 # Run with LoRa hardware and fallback channels
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather,wxtest
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather,alerts
 
 # Run without configured channel (bot replies to incoming channel or broadcasts to all)
 python3 weather_bot.py --interactive
