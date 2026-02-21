@@ -174,15 +174,15 @@ def test_reply_channel():
         bot.mesh.send_message = track_send
         bot.mesh.start()
 
-        # Test 1: Message from default channel (idx=0) - bot should reply on default channel
+        # Test 1: Message from default channel (idx=0) - bot should reply on configured channel
         print("\n1. Message from default channel (idx=0, bot configured with 'default'):")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None, channel_idx=0)
         sent_messages.clear()
         bot.handle_message(msg)
-        # Bot should reply on channel_idx=0, not on configured 'default' channel
+        # Bot with --channel configured should ALWAYS reply on configured channel
         assert len(sent_messages) == 1
-        assert sent_messages[0]['channel_idx'] == 0, f"Expected channel_idx=0, got {sent_messages[0]['channel_idx']}"
-        print("   ✓ Bot replied on default channel_idx=0")
+        assert sent_messages[0]['channel'] == 'default', f"Expected channel='default', got {sent_messages[0]['channel']}"
+        print("   ✓ Bot replied on configured 'default' channel")
 
         # Test 2: Message from named channel - bot with configured channel should use configured channel
         mock_get.side_effect = [geocoding_response, weather_response]

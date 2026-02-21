@@ -22,16 +22,16 @@ def test_problem_statement_exact_scenario():
     ```
     python3 weather_bot.py -n WX_BOT --port /dev/ttyUSB1 --baud 115200 --channel weather -d
     
-    [2026-02-21 04:06:34] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC on channel_idx 0: Wx leeds
-    [2026-02-21 04:06:36] MeshCore [WX_BOT]: LoRa TX channel msg (idx=1): Weather for Leeds...
+    [2026-02-21 04:22:02] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC on channel_idx 0: Wx barnsley
+    [2026-02-21 04:22:05] WeatherBot: Replying on default channel (channel_idx 0): Weather for Barnsley...
     ```
     
-    Problem: Users on channel_idx 0 can't see replies sent to channel_idx 1
+    Problem: Bot configured with --channel weather is replying on channel_idx 0 instead of 'weather' channel
     
     Expected after fix:
-    - Bot should reply on channel_idx 0 (where message came from)
-    - Not on 'weather' channel (idx=1)
-    - This ensures users see the replies
+    - Bot should reply on 'weather' channel (its configured channel)
+    - Not on channel_idx 0 (where message came from)
+    - This ensures users monitoring 'weather' channel see the replies
     """
     print()
     print("=" * 70)
@@ -41,7 +41,7 @@ def test_problem_statement_exact_scenario():
     print("Replicating the exact scenario from the problem statement:")
     print("  Command: python3 weather_bot.py --channel weather")
     print("  Receives: message from M3UXC on channel_idx 0")
-    print("  Expected: reply on 'weather' channel")
+    print("  Expected: reply on 'weather' channel (configured channel)")
     print()
     
     with patch('weather_bot.requests.get') as mock_get:
@@ -118,26 +118,26 @@ def test_problem_statement_exact_scenario():
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
         
-        # The key assertion: bot should reply on channel_idx 0 (default), not 'weather' channel
-        # This ensures users on default channel can see the reply
-        if sent['channel_idx'] == 0:
+        # The key assertion: bot should reply on 'weather' channel (configured), not channel_idx 0
+        # This ensures users monitoring the 'weather' channel can see the reply
+        if sent['channel'] == 'weather':
             print("✅ SUCCESS!")
             print()
-            print("Bot correctly replied on channel_idx 0 (default channel)")
-            print("(where the message came from)")
+            print("Bot correctly replied on 'weather' channel")
+            print("(the channel it was configured with)")
             print()
             print("This fixes the problem statement issue:")
-            print("  Problem: User on channel_idx 0 couldn't see replies on 'weather' channel")
-            print("  Fix: Bot now replies on channel_idx 0 when messages come from there")
+            print("  Problem: Bot with --channel weather was replying on channel_idx 0")
+            print("  Fix: Bot now replies on 'weather' channel (its configured channel)")
             print()
-            print("Users can now see the bot's replies!")
+            print("Users monitoring the 'weather' channel will see the bot's replies!")
             success = True
         else:
             print("❌ FAILED!")
-            print(f"  Expected: channel_idx=0")
+            print(f"  Expected: channel='weather'")
             print(f"  Got: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
             print()
-            print("Users on channel_idx 0 won't see replies!")
+            print("Bot is not replying on the configured channel!")
             success = False
         
         bot.mesh.stop()
@@ -161,13 +161,14 @@ def main():
             print("✅ TEST PASSED")
             print()
             print("The exact scenario from the problem statement now works correctly.")
-            print("The bot replies on channel_idx 0 (default) when messages come from")
-            print("there, ensuring users can see the replies.")
+            print("The bot replies on 'weather' channel (its configured channel)")
+            print("when started with --channel weather, ensuring users monitoring")
+            print("that channel can see the replies.")
         else:
             print("❌ TEST FAILED")
             print()
-            print("The bot is not replying on the correct channel.")
-            print("Users on channel_idx 0 won't see the replies!")
+            print("The bot is not replying on the configured channel.")
+            print("Users monitoring the configured channel won't see the replies!")
         print("=" * 70)
         print()
         
