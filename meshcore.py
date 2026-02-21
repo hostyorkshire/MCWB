@@ -45,12 +45,14 @@ class MeshCoreMessage:
     """Represents a message in the MeshCore network"""
 
     def __init__(self, sender: str, content: str, message_type: str = "text",
-                 timestamp: Optional[float] = None, channel: Optional[str] = None):
+                 timestamp: Optional[float] = None, channel: Optional[str] = None,
+                 channel_idx: Optional[int] = None):
         self.sender = sender
         self.content = content
         self.message_type = message_type
         self.timestamp = timestamp or time.time()
         self.channel = channel
+        self.channel_idx = channel_idx  # Raw channel index from LoRa (0-7)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary"""
@@ -62,6 +64,8 @@ class MeshCoreMessage:
         }
         if self.channel:
             data["channel"] = self.channel
+        if self.channel_idx is not None:
+            data["channel_idx"] = self.channel_idx
         return data
 
     def to_json(self) -> str:
@@ -76,7 +80,8 @@ class MeshCoreMessage:
             content=data.get("content", ""),
             message_type=data.get("type", "text"),
             timestamp=data.get("timestamp"),
-            channel=data.get("channel")
+            channel=data.get("channel"),
+            channel_idx=data.get("channel_idx")
         )
 
     @classmethod
@@ -197,14 +202,18 @@ class MeshCore:
         self.message_handlers[message_type] = handler
         self.log(f"Registered handler for message type: {message_type}")
 
-    def send_message(self, content: str, message_type: str = "text", channel: Optional[str] = None) -> MeshCoreMessage:
+    def send_message(self, content: str, message_type: str = "text", channel: Optional[str] = None,
+                     channel_idx: Optional[int] = None) -> MeshCoreMessage:
         """
         Send a message via MeshCore network
 
         Args:
             content: Message content
             message_type: Type of message
-            channel: Optional channel to broadcast to
+            channel: Optional channel name to broadcast to
+            channel_idx: Optional raw channel index (0-7) to use directly.
+                        When provided, takes precedence over channel name mapping.
+                        This allows direct replies on the exact channel_idx received from.
 
         Returns:
             MeshCoreMessage object
@@ -213,24 +222,33 @@ class MeshCore:
             sender=self.node_id,
             content=content,
             message_type=message_type,
-            channel=channel
+            channel=channel,
+            channel_idx=channel_idx
         )
 
         channel_info = f" on channel '{channel}'" if channel else ""
+        if channel_idx is not None:
+            channel_info += f" (idx={channel_idx})"
         self.log(f"Sending message{channel_info}: {message.to_json()}")
 
         if self._serial and self._serial.is_open:
             # Transmit over LoRa using the MeshCore companion radio binary protocol.
             # CMD_SEND_CHANNEL_TXT_MSG: code(1) + txt_type(1) + channel_idx(1)
             #                           + timestamp uint32_LE(4) + text
-            # Map Python channel name to a channel_idx for actual transmission
-            channel_idx = self._get_channel_idx(channel)
+            # Determine which channel_idx to use:
+            # 1. If channel_idx is explicitly provided, use it directly (for replies)
+            # 2. Otherwise, map the channel name to a channel_idx
+            if channel_idx is not None:
+                actual_channel_idx = channel_idx
+            else:
+                actual_channel_idx = self._get_channel_idx(channel)
+            
             try:
                 ts_bytes = int(time.time()).to_bytes(4, "little")
-                cmd_data = bytes([_CMD_SEND_CHAN_MSG, 0, channel_idx]) + ts_bytes + content.encode("utf-8")
+                cmd_data = bytes([_CMD_SEND_CHAN_MSG, 0, actual_channel_idx]) + ts_bytes + content.encode("utf-8")
                 frame = bytes([_FRAME_IN]) + len(cmd_data).to_bytes(2, "little") + cmd_data
                 self._serial.write(frame)
-                self.log(f"LoRa TX channel msg (idx={channel_idx}): {content}")
+                self.log(f"LoRa TX channel msg (idx={actual_channel_idx}): {content}")
                 # After sending, sync to allow the companion radio to process and respond
                 self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
             except SerialException as e:
@@ -510,9 +528,10 @@ class MeshCore:
         # Map channel_idx back to Python channel name
         channel_name = self._get_channel_name(channel_idx)
         
-        channel_info = f" on channel '{channel_name}'" if channel_name else ""
+        channel_info = f" on channel '{channel_name}'" if channel_name else f" on channel_idx {channel_idx}"
         self.log(f"LoRa RX channel msg from {sender}{channel_info}: {content}")
-        msg = MeshCoreMessage(sender=sender, content=content, message_type="text", channel=channel_name)
+        msg = MeshCoreMessage(sender=sender, content=content, message_type="text", 
+                            channel=channel_name, channel_idx=channel_idx)
         self.receive_message(msg)
 
     def start(self):

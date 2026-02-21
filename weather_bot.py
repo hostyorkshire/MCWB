@@ -268,7 +268,8 @@ class WeatherBot:
 
             if not location_data:
                 response = f"Sorry, I couldn't find the location: {location}"
-                self.send_response(response, reply_to_channel=message.channel)
+                self.send_response(response, reply_to_channel=message.channel,
+                                   reply_to_channel_idx=message.channel_idx)
                 return
 
             # Get weather data
@@ -279,33 +280,44 @@ class WeatherBot:
 
             if not weather_data:
                 response = f"Sorry, I couldn't get weather data for {location}"
-                self.send_response(response, reply_to_channel=message.channel)
+                self.send_response(response, reply_to_channel=message.channel,
+                                   reply_to_channel_idx=message.channel_idx)
                 return
 
             # Format and send response
             response = self.format_weather_response(location_data, weather_data)
-            self.send_response(response, reply_to_channel=message.channel)
+            self.send_response(response, reply_to_channel=message.channel,
+                               reply_to_channel_idx=message.channel_idx)
         else:
             self.log(f"Not a weather command: {message.content}")
 
-    def send_response(self, content: str, reply_to_channel: Optional[str] = None):
+    def send_response(self, content: str, reply_to_channel: Optional[str] = None,
+                      reply_to_channel_idx: Optional[int] = None):
         """
         Send a response message. Priority order:
-        1. Reply to the channel the message came from (reply_to_channel)
-        2. Broadcast to configured channels (self.channels)
-        3. Broadcast to all (no channel specified)
+        1. Reply to the channel_idx the message came from (reply_to_channel_idx)
+        2. Reply to the channel the message came from (reply_to_channel)
+        3. Broadcast to configured channels (self.channels)
+        4. Broadcast to all (no channel specified)
 
         Args:
             content: Response message content
-            reply_to_channel: Channel to reply to (from incoming message)
+            reply_to_channel: Channel name to reply to (from incoming message)
+            reply_to_channel_idx: Raw channel index to reply to (from incoming message)
         """
-        # Priority 1: Reply to the channel the message came from
-        if reply_to_channel:
+        # Priority 1: Reply using the raw channel_idx (most reliable for replies)
+        if reply_to_channel_idx is not None:
+            self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
+            self.mesh.send_message(content, "text", channel=None, channel_idx=reply_to_channel_idx)
+            print(f"\n{content}")
+            print(f"[Reply on channel_idx: {reply_to_channel_idx}]\n")
+        # Priority 2: Reply to the named channel
+        elif reply_to_channel:
             self.log(f"Replying on channel '{reply_to_channel}': {content}")
             self.mesh.send_message(content, "text", reply_to_channel)
             print(f"\n{content}")
             print(f"[Reply on channel: '{reply_to_channel}']\n")
-        # Priority 2: Broadcast to all configured channels
+        # Priority 3: Broadcast to all configured channels
         elif self.channels:
             for i, channel in enumerate(self.channels):
                 self.log(f"Sending response on channel '{channel}': {content}")
@@ -317,7 +329,7 @@ class WeatherBot:
             channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
             print(f"\n{content}")
             print(f"[Broadcast on channels: {channels_str}]\n")
-        # Priority 3: No channel specified - broadcast to all
+        # Priority 4: No channel specified - broadcast to all
         else:
             self.log(f"Sending response (broadcast): {content}")
             self.mesh.send_message(content, "text", None)
