@@ -92,7 +92,7 @@ python3 weather_bot.py -d
 
 ```
 usage: weather_bot.py [-h] [-n NODE_ID] [-d] [-i] [-p PORT]
-                      [-b BAUD] [-l LOCATION]
+                      [-b BAUD] [-c CHANNEL] [-l LOCATION]
 
 MeshCore Weather Bot - UK Weather via mesh radio network
 
@@ -106,6 +106,11 @@ options:
                         When omitted the bot runs in simulation mode
                         (no radio hardware required).
   -b BAUD, --baud BAUD  Baud rate for LoRa serial connection (default: 9600)
+  -c CHANNEL, --channel CHANNEL
+                        Channel filter: only accept messages from specified
+                        channel(s). Can be a single channel (e.g., 'weather')
+                        or comma-separated list (e.g., 'weather,alerts').
+                        When omitted, accepts messages from ALL channels.
   -l LOCATION, --location LOCATION
                         Get weather for a specific location and exit
 ```

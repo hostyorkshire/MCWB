@@ -10,14 +10,15 @@ from meshcore import MeshCore, MeshCoreMessage
 
 def test_with_channel_filtering():
     """
-    Test that the bot only filters messages whose channel name is explicitly known.
+    Test that the bot correctly filters messages by channel_idx when a channel
+    filter is configured.
 
     When channel filter is set to 'weather', the bot should:
     1. REJECT messages that carry an explicit channel name NOT in the filter
     2. ACCEPT messages that carry an explicit channel name IN the filter
-    3. ACCEPT binary-protocol messages (channel=None, channel_idx set) regardless
-       of the filter, because physical radio slot indices are independent of the
-       bot's internal channel-name mapping and filtering by index is unreliable.
+    3. ACCEPT binary-protocol messages whose channel_idx maps to a channel in
+       the filter (idx 1 → 'weather'), and REJECT those whose idx maps to a
+       channel not in the filter (idx 0 → default, idx 2 → unmapped).
     """
     print()
     print("=" * 70)
@@ -84,12 +85,15 @@ def test_with_channel_filtering():
         return False
     print()
 
-    # Tests 3–5: Binary-protocol messages (channel=None, channel_idx set) should
-    # ALL be ACCEPTED regardless of the filter — physical slot indices do not map
-    # to channel names reliably.
-    for test_num, (slot, location) in enumerate(
-        [(0, "wx Brighton"), (1, "wx Manchester"), (2, "wx Leeds")], start=3
-    ):
+    # Tests 3–5: Binary-protocol messages (channel=None, channel_idx set).
+    # channel_idx=1 maps to 'weather' (registered by set_channel_filter) → ACCEPTED.
+    # channel_idx=0 (default/public) and channel_idx=2 (unmapped) → REJECTED.
+    binary_cases = [
+        (3, 0, "wx Brighton",   False),   # idx 0 → default → not in filter
+        (4, 1, "wx Manchester", True),    # idx 1 → 'weather' → in filter
+        (5, 2, "wx Leeds",      False),   # idx 2 → unmapped → not in filter
+    ]
+    for test_num, slot, location, should_accept in binary_cases:
         print(f"Test {test_num}: Binary-protocol message on channel_idx={slot}")
         received_messages.clear()
         msg_binary = MeshCoreMessage(
@@ -101,12 +105,20 @@ def test_with_channel_filtering():
         )
         mesh.receive_message(msg_binary)
 
-        if len(received_messages) == 1:
-            print(f"✅ PASS: Binary message on channel_idx={slot} was ACCEPTED")
+        if should_accept:
+            if len(received_messages) == 1:
+                print(f"✅ PASS: Binary message on channel_idx={slot} was ACCEPTED")
+            else:
+                print(f"❌ FAIL: Binary message on channel_idx={slot} was REJECTED (should be accepted)")
+                print(f"  Received: {received_messages}")
+                return False
         else:
-            print(f"❌ FAIL: Binary message on channel_idx={slot} was rejected (should be accepted)")
-            print(f"  Received: {received_messages}")
-            return False
+            if len(received_messages) == 0:
+                print(f"✅ PASS: Binary message on channel_idx={slot} was REJECTED (as expected)")
+            else:
+                print(f"❌ FAIL: Binary message on channel_idx={slot} was ACCEPTED (should be rejected)")
+                print(f"  Received: {received_messages}")
+                return False
         print()
 
     mesh.stop()
