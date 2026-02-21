@@ -354,6 +354,10 @@ class MeshCore:
             #   bytes 2-7: reserved = 6 ASCII spaces (as used by official meshcore-py)
             #   bytes 8+: app_name = "MCWB" (identifies this bot to the companion radio)
             self._send_command(b"\x01\x03      MCWB")
+            # Allow companion radio time to process CMD_APP_START initialization.
+            # After a radio reboot, the companion radio needs a brief moment to
+            # initialize its session before it can handle subsequent commands.
+            time.sleep(0.1)
             # Drain any messages that queued while we were offline.
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
         except SerialException as e:
