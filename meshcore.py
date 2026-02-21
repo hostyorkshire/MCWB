@@ -358,8 +358,6 @@ class MeshCore:
             # After a radio reboot, the companion radio needs a brief moment to
             # initialize its session before it can handle subsequent commands.
             time.sleep(0.1)
-            # Drain any messages that queued while we were offline.
-            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
         except SerialException as e:
             self.log(f"Failed to open serial port {self.serial_port}: {e}")
             self._serial = None
@@ -371,6 +369,10 @@ class MeshCore:
         )
         self._listener_thread.start()
         self.log("LoRa listener thread started")
+        # Now that the listener thread is running, drain any messages that
+        # queued while we were offline. This must happen AFTER the listener
+        # thread starts to ensure responses are properly received.
+        self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
     def _listen_loop(self):
         """
