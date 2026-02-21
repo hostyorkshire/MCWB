@@ -137,33 +137,138 @@ def test_bot_replies_to_client_on_incoming_channel():
         return success
 
 
+def test_bot_without_channel_config():
+    """
+    Test that bot without --channel configuration also replies correctly.
+    
+    This ensures the fix works across all bot configurations.
+    """
+    print()
+    print("=" * 70)
+    print("TEST: Bot Without Channel Config")
+    print("=" * 70)
+    print()
+    print("Scenario: Bot without --channel, client sends on channel_idx 0")
+    print("Expected: Bot replies on channel_idx 0")
+    print()
+    
+    with patch('weather_bot.requests.get') as mock_get:
+        # Mock responses
+        geocoding_response = MagicMock()
+        geocoding_response.json.return_value = {
+            "results": [{
+                "name": "Manchester",
+                "country": "United Kingdom",
+                "latitude": 53.48095,
+                "longitude": -2.23743
+            }]
+        }
+        
+        weather_response = MagicMock()
+        weather_response.json.return_value = {
+            "current": {
+                "temperature_2m": 9.5,
+                "apparent_temperature": 6.8,
+                "relative_humidity_2m": 78,
+                "wind_speed_10m": 12.4,
+                "wind_direction_10m": 220,
+                "precipitation": 0.0,
+                "weather_code": 1
+            }
+        }
+        
+        mock_get.side_effect = [geocoding_response, weather_response]
+        
+        # Create bot WITHOUT --channel configuration
+        bot = WeatherBot(node_id="WX_BOT", debug=True, channel=None)
+        
+        # Track messages
+        sent_messages = []
+        original_send = bot.mesh.send_message
+        
+        def track_send(content, message_type, channel=None, channel_idx=None):
+            sent_messages.append({
+                'content': content,
+                'channel': channel,
+                'channel_idx': channel_idx
+            })
+            return original_send(content, message_type, channel, channel_idx)
+        
+        bot.mesh.send_message = track_send
+        bot.mesh.start()
+        
+        # Message on default channel
+        msg = MeshCoreMessage(
+            sender="M3UXC",
+            content="Wx Manchester",
+            message_type="text",
+            channel=None,
+            channel_idx=0
+        )
+        
+        print("Simulating incoming message:")
+        print(f"  From: {msg.sender}")
+        print(f"  Content: {msg.content}")
+        print(f"  Channel_idx: {msg.channel_idx}")
+        print(f"  Bot configured with: (no --channel)")
+        print()
+        
+        sent_messages.clear()
+        bot.handle_message(msg)
+        
+        print("Checking bot reply...")
+        assert len(sent_messages) == 1
+        
+        sent = sent_messages[0]
+        print(f"  Bot replied on: channel_idx={sent['channel_idx']}, channel='{sent['channel']}'")
+        print()
+        
+        # Bot without channel config should reply on channel_idx 0
+        if sent['channel_idx'] == 0:
+            print("✅ SUCCESS!")
+            print()
+            print("Bot without --channel correctly replied on channel_idx 0")
+            success = True
+        else:
+            print("❌ FAILED!")
+            print("Bot should reply on channel_idx 0")
+            success = False
+        
+        bot.mesh.stop()
+        
+        return success
+
+
 def main():
-    """Run the test"""
+    """Run the tests"""
     print()
     print("╔" + "=" * 68 + "╗")
     print("║" + " " * 15 + "Client Reply Fix Test" + " " * 32 + "║")
     print("╚" + "=" * 68 + "╝")
     
     try:
-        success = test_bot_replies_to_client_on_incoming_channel()
+        success1 = test_bot_replies_to_client_on_incoming_channel()
+        success2 = test_bot_without_channel_config()
         
         print()
         print("=" * 70)
-        if success:
-            print("✅ TEST PASSED")
+        if success1 and success2:
+            print("✅ ALL TESTS PASSED")
             print()
             print("The fix is working correctly!")
             print("Bot now replies to clients on the channel where they sent the message.")
+            print("This works for both bots with and without --channel configuration.")
             print("Clients will see the bot's responses.")
         else:
-            print("❌ TEST FAILED")
-            print()
-            print("Bot is still not replying to clients correctly.")
-            print("Clients won't see the responses!")
+            print("❌ SOME TESTS FAILED")
+            if not success1:
+                print("  • Bot with --channel not working correctly")
+            if not success2:
+                print("  • Bot without --channel not working correctly")
         print("=" * 70)
         print()
         
-        return 0 if success else 1
+        return 0 if (success1 and success2) else 1
         
     except Exception as e:
         print(f"❌ ERROR: {e}")
