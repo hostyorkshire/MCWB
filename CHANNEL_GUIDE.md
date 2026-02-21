@@ -34,10 +34,10 @@ python3 meshcore_send.py "Hello everyone!"
 python3 weather_bot.py --channel weather --interactive
 
 # Weather bot broadcasts to multiple channels
-python3 weather_bot.py --channel weather,wxtest --interactive
+python3 weather_bot.py --channel weather,alerts --interactive
 
 # Weather bot broadcasts to multiple channels with spaces (use quotes)
-python3 weather_bot.py --channel "weather, wxtest, alerts" --interactive
+python3 weather_bot.py --channel "weather, alerts, alerts" --interactive
 
 # Weather bot without channel (default behavior - broadcast to all)
 python3 weather_bot.py --interactive
@@ -114,8 +114,8 @@ msg = MeshCoreMessage(
 python3 weather_bot.py --channel weather --node-id weather_service
 
 # Start weather bot broadcasting to multiple channels
-# (e.g., both 'weather' and 'wxtest' channels)
-python3 weather_bot.py --channel weather,wxtest --node-id weather_service
+# (e.g., both 'weather' and 'alerts' channels)
+python3 weather_bot.py --channel weather,alerts --node-id weather_service
 
 # Users query weather on the weather channel
 python3 meshcore_send.py "wx London" --channel weather --node-id user1
@@ -203,7 +203,7 @@ python3 weather_bot.py --channel weather --interactive
 
 **Q: Can I send to multiple channels at once?**
 - Yes! The weather bot now supports broadcasting to multiple channels. Use a comma-separated 
-  list with the `--channel` parameter (e.g., `--channel weather,wxtest`). Each message will 
+  list with the `--channel` parameter (e.g., `--channel weather,alerts`). Each message will 
   be sent to all specified channels.
 - For individual messages in code, send separate messages to different channels as needed.
 

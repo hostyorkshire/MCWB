@@ -288,23 +288,21 @@ class MeshCore:
         # Apply channel filter if set
         if self.channel_filter:
             # When a channel filter is configured, accept messages from:
-            # 1. Default channel (idx 0, no explicit channel name) - users may send here
-            # 2. Messages with matching channel name (for Python/simulation mode)
-            # 3. Messages from non-default channel_idx with NO channel name (from radios)
+            # 1. Messages with matching channel name (for Python/simulation mode)
+            # 2. Messages from non-default channel_idx with NO channel name (from radios)
             #
-            # The third case handles the real-world scenario where users configure their
-            # radios to use a specific channel_idx for the "weatherbot" channel, but we
+            # The second case handles the real-world scenario where users configure their
+            # radios to use a specific channel_idx for a named channel (e.g., "weather"), but we
             # can't predict which channel_idx they chose. So we accept any non-zero
             # channel_idx as long as no explicit (non-matching) channel name is set.
-            is_default_channel = (message.channel_idx == 0 and message.channel is None)
             is_matching_channel_name = (message.channel in self.channel_filter)
             # Check for non-zero channel_idx with no channel name (from LoRa radios)
             # Note: explicit None check required to avoid TypeError on comparison
             is_unnamed_channel = (message.channel is None and message.channel_idx is not None and message.channel_idx > 0)
             
-            if not is_default_channel and not is_matching_channel_name and not is_unnamed_channel:
+            if not is_matching_channel_name and not is_unnamed_channel:
                 channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-                self.log(f"Ignoring message from channel '{message.channel}' (filter: {channels_str})")
+                self.log(f"Ignoring message from channel '{message.channel}' (channel_idx={message.channel_idx}, filter: {channels_str})")
                 return
 
         channel_info = f" on channel '{message.channel}'" if message.channel else ""
@@ -609,12 +607,11 @@ class MeshCore:
         
         # Log for debugging: show if message will be filtered
         if self.channel_filter:
-            is_default = (channel_idx == 0 and channel_name is None)
             is_matching = (channel_name in self.channel_filter)
             is_unnamed = (channel_name is None and channel_idx is not None and channel_idx > 0)
-            will_process = is_default or is_matching or is_unnamed
+            will_process = is_matching or is_unnamed
             filter_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-            self.log(f"Channel filter check: default={is_default}, matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")
+            self.log(f"Channel filter check: matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")
         
         self.receive_message(msg)
 
