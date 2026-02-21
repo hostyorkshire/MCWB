@@ -219,7 +219,6 @@ def test_problem_statement_scenario():
     # Process the weather request directly without starting the event loop
     bot.handle_message(msg)
     
-    # Verify message was broadcast to both channels    
     # Verify message was broadcast to both channels
     assert len(sent_messages) == 2, f"Expected 2 messages (one per channel), got {len(sent_messages)}"
     
@@ -258,7 +257,6 @@ def main():
         print("  • Channel list accepts comma-separated values")
         print("  • Whitespace around commas is handled correctly")
         print("  • Empty channel names are filtered out with warning")
-        print("  • Bot can still broadcast without channels (to all)")
         print("  • Bot can still broadcast without channels (to all)")
         print()
         print("Usage examples:")
