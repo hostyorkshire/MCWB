@@ -32,10 +32,13 @@ except ImportError:
 _FRAME_OUT = 0x3E           # '>' radio→app frame start byte
 _FRAME_IN = 0x3C            # '<' app→radio frame start byte
 _CMD_APP_START = 0x01       # Initialise companion radio session
+_CMD_GET_DEVICE_TIME = 0x05 # Radio requests current device time; app must respond
 _CMD_SYNC_NEXT_MSG = 0x0A   # Request next queued message
 _CMD_SEND_CHAN_MSG = 0x03    # Send a channel (flood) text message
+_RESP_CURR_TIME = 0x09      # Response: current time (4-byte UNIX timestamp LE)
 _RESP_CHANNEL_MSG = 0x08    # Channel message received
 _RESP_CHANNEL_MSG_V3 = 0x11 # Channel message received (V3, includes SNR)
+_PUSH_SEND_CONFIRMED = 0x82 # Push: outgoing message ACK'd by mesh
 _PUSH_MSG_WAITING = 0x83    # Push: new message queued
 _PUSH_CHAN_MSG = 0x88        # Push: inline channel message (0x80 | RESP_CHANNEL_MSG)
 _RESP_NO_MORE_MSGS = 0x0A   # No more messages in queue (same value as CMD_SYNC_NEXT_MSG)
@@ -153,7 +156,23 @@ class WeatherBot:
         code = payload[0]
         self._log(f"RX code={code:#04x} len={len(payload)}")
 
-        if code == _PUSH_MSG_WAITING:
+        if code == 0x00:
+            pass  # NOP / keepalive – ignore silently
+
+        elif code == _CMD_APP_START:
+            pass  # APP_START echo from radio – session already initialised
+
+        elif code == _CMD_GET_DEVICE_TIME:
+            # Radio requests the current wall-clock time so it can keep its RTC
+            # in sync. Respond immediately with RESP_CURR_TIME + 4-byte LE timestamp.
+            ts = int(time.time()).to_bytes(4, "little")
+            self._send_cmd(bytes([_RESP_CURR_TIME]) + ts)
+            self._log("Responded to CMD_GET_DEVICE_TIME")
+
+        elif code == _PUSH_SEND_CONFIRMED:
+            self._log("Send confirmed by mesh network")
+
+        elif code == _PUSH_MSG_WAITING:
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _PUSH_CHAN_MSG and len(payload) >= 8:
@@ -179,6 +198,9 @@ class WeatherBot:
 
         elif code == _RESP_NO_MORE_MSGS:
             pass  # queue empty – nothing to do
+
+        else:
+            self._log(f"Unhandled frame code {code:#04x}")
 
     # ------------------------------------------------------------------
     # Message handling
