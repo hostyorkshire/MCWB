@@ -59,11 +59,37 @@ def test_send_over_lora():
     payload = written_bytes[3:]
     assert payload[0] == 3, "Payload must begin with CMD_SEND_CHANNEL_TXT_MSG (3)"
     assert payload[1] == 0, "txt_type must be 0 (plain text)"
-    assert payload[2] == 0, "channel_idx must be 0 (public channel)"
+    # Channel 'weather' should be mapped to channel_idx 1 (not 0, which is for default/None)
+    assert payload[2] == 1, "channel_idx must be 1 (weather channel)"
     text = payload[7:].decode("utf-8")
     assert text == "wx York", f"Message text mismatch: expected 'wx York', got '{text}'"
     print("✓ send_message writes binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port")
     print(f"  Frame (hex): {written_bytes.hex()}")
+    print(f"  Channel 'weather' mapped to channel_idx=1")
+
+    print()
+
+
+def test_send_without_channel():
+    """Test that sending without a channel uses channel_idx 0"""
+    print("=" * 60)
+    print("TEST 2b: Send Message Without Channel")
+    print("=" * 60)
+
+    mock_serial = MagicMock()
+    mock_serial.is_open = True
+
+    mesh = MeshCore("lora_sender", serial_port="/dev/ttyUSB0", debug=False)
+    mesh._serial = mock_serial
+    mesh.running = True
+
+    mesh.send_message("broadcast message", "text", channel=None)
+
+    written_bytes = mock_serial.write.call_args[0][0]
+    payload = written_bytes[3:]
+    # Verify channel_idx is 0 for no-channel (broadcast)
+    assert payload[2] == 0, "channel_idx must be 0 for broadcast (no channel)"
+    print("✓ send_message without channel uses channel_idx=0 (broadcast)")
 
     print()
 
@@ -565,6 +591,7 @@ def main():
     try:
         test_meshcore_serial_params()
         test_send_over_lora()
+        test_send_without_channel()
         test_simulation_mode_no_write()
         test_receive_message_from_lora()
         test_invalid_lora_data_ignored()
