@@ -455,9 +455,7 @@ class MeshCore:
                 # Raw LoRa frames from non-MeshCore devices are silently skipped.
                 # Additional validation: must start with { AND end with }
                 if not (line.startswith("{") and line.endswith("}")):
-                    # Log first 40 chars in hex for debugging without cluttering logs with garbage
-                    sample = raw[:40] if len(raw) > 40 else raw
-                    self.log(f"Ignoring non-JSON LoRa data (first {len(sample)} bytes hex: {sample.hex()})")
+                    # Silently skip non-JSON data (binary protocol responses, radio noise, etc.)
                     continue
                 # Log only after validating it looks like JSON to avoid logging garbled data
                 self.log(f"LoRa RX: {line}")
