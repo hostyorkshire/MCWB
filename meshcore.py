@@ -305,18 +305,16 @@ class MeshCore:
 
         # Apply channel filtering if configured
         if self.channel_filter is not None:
-            # If channel_filter is set, only accept messages from those channels
-            # Determine the channel name from either:
-            # 1. The message.channel attribute (for JSON-serialized messages)
-            # 2. Map the incoming channel_idx to a channel name (for binary protocol messages)
-            # Note: Use 'is not None' to distinguish None from empty string
-            incoming_channel_name = message.channel if message.channel is not None else self._get_channel_name(message.channel_idx)
-            
-            # Check if message is from a filtered channel
-            # Note: channel_idx 0 (default channel) always maps to None and will be rejected
-            # when channel_filter is set. Only messages from mapped named channels are accepted.
-            if incoming_channel_name not in self.channel_filter:
-                self.log(f"Ignoring message: channel {incoming_channel_name} "
+            # Only filter when the message carries an explicit channel name.
+            # Binary-protocol frames only carry a numeric channel_idx; the bot's
+            # internal name→idx mapping is independent of the physical radio's
+            # channel-slot assignment, so idx-based filtering is unreliable and
+            # would silently drop messages from any channel whose physical slot
+            # doesn't happen to match the bot-internal index (e.g. #weather).
+            # For those messages (message.channel is None) we accept unconditionally
+            # and rely on the radio hardware to enforce channel membership.
+            if message.channel is not None and message.channel not in self.channel_filter:
+                self.log(f"Ignoring message: channel '{message.channel}' "
                          f"not in filter {self.channel_filter}")
                 return
 
