@@ -100,16 +100,19 @@ def test_channel_idx_limit():
     
     mesh = MeshCore("test_node", debug=False)
     
-    # Map 8 channels (indices 1-8, plus 0 for default)
-    for i in range(1, 9):
+    # Map 7 channels (indices 1-7, plus 0 for default)
+    for i in range(1, 8):
         channel_name = f"channel{i}"
         idx = mesh._get_channel_idx(channel_name)
+        assert idx == i, f"Expected channel{i} to get idx {i}, got {idx}"
         print(f"  Channel '{channel_name}' -> channel_idx {idx}")
     
-    # Try to add one more (should reuse idx 7)
-    idx_overflow = mesh._get_channel_idx("channel9")
-    assert idx_overflow == 7, f"Overflow channel should use idx 7, got {idx_overflow}"
-    print(f"✓ Channel limit handled: 'channel9' -> channel_idx {idx_overflow} (reused)")
+    # Try to add one more (should raise ValueError)
+    try:
+        idx_overflow = mesh._get_channel_idx("channel8")
+        assert False, "Should have raised ValueError for 8th channel"
+    except ValueError as e:
+        print(f"✓ Channel limit enforced: {str(e)[:80]}...")
     
     print()
 

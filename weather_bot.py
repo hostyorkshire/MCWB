@@ -298,10 +298,10 @@ class WeatherBot:
             for i, channel in enumerate(self.channels):
                 self.log(f"Sending response on channel '{channel}': {content}")
                 self.mesh.send_message(content, "text", channel)
-                # Add small delay between sends to ensure distinct transmission
-                # for each channel and avoid message deduplication
+                # Add small delay between sends to avoid any potential timing issues
+                # with rapid sequential transmissions over LoRa
                 if i < len(self.channels) - 1:
-                    time.sleep(0.1)
+                    time.sleep(0.05)
             channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
             print(f"\n{content}")
             print(f"[Broadcast on channels: {channels_str}]\n")

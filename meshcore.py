@@ -148,6 +148,9 @@ class MeshCore:
             
         Returns:
             Channel index (0-7) to use for LoRa transmission
+            
+        Raises:
+            ValueError: If more than 7 named channels are used
         """
         if channel is None:
             return 0  # Default/public channel
@@ -155,9 +158,10 @@ class MeshCore:
         # Return existing mapping or create a new one
         if channel not in self._channel_map:
             if self._next_channel_idx > 7:
-                # Limit to 8 channels (0-7) for safety
-                self.log(f"Warning: Maximum channels (8) reached. Channel '{channel}' will use idx 7")
-                return 7
+                raise ValueError(
+                    f"Maximum of 7 named channels exceeded. Cannot add channel '{channel}'. "
+                    f"Existing channels: {list(self._channel_map.keys())}"
+                )
             self._channel_map[channel] = self._next_channel_idx
             self.log(f"Mapped channel '{channel}' to channel_idx {self._next_channel_idx}")
             self._next_channel_idx += 1
