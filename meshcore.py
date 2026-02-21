@@ -231,6 +231,8 @@ class MeshCore:
                 frame = bytes([_FRAME_IN]) + len(cmd_data).to_bytes(2, "little") + cmd_data
                 self._serial.write(frame)
                 self.log(f"LoRa TX channel msg (idx={channel_idx}): {content}")
+                # After sending, sync to allow the companion radio to process and respond
+                self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
             except SerialException as e:
                 self.log(f"LoRa TX error: {e}")
         else:

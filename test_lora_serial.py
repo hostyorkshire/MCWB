@@ -48,7 +48,11 @@ def test_send_over_lora():
 
     # Verify serial.write was called with a binary MeshCore companion protocol frame
     assert mock_serial.write.called, "serial.write should have been called"
-    written_bytes = mock_serial.write.call_args[0][0]
+    # After our fix, write is called twice: once for the message, once for CMD_SYNC_NEXT_MSG
+    assert mock_serial.write.call_count == 2, "write should be called twice (message + sync)"
+    
+    # Check the first call (the actual message)
+    written_bytes = mock_serial.write.call_args_list[0][0][0]
 
     # Frame format (app→radio):  0x3C '<' + uint16_LE(length) + payload
     assert written_bytes[0:1] == b'\x3c', "Frame must start with '<' (0x3C) inbound marker"
@@ -66,6 +70,12 @@ def test_send_over_lora():
     print("✓ send_message writes binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port")
     print(f"  Frame (hex): {written_bytes.hex()}")
     print(f"  Channel 'weather' mapped to channel_idx=1")
+    
+    # Check the second call (CMD_SYNC_NEXT_MSG)
+    sync_bytes = mock_serial.write.call_args_list[1][0][0]
+    assert sync_bytes[0:1] == b'\x3c', "Sync frame must start with '<' (0x3C)"
+    assert sync_bytes[3:4] == b'\x0a', "Second call must be CMD_SYNC_NEXT_MSG (0x0A)"
+    print("✓ send_message follows up with CMD_SYNC_NEXT_MSG to complete protocol exchange")
 
     print()
 
@@ -85,11 +95,13 @@ def test_send_without_channel():
 
     mesh.send_message("broadcast message", "text", channel=None)
 
-    written_bytes = mock_serial.write.call_args[0][0]
+    # Check the first call (the actual message)
+    written_bytes = mock_serial.write.call_args_list[0][0][0]
     payload = written_bytes[3:]
     # Verify channel_idx is 0 for no-channel (broadcast)
     assert payload[2] == 0, "channel_idx must be 0 for broadcast (no channel)"
     print("✓ send_message without channel uses channel_idx=0 (broadcast)")
+
 
     print()
 
