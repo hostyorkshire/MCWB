@@ -55,6 +55,41 @@ WEATHER_CODES = {
     99: "Thunderstorm with heavy hail"
 }
 
+# Country name to country code mapping
+COUNTRY_CODES = {
+    "United Kingdom": "UK",
+    "Great Britain": "GB",
+    "United States": "US",
+    "United States of America": "US",
+    "France": "FR",
+    "Germany": "DE",
+    "Spain": "ES",
+    "Italy": "IT",
+    "Netherlands": "NL",
+    "Belgium": "BE",
+    "Switzerland": "CH",
+    "Austria": "AT",
+    "Ireland": "IE",
+    "Poland": "PL",
+    "Czech Republic": "CZ",
+    "Denmark": "DK",
+    "Sweden": "SE",
+    "Norway": "NO",
+    "Finland": "FI",
+    "Portugal": "PT",
+    "Greece": "GR",
+    "Canada": "CA",
+    "Australia": "AU",
+    "New Zealand": "NZ",
+    "Japan": "JP",
+    "China": "CN",
+    "India": "IN",
+    "Brazil": "BR",
+    "Mexico": "MX",
+    "Argentina": "AR",
+    "South Africa": "ZA"
+}
+
 
 class WeatherBot:
     """Weather Bot for MeshCore network"""
@@ -195,6 +230,23 @@ class WeatherBot:
         """
         return WEATHER_CODES.get(weather_code, f"Unknown (code: {weather_code})")
 
+    def get_country_code(self, country: str) -> str:
+        """
+        Convert country name to country code
+
+        Args:
+            country: Country name (e.g., "United Kingdom", "GB")
+
+        Returns:
+            Country code (e.g., "UK", "GB")
+        """
+        # If it's already a short code (2-3 chars), return as is
+        if len(country) <= 3:
+            return country
+        
+        # Look up in mapping, otherwise return original
+        return COUNTRY_CODES.get(country, country)
+
     def format_weather_response(self, location_data: Dict[str, Any], weather_data: Dict[str, Any]) -> str:
         """
         Format weather data into a readable message
@@ -221,10 +273,11 @@ class WeatherBot:
 
         condition = self.get_weather_description(weather_code)
 
-        # Build response message
+        # Build response message with country code
         response = f"{location_name}"
         if country:
-            response += f", {country}"
+            country_code = self.get_country_code(country)
+            response += f", {country_code}"
         response += "\n"
         response += f"Conditions: {condition}\n"
         response += f"Temp: {temp}°C (feels like {feels_like}°C)\n"
