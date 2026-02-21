@@ -70,6 +70,16 @@ class WeatherBot:
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
+        
+        Note:
+            The bot is hardcoded to listen ONLY on the "weather" channel.
+            
+            IMPORTANT: Due to how MeshCore channel indexing works, the "weather" 
+            channel must be the FIRST channel created/joined on all nodes. This 
+            ensures "weather" maps to channel_idx 1 consistently across all nodes.
+            
+            If users create other channels before "weather", the channel_idx 
+            mappings will differ between nodes, and the bot won't receive messages.
         """
         self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
@@ -79,6 +89,7 @@ class WeatherBot:
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
 
         # Hardcode to only work on the "weather" channel
+        # This MUST be the first channel created to ensure consistent channel_idx mapping
         self.mesh.set_channel_filter("weather")
 
         # Register message handler

@@ -76,7 +76,7 @@ python3 weather_bot.py --location "London"
 Run the bot as a daemon to listen for mesh network messages:
 
 ```bash
-# Basic usage - accepts queries from all channels, replies where they came from
+# Basic usage - listens only on the 'weather' channel
 python3 weather_bot.py
 
 # With LoRa hardware
@@ -86,12 +86,12 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 python3 weather_bot.py -d
 ```
 
-**Note:** The `--channel` parameter is **optional** and typically not needed. The bot automatically accepts queries from all channels and replies on the same channel where each query came from.
+**Note:** The bot is hardcoded to ONLY listen on the 'weather' channel. Messages from other channels are ignored.
 
 ### Command Line Options
 
 ```
-usage: weather_bot.py [-h] [-n NODE_ID] [-c CHANNEL] [-d] [-i] [-p PORT]
+usage: weather_bot.py [-h] [-n NODE_ID] [-d] [-i] [-p PORT]
                       [-b BAUD] [-l LOCATION]
 
 MeshCore Weather Bot - UK Weather via mesh radio network
@@ -100,14 +100,6 @@ options:
   -h, --help            show this help message and exit
   -n NODE_ID, --node-id NODE_ID
                         Node ID for this bot (default: weather_bot)
-  -c CHANNEL, --channel CHANNEL
-                        Optional: Channel(s) for bot-initiated broadcasts.
-                        The bot accepts queries from ALL channels and replies
-                        on the same channel where each query came from.
-                        This parameter is reserved for future features.
-                        Can be a single channel or comma-separated list
-                        (e.g., 'weather' or 'weather,alerts').
-                        Typically not needed for normal operation.
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
@@ -120,30 +112,50 @@ options:
 
 #### How the Bot Handles Channels
 
-The weather bot now uses a simple, reliable approach:
+The weather bot is hardcoded to work exclusively on the 'weather' channel:
 
-**✅ Accepts queries from ANY channel**
-- Users can send "wx London" from the default channel
-- Users can send "wx London" from #weather channel  
-- Users can send "wx London" from any other channel
-- The bot processes ALL weather queries
+**✅ Accepts queries ONLY from the 'weather' channel**
+- Users must send "wx London" from the #weather channel
+- Messages from the default channel (channel_idx 0) are IGNORED
+- Messages from any other channel are IGNORED
 
-**✅ Replies on the SAME channel**
-- If query came from channel_idx 0 (default), reply goes to channel_idx 0
-- If query came from channel_idx 1 (#weather), reply goes to channel_idx 1
-- This ensures users always receive their responses
+**✅ Replies on the 'weather' channel**
+- All replies are sent back on the same channel_idx where the query came from
+- This ensures users on the weather channel always receive their responses
+
+**⚠️ IMPORTANT: Channel Index Mapping**
+
+The MeshCore protocol uses numeric channel indices (0-7) over the wire, not channel names. 
+Each node creates its own mapping from channel names to indices based on the order channels 
+are created/joined:
+- First channel created → channel_idx 1
+- Second channel created → channel_idx 2
+- etc.
+
+**For the weather bot to work correctly:**
+1. The bot maps "weather" to channel_idx 1 (it's created first in the bot)
+2. **All users must also map "weather" to channel_idx 1**
+3. This means users must create/join the "weather" channel BEFORE any other channels
+
+If users create other channels (e.g., "alerts") before "weather", their "weather" 
+channel will have a different channel_idx, and the bot won't receive their messages.
 
 **Example:**
 ```bash
-# Run the bot (no --channel needed)
+# Run the bot (weather is mapped to channel_idx 1)
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 
-# User1 sends "wx London" from default channel → Gets reply on default channel
-# User2 sends "wx York" from #weather → Gets reply on #weather
-# User3 sends "wx Leeds" from #alerts → Gets reply on #alerts
+# ✅ CORRECT - User creates "weather" channel first
+# On user's node: "weather" → channel_idx 1
+# User sends "wx London" from #weather → Bot receives it
+
+# ❌ INCORRECT - User creates "alerts" first, then "weather"
+# On user's node: "alerts" → channel_idx 1, "weather" → channel_idx 2  
+# User sends "wx London" from #weather → Bot does NOT receive it (wrong channel_idx)
 ```
 
-The `--channel` parameter is optional and reserved for future bot-initiated broadcasts (like scheduled weather updates).
+**Recommendation:** For consistent operation across all nodes, establish a standard 
+channel creation order in your mesh network (e.g., always create "weather" first).
 
 ## Command Format
 
@@ -231,9 +243,10 @@ Messages are transmitted as newline-delimited JSON:
 
 ```bash
 # Listen for 'wx <location>' requests and reply – all over LoRa
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
+# Bot listens ONLY on the 'weather' channel
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600
 
-# From another node: send a weather query over LoRa
+# From another node: send a weather query over LoRa on the weather channel
 python3 meshcore_send.py "wx London" --port /dev/ttyUSB0 --channel weather --node-id user_node
 ```
 
@@ -256,7 +269,8 @@ Precipitation: 0.0 mm
 ### Example 2: Interactive Session
 ```bash
 $ python3 weather_bot.py --interactive
-Weather Bot started. Send 'wx [location]' to get weather.
+Weather Bot started. Listening ONLY on 'weather' channel.
+Send 'wx [location]' to get weather.
 Example: wx London
 Listening for messages...
 
@@ -270,26 +284,17 @@ Wind: 12.1 km/h at 180°
 Precipitation: 0.0 mm
 ```
 
-### Example 3: Broadcasting to a Channel
+### Example 3: Using with LoRa Hardware
 ```bash
-# Start weather bot broadcasting on 'weather' channel
-$ python3 weather_bot.py --channel weather --interactive
-Weather Bot started. Send 'wx [location]' to get weather.
+# Start weather bot listening on 'weather' channel
+$ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
+Weather Bot started. Listening ONLY on 'weather' channel.
+Send 'wx [location]' to get weather.
 Example: wx London
 Listening for messages...
 
-Enter command (or 'quit' to exit): wx London
-
-Weather for London, GB
-Conditions: Partly cloudy
-Temp: 12.5°C (feels like 11.2°C)
-Humidity: 75%
-Wind: 15.3 km/h at 230°
-Precipitation: 0.0 mm
-# Response broadcast on 'weather' channel
-
-# Send a message to the weather channel
-$ python3 meshcore_send.py "wx Manchester" --channel weather --node-id user_node
+# Send a message to the weather channel from another node
+$ python3 meshcore_send.py "wx Manchester" --channel weather --node-id user_node --port /dev/ttyUSB0
 ```
 
 ## Raspberry Pi Zero 2 Setup
