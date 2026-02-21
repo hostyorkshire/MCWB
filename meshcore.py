@@ -97,6 +97,40 @@ VALID_BAUD_RATES = {110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200,
                     38400, 57600, 115200, 128000, 256000}
 
 
+def normalize_channel_name(channel: Optional[str], warn: bool = True) -> Optional[str]:
+    """
+    Normalize a channel name by removing hash prefix if present.
+    
+    Channel names in Python should NOT include the hash (#) prefix.
+    The hash is only used in the MeshCore app UI for display.
+    
+    Args:
+        channel: Channel name, potentially with hash prefix
+        warn: If True, prints a warning when hash is detected (default: True)
+        
+    Returns:
+        Channel name without hash prefix, or None if channel is None
+        
+    Examples:
+        normalize_channel_name("wxtest") → "wxtest"
+        normalize_channel_name("#wxtest") → "wxtest" (with warning)
+        normalize_channel_name(None) → None
+    """
+    if channel is None:
+        return None
+    
+    if channel.startswith('#'):
+        normalized = channel[1:]  # Remove the hash
+        if warn:
+            print(f"⚠ Warning: Channel name '{channel}' includes hash (#) prefix.")
+            print(f"  The hash is only used in MeshCore app UI, not in Python code.")
+            print(f"  Using normalized name: '{normalized}'")
+            print(f"  To remove this warning, use '{normalized}' directly.")
+        return normalized
+    
+    return channel
+
+
 def find_serial_ports(debug: bool = False) -> list:
     """
     Find available USB serial ports for LoRa modules.
