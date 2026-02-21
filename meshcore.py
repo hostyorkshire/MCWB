@@ -374,7 +374,8 @@ class MeshCore:
             # Companion radio sends message acknowledgment notification.
             # This confirms that a previously sent message was received by the mesh network.
             self.log("MeshCore: message acknowledgment received")
-            # No further action needed; ACK is informational
+            # Fetch any messages that may be queued after the ACK
+            self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG:
             # RESP_CODE_CHANNEL_MSG_RECV:
