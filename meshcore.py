@@ -280,10 +280,13 @@ class MeshCore:
             message: MeshCoreMessage object to process
         """
         # Apply channel filter if set
-        if self.channel_filter and message.channel not in self.channel_filter:
-            channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-            self.log(f"Ignoring message from channel '{message.channel}' (filter: {channels_str})")
-            return
+        if self.channel_filter:
+            # Special case: Messages on default channel (idx 0, channel=None) are accepted
+            # when a filter is set, since users may not explicitly configure channels in their radios
+            if message.channel_idx != 0 and message.channel not in self.channel_filter:
+                channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
+                self.log(f"Ignoring message from channel '{message.channel}' (filter: {channels_str})")
+                return
 
         channel_info = f" on channel '{message.channel}'" if message.channel else ""
         self.log(f"Received message from {message.sender}{channel_info}: {message.content}")
