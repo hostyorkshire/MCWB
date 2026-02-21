@@ -269,7 +269,7 @@ class WeatherBot:
             if not location_data:
                 response = f"Sorry, I couldn't find the location: {location}"
                 self.send_response(response, reply_to_channel=message.channel,
-                                 reply_to_channel_idx=message.channel_idx)
+                                   reply_to_channel_idx=message.channel_idx)
                 return
 
             # Get weather data
@@ -281,13 +281,13 @@ class WeatherBot:
             if not weather_data:
                 response = f"Sorry, I couldn't get weather data for {location}"
                 self.send_response(response, reply_to_channel=message.channel,
-                                 reply_to_channel_idx=message.channel_idx)
+                                   reply_to_channel_idx=message.channel_idx)
                 return
 
             # Format and send response
             response = self.format_weather_response(location_data, weather_data)
             self.send_response(response, reply_to_channel=message.channel,
-                             reply_to_channel_idx=message.channel_idx)
+                               reply_to_channel_idx=message.channel_idx)
         else:
             self.log(f"Not a weather command: {message.content}")
 
