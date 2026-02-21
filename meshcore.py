@@ -676,7 +676,7 @@ class MeshCore:
             # SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
             if len(payload) >= 12:
                 channel_idx = payload[4]  # Extract channel_idx from payload (after SNR + reserved)
-                text = payload[12:].decode("utf-8", "ignore")
+                text = payload[11:].decode("utf-8", "ignore")
                 self.log(f"Binary frame: CHANNEL_MSG_V3 on channel_idx {channel_idx}")
                 self._dispatch_channel_message(text, channel_idx)
             else:
