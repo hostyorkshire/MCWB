@@ -150,9 +150,9 @@ def test_weather_bot_with_channel():
     print("✓ WeatherBot with single channel: channels is ['weather']")
 
     # Create bot with multiple channels
-    bot3 = WeatherBot(node_id="bot3", debug=False, channel="weather,wxtest")
-    assert bot3.channels == ["weather", "wxtest"]
-    print("✓ WeatherBot with multiple channels: channels is ['weather', 'wxtest']")
+    bot3 = WeatherBot(node_id="bot3", debug=False, channel="weather,alerts")
+    assert bot3.channels == ["weather", "alerts"]
+    print("✓ WeatherBot with multiple channels: channels is ['weather', 'alerts']")
 
     print()
 

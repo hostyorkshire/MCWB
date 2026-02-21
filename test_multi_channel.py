@@ -2,7 +2,7 @@
 """
 Test script to verify multi-channel broadcast functionality for weather bot.
 Tests the feature requested in the problem statement:
-"can this bot only transmit to one channel? I tested with wxtest channel 
+"can this bot only transmit to one channel? I tested with alerts channel 
 but would like it to run on weather channel in meshcore"
 """
 
@@ -50,11 +50,11 @@ def test_multiple_channels():
     print("=" * 60)
     
     # Test with two channels as requested in problem statement
-    bot = WeatherBot(node_id="test_bot", debug=False, channel="weather,wxtest")
+    bot = WeatherBot(node_id="test_bot", debug=False, channel="weather,alerts")
     
     # Verify channels are parsed correctly
-    assert bot.channels == ["weather", "wxtest"], f"Expected ['weather', 'wxtest'], got {bot.channels}"
-    print("✓ Bot initialized with multiple channels: 'weather', 'wxtest'")
+    assert bot.channels == ["weather", "alerts"], f"Expected ['weather', 'alerts'], got {bot.channels}"
+    print("✓ Bot initialized with multiple channels: 'weather', 'alerts'")
     
     # Mock the mesh send_message to capture calls
     sent_messages = []
@@ -73,9 +73,9 @@ def test_multiple_channels():
     
     channels_sent = [msg["channel"] for msg in sent_messages]
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
-    assert "wxtest" in channels_sent, "Expected message on 'wxtest' channel"
+    assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
     
-    print("✓ Message broadcast to both 'weather' and 'wxtest' channels")
+    print("✓ Message broadcast to both 'weather' and 'alerts' channels")
     print()
 
 
@@ -86,11 +86,11 @@ def test_multiple_channels_with_spaces():
     print("=" * 60)
     
     # Test with spaces around commas
-    bot = WeatherBot(node_id="test_bot", debug=False, channel="weather, wxtest, alerts")
+    bot = WeatherBot(node_id="test_bot", debug=False, channel="weather, alerts, alerts")
     
     # Verify channels are parsed correctly (spaces should be stripped)
-    assert bot.channels == ["weather", "wxtest", "alerts"], f"Expected ['weather', 'wxtest', 'alerts'], got {bot.channels}"
-    print("✓ Bot correctly parses channels with spaces: 'weather, wxtest, alerts'")
+    assert bot.channels == ["weather", "alerts", "alerts"], f"Expected ['weather', 'alerts', 'alerts'], got {bot.channels}"
+    print("✓ Bot correctly parses channels with spaces: 'weather, alerts, alerts'")
     
     # Mock the mesh send_message to capture calls
     sent_messages = []
@@ -109,10 +109,10 @@ def test_multiple_channels_with_spaces():
     
     channels_sent = [msg["channel"] for msg in sent_messages]
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
-    assert "wxtest" in channels_sent, "Expected message on 'wxtest' channel"
+    assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
     assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
     
-    print("✓ Message broadcast to all 3 channels: 'weather', 'wxtest', 'alerts'")
+    print("✓ Message broadcast to all 3 channels: 'weather', 'alerts', 'alerts'")
     print()
 
 
@@ -123,11 +123,11 @@ def test_empty_channel_names():
     print("=" * 60)
     
     # Test with empty channel names (should be filtered out with warning)
-    bot = WeatherBot(node_id="test_bot", debug=True, channel="weather,,,wxtest")
+    bot = WeatherBot(node_id="test_bot", debug=True, channel="weather,,,alerts")
     
     # Verify only valid channels are kept
-    assert bot.channels == ["weather", "wxtest"], f"Expected ['weather', 'wxtest'], got {bot.channels}"
-    print("✓ Bot correctly filters out empty channel names from 'weather,,,wxtest'")
+    assert bot.channels == ["weather", "alerts"], f"Expected ['weather', 'alerts'], got {bot.channels}"
+    print("✓ Bot correctly filters out empty channel names from 'weather,,,alerts'")
     print("✓ Warning should have been logged about empty channel names")
     print()
 
@@ -166,17 +166,17 @@ def test_no_channel():
 def test_problem_statement_scenario():
     """
     Test the exact scenario from the problem statement:
-    User wants to use both 'wxtest' and 'weather' channels
+    User wants to use both 'alerts' and 'weather' channels
     """
     print("=" * 60)
     print("TEST: Problem Statement Scenario")
     print("=" * 60)
-    print("User request: 'tested with wxtest channel but would like it")
+    print("User request: 'tested with alerts channel but would like it")
     print("              to run on weather channel in meshcore'")
     print()
     
     # Create bot with both channels as requested
-    bot = WeatherBot(node_id="weather_bot", debug=False, channel="wxtest,weather")
+    bot = WeatherBot(node_id="weather_bot", debug=False, channel="alerts,weather")
     
     print(f"✓ Bot created with channels: {bot.channels}")
     
@@ -223,10 +223,10 @@ def test_problem_statement_scenario():
     assert len(sent_messages) == 2, f"Expected 2 messages (one per channel), got {len(sent_messages)}"
     
     channels_sent = [msg["channel"] for msg in sent_messages]
-    assert "wxtest" in channels_sent, "Expected message on 'wxtest' channel"
+    assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
     
-    print("✓ Weather response broadcast to both 'wxtest' and 'weather' channels")
+    print("✓ Weather response broadcast to both 'alerts' and 'weather' channels")
     print("✓ Bot now supports multiple channels as requested!")
     print()
 
@@ -264,10 +264,10 @@ def main():
         print("  python3 weather_bot.py --channel weather --interactive")
         print()
         print("  # Multiple channels (solves the problem statement):")
-        print("  python3 weather_bot.py --channel weather,wxtest --interactive")
+        print("  python3 weather_bot.py --channel weather,alerts --interactive")
         print()
         print("  # Multiple channels with spaces:")
-        print("  python3 weather_bot.py --channel 'weather, wxtest, alerts' --interactive")
+        print("  python3 weather_bot.py --channel 'weather, alerts, alerts' --interactive")
         print()
 
         return 0

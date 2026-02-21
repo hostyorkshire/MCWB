@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-End-to-end integration test demonstrating the complete fix for weather and wxtest channels.
+End-to-end integration test demonstrating the complete fix for weather and alerts channels.
 
 This test simulates the full workflow:
-1. Weather bot is configured with --channel weather,wxtest
+1. Weather bot is configured with --channel weather,alerts
 2. User sends "wx London" on the weather channel
 3. Bot receives it and correctly identifies it came from the weather channel
-4. Bot responds on both weather and wxtest channels
+4. Bot responds on both weather and alerts channels
 """
 
 import sys
@@ -15,27 +15,27 @@ from meshcore import MeshCore, _RESP_CHANNEL_MSG, _FRAME_OUT
 from unittest.mock import MagicMock, patch
 
 def test_end_to_end_weather_channels():
-    """End-to-end test of weather bot with weather and wxtest channels"""
+    """End-to-end test of weather bot with weather and alerts channels"""
     
     print("=" * 70)
     print("  End-to-End Integration Test: Weather & Wxtest Channels")
     print("=" * 70)
     
     # Step 1: Create weather bot configured for both channels
-    print("\n📡 Step 1: Initialize weather bot with --channel weather,wxtest")
+    print("\n📡 Step 1: Initialize weather bot with --channel weather,alerts")
     print("-" * 70)
     
-    bot = WeatherBot(node_id="WX_BOT", debug=False, channel="weather,wxtest")
+    bot = WeatherBot(node_id="WX_BOT", debug=False, channel="weather,alerts")
     
     print(f"✓ Bot configured for channels: {bot.channels}")
-    assert bot.channels == ['weather', 'wxtest']
+    assert bot.channels == ['weather', 'alerts']
     
     # Note: channel_map is populated when bot first sends messages
     # Pre-populate it by calling _get_channel_idx
     bot.mesh._get_channel_idx('weather')
-    bot.mesh._get_channel_idx('wxtest')
+    bot.mesh._get_channel_idx('alerts')
     print(f"✓ Channel mappings: {bot.mesh._channel_map}")
-    assert bot.mesh._channel_map == {'weather': 1, 'wxtest': 2}
+    assert bot.mesh._channel_map == {'weather': 1, 'alerts': 2}
     
     # Step 2: Simulate receiving a weather request on the weather channel
     print("\n📨 Step 2: Receive 'wx London' on weather channel (channel_idx=1)")
@@ -75,10 +75,10 @@ def test_end_to_end_weather_channels():
     print(f"✓ Bot identified sender as 'User1' with content 'wx London'")
     
     # Step 3: Verify bot responds on both channels
-    print("\n📤 Step 3: Verify bot responds on both weather and wxtest channels")
+    print("\n📤 Step 3: Verify bot responds on both weather and alerts channels")
     print("-" * 70)
     
-    # The bot should have sent responses to both weather (idx=1) and wxtest (idx=2)
+    # The bot should have sent responses to both weather (idx=1) and alerts (idx=2)
     print(f"✓ Bot sent {len(sent_messages)} message(s)")
     
     if len(sent_messages) >= 2:
@@ -92,10 +92,10 @@ def test_end_to_end_weather_channels():
         
         print(f"✓ Channel indices used: {channel_indices}")
         
-        # Verify both channel 1 (weather) and channel 2 (wxtest) were used
+        # Verify both channel 1 (weather) and channel 2 (alerts) were used
         assert 1 in channel_indices, "Expected message on channel_idx=1 (weather)"
-        assert 2 in channel_indices, "Expected message on channel_idx=2 (wxtest)"
-        print(f"✓ Confirmed messages sent to both weather (idx=1) and wxtest (idx=2)")
+        assert 2 in channel_indices, "Expected message on channel_idx=2 (alerts)"
+        print(f"✓ Confirmed messages sent to both weather (idx=1) and alerts (idx=2)")
     else:
         print(f"  Note: In simulation mode, actual transmission details may vary")
         print(f"  ✓ Bot attempted to broadcast on configured channels")
@@ -114,7 +114,7 @@ def test_end_to_end_weather_channels():
     print("  ✅ End-to-End Test PASSED!")
     print("=" * 70)
     print("\nSummary:")
-    print("  The fix ensures that incoming messages on weather and wxtest")
+    print("  The fix ensures that incoming messages on weather and alerts")
     print("  channels are correctly identified and processed, with responses")
     print("  broadcast to all configured channels as expected.")
     print()
