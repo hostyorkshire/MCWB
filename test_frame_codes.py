@@ -43,11 +43,11 @@ def test_cmd_get_device_time():
     # Simulate receiving CMD_GET_DEVICE_TIME frame (0x05)
     frame = create_frame(0x05)
     
-    # Set up mock to return the frame
-    mock_serial.readline.return_value = frame
+    # Extract payload from frame (skip 0x3E + 2-byte length)
+    payload = frame[3:]
     
-    # Parse the frame
-    mesh._handle_binary_frame(frame)
+    # Parse the payload directly
+    mesh._parse_binary_frame(payload)
     
     # Verify that _send_command was called with RESP_CURR_TIME (0x09)
     assert mock_serial.write.called, "Expected response to be sent"
@@ -101,8 +101,9 @@ def test_push_msg_ack():
     # Reset the mock to track new calls
     mock_serial.write.reset_mock()
     
-    # Parse the frame
-    mesh._handle_binary_frame(frame)
+    # Extract payload from frame and parse it
+    payload = frame[3:]
+    mesh._parse_binary_frame(payload)
     
     # Verify that CMD_SYNC_NEXT_MSG (0x0a) is sent to fetch queued messages
     assert mock_serial.write.called, "Expected CMD_SYNC_NEXT_MSG to be sent after ACK"
@@ -147,9 +148,12 @@ def test_no_unhandled_errors():
     for code in test_codes:
         frame = create_frame(code, bytes(4))
         
+        # Extract payload from frame
+        payload = frame[3:]
+        
         # This should not raise any exception or log "unhandled"
         try:
-            mesh._handle_binary_frame(frame)
+            mesh._parse_binary_frame(payload)
             print(f"✓ Code {code:#04x} handled without errors")
         except Exception as e:
             print(f"✗ Code {code:#04x} raised exception: {e}")

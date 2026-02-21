@@ -38,7 +38,7 @@ def simulate_frame_handling():
     # Simulate receiving CMD_GET_DEVICE_TIME frame
     frame_payload = bytes([0x05])  # CMD_GET_DEVICE_TIME
     frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
-    mesh._handle_binary_frame(frame)
+    payload = frame[3:]; mesh._parse_binary_frame(payload)
     
     print()
     print("Step 2: Bot receives PUSH_MSG_ACK (0x88)")
@@ -47,7 +47,7 @@ def simulate_frame_handling():
     # Simulate receiving PUSH_MSG_ACK frame
     frame_payload = bytes([0x88, 0x01, 0x02, 0x03, 0x04])  # PUSH_MSG_ACK with ack data
     frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
-    mesh._handle_binary_frame(frame)
+    payload = frame[3:]; mesh._parse_binary_frame(payload)
     
     print()
     print("Step 3: Bot receives PUSH_MSG_WAITING (0x83)")
@@ -56,7 +56,7 @@ def simulate_frame_handling():
     # Simulate receiving PUSH_MSG_WAITING frame
     frame_payload = bytes([0x83])  # PUSH_MSG_WAITING
     frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
-    mesh._handle_binary_frame(frame)
+    payload = frame[3:]; mesh._parse_binary_frame(payload)
     
     print()
     print("✅ All frame codes handled successfully!")
