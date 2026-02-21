@@ -114,7 +114,8 @@ class MeshCore:
 
         # Channel name to channel_idx mapping for LoRa transmission
         # Allows different named channels to use different channel indices
-        self._channel_map = {}
+        self._channel_map = {}  # channel_name -> channel_idx
+        self._reverse_channel_map = {}  # channel_idx -> channel_name
         self._next_channel_idx = 1  # 0 is reserved for default/no-channel
 
         # LoRa serial connection
@@ -163,6 +164,7 @@ class MeshCore:
                     f"Existing channels: {list(self._channel_map.keys())}"
                 )
             self._channel_map[channel] = self._next_channel_idx
+            self._reverse_channel_map[self._next_channel_idx] = channel
             self.log(f"Mapped channel '{channel}' to channel_idx {self._next_channel_idx}")
             self._next_channel_idx += 1
         
@@ -181,15 +183,8 @@ class MeshCore:
         if channel_idx == 0:
             return None  # Default/public channel (no specific channel name)
         
-        # Search for the channel name that maps to this channel_idx
-        for channel_name, idx in self._channel_map.items():
-            if idx == channel_idx:
-                return channel_name
-        
-        # If not found in existing mappings, return None
-        # This can happen when receiving from a remote node that uses
-        # a channel_idx we haven't mapped yet
-        return None
+        # O(1) lookup using reverse mapping dictionary
+        return self._reverse_channel_map.get(channel_idx)
 
     def register_handler(self, message_type: str, handler: Callable):
         """
