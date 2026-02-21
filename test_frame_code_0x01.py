@@ -57,7 +57,7 @@ def test_frame_code_0x01():
     
     # Parse the frame - should not raise any exception
     try:
-        mesh._handle_binary_frame(frame)
+        payload = frame[3:]; mesh._parse_binary_frame(payload)
         print("✓ Frame code 0x01 handled without errors")
     except Exception as e:
         print(f"✗ Frame code 0x01 raised exception: {e}")
@@ -94,7 +94,7 @@ def test_frame_code_0x01_in_sequence():
     for code in test_codes:
         frame = create_frame(code)
         try:
-            mesh._handle_binary_frame(frame)
+            payload = frame[3:]; mesh._parse_binary_frame(payload)
             print(f"✓ Frame code {code:#04x} handled successfully")
         except Exception as e:
             print(f"✗ Frame code {code:#04x} raised exception: {e}")
@@ -126,7 +126,7 @@ def test_no_unhandled_error_logged():
     frame = create_frame(0x01)
     
     with redirect_stdout(captured_output):
-        mesh._handle_binary_frame(frame)
+        payload = frame[3:]; mesh._parse_binary_frame(payload)
     
     output = captured_output.getvalue()
     
@@ -164,7 +164,7 @@ def test_app_start_during_init():
     captured_output = io.StringIO()
     
     with redirect_stdout(captured_output):
-        mesh._handle_binary_frame(frame)
+        payload = frame[3:]; mesh._parse_binary_frame(payload)
     
     output = captured_output.getvalue()
     

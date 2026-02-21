@@ -63,7 +63,7 @@ def test_weather_and_wxtest_channels():
     frame_length = len(payload).to_bytes(2, "little")
     raw_frame = bytes([_FRAME_OUT]) + frame_length + payload + b'\n'
     
-    mesh._handle_binary_frame(raw_frame)
+    length = int.from_bytes(raw_frame[1:3], 'little'); payload = raw_frame[3:3+length]; mesh._parse_binary_frame(payload)
     
     assert len(received_messages) == 1, "Should have received 1 message"
     assert received_messages[0].channel == "weather", f"Expected channel='weather', got '{received_messages[0].channel}'"
@@ -83,7 +83,7 @@ def test_weather_and_wxtest_channels():
     frame_length = len(payload).to_bytes(2, "little")
     raw_frame = bytes([_FRAME_OUT]) + frame_length + payload + b'\n'
     
-    mesh._handle_binary_frame(raw_frame)
+    length = int.from_bytes(raw_frame[1:3], 'little'); payload = raw_frame[3:3+length]; mesh._parse_binary_frame(payload)
     
     assert len(received_messages) == 1, "Should have received 1 message"
     assert received_messages[0].channel == "wxtest", f"Expected channel='wxtest', got '{received_messages[0].channel}'"
@@ -106,7 +106,7 @@ def test_weather_and_wxtest_channels():
     frame_length = len(payload).to_bytes(2, "little")
     raw_frame = bytes([_FRAME_OUT]) + frame_length + payload + b'\n'
     
-    mesh._handle_binary_frame(raw_frame)
+    length = int.from_bytes(raw_frame[1:3], 'little'); payload = raw_frame[3:3+length]; mesh._parse_binary_frame(payload)
     
     assert len(received_messages) == 1, "Should have received 1 message"
     assert received_messages[0].channel == "weather", f"Expected channel='weather', got '{received_messages[0].channel}'"
@@ -126,7 +126,7 @@ def test_weather_and_wxtest_channels():
     frame_length = len(payload).to_bytes(2, "little")
     raw_frame = bytes([_FRAME_OUT]) + frame_length + payload + b'\n'
     
-    mesh._handle_binary_frame(raw_frame)
+    length = int.from_bytes(raw_frame[1:3], 'little'); payload = raw_frame[3:3+length]; mesh._parse_binary_frame(payload)
     
     assert len(received_messages) == 1, "Should have received 1 message"
     assert received_messages[0].channel is None, f"Expected channel=None for default channel, got '{received_messages[0].channel}'"

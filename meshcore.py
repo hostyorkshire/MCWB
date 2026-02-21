@@ -370,24 +370,76 @@ class MeshCore:
         """
         while self.running and self._serial and self._serial.is_open:
             try:
-                raw = self._serial.readline()
-                if not raw:
-                    continue
+                # Try to peek at first byte for real serial connections (binary protocol detection)
+                # For mocks/tests, fall back to readline() for compatibility
+                raw = None
+                first_byte = None
+                
+                try:
+                    # Check if data is available (real serial only)
+                    if self._serial.in_waiting > 0:
+                        # Read first byte to determine frame type
+                        first_byte = self._serial.read(1)
+                        if not first_byte:
+                            continue
+                        
+                        # ----------------------------------------------------------------
+                        # MeshCore companion radio binary protocol
+                        # Frame format (outbound, radio→app):
+                        #   0x3E ('>')  - frame start
+                        #   uint16 LE   - payload length
+                        #   bytes       - payload (first byte = response/push code)
+                        # ----------------------------------------------------------------
+                        if first_byte[0] == _FRAME_OUT:
+                            # Read the length header (2 bytes, little-endian)
+                            length_bytes = self._serial.read(2)
+                            if len(length_bytes) < 2:
+                                self.log("Binary frame incomplete: missing length header")
+                                continue
+                            
+                            length = int.from_bytes(length_bytes, "little")
+                            if length == 0 or length > _MAX_FRAME_SIZE:
+                                self.log(f"Binary frame length {length} out of range, skipping")
+                                continue
+                            
+                            # Read the exact payload bytes
+                            payload = self._serial.read(length)
+                            if len(payload) < length:
+                                self.log(f"Binary frame incomplete: expected {length} bytes, got {len(payload)}")
+                                continue
+                            
+                            # Parse the complete binary frame
+                            self._parse_binary_frame(payload)
+                            continue
+                        
+                        # For non-binary frames, read rest of line
+                        rest_of_line = self._serial.readline()
+                        raw = first_byte + rest_of_line
+                except (TypeError, AttributeError):
+                    # Mock/test object - use readline() directly
+                    pass
+                
+                # Use readline() if we haven't read data yet (mock/test or no data available)
+                if raw is None:
+                    raw = self._serial.readline()
+                    if not raw:
+                        continue
+                    
+                    # Check if this is a binary frame that came via readline() (from tests/mocks)
+                    if raw and len(raw) > 0 and raw[0] == _FRAME_OUT:
+                        if len(raw) < 3:
+                            self.log("Binary frame too short to contain a length header")
+                            continue
+                        length = int.from_bytes(raw[1:3], "little")
+                        if length == 0 or length > _MAX_FRAME_SIZE:
+                            self.log(f"Binary frame length {length} out of range, skipping")
+                            continue
+                        payload = raw[3: 3 + length]
+                        if not payload:
+                            continue
+                        self._parse_binary_frame(payload)
+                        continue
 
-                # ----------------------------------------------------------------
-                # MeshCore companion radio binary protocol
-                # Frame format (outbound, radio→app):
-                #   0x3E ('>')  - frame start
-                #   uint16 LE   - payload length
-                #   bytes       - payload (first byte = response/push code)
-                # ----------------------------------------------------------------
-                if raw[0] == _FRAME_OUT:
-                    self._handle_binary_frame(raw)
-                    continue
-
-                # ----------------------------------------------------------------
-                # Legacy JSON path (simulation mode / inter-Python communication)
-                # ----------------------------------------------------------------
                 line = raw.decode("utf-8", errors="ignore").strip()
                 if not line:
                     continue
@@ -433,26 +485,6 @@ class MeshCore:
                 self.log(f"LoRa CMD: {cmd_data.hex()}")
             except SerialException as e:
                 self.log(f"LoRa CMD error: {e}")
-
-    def _handle_binary_frame(self, raw: bytes):
-        """
-        Parse a binary MeshCore companion radio frame received via readline().
-
-        The frame may not be byte-perfect when read via readline() (which stops
-        at 0x0A) but works reliably for typical short text messages that do not
-        contain embedded newline bytes.
-        """
-        if len(raw) < 3:
-            self.log("Binary frame too short to contain a length header")
-            return
-        length = int.from_bytes(raw[1:3], "little")
-        if length == 0 or length > _MAX_FRAME_SIZE:
-            self.log(f"Binary frame length {length} out of range, skipping")
-            return
-        payload = raw[3: 3 + length]
-        if not payload:
-            return
-        self._parse_binary_frame(payload)
 
     def _parse_binary_frame(self, payload: bytes):
         """

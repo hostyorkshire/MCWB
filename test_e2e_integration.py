@@ -67,8 +67,9 @@ def test_end_to_end_weather_channels():
     
     # Mock the weather API to return immediately (since we don't have internet)
     with patch.object(bot, 'geocode_location', return_value=None):
-        # Process the incoming frame
-        bot.mesh._handle_binary_frame(raw_frame)
+        # Process the incoming frame - extract payload and parse it
+        payload = raw_frame[3:]
+        bot.mesh._parse_binary_frame(payload)
     
     print(f"✓ Bot received message on channel 'weather'")
     print(f"✓ Bot identified sender as 'User1' with content 'wx London'")
