@@ -20,8 +20,9 @@ _CMD_GET_DEVICE_TIME = 5    # Request current device time (RTC)
 _CMD_SYNC_NEXT_MSG = 10 # Fetch next queued message
 _CMD_SEND_CHAN_MSG = 3   # Send a channel (flood) text message
 _RESP_CURR_TIME = 9         # Response: current device time (4-byte UNIX timestamp)
+_PUSH_SEND_CONFIRMED = 0x82 # Push: outgoing message ACK confirmed by mesh (ack_code 4B + round_trip 4B)
 _PUSH_MSG_WAITING = 0x83    # Push: a new message has been queued
-_PUSH_MSG_ACK = 0x88        # Push: message acknowledgment notification
+_PUSH_CHAN_MSG = 0x88        # Push: inline channel message delivery (0x80 | RESP_CHANNEL_MSG)
 _RESP_CONTACT_MSG = 7       # Response: direct (contact) message received
 _RESP_CHANNEL_MSG = 8       # Response: channel message received
 _RESP_NO_MORE_MSGS = 10     # Response: message queue is empty
@@ -645,17 +646,31 @@ class MeshCore:
             response = bytes([_RESP_CURR_TIME]) + timestamp
             self._send_command(response)
 
+        elif code == _PUSH_SEND_CONFIRMED:
+            # Outgoing message was acknowledged by the mesh network.
+            # Payload: ack_code(4) + round_trip_ms(4). No further action needed.
+            self.log("MeshCore: send confirmed by mesh network")
+
         elif code == _PUSH_MSG_WAITING:
             # Companion radio signals that a new message has been received;
             # request it immediately.
             self.log("MeshCore: message waiting, fetching…")
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
-        elif code == _PUSH_MSG_ACK:
-            # Companion radio sends message acknowledgment notification.
-            # This confirms that a previously sent message was received by the mesh network.
-            self.log("MeshCore: message acknowledgment received")
-            # Fetch any messages that may be queued after the ACK
+        elif code == _PUSH_CHAN_MSG:
+            # 0x88 = 0x80 | RESP_CHANNEL_MSG: the companion radio pushes an incoming
+            # channel message directly (without waiting for CMD_SYNC_NEXT_MSG).
+            # Payload layout is identical to RESP_CHANNEL_MSG (0x08):
+            # channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+            self.log("MeshCore: channel message received (push)")
+            if len(payload) >= 8:
+                channel_idx = payload[1]
+                text = payload[8:].decode("utf-8", "ignore")
+                self.log(f"Binary frame: PUSH_CHAN_MSG on channel_idx {channel_idx}")
+                self._dispatch_channel_message(text, channel_idx)
+            else:
+                self.log(f"Binary frame: PUSH_CHAN_MSG payload too short ({len(payload)} bytes)")
+            # Drain any further queued messages
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG:

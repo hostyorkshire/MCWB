@@ -78,79 +78,93 @@ def test_cmd_get_device_time():
     return True
 
 
-def test_push_msg_ack():
-    """Test handling of PUSH_MSG_ACK (0x88)"""
+def test_push_chan_msg():
+    """Test handling of PUSH_CHAN_MSG (0x88) - pushed inline channel message delivery"""
     print("=" * 60)
-    print("TEST: PUSH_MSG_ACK (0x88)")
+    print("TEST: PUSH_CHAN_MSG (0x88) — inline channel message dispatch")
     print("=" * 60)
-    
+
     mesh = MeshCore("test_node", debug=True)
     mesh.running = True
-    
+
     # Mock the serial connection
     mock_serial = MagicMock()
     mock_serial.is_open = True
     mesh._serial = mock_serial
-    
-    # Simulate receiving PUSH_MSG_ACK frame (0x88) with dummy ack data
-    frame = create_frame(0x88, bytes([0x00, 0x00, 0x00, 0x00]))
-    
-    # Set up mock to return the frame
-    mock_serial.readline.return_value = frame
-    
-    # Reset the mock to track new calls
-    mock_serial.write.reset_mock()
-    
-    # Extract payload from frame and parse it
+
+    # Track handler calls
+    received = []
+
+    def handler(message):
+        received.append(message)
+
+    mesh.register_handler("text", handler)
+
+    # Build a realistic 0x88 payload:
+    # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+    channel_idx = 2
+    path_len = 1
+    txt_type = 0
+    timestamp = (1771711343).to_bytes(4, "little")
+    text = b"Alice: wx leeds"
+    inner = bytes([channel_idx, path_len, txt_type]) + timestamp + text
+    frame = create_frame(0x88, inner)
     payload = frame[3:]
+
+    mock_serial.write.reset_mock()
     mesh._parse_binary_frame(payload)
-    
-    # Verify that CMD_SYNC_NEXT_MSG (0x0a) is sent to fetch queued messages
-    assert mock_serial.write.called, "Expected CMD_SYNC_NEXT_MSG to be sent after ACK"
-    
-    # Get the command that was sent
+
+    # Handler must have been called with the parsed message
+    assert len(received) == 1, f"Expected 1 message dispatched, got {len(received)}"
+    msg = received[0]
+    assert msg.sender == "Alice", f"Expected sender 'Alice', got '{msg.sender}'"
+    assert msg.content == "wx leeds", f"Expected content 'wx leeds', got '{msg.content}'"
+    assert msg.channel_idx == channel_idx, f"Expected channel_idx {channel_idx}, got {msg.channel_idx}"
+
+    # CMD_SYNC_NEXT_MSG must also have been sent to drain the queue
+    assert mock_serial.write.called, "Expected CMD_SYNC_NEXT_MSG to be sent after push message"
     cmd_frame = mock_serial.write.call_args[0][0]
-    
-    # Parse command frame: 0x3C + length(2) + payload
     assert cmd_frame[0] == 0x3C, "Command should start with FRAME_IN (0x3C)"
-    
-    # Extract payload
     payload_length = int.from_bytes(cmd_frame[1:3], "little")
-    payload = cmd_frame[3:3+payload_length]
-    
-    assert payload[0] == 0x0a, f"Command should be CMD_SYNC_NEXT_MSG (0x0a), got {payload[0]:#04x}"
-    
-    print(f"✓ PUSH_MSG_ACK (0x88) handled correctly")
-    print(f"✓ CMD_SYNC_NEXT_MSG (0x0a) sent to fetch queued messages")
-    print(f"✓ No 'unhandled frame code' error logged")
+    cmd_payload = cmd_frame[3:3 + payload_length]
+    assert cmd_payload[0] == 0x0a, \
+        f"Command should be CMD_SYNC_NEXT_MSG (0x0a), got {cmd_payload[0]:#04x}"
+
+    print(f"✓ PUSH_CHAN_MSG (0x88) dispatched message correctly")
+    print(f"  sender='{msg.sender}', content='{msg.content}', channel_idx={msg.channel_idx}")
+    print(f"✓ CMD_SYNC_NEXT_MSG (0x0a) sent to drain remaining queue")
     print()
-    
+
     return True
 
 
 def test_no_unhandled_errors():
-    """Test that codes 0x05 and 0x88 don't trigger 'unhandled frame code' logs"""
+    """Test that codes 0x05, 0x82, and 0x88 don't trigger 'unhandled frame code' logs"""
     print("=" * 60)
     print("TEST: No 'unhandled frame code' errors")
     print("=" * 60)
-    
+
     mesh = MeshCore("test_node", debug=False)
     mesh.running = True
-    
+
     # Mock the serial connection
     mock_serial = MagicMock()
     mock_serial.is_open = True
     mesh._serial = mock_serial
-    
-    # Test both frame codes
-    test_codes = [0x05, 0x88]
-    
+
+    # Register a no-op handler so 0x88 dispatch doesn't fail
+    mesh.register_handler("text", lambda msg: None)
+
+    # Test all three previously-problematic frame codes
+    test_codes = [0x05, 0x82, 0x88]
+
     for code in test_codes:
-        frame = create_frame(code, bytes(4))
-        
+        # Provide enough bytes so length checks pass (use realistic padding)
+        frame = create_frame(code, bytes(10))
+
         # Extract payload from frame
         payload = frame[3:]
-        
+
         # This should not raise any exception or log "unhandled"
         try:
             mesh._parse_binary_frame(payload)
@@ -158,7 +172,7 @@ def test_no_unhandled_errors():
         except Exception as e:
             print(f"✗ Code {code:#04x} raised exception: {e}")
             return False
-    
+
     print()
     return True
 
@@ -170,22 +184,22 @@ def main():
     print("║" + " " * 12 + "Frame Code Handler Tests" + " " * 22 + "║")
     print("╚" + "=" * 58 + "╝")
     print()
-    
+
     try:
         # Run tests
         test_cmd_get_device_time()
-        test_push_msg_ack()
+        test_push_chan_msg()
         test_no_unhandled_errors()
-        
+
         print("=" * 60)
         print("✅ All frame code tests passed!")
         print("=" * 60)
         print()
         print("Summary:")
-        print("  • CMD_GET_DEVICE_TIME (0x05) now responds with current time")
-        print("  • PUSH_MSG_ACK (0x88) is now handled gracefully")
-        print("  • No more 'unhandled frame code' errors for these codes")
-        print("  • Bot should now respond to commands properly")
+        print("  • CMD_GET_DEVICE_TIME (0x05) responds with current time")
+        print("  • PUSH_CHAN_MSG (0x88) now dispatches inline channel messages")
+        print("  • PUSH_SEND_CONFIRMED (0x82) handled gracefully")
+        print("  • No more 'unhandled frame code' errors for any of these codes")
         print()
         
         return 0
