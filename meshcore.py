@@ -152,7 +152,13 @@ class MeshCore:
         else:
             raise TypeError(f"channels must be str, list, or None, not {type(channels).__name__}")
         
+        # Pre-populate channel mappings for filtered channels
+        # This ensures incoming messages on these channels can be matched to the filter
         if self.channel_filter:
+            for channel in self.channel_filter:
+                if channel not in self._channel_map:
+                    self._get_channel_idx(channel)
+            
             channel_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
             self.log(f"Channel filter set to: {channel_str}")
         else:
