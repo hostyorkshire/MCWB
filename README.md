@@ -1,203 +1,96 @@
-# MCWB - MeshCore Weather Bot
+# MCWBv2 - MeshCore Weather Bot
 
-UK Meshcore weather bot for broadcasting real-time weather data via MeshCore mesh radio network.
+Lightweight Python3 weather bot for the MeshCore `#weather` channel.
 
 ## Overview
 
-MCWB is a Python-based weather bot that integrates with the MeshCore mesh radio network to provide real-time UK weather information using the Open-Meteo API. Users can query weather conditions by sending a simple command with their location.
-
-## Features
-
-- **Real-time Weather Data**: Fetches current weather conditions from the Open-Meteo API
-- **Location Geocoding**: Automatically converts city/town names to coordinates
-- **MeshCore Integration**: Communicates via MeshCore mesh radio network
-- **Raspberry Pi Compatible**: Designed to run on Raspberry Pi Zero 2
-- **Low Resource Usage**: Minimal dependencies and efficient operation
-- **Simple Command Interface**: Just type `wx [location]` to get weather
-
-## Weather Information Provided
-
-- Current conditions (clear, cloudy, rain, snow, etc.)
-- Temperature (°C)
-- Feels-like temperature
-- Humidity (%)
-- Wind speed and direction
-- Precipitation
-
-## Requirements
-
-- Python 3.7 or higher
-- `requests` library
-- Internet connection for API access
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/hostyorkshire/MCWB.git
-cd MCWB
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-For Raspberry Pi:
-```bash
-python3 -m pip install -r requirements.txt
-```
+MCWBv2 listens on the MeshCore `#weather` channel and responds to weather
+queries using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
 
 ## Usage
 
-### Interactive Mode (Testing)
+Send any of the following in the `#weather` channel:
 
-Run the bot in interactive mode to test locally:
-
-```bash
-python3 weather_bot.py --interactive
+```
+WX London
+wx York
+weather Manchester
 ```
 
-Then type commands like:
-- `wx London`
-- `wx Manchester`
-- `wx York`
+The bot replies on the same channel with current conditions:
 
-### One-Shot Mode
-
-Get weather for a specific location and exit:
-
-```bash
-python3 weather_bot.py --location "London"
+```
+London, United Kingdom
+Conditions: Partly cloudy
+Temp: 14.2°C (feels like 12.8°C)
+Humidity: 72%
+Wind: 18 km/h at 230°
+Precipitation: 0.0 mm
 ```
 
-### Daemon Mode
+## Requirements
 
-Run the bot as a daemon to listen for mesh network messages:
+- Python 3.7+
+- `requests` and `pyserial` (see `requirements.txt`)
+- MeshCore companion radio connected via USB
+
+## Installation
 
 ```bash
-# Basic usage - accepts queries from all channels
+git clone https://github.com/hostyorkshire/MCWB.git
+cd MCWB
+pip install -r requirements.txt
+```
+
+## Running the bot
+
+```bash
+# Auto-detect USB port (recommended)
 python3 weather_bot.py
 
-# With LoRa hardware (auto-detect USB port)
-python3 weather_bot.py --port auto --baud 115200 -d
+# Specify port and baud rate
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 
-# With specific LoRa hardware port
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
-
-# With debug output
+# Enable debug output
 python3 weather_bot.py -d
+
+# Enable periodic announcements every 3 hours
+python3 weather_bot.py --announce
+
+# Quick weather lookup (no radio hardware needed)
+python3 weather_bot.py --location Leeds
 ```
 
-**Note:** The bot accepts weather queries from ALL channels and replies on the same channel where each query came from.
-
-**USB Port Auto-Detection:** If your USB port changes after a reboot (e.g., from `/dev/ttyUSB0` to `/dev/ttyUSB1`), use `--port auto` to automatically detect and connect to available USB serial ports. The bot will attempt to connect to all available USB ports (ttyUSB*, ttyACM*, ttyAMA*) and use the first one that responds.
-
-### Command Line Options
+### Command line options
 
 ```
-usage: weather_bot.py [-h] [-n NODE_ID] [-d] [-i] [-p PORT]
-                      [-b BAUD] [-l LOCATION]
-
-MeshCore Weather Bot - UK Weather via mesh radio network
-
-options:
-  -h, --help            show this help message and exit
-  -n NODE_ID, --node-id NODE_ID
-                        Node ID for this bot (default: weather_bot)
-  -d, --debug           Enable debug output
-  -i, --interactive     Run in interactive mode for testing
-  -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
-                        Use 'auto' to automatically detect available ports.
-                        When omitted the bot runs in simulation mode
-                        (no radio hardware required).
-  -b BAUD, --baud BAUD  Baud rate for LoRa serial connection (default: 9600)
+  -p PORT, --port PORT    Serial port (auto-detects if omitted)
+  -b BAUD, --baud BAUD    Baud rate (default: 115200)
+  -d, --debug             Enable debug output
+  -a, --announce          Send periodic announcements every 3 hours
   -l LOCATION, --location LOCATION
-                        Get weather for a specific location and exit
+                          Look up weather and exit (no radio needed)
 ```
 
-#### How the Bot Handles Channels
+## Running as a systemd service
 
-The weather bot accepts queries from ALL channels and replies accordingly:
-
-**✅ Accepts queries from ANY channel**
-- Users can send "wx London" from the default channel (channel_idx 0)
-- Users can send "wx London" from #weather channel
-- Users can send "wx London" from any other channel
-- The bot processes ALL weather queries regardless of channel
-
-**✅ Replies on the SAME channel**
-- If query came from channel_idx 0 (default), reply goes to channel_idx 0
-- If query came from channel_idx 1, reply goes to channel_idx 1
-- If query came from channel_idx 2, reply goes to channel_idx 2
-- This ensures users always receive their responses on the channel they used
-
-**How it works:**
-The bot uses the `channel_idx` from the incoming message to send replies. This works 
-regardless of how different nodes map channel names to indices, because the reply uses 
-the exact same numeric index that the query came from.
-
-**Example:**
 ```bash
-# Run the bot
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
-
-# ✅ User1 sends "wx London" from default channel → Gets reply on default channel
-# ✅ User2 sends "wx York" from #weather → Gets reply on #weather
-# ✅ User3 sends "wx Leeds" from #alerts → Gets reply on #alerts
-# All queries are processed, all users get their replies!
+sudo cp weather_bot.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable weather_bot
+sudo systemctl start weather_bot
 ```
 
-## Command Format
+## How it works
 
-To request weather information, send a message in one of these formats:
+MCWBv2 speaks the MeshCore companion radio binary protocol directly over the
+USB serial port.  When a channel message arrives the bot checks whether it
+starts with `wx ` or `weather ` (case-insensitive) and, if so, looks up the
+location with Open-Meteo's geocoding API, fetches the current conditions, and
+sends the formatted response back on the **same channel slot** the query came
+from.  No external custom libraries are required – everything is in the single
+`weather_bot.py` file.
 
-- `wx [location]` - Example: `wx London`
-- `weather [location]` - Example: `weather Manchester`
-
-The bot will respond with current weather conditions for the specified location.
-
-## MeshCore Integration
-
-### meshcore.py
-
-Core library for MeshCore mesh radio network communication. Provides:
-- Message sending and receiving
-- Message handler registration
-- Node management
-- **Channel-based broadcasting and filtering**
-
-### Channel Support
-
-MeshCore now supports broadcasting messages to specific channels. This allows you to:
-- Send messages to specific channels for organized communication
-- Filter incoming messages by channel
-- Create separate communication streams (e.g., weather, news, alerts)
-
-#### Broadcasting to a Channel
-
-```python
-from meshcore import MeshCore
-
-mesh = MeshCore("my_node")
-mesh.start()
-
-# Send to a specific channel
-mesh.send_message("Weather alert!", "text", channel="weather")
-
-# Send without channel (broadcast to all)
-mesh.send_message("General message", "text")
-```
-
-#### Filtering Messages by Channel
-
-```python
-# Listen only to messages on the 'weather' channel
-mesh.set_channel_filter("weather")
-
-# Listen to all channels (default)
-mesh.set_channel_filter(None)
-```
 
 ### meshcore_send.py
 
