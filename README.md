@@ -21,11 +21,11 @@ The bot replies on the same channel with current conditions:
 
 ```
 London, GB
-Conditions: Partly cloudy
-Temp: 14.2°C (feels like 12.8°C)
-Humidity: 72%
+Partly cloudy
+Temp: 14.2°C (feels 12.8°C)
+Humid: 72%
 Wind: 18 km/h at 230°
-Precipitation: 0.0 mm
+Precip: 0.0 mm
 ```
 
 ## LoRa Radio Hardware
