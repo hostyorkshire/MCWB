@@ -114,7 +114,8 @@ class MeshCore:
 
         # Channel name to channel_idx mapping for LoRa transmission
         # Allows different named channels to use different channel indices
-        self._channel_map = {}
+        self._channel_map = {}  # channel_name -> channel_idx
+        self._reverse_channel_map = {}  # channel_idx -> channel_name
         self._next_channel_idx = 1  # 0 is reserved for default/no-channel
 
         # LoRa serial connection
@@ -163,10 +164,27 @@ class MeshCore:
                     f"Existing channels: {list(self._channel_map.keys())}"
                 )
             self._channel_map[channel] = self._next_channel_idx
+            self._reverse_channel_map[self._next_channel_idx] = channel
             self.log(f"Mapped channel '{channel}' to channel_idx {self._next_channel_idx}")
             self._next_channel_idx += 1
         
         return self._channel_map[channel]
+
+    def _get_channel_name(self, channel_idx: int) -> Optional[str]:
+        """
+        Get the Python channel name for a given channel_idx.
+        
+        Args:
+            channel_idx: Channel index (0-7) from LoRa transmission
+            
+        Returns:
+            Channel name if mapped, None if channel_idx is 0 or unmapped
+        """
+        if channel_idx == 0:
+            return None  # Default/public channel (no specific channel name)
+        
+        # O(1) lookup using reverse mapping dictionary
+        return self._reverse_channel_map.get(channel_idx)
 
     def register_handler(self, message_type: str, handler: Callable):
         """
@@ -425,8 +443,9 @@ class MeshCore:
             # RESP_CODE_CHANNEL_MSG_RECV:
             # channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
             if len(payload) >= 8:
+                channel_idx = payload[1]  # Extract channel_idx from payload
                 text = payload[8:].decode("utf-8", "ignore")
-                self._dispatch_channel_message(text)
+                self._dispatch_channel_message(text, channel_idx)
             # Fetch the next queued message
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
@@ -434,8 +453,9 @@ class MeshCore:
             # RESP_CODE_CHANNEL_MSG_RECV_V3 (includes SNR prefix):
             # SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
             if len(payload) >= 12:
+                channel_idx = payload[4]  # Extract channel_idx from payload (after SNR + reserved)
                 text = payload[12:].decode("utf-8", "ignore")
-                self._dispatch_channel_message(text)
+                self._dispatch_channel_message(text, channel_idx)
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CONTACT_MSG:
@@ -464,7 +484,7 @@ class MeshCore:
         else:
             self.log(f"MeshCore: unhandled frame code {code:#04x}")
 
-    def _dispatch_channel_message(self, text: str):
+    def _dispatch_channel_message(self, text: str, channel_idx: int = 0):
         """
         Create and dispatch a MeshCoreMessage from a received channel text.
 
@@ -472,6 +492,10 @@ class MeshCore:
         message text in the format ``"sender_name: message_text"``.  This
         method splits on the first ``": "`` to expose a clean *sender* and
         *content* to the registered message handlers.
+        
+        Args:
+            text: The message text (may include "sender: " prefix)
+            channel_idx: The channel index from the LoRa frame (0-7)
         """
         colon = text.find(": ")
         if colon > 0:
@@ -480,8 +504,13 @@ class MeshCore:
         else:
             sender = "channel"
             content = text
-        self.log(f"LoRa RX channel msg from {sender}: {content}")
-        msg = MeshCoreMessage(sender=sender, content=content, message_type="text")
+        
+        # Map channel_idx back to Python channel name
+        channel_name = self._get_channel_name(channel_idx)
+        
+        channel_info = f" on channel '{channel_name}'" if channel_name else ""
+        self.log(f"LoRa RX channel msg from {sender}{channel_info}: {content}")
+        msg = MeshCoreMessage(sender=sender, content=content, message_type="text", channel=channel_name)
         self.receive_message(msg)
 
     def start(self):
