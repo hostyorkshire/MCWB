@@ -305,18 +305,22 @@ class MeshCore:
 
         # Apply channel filtering if configured
         if self.channel_filter is not None:
-            # Only filter when the message carries an explicit channel name.
-            # Binary-protocol frames only carry a numeric channel_idx; the bot's
-            # internal name→idx mapping is independent of the physical radio's
-            # channel-slot assignment, so idx-based filtering is unreliable and
-            # would silently drop messages from any channel whose physical slot
-            # doesn't happen to match the bot-internal index (e.g. #weather).
-            # For those messages (message.channel is None) we accept unconditionally
-            # and rely on the radio hardware to enforce channel membership.
-            if message.channel is not None and message.channel not in self.channel_filter:
-                self.log(f"Ignoring message: channel '{message.channel}' "
-                         f"not in filter {self.channel_filter}")
-                return
+            if message.channel is not None:
+                # Filter by explicit channel name
+                if message.channel not in self.channel_filter:
+                    self.log(f"Ignoring message: channel '{message.channel}' "
+                             f"not in filter {self.channel_filter}")
+                    return
+            else:
+                # No explicit channel name — filter by channel_idx.
+                # set_channel_filter() pre-registers channel names into the idx map,
+                # so _get_channel_name() reliably resolves the expected slot.
+                channel_name = (self._get_channel_name(message.channel_idx)
+                                if message.channel_idx is not None else None)
+                if channel_name not in self.channel_filter:
+                    self.log(f"Ignoring message: channel_idx {message.channel_idx} "
+                             f"('{channel_name}') not in filter {self.channel_filter}")
+                    return
 
         # Check if we have a handler for this message type
         if message.message_type in self.message_handlers:

@@ -110,21 +110,25 @@ def test_channel_filtering():
     print("✓ No filter: received 3/3 binary-protocol messages")
 
     # Test 2: Set 'weather' filter
-    #   - Binary-protocol messages (no channel name) → all ACCEPTED
-    #   - Named 'weather' message → ACCEPTED
-    #   - Named 'news' message   → REJECTED
+    #   - channel_idx=0 (default)  → REJECTED (maps to None, not in filter)
+    #   - channel_idx=1            → ACCEPTED (set_channel_filter mapped 'weather' → idx 1)
+    #   - channel_idx=2 (unmapped) → REJECTED (maps to None, not in filter)
+    #   - Named 'weather' message  → ACCEPTED
+    #   - Named 'news' message     → REJECTED
     received_messages.clear()
     mesh.set_channel_filter("weather")
-    mesh.receive_message(msg_ch0)     # no channel name → accepted
-    mesh.receive_message(msg_ch1)     # no channel name → accepted
-    mesh.receive_message(msg_ch2)     # no channel name → accepted
+    mesh.receive_message(msg_ch0)     # idx 0 → default → rejected
+    mesh.receive_message(msg_ch1)     # idx 1 → 'weather' → accepted
+    mesh.receive_message(msg_ch2)     # idx 2 → unmapped → rejected
     mesh.receive_message(msg_weather) # name 'weather' in filter → accepted
     mesh.receive_message(msg_news)    # name 'news' not in filter → rejected
-    assert len(received_messages) == 4, (
-        f"Expected 4 (3 binary + 1 named-weather), got {len(received_messages)}: {received_messages}"
+    assert len(received_messages) == 2, (
+        f"Expected 2 (channel_idx=1 + named-weather), got {len(received_messages)}: {received_messages}"
     )
     assert "News msg" not in received_messages
-    print("✓ 'weather' filter: binary messages accepted, 'weather' accepted, 'news' rejected")
+    assert "Channel 0" not in received_messages
+    assert "Channel 2" not in received_messages
+    print("✓ 'weather' filter: idx 1 accepted, idx 0/2 rejected, 'weather' accepted, 'news' rejected")
 
     # Test 3: Remove filter - all messages received again
     received_messages.clear()
