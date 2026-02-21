@@ -289,16 +289,18 @@ class MeshCore:
         if self.channel_filter:
             # When a channel filter is configured, accept messages from:
             # 1. Messages with matching channel name (for Python/simulation mode)
-            # 2. Messages from non-default channel_idx with NO channel name (from radios)
+            # 2. Messages from unnamed channels (channel_idx present, no channel name from radios)
+            # 3. Messages from the default/public channel (channel_idx 0) to allow general queries
             #
             # The second case handles the real-world scenario where users configure their
             # radios to use a specific channel_idx for a named channel (e.g., "weather"), but we
-            # can't predict which channel_idx they chose. So we accept any non-zero
+            # can't predict which channel_idx they chose. So we accept any
             # channel_idx as long as no explicit (non-matching) channel name is set.
             is_matching_channel_name = (message.channel in self.channel_filter)
-            # Check for non-zero channel_idx with no channel name (from LoRa radios)
+            # Check for any channel_idx with no channel name (from LoRa radios)
+            # This includes channel_idx 0 (default/public channel) to allow general queries
             # Note: explicit None check required to avoid TypeError on comparison
-            is_unnamed_channel = (message.channel is None and message.channel_idx is not None and message.channel_idx > 0)
+            is_unnamed_channel = (message.channel is None and message.channel_idx is not None and message.channel_idx >= 0)
             
             if not is_matching_channel_name and not is_unnamed_channel:
                 channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
@@ -608,7 +610,7 @@ class MeshCore:
         # Log for debugging: show if message will be filtered
         if self.channel_filter:
             is_matching = (channel_name in self.channel_filter)
-            is_unnamed = (channel_name is None and channel_idx is not None and channel_idx > 0)
+            is_unnamed = (channel_name is None and channel_idx is not None and channel_idx >= 0)
             will_process = is_matching or is_unnamed
             filter_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
             self.log(f"Channel filter check: matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")

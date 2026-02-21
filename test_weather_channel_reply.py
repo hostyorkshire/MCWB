@@ -87,16 +87,17 @@ def test_weather_channel():
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
         
-        if sent['channel'] == 'weather':
+        if sent['channel_idx'] == 0:
             print("✅ SUCCESS!")
             print()
-            print("Bot correctly replied on 'weather' channel")
-            print("Users monitoring the 'weather' channel will see the reply!")
+            print("Bot correctly replied on channel_idx 0 (where message came from)")
+            print("User M3UXC will see the reply even though bot is configured for 'weather' channel")
+            print("This ensures clients always receive responses regardless of channel configuration!")
             success = True
         else:
             print("❌ FAILED!")
-            print(f"  Expected: channel='weather'")
-            print(f"  Got: channel='{sent['channel']}'")
+            print(f"  Expected: channel_idx=0")
+            print(f"  Got: channel_idx={sent['channel_idx']}")
             success = False
         
         bot.mesh.stop()
@@ -118,8 +119,9 @@ def main():
         if success:
             print("✅ TEST PASSED")
             print()
-            print("The bot now correctly replies on the 'weather' channel")
-            print("when started with --channel weather")
+            print("The bot now correctly replies on the same channel where")
+            print("the query came from, ensuring clients always see responses")
+            print("even when bot is configured with a specific --channel")
         else:
             print("❌ TEST FAILED")
         print("=" * 70)
