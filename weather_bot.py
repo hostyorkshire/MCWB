@@ -432,6 +432,10 @@ class WeatherBot:
         print("Send 'wx [location]' to get weather.")
         print("Example: wx London")
         print("Listening for messages...")
+        print()
+        print("NOTE: If using MeshCore companion radio hardware, ensure the device")
+        print("      is properly configured and subscribed to the appropriate channels")
+        print("      in the MeshCore app or firmware configuration.")
 
     def stop(self):
         """Stop the weather bot"""
