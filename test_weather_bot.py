@@ -174,17 +174,17 @@ def test_reply_channel():
         bot.mesh.send_message = track_send
         bot.mesh.start()
 
-        # Test 1: Message with channel - bot should reply to that channel
-        print("\n1. Message from 'weather' channel:")
+        # Test 1: Message with channel - bot with configured channel should use configured channel
+        print("\n1. Message from 'weather' channel (bot configured with 'default'):")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel="weather")
         sent_messages.clear()
         bot.handle_message(msg)
-        assert len(sent_messages) == 1 and sent_messages[0]['channel'] == 'weather'
-        print("   ✓ Bot replied to 'weather' channel")
+        assert len(sent_messages) == 1 and sent_messages[0]['channel'] == 'default'
+        print("   ✓ Bot replied on configured 'default' channel (ignoring incoming 'weather')")
 
         # Test 2: Message without channel - bot should use configured channel
         mock_get.side_effect = [geocoding_response, weather_response]
-        print("\n2. Message without channel (fallback to configured):")
+        print("\n2. Message without channel (bot configured with 'default'):")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None)
         sent_messages.clear()
         bot.handle_message(msg)

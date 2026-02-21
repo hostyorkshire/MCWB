@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Test to verify the weather bot now replies to the channel where messages come from.
+Test to verify the weather bot uses configured channel for replies.
 
-This addresses the issue where the bot was broadcasting to a hardcoded channel
-instead of replying to the channel where the incoming message originated.
+When --channel is specified, the bot acts as a dedicated service for that channel
+and always broadcasts responses there, regardless of where incoming messages originated.
+This matches the problem statement requirement.
 """
 
 import sys
@@ -13,9 +14,9 @@ from weather_bot import WeatherBot
 
 
 def test_reply_to_incoming_channel():
-    """Test that bot replies to the channel the message came from"""
+    """Test that bot with configured channel uses that channel for replies"""
     print("=" * 70)
-    print("TEST: Bot Replies to Incoming Message Channel")
+    print("TEST: Bot Uses Configured Channel for Replies")
     print("=" * 70)
     print()
 
@@ -65,7 +66,7 @@ def test_reply_to_incoming_channel():
         bot.mesh.send_message = track_send
         bot.mesh.start()
         
-        print("Scenario 1: Message comes from a specific channel")
+        print("Scenario 1: Message from different channel, bot uses configured channel")
         print("-" * 70)
         
         # Simulate receiving a message from channel 'weather'
@@ -77,23 +78,24 @@ def test_reply_to_incoming_channel():
         )
         
         print(f"Incoming: '{msg.content}' from {msg.sender} on channel '{msg.channel}'")
+        print(f"Bot configured with: 'wxtest'")
         print()
         
         # Process the message
         sent_messages.clear()
         bot.handle_message(msg)
         
-        # Verify the bot replied to the 'weather' channel, not 'wxtest'
+        # Verify the bot used configured 'wxtest' channel
         assert len(sent_messages) == 1, f"Expected 1 message sent, got {len(sent_messages)}"
         sent = sent_messages[0]
         
         print(f"✓ Bot sent reply to channel: '{sent['channel']}'")
         
-        # The key assertion: bot should reply to 'weather', not the configured 'wxtest'
-        assert sent['channel'] == 'weather', \
-            f"Expected reply on 'weather' channel, got '{sent['channel']}'"
+        # The key assertion: bot should use configured 'wxtest', not incoming 'weather'
+        assert sent['channel'] == 'wxtest', \
+            f"Expected reply on configured 'wxtest' channel, got '{sent['channel']}'"
         
-        print(f"✓ Bot correctly replied to incoming channel 'weather' (not configured 'wxtest')")
+        print(f"✓ Bot correctly used configured 'wxtest' (ignoring incoming 'weather')")
         print()
         
         print("Scenario 2: Message comes without a channel, bot uses configured channels")

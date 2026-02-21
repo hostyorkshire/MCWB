@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Test script to verify that the bot properly replies using channel_idx
-when receiving messages on unmapped channels.
+Test script to verify that the bot properly replies using configured channel
+when one is set, otherwise replies on incoming channel_idx.
 
-This test verifies the fix for the issue where the bot wasn't replying
-back to users because it was sending on a different channel_idx than
-it received the message on.
+This test verifies:
+1. Bot with configured channel uses that channel (dedicated service mode)
+2. Bot without configured channel replies on incoming channel_idx
 """
 
 import sys
@@ -14,13 +14,13 @@ from meshcore import MeshCore, MeshCoreMessage
 from weather_bot import WeatherBot
 
 
-def test_reply_on_received_channel_idx():
+def test_reply_with_configured_channel():
     """
-    Test that bot replies using the exact channel_idx it received a message on,
-    even when that channel_idx has no name mapping.
+    Test that bot with configured channel uses that channel,
+    not the incoming channel_idx.
     """
     print("=" * 60)
-    print("TEST: Reply on Received Channel Index")
+    print("TEST: Bot with Configured Channel")
     print("=" * 60)
     
     # Track what was sent
@@ -63,17 +63,16 @@ def test_reply_on_received_channel_idx():
         
         bot.mesh._serial.write = capture_write
         
-        # Simulate receiving a message on channel_idx=5 (which has no name mapping)
+        # Simulate receiving a message on channel_idx=5
         incoming_message = MeshCoreMessage(
             sender="M3UXC",
             content="wx barnsley",
             message_type="text",
             channel=None,  # No name mapping
-            channel_idx=5  # But has a raw channel_idx
+            channel_idx=5  # Raw channel_idx
         )
         
         print(f"\nReceived message on channel_idx={incoming_message.channel_idx}")
-        print(f"Message channel name: {incoming_message.channel}")
         print(f"Bot's configured channel: {bot.channels}")
         
         # Process the message
@@ -81,8 +80,6 @@ def test_reply_on_received_channel_idx():
         
         # Debug: print all sent messages
         print(f"\nTotal frames sent: {len(sent_messages)}")
-        for i, frame in enumerate(sent_messages):
-            print(f"Frame {i}: {len(frame)} bytes - {frame.hex()[:40]}...")
         
         # Verify at least one message was sent
         assert len(sent_messages) > 0, "No messages were sent"
@@ -102,15 +99,14 @@ def test_reply_on_received_channel_idx():
         if len(last_frame) >= 6:
             sent_channel_idx = last_frame[5]  # byte 5 is the channel_idx
             
-            print(f"\nSent reply on channel_idx={sent_channel_idx}")
+            print(f"Sent reply on channel_idx={sent_channel_idx}")
             
-            # The critical assertion: we should send on the SAME channel_idx we received on
-            assert sent_channel_idx == 5, \
-                f"Expected reply on channel_idx 5, but sent on {sent_channel_idx}"
+            # Bot should use configured channel 'wxtest' (channel_idx 1), not incoming channel_idx 5
+            assert sent_channel_idx == 1, \
+                f"Expected reply on channel_idx 1 (configured 'wxtest'), but sent on {sent_channel_idx}"
             
-            print(f"✓ Bot correctly replied on channel_idx {sent_channel_idx}")
-            print(f"✓ Incoming channel_idx was preserved for the reply")
-            print(f"✓ Configured channel 'wxtest' was ignored (as it should be)")
+            print(f"✓ Bot correctly used configured channel 'wxtest' (channel_idx {sent_channel_idx})")
+            print(f"✓ Incoming channel_idx 5 was ignored (dedicated service mode)")
         else:
             raise AssertionError(f"Frame too short: {len(last_frame)} bytes")
     
@@ -201,6 +197,97 @@ def test_reply_with_channel_name_still_works():
             
             print(f"✓ Bot correctly replied on channel_idx {sent_channel_idx}")
             print(f"✓ Named channels still work correctly")
+    
+    print()
+
+
+def test_reply_without_configured_channel():
+    """
+    Test that bot WITHOUT configured channel replies on incoming channel_idx.
+    """
+    print("=" * 60)
+    print("TEST: Bot WITHOUT Configured Channel")
+    print("=" * 60)
+    
+    # Track what was sent
+    sent_messages = []
+    
+    # Create a bot WITHOUT configured channel
+    bot = WeatherBot(node_id="WX_BOT", debug=True, channel=None)
+    
+    # Mock the serial port to prevent actual transmission
+    bot.mesh._serial = MagicMock()
+    bot.mesh._serial.is_open = True
+    
+    # Patch the weather API calls to return mock data
+    with patch.object(bot, 'geocode_location') as mock_geocode, \
+         patch.object(bot, 'get_weather') as mock_weather:
+        
+        # Mock successful weather lookup
+        mock_geocode.return_value = {
+            "name": "York",
+            "country": "United Kingdom",
+            "latitude": 53.96,
+            "longitude": -1.08
+        }
+        
+        mock_weather.return_value = {
+            "current": {
+                "temperature_2m": 9.0,
+                "apparent_temperature": 7.0,
+                "relative_humidity_2m": 80,
+                "wind_speed_10m": 10.0,
+                "wind_direction_10m": 200,
+                "precipitation": 0.0,
+                "weather_code": 2
+            }
+        }
+        
+        # Capture what gets sent
+        def capture_write(data):
+            sent_messages.append(data)
+        
+        bot.mesh._serial.write = capture_write
+        
+        # Simulate receiving a message on channel_idx=5
+        incoming_message = MeshCoreMessage(
+            sender="M3UXC",
+            content="wx york",
+            message_type="text",
+            channel=None,  # No name mapping
+            channel_idx=5  # Raw channel_idx
+        )
+        
+        print(f"\nReceived message on channel_idx={incoming_message.channel_idx}")
+        print(f"Bot's configured channel: {bot.channels}")
+        
+        # Process the message
+        bot.handle_message(incoming_message)
+        
+        # Verify at least one message was sent
+        assert len(sent_messages) > 0, "No messages were sent"
+        
+        # Find the weather response frame
+        weather_frames = [f for f in sent_messages if len(f) > 10]
+        assert len(weather_frames) > 0, "No weather response frame found"
+        
+        # Check the weather response frame
+        last_frame = weather_frames[-1]
+        
+        # Parse the frame to extract channel_idx
+        if len(last_frame) >= 6:
+            sent_channel_idx = last_frame[5]  # byte 5 is the channel_idx
+            
+            print(f"Sent reply on channel_idx={sent_channel_idx}")
+            
+            # Bot should reply on incoming channel_idx 5 (no configured channel)
+            assert sent_channel_idx == 5, \
+                f"Expected reply on channel_idx 5 (incoming), but sent on {sent_channel_idx}"
+            
+            print(f"✓ Bot correctly replied on incoming channel_idx {sent_channel_idx}")
+            print(f"✓ No configured channel, so incoming channel_idx was used")
+        else:
+            raise AssertionError(f"Frame too short: {len(last_frame)} bytes")
     
     print()
 
@@ -297,7 +384,8 @@ def main():
     print()
 
     try:
-        test_reply_on_received_channel_idx()
+        test_reply_with_configured_channel()
+        test_reply_without_configured_channel()
         test_reply_with_channel_name_still_works()
         test_fallback_to_configured_channel()
 
@@ -306,10 +394,10 @@ def main():
         print("=" * 60)
         print()
         print("Summary:")
-        print("  • Bot replies on the exact channel_idx it received messages on")
+        print("  • Bot with configured channel uses that channel (dedicated service)")
+        print("  • Bot without configured channel replies on incoming channel_idx")
         print("  • Named channels still work correctly (backward compatible)")
         print("  • Fallback to configured channel works when no channel info")
-        print("  • Fix ensures users receive replies on their channel")
         print()
 
         return 0
