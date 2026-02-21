@@ -1,5 +1,5 @@
 [Unit]
-Description=MeshCore Weather Bot
+Description=MCWBv2 - MeshCore Weather Bot
 After=network-online.target
 Wants=network-online.target
 
@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/MCWB
-ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --port auto --baud 115200 -d
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
