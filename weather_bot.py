@@ -18,6 +18,7 @@ except ImportError:
     sys.exit(1)
 
 from meshcore import MeshCore, MeshCoreMessage
+from logging_config import get_weather_bot_logger, log_startup_info, log_exception
 
 
 # Weather parameters to request from Open-Meteo API
@@ -127,6 +128,9 @@ class WeatherBot:
         """
         self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
+        
+        # Set up logging
+        self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
 
         # Open-Meteo API endpoints
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
@@ -149,11 +153,22 @@ class WeatherBot:
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
 
-    def log(self, message: str):
-        """Log debug messages"""
+    def log(self, message: str, level: str = "debug"):
+        """
+        Log messages to both console (if debug) and file.
+        
+        Args:
+            message: Message to log
+            level: Log level (debug, info, warning, error, critical)
+        """
+        # Also print to console if debug mode
         if self.debug:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             print(f"[{timestamp}] WeatherBot: {message}")
+        
+        # Log to file
+        log_func = getattr(self.logger, level.lower(), self.logger.debug)
+        log_func(message)
 
     def geocode_location(self, location: str) -> Optional[Dict[str, Any]]:
         """
@@ -166,7 +181,7 @@ class WeatherBot:
             Dictionary with location data or None if not found
         """
         try:
-            self.log(f"Geocoding location: {location}")
+            self.log(f"Geocoding location: {location}", "info")
 
             params = {
                 "name": location,
@@ -182,17 +197,21 @@ class WeatherBot:
 
             if "results" in data and len(data["results"]) > 0:
                 result = data["results"][0]
-                self.log(f"Found location: {result.get('name')}, {result.get('country')}")
+                self.log(f"Found location: {result.get('name')}, {result.get('country')}", "info")
                 return result
             else:
-                self.log(f"Location not found: {location}")
+                self.log(f"Location not found: {location}", "warning")
                 return None
 
         except requests.RequestException as e:
-            self.log(f"Geocoding error: {e}")
+            msg = f"Geocoding error: {e}"
+            self.log(msg, "error")
+            log_exception(self.logger, self.error_logger, e, "Geocoding request failed")
             return None
         except Exception as e:
-            self.log(f"Unexpected error during geocoding: {e}")
+            msg = f"Unexpected error during geocoding: {e}"
+            self.log(msg, "error")
+            log_exception(self.logger, self.error_logger, e, "Geocoding unexpected error")
             return None
 
     def get_weather(self, latitude: float, longitude: float) -> Optional[Dict[str, Any]]:
@@ -207,7 +226,7 @@ class WeatherBot:
             Dictionary with weather data or None if error
         """
         try:
-            self.log(f"Fetching weather for coordinates: {latitude}, {longitude}")
+            self.log(f"Fetching weather for coordinates: {latitude}, {longitude}", "info")
 
             params = {
                 "latitude": latitude,
@@ -220,14 +239,18 @@ class WeatherBot:
             response.raise_for_status()
 
             data = response.json()
-            self.log("Weather data received successfully")
+            self.log("Weather data received successfully", "info")
             return data
 
         except requests.RequestException as e:
-            self.log(f"Weather API error: {e}")
+            msg = f"Weather API error: {e}"
+            self.log(msg, "error")
+            log_exception(self.logger, self.error_logger, e, "Weather API request failed")
             return None
         except Exception as e:
-            self.log(f"Unexpected error fetching weather: {e}")
+            msg = f"Unexpected error fetching weather: {e}"
+            self.log(msg, "error")
+            log_exception(self.logger, self.error_logger, e, "Weather fetch unexpected error")
             return None
 
     def get_weather_description(self, weather_code: int) -> str:
@@ -423,12 +446,24 @@ class WeatherBot:
 
     def start(self):
         """Start the weather bot"""
+        log_startup_info(self.logger, "Weather Bot", "1.0.0")
+        self.logger.info(f"Node ID: {self.mesh.node_id}")
+        self.logger.info(f"Serial port: {self.mesh.serial_port or 'Simulation mode'}")
+        self.logger.info(f"Baud rate: {self.mesh.baud_rate}")
+        self.logger.info(f"Announce channel: {self.announce_channel or 'Disabled'}")
+        if self.channels:
+            self.logger.info(f"Channel filter: {', '.join(self.channels)}")
+        else:
+            self.logger.info("Channel filter: Disabled (accepts from all channels)")
+        
         self.mesh.start()
         if self.channels:
             channel_str = ", ".join(self.channels)
             print(f"Weather Bot started. ONLY accepts queries from channel(s): {channel_str}")
+            self.logger.info(f"Started with channel filter: {channel_str}")
         else:
             print("Weather Bot started. Accepts queries from ALL channels.")
+            self.logger.info("Started - accepting queries from ALL channels")
         print("Send 'wx [location]' to get weather.")
         print("Example: wx London")
         print("Listening for messages...")
