@@ -135,15 +135,28 @@ class MeshCore:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             print(f"[{timestamp}] MeshCore [{self.node_id}]: {message}")
 
-    def set_channel_filter(self, channel: Optional[str]):
+    def set_channel_filter(self, channels):
         """
         Set channel filter for receiving messages
 
         Args:
-            channel: Channel name to filter on, or None to receive all channels
+            channels: Channel name (str), list of channel names, or None to receive all channels
         """
-        self.channel_filter = channel
-        self.log(f"Channel filter set to: {channel if channel else 'all channels'}")
+        # Normalize input to a list or None
+        if channels is None:
+            self.channel_filter = None
+        elif isinstance(channels, str):
+            self.channel_filter = [channels]
+        elif isinstance(channels, list):
+            self.channel_filter = channels if channels else None
+        else:
+            raise TypeError(f"channels must be str, list, or None, not {type(channels).__name__}")
+        
+        if self.channel_filter:
+            channel_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
+            self.log(f"Channel filter set to: {channel_str}")
+        else:
+            self.log("Channel filter set to: all channels")
 
     def _get_channel_idx(self, channel: Optional[str]) -> int:
         """
@@ -267,8 +280,9 @@ class MeshCore:
             message: MeshCoreMessage object to process
         """
         # Apply channel filter if set
-        if self.channel_filter and message.channel != self.channel_filter:
-            self.log(f"Ignoring message from channel '{message.channel}' (filter: '{self.channel_filter}')")
+        if self.channel_filter and message.channel not in self.channel_filter:
+            channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
+            self.log(f"Ignoring message from channel '{message.channel}' (filter: {channels_str})")
             return
 
         channel_info = f" on channel '{message.channel}'" if message.channel else ""

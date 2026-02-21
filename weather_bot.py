@@ -68,10 +68,11 @@ class WeatherBot:
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Optional fallback channel(s) for responses. The bot prioritizes replying 
-                     to the channel where messages originate. If no incoming channel exists,
-                     responses are sent to these fallback channels. Can be a single channel
-                     or comma-separated list (e.g., "weather,wxtest")
+            channel: Channel(s) to listen to and respond on. When specified, the bot acts as a
+                     dedicated service for these channels - it will ONLY process messages sent to
+                     these channels and will reply on the same channel. Can be a single channel
+                     or comma-separated list (e.g., "weather" or "weather,wxtest"). When None,
+                     the bot listens to ALL channels.
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
@@ -91,6 +92,11 @@ class WeatherBot:
         # Open-Meteo API endpoints
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
+
+        # Set channel filter to listen only to configured channels
+        # This makes the bot act as a dedicated service for specific channels
+        if self.channels:
+            self.mesh.set_channel_filter(self.channels)
 
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
@@ -392,9 +398,10 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Fallback channel(s) for responses when incoming message has no channel. "
-             "Bot prioritizes replying to the channel where messages originate. "
-             "Can be a single channel or comma-separated list (e.g., 'weather' or 'weather,wxtest')"
+        help="Channel(s) to listen to and respond on. When specified, the bot acts as a "
+             "dedicated service for these channels - it will ONLY process messages sent to "
+             "these channels. Can be a single channel or comma-separated list "
+             "(e.g., 'weather' or 'weather,wxtest'). When omitted, bot listens to ALL channels."
     )
 
     parser.add_argument(
