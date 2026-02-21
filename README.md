@@ -245,7 +245,7 @@ python3 meshcore_send.py "wx London" --port /dev/ttyUSB0 --channel weather --nod
 ### Example 1: Get Weather for London
 ```bash
 $ python3 weather_bot.py --location "London"
-Weather for London, GB
+London, GB
 Conditions: Partly cloudy
 Temp: 12.5°C (feels like 11.2°C)
 Humidity: 75%
@@ -263,7 +263,7 @@ Listening for messages...
 
 Enter command (or 'quit' to exit): wx York
 
-Weather for York, GB
+York, GB
 Conditions: Clear sky
 Temp: 10.2°C (feels like 8.9°C)
 Humidity: 68%
