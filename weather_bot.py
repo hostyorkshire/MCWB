@@ -259,7 +259,7 @@ class WeatherBot:
 
             r = geo["results"][0]
             name = r.get("name", location)
-            country = r.get("country", "")
+            country = r.get("country_code", r.get("country", ""))
             lat, lon = r["latitude"], r["longitude"]
 
             wx = requests.get(
@@ -283,13 +283,13 @@ class WeatherBot:
 
             return (
                 f"{loc_str}\n"
-                f"Conditions: {cond}\n"
+                f"{cond}\n"
                 f"Temp: {c.get('temperature_2m', 'N/A')}°C "
-                f"(feels like {c.get('apparent_temperature', 'N/A')}°C)\n"
-                f"Humidity: {c.get('relative_humidity_2m', 'N/A')}%\n"
+                f"(feels {c.get('apparent_temperature', 'N/A')}°C)\n"
+                f"Humid: {c.get('relative_humidity_2m', 'N/A')}%\n"
                 f"Wind: {c.get('wind_speed_10m', 'N/A')} km/h "
                 f"at {c.get('wind_direction_10m', 'N/A')}°\n"
-                f"Precipitation: {c.get('precipitation', 'N/A')} mm"
+                f"Precip: {c.get('precipitation', 'N/A')} mm"
             )
         except Exception as e:
             return f"Weather error: {e}"

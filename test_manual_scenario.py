@@ -29,6 +29,7 @@ def demonstrate_behavior():
             "results": [{
                 "name": "Brighton",
                 "country": "United Kingdom",
+                "country_code": "GB",
                 "latitude": 50.82838,
                 "longitude": -0.13947
             }]

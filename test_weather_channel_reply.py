@@ -24,6 +24,7 @@ def test_weather_channel():
             "results": [{
                 "name": "Barnsley",
                 "country": "United Kingdom",
+                "country_code": "GB",
                 "latitude": 53.55,
                 "longitude": -1.48333
             }]
