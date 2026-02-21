@@ -119,10 +119,11 @@ def test_scenario_weather():
 def main():
     """Run manual verification"""
     print()
-    print("╔" + "=" * 68 + "╗")
-    print("║" + " " * 18 + "Manual Verification" + " " * 31 + "║")
-    print("║" + " " * 16 + "Problem Statement Fix" + " " * 29 + "║")
-    print("╚" + "=" * 68 + "╝")
+    width = 70
+    print("╔" + "=" * (width - 2) + "╗")
+    print("║" + "Manual Verification".center(width - 2) + "║")
+    print("║" + "Problem Statement Fix".center(width - 2) + "║")
+    print("╚" + "=" * (width - 2) + "╝")
     print()
     print("This script simulates the exact scenarios from the problem")
     print("statement logs to verify the fix works correctly.")
