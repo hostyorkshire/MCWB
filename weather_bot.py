@@ -68,8 +68,10 @@ class WeatherBot:
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Optional channel(s) to broadcast responses on. Can be a single channel
-                     or comma-separated list of channels (e.g., "weather,wxtest")
+            channel: Optional fallback channel(s) for responses. The bot prioritizes replying 
+                     to the channel where messages originate. If no incoming channel exists,
+                     responses are sent to these fallback channels. Can be a single channel
+                     or comma-separated list (e.g., "weather,wxtest")
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
@@ -266,7 +268,7 @@ class WeatherBot:
 
             if not location_data:
                 response = f"Sorry, I couldn't find the location: {location}"
-                self.send_response(response)
+                self.send_response(response, reply_to_channel=message.channel)
                 return
 
             # Get weather data
@@ -277,24 +279,34 @@ class WeatherBot:
 
             if not weather_data:
                 response = f"Sorry, I couldn't get weather data for {location}"
-                self.send_response(response)
+                self.send_response(response, reply_to_channel=message.channel)
                 return
 
             # Format and send response
             response = self.format_weather_response(location_data, weather_data)
-            self.send_response(response)
+            self.send_response(response, reply_to_channel=message.channel)
         else:
             self.log(f"Not a weather command: {message.content}")
 
-    def send_response(self, content: str):
+    def send_response(self, content: str, reply_to_channel: Optional[str] = None):
         """
-        Send a response message to all configured channels
+        Send a response message. Priority order:
+        1. Reply to the channel the message came from (reply_to_channel)
+        2. Broadcast to configured channels (self.channels)
+        3. Broadcast to all (no channel specified)
 
         Args:
             content: Response message content
+            reply_to_channel: Channel to reply to (from incoming message)
         """
-        if self.channels:
-            # Broadcast to all configured channels
+        # Priority 1: Reply to the channel the message came from
+        if reply_to_channel:
+            self.log(f"Replying on channel '{reply_to_channel}': {content}")
+            self.mesh.send_message(content, "text", reply_to_channel)
+            print(f"\n{content}")
+            print(f"[Reply on channel: '{reply_to_channel}']\n")
+        # Priority 2: Broadcast to all configured channels
+        elif self.channels:
             for i, channel in enumerate(self.channels):
                 self.log(f"Sending response on channel '{channel}': {content}")
                 self.mesh.send_message(content, "text", channel)
@@ -305,8 +317,8 @@ class WeatherBot:
             channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
             print(f"\n{content}")
             print(f"[Broadcast on channels: {channels_str}]\n")
+        # Priority 3: No channel specified - broadcast to all
         else:
-            # No channel specified - broadcast to all
             self.log(f"Sending response (broadcast): {content}")
             self.mesh.send_message(content, "text", None)
             print(f"\n{content}\n")
@@ -368,8 +380,9 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel(s) to broadcast responses on. Can be a single channel or "
-             "comma-separated list (e.g., 'weather' or 'weather,wxtest')"
+        help="Fallback channel(s) for responses when incoming message has no channel. "
+             "Bot prioritizes replying to the channel where messages originate. "
+             "Can be a single channel or comma-separated list (e.g., 'weather' or 'weather,wxtest')"
     )
 
     parser.add_argument(
