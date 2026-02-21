@@ -309,7 +309,8 @@ class MeshCore:
             # Determine the channel name from either:
             # 1. The message.channel attribute (for JSON-serialized messages)
             # 2. Map the incoming channel_idx to a channel name (for binary protocol messages)
-            incoming_channel_name = message.channel if message.channel else self._get_channel_name(message.channel_idx)
+            # Note: Use 'is not None' to distinguish None from empty string
+            incoming_channel_name = message.channel if message.channel is not None else self._get_channel_name(message.channel_idx)
             
             # Check if message is from a filtered channel
             # Note: channel_idx 0 (default channel) always maps to None and will be rejected

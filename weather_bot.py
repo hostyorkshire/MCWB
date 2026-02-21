@@ -92,8 +92,9 @@ class WeatherBot:
         # Parse comma-separated channel names if provided
         if channel:
             self.channels = [ch.strip() for ch in channel.split(',') if ch.strip()]
-            # Set the channel filter on the mesh core
-            self.mesh.set_channel_filter(self.channels)
+            # Only set the channel filter if we have valid channels after parsing
+            if self.channels:
+                self.mesh.set_channel_filter(self.channels)
         else:
             self.channels = []
             # No channel filtering - accept messages from all channels
