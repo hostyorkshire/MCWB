@@ -112,6 +112,11 @@ class MeshCore:
         self.running = False
         self.channel_filter = None  # None means listen to all channels
 
+        # Channel name to channel_idx mapping for LoRa transmission
+        # Allows different named channels to use different channel indices
+        self._channel_map = {}
+        self._next_channel_idx = 1  # 0 is reserved for default/no-channel
+
         # LoRa serial connection
         self.serial_port = serial_port
         self.baud_rate = baud_rate
@@ -133,6 +138,31 @@ class MeshCore:
         """
         self.channel_filter = channel
         self.log(f"Channel filter set to: {channel if channel else 'all channels'}")
+
+    def _get_channel_idx(self, channel: Optional[str]) -> int:
+        """
+        Get or assign a channel_idx for the given channel name.
+        
+        Args:
+            channel: Channel name, or None for the default channel
+            
+        Returns:
+            Channel index (0-7) to use for LoRa transmission
+        """
+        if channel is None:
+            return 0  # Default/public channel
+        
+        # Return existing mapping or create a new one
+        if channel not in self._channel_map:
+            if self._next_channel_idx > 7:
+                # Limit to 8 channels (0-7) for safety
+                self.log(f"Warning: Maximum channels (8) reached. Channel '{channel}' will use idx 7")
+                return 7
+            self._channel_map[channel] = self._next_channel_idx
+            self.log(f"Mapped channel '{channel}' to channel_idx {self._next_channel_idx}")
+            self._next_channel_idx += 1
+        
+        return self._channel_map[channel]
 
     def register_handler(self, message_type: str, handler: Callable):
         """
@@ -171,14 +201,14 @@ class MeshCore:
             # Transmit over LoRa using the MeshCore companion radio binary protocol.
             # CMD_SEND_CHANNEL_TXT_MSG: code(1) + txt_type(1) + channel_idx(1)
             #                           + timestamp uint32_LE(4) + text
-            # channel_idx=0 is the public (default) channel; named channels in this
-            # Python layer map to the single public channel of the companion radio.
+            # Map Python channel name to a channel_idx for actual transmission
+            channel_idx = self._get_channel_idx(channel)
             try:
                 ts_bytes = int(time.time()).to_bytes(4, "little")
-                cmd_data = bytes([_CMD_SEND_CHAN_MSG, 0, 0]) + ts_bytes + content.encode("utf-8")
+                cmd_data = bytes([_CMD_SEND_CHAN_MSG, 0, channel_idx]) + ts_bytes + content.encode("utf-8")
                 frame = bytes([_FRAME_IN]) + len(cmd_data).to_bytes(2, "little") + cmd_data
                 self._serial.write(frame)
-                self.log(f"LoRa TX channel msg: {content}")
+                self.log(f"LoRa TX channel msg (idx={channel_idx}): {content}")
             except SerialException as e:
                 self.log(f"LoRa TX error: {e}")
         else:
