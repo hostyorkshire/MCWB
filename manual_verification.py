@@ -49,12 +49,12 @@ bot.mesh.message_handlers["text"] = tracking_handler
 # Test 1: Simulate message from channel_idx 0 (from the log)
 print("\n[2] Simulating message from channel_idx 0 (default channel)...")
 print("    Binary frame: CHANNEL_MSG on channel_idx 0")
-print("    LoRa RX channel msg from M3UXC on channel_idx 0: Wx leeds")
+print("    LoRa RX channel msg from USER1 on channel_idx 0: Wx leeds")
 print()
 
 messages_processed.clear()
 msg_from_default = MeshCoreMessage(
-    sender="M3UXC",
+    sender="USER1",
     content="Wx leeds",
     message_type="text",
     channel=None,
@@ -75,12 +75,12 @@ else:
 # Test 2: Simulate message from channel_idx 1 (weather channel)
 print("\n[4] Simulating message from channel_idx 1 (weather channel)...")
 print("    Binary frame: CHANNEL_MSG on channel_idx 1")
-print("    LoRa RX channel msg from M3UXC on channel_idx 1: Wx leeds")
+print("    LoRa RX channel msg from USER1 on channel_idx 1: Wx leeds")
 print()
 
 messages_processed.clear()
 msg_from_weather = MeshCoreMessage(
-    sender="M3UXC",
+    sender="USER1",
     content="Wx leeds",
     message_type="text",
     channel=None,

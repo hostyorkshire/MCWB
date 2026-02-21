@@ -64,7 +64,7 @@ def test_weather_channel():
         
         # Simulate exact message from problem statement logs
         msg = MeshCoreMessage(
-            sender="M3UXC",
+            sender="USER1",
             content="Wx barnsley",
             message_type="text",
             channel=None,
@@ -91,7 +91,7 @@ def test_weather_channel():
             print("✅ SUCCESS!")
             print()
             print("Bot correctly replied on channel_idx 0 (where message came from)")
-            print("User M3UXC will see the reply even though bot is configured for 'weather' channel")
+            print("User USER1 will see the reply even though bot is configured for 'weather' channel")
             print("This ensures clients always receive responses regardless of channel configuration!")
             success = True
         else:

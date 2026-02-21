@@ -6,9 +6,9 @@
 
 ```
 [2026-02-21 05:25:30] MeshCore [WX_BOT]: Binary frame: CHANNEL_MSG_V3 on channel_idx 2
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC on channel_idx 2: wx London
+[2026-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from USER1 on channel_idx 2: wx London
 [2026-02-21 05:25:30] MeshCore [WX_BOT]: Channel filter check: default=False, matching=False, unnamed=True → will_process=True
-[2026-02-21 05:25:30] WeatherBot: Processing message from M3UXC: wx London
+[2026-02-21 05:25:30] WeatherBot: Processing message from USER1: wx London
 [2026-02-21 05:25:30] WeatherBot: Weather request for location: London
 [2026-02-21 05:25:30] WeatherBot: Replying on channel_idx 2: Weather for London...
 ```
@@ -24,8 +24,8 @@
 ### ℹ️ Message Received But Not Weather Command
 
 ```
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC: hello
-[2026-02-21 05:25:30] WeatherBot: Processing message from M3UXC: hello
+[2026-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from USER1: hello
+[2026-02-21 05:25:30] WeatherBot: Processing message from USER1: hello
 [2026-02-21 05:25:30] WeatherBot: Not a weather command: hello
 ```
 **Diagnosis**: Message received but doesn't match "wx [location]" format.

@@ -7,7 +7,7 @@ The weather bot was not working correctly - it was rejecting messages from the d
 Looking at the log from the problem statement:
 ```
 [2026-02-21 05:51:41] MeshCore [WX_BOT]: Binary frame: CHANNEL_MSG on channel_idx 0
-[2026-02-21 05:51:41] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC on channel_idx 0: Wx leeds
+[2026-02-21 05:51:41] MeshCore [WX_BOT]: LoRa RX channel msg from USER1 on channel_idx 0: Wx leeds
 [2026-02-21 05:51:41] MeshCore [WX_BOT]: Channel filter check: matching=False, unnamed=False → will_process=False (filter: 'weather')
 [2026-02-21 05:51:41] MeshCore [WX_BOT]: Ignoring message from channel 'None' (channel_idx=0, filter: 'weather')
 ```
