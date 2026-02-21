@@ -102,7 +102,6 @@ def test_send_without_channel():
     assert payload[2] == 0, "channel_idx must be 0 for broadcast (no channel)"
     print("✓ send_message without channel uses channel_idx=0 (broadcast)")
 
-
     print()
 
 
