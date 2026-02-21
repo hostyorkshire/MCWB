@@ -259,7 +259,7 @@ class WeatherBot:
 
             r = geo["results"][0]
             name = r.get("name", location)
-            country = r.get("country", "")
+            country = r.get("country_code", r.get("country", ""))
             lat, lon = r["latitude"], r["longitude"]
 
             wx = requests.get(

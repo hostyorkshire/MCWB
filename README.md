@@ -20,7 +20,7 @@ weather Manchester
 The bot replies on the same channel with current conditions:
 
 ```
-London, United Kingdom
+London, GB
 Conditions: Partly cloudy
 Temp: 14.2°C (feels like 12.8°C)
 Humidity: 72%

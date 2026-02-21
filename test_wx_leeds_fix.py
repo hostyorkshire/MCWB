@@ -35,6 +35,7 @@ def test_wx_leeds_command():
             "results": [{
                 "name": "Leeds",
                 "country": "United Kingdom",
+                "country_code": "GB",
                 "latitude": 53.8008,
                 "longitude": -1.5491
             }]
