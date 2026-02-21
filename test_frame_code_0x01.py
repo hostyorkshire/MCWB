@@ -10,6 +10,13 @@ from contextlib import redirect_stdout
 from unittest.mock import MagicMock
 from meshcore import MeshCore
 
+# Sample CMD_APP_START payload that the companion radio might echo
+# Structure: app_ver(1) + reserved(6) + app_name
+#   byte 0:   0x03 = app_ver (request V3 message format with SNR field)
+#   bytes 1-6: 6 ASCII spaces (reserved field)
+#   bytes 7+: "MCWB" (app_name that identifies this bot)
+SAMPLE_APP_START_DATA = b'\x03      MCWB'
+
 
 def create_frame(code: int, data: bytes = b'') -> bytes:
     """
@@ -43,8 +50,7 @@ def test_frame_code_0x01():
     
     # Simulate receiving frame code 0x01 (CMD_APP_START echo/acknowledgment)
     # This might include additional data similar to what was sent
-    frame_data = b'\x03      MCWB'  # app_ver + reserved + app_name
-    frame = create_frame(0x01, frame_data)
+    frame = create_frame(0x01, SAMPLE_APP_START_DATA)
     
     print(f"Sending frame with code 0x01 (CMD_APP_START)...")
     print(f"Frame bytes: {frame.hex()}")
@@ -153,7 +159,7 @@ def test_app_start_during_init():
     
     # Simulate the radio echoing CMD_APP_START during initialization
     # This is what might cause the "unhandled frame code 0x01" error
-    frame = create_frame(0x01, b'\x03      MCWB')
+    frame = create_frame(0x01, SAMPLE_APP_START_DATA)
     
     captured_output = io.StringIO()
     
