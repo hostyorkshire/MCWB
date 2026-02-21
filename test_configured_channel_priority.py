@@ -17,17 +17,19 @@ from meshcore import MeshCoreMessage
 
 def test_configured_channel_priority():
     """
-    Test that bot with configured channel uses that channel for replies,
-    not the incoming channel_idx.
+    Test that bot with configured channel replies on default channel when
+    messages come from default channel (idx=0).
+    
+    This ensures users on default channel can see bot replies.
     """
     print("=" * 70)
-    print("TEST: Configured Channel Priority")
+    print("TEST: Default Channel Reply Priority (FIX)")
     print("=" * 70)
     print()
     print("Scenario: Bot started with --channel weather")
-    print("  - Receives message on channel_idx 0")
-    print("  - Should reply on 'weather' channel (configured)")
-    print("  - Not on channel_idx 0 (incoming)")
+    print("  - Receives message on channel_idx 0 (default)")
+    print("  - Should reply on channel_idx 0 (where message came from)")
+    print("  - NOT on 'weather' channel (to ensure users see reply)")
     print()
     
     # Create bot with configured channel 'weather'
@@ -74,19 +76,21 @@ def test_configured_channel_priority():
     print(f"  Channel_idx used: {channel_idx_used}")
     print()
     
-    # Expected: Bot should use configured channel 'weather', not incoming channel_idx 0
-    expected_channel = "weather"
-    
-    if channel_used == expected_channel:
-        print("✅ PASS: Bot correctly replied on configured channel 'weather'")
+    # Expected: Bot should reply on channel_idx 0 (default), not 'weather' channel
+    # This ensures users on default channel can see the reply
+    if channel_idx_used == 0:
+        print("✅ PASS: Bot correctly replied on channel_idx 0 (default)")
+        print()
+        print("This FIXES the problem statement issue!")
+        print("  Users on default channel can now see bot replies.")
         print()
         return True
     else:
-        print("❌ FAIL: Bot should reply on configured channel 'weather'")
-        print(f"  Expected: channel='weather'")
+        print("❌ FAIL: Bot should reply on channel_idx 0")
+        print(f"  Expected: channel_idx=0")
         print(f"  Got: channel={channel_used}, channel_idx={channel_idx_used}")
         print()
-        print("This is the issue from the problem statement!")
+        print("This is the OLD behavior that caused the problem!")
         print()
         return False
 
@@ -95,7 +99,7 @@ def main():
     """Run the test"""
     print()
     print("╔" + "=" * 68 + "╗")
-    print("║" + " " * 15 + "Configured Channel Priority Test" + " " * 21 + "║")
+    print("║" + " " * 12 + "Default Channel Reply Priority Test (FIX)" + " " * 15 + "║")
     print("╚" + "=" * 68 + "╝")
     print()
     
@@ -106,13 +110,15 @@ def main():
         if success:
             print("✅ TEST PASSED")
             print()
-            print("The bot correctly uses the configured channel for replies,")
-            print("ignoring the incoming channel_idx.")
+            print("The bot now correctly replies on the default channel when")
+            print("messages come from there, ensuring users can see replies.")
+            print()
+            print("This FIXES the issue where users couldn't see bot replies")
+            print("because they were sent to a different channel!")
         else:
             print("❌ TEST FAILED")
             print()
-            print("The bot is using the incoming channel_idx instead of the")
-            print("configured channel. This matches the problem statement.")
+            print("The bot is still using the old behavior.")
         print("=" * 70)
         print()
         

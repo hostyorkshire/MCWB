@@ -22,12 +22,16 @@ def test_problem_statement_exact_scenario():
     ```
     python3 weather_bot.py -n WX_BOT --port /dev/ttyUSB1 --baud 115200 --channel weather -d
     
-    [2026-02-21 03:51:18] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC on channel_idx 0: Wx leeds
-    [2026-02-21 03:51:20] WeatherBot: Replying on channel_idx 0: Weather for Leeds...
+    [2026-02-21 04:06:34] MeshCore [WX_BOT]: LoRa RX channel msg from M3UXC on channel_idx 0: Wx leeds
+    [2026-02-21 04:06:36] MeshCore [WX_BOT]: LoRa TX channel msg (idx=1): Weather for Leeds...
     ```
     
+    Problem: Users on channel_idx 0 can't see replies sent to channel_idx 1
+    
     Expected after fix:
-    - Bot should reply on 'weather' channel, not channel_idx 0
+    - Bot should reply on channel_idx 0 (where message came from)
+    - Not on 'weather' channel (idx=1)
+    - This ensures users see the replies
     """
     print()
     print("=" * 70)
@@ -114,21 +118,26 @@ def test_problem_statement_exact_scenario():
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
         
-        # The key assertion: bot should use 'weather' channel, not channel_idx 0
-        if sent['channel'] == 'weather' and sent['channel_idx'] is None:
+        # The key assertion: bot should reply on channel_idx 0 (default), not 'weather' channel
+        # This ensures users on default channel can see the reply
+        if sent['channel_idx'] == 0:
             print("✅ SUCCESS!")
             print()
-            print("Bot correctly replied on the 'weather' channel")
-            print("(not on channel_idx 0 where the message came from)")
+            print("Bot correctly replied on channel_idx 0 (default channel)")
+            print("(where the message came from)")
             print()
             print("This fixes the problem statement issue:")
-            print("  Before: 'Replying on channel_idx 0'")
-            print("  After:  'Replying on weather channel'")
+            print("  Problem: User on channel_idx 0 couldn't see replies on 'weather' channel")
+            print("  Fix: Bot now replies on channel_idx 0 when messages come from there")
+            print()
+            print("Users can now see the bot's replies!")
             success = True
         else:
             print("❌ FAILED!")
-            print(f"  Expected: channel='weather', channel_idx=None")
+            print(f"  Expected: channel_idx=0")
             print(f"  Got: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
+            print()
+            print("Users on channel_idx 0 won't see replies!")
             success = False
         
         bot.mesh.stop()
@@ -152,11 +161,13 @@ def main():
             print("✅ TEST PASSED")
             print()
             print("The exact scenario from the problem statement now works correctly.")
-            print("The bot replies on the configured 'weather' channel as expected.")
+            print("The bot replies on channel_idx 0 (default) when messages come from")
+            print("there, ensuring users can see the replies.")
         else:
             print("❌ TEST FAILED")
             print()
             print("The bot is not replying on the correct channel.")
+            print("Users on channel_idx 0 won't see the replies!")
         print("=" * 70)
         print()
         
