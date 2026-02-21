@@ -32,6 +32,7 @@ _MAX_FRAME_SIZE = 300       # Maximum valid frame payload size in bytes
 try:
     import serial
     from serial import SerialException
+    from serial.tools import list_ports
     SERIAL_AVAILABLE = True
 except ImportError:
     SERIAL_AVAILABLE = False
@@ -94,6 +95,50 @@ class MeshCoreMessage:
 # Standard serial baud rates accepted for preflight validation
 VALID_BAUD_RATES = {110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200,
                     38400, 57600, 115200, 128000, 256000}
+
+
+def find_serial_ports(debug: bool = False) -> list:
+    """
+    Find available USB serial ports for LoRa modules.
+    
+    Returns a list of available serial port device paths, prioritizing
+    common LoRa/FTDI USB-to-serial adapters.
+    
+    Args:
+        debug: Enable debug output
+        
+    Returns:
+        List of available serial port paths (e.g., ['/dev/ttyUSB0', '/dev/ttyACM0'])
+    """
+    if not SERIAL_AVAILABLE:
+        if debug:
+            print("pyserial is not installed. Cannot detect serial ports.")
+        return []
+    
+    try:
+        ports = list_ports.comports()
+        available = []
+        
+        for port in ports:
+            # Common USB serial devices used for LoRa modules:
+            # - ttyUSB* (FTDI, CP210x, CH340 USB-to-serial adapters)
+            # - ttyACM* (Arduino, some ESP32 boards)
+            # - ttyAMA* (Raspberry Pi UART)
+            device = port.device
+            if any(pattern in device for pattern in ['ttyUSB', 'ttyACM', 'ttyAMA']):
+                available.append(device)
+                if debug:
+                    desc = port.description or "Unknown"
+                    print(f"Found serial port: {device} ({desc})")
+        
+        # Sort to provide consistent ordering (ttyUSB0 before ttyUSB1, etc.)
+        available.sort()
+        return available
+    
+    except Exception as e:
+        if debug:
+            print(f"Error detecting serial ports: {e}")
+        return []
 
 
 class MeshCore:
@@ -337,16 +382,20 @@ class MeshCore:
                 f"Valid rates: {sorted(VALID_BAUD_RATES)}"
             )
             return
+        
+        # Check if specified port exists, and auto-detect if not
+        port_to_use = self.serial_port
         try:
+            # Try the specified port first
             self._serial = serial.Serial(
-                self.serial_port, self.baud_rate, timeout=1,
+                port_to_use, self.baud_rate, timeout=1,
                 rtscts=False, dsrdtr=False,
             )
             # Deassert RTS and DTR to prevent unintended resets on ESP32/Arduino
             # LoRa devices that use these lines as a reset trigger.
             self._serial.rts = False
             self._serial.dtr = False
-            self.log(f"LoRa connected on {self.serial_port} at {self.baud_rate} baud")
+            self.log(f"LoRa connected on {port_to_use} at {self.baud_rate} baud")
             # Initialise MeshCore companion radio protocol session.
             # CMD_APP_START frame payload layout (protocol reference §App Commands):
             #   byte 0:   command code = 0x01 (CMD_APP_START)
@@ -359,8 +408,42 @@ class MeshCore:
             # initialize its session before it can handle subsequent commands.
             time.sleep(0.1)
         except SerialException as e:
-            self.log(f"Failed to open serial port {self.serial_port}: {e}")
-            self._serial = None
+            self.log(f"Failed to open serial port {port_to_use}: {e}")
+            
+            # Try to auto-detect an available port
+            self.log("Attempting to auto-detect available serial ports...")
+            available_ports = find_serial_ports(debug=self.debug)
+            
+            if available_ports:
+                self.log(f"Found {len(available_ports)} available port(s): {', '.join(available_ports)}")
+                # Try each available port
+                for candidate_port in available_ports:
+                    if candidate_port == port_to_use:
+                        # Already tried this one
+                        continue
+                    try:
+                        self.log(f"Trying to connect to {candidate_port}...")
+                        self._serial = serial.Serial(
+                            candidate_port, self.baud_rate, timeout=1,
+                            rtscts=False, dsrdtr=False,
+                        )
+                        self._serial.rts = False
+                        self._serial.dtr = False
+                        self.log(f"LoRa connected on {candidate_port} at {self.baud_rate} baud (auto-detected)")
+                        self.serial_port = candidate_port  # Update to the working port
+                        self._send_command(b"\x01\x03      MCWB")
+                        time.sleep(0.1)
+                        return  # Successfully connected
+                    except SerialException as e2:
+                        self.log(f"Failed to connect to {candidate_port}: {e2}")
+                        continue
+                
+                # If we get here, none of the ports worked
+                self.log("Failed to connect to any available serial ports")
+                self._serial = None
+            else:
+                self.log("No serial ports found. Check USB connections.")
+                self._serial = None
 
     def _start_listener(self):
         """Start background thread to listen for incoming LoRa messages"""
