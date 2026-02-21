@@ -157,7 +157,10 @@ def test_listener_receives_channel_message():
     mesh = MeshCore("WX_BOT", debug=True)
     mock_serial = MockSerial()
     
-    # Prepare a channel message using the old format (code 8)
+    # Prepare a channel message using the old format (code 8) for compatibility testing.
+    # We use RESP_CHANNEL_MSG (code 8) instead of RESP_CHANNEL_MSG_V3 (code 17)
+    # because it has a simpler format that's easier to construct for testing.
+    # Both formats are supported by the bot, so this validates the core functionality.
     # Format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
     message_text = b"User: wx London"
     payload = bytes([
@@ -201,8 +204,9 @@ def test_listener_receives_channel_message():
     assert len(messages_received) >= 1, "At least one message should have been received"
     
     msg = messages_received[0]
-    # The sender should be "User" and content should be "wx London"
-    # Note: _dispatch_channel_message parses "sender: content" format
+    # The _dispatch_channel_message method parses "sender: content" format.
+    # For "User: wx London", it extracts sender="User" and content="wx London"
+    # We check that wx London is in the content to verify the message was parsed correctly.
     assert "wx London" in msg.content, f"Expected content to contain 'wx London', got '{msg.content}'"
     assert msg.channel_idx == 0, f"Expected channel_idx 0, got {msg.channel_idx}"
     
