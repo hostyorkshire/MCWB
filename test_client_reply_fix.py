@@ -239,8 +239,117 @@ def test_bot_without_channel_config():
         return success
 
 
+def test_bot_replies_on_weather_channel():
+    """
+    Test that bot replies on weather channel when message comes from weather channel.
+    
+    This ensures the bot replies on channel_idx 1 when that's where the message came from.
+    """
+    print()
+    print("=" * 70)
+    print("TEST: Bot Replies on Weather Channel")
+    print("=" * 70)
+    print()
+    print("Scenario: Bot with --channel weather, client sends on channel_idx 1")
+    print("Expected: Bot replies on channel_idx 1 (where message came from)")
+    print()
+    
+    with patch('weather_bot.requests.get') as mock_get:
+        # Mock responses
+        geocoding_response = MagicMock()
+        geocoding_response.json.return_value = {
+            "results": [{
+                "name": "York",
+                "country": "United Kingdom",
+                "latitude": 53.95763,
+                "longitude": -1.08271
+            }]
+        }
+        
+        weather_response = MagicMock()
+        weather_response.json.return_value = {
+            "current": {
+                "temperature_2m": 11.2,
+                "apparent_temperature": 8.9,
+                "relative_humidity_2m": 75,
+                "wind_speed_10m": 14.2,
+                "wind_direction_10m": 235,
+                "precipitation": 0.0,
+                "weather_code": 2
+            }
+        }
+        
+        mock_get.side_effect = [geocoding_response, weather_response]
+        
+        # Create bot with --channel weather
+        bot = WeatherBot(node_id="WX_BOT", debug=True, channel="weather")
+        
+        # Track messages
+        sent_messages = []
+        original_send = bot.mesh.send_message
+        
+        def track_send(content, message_type, channel=None, channel_idx=None):
+            sent_messages.append({
+                'content': content,
+                'channel': channel,
+                'channel_idx': channel_idx
+            })
+            return original_send(content, message_type, channel, channel_idx)
+        
+        bot.mesh.send_message = track_send
+        bot.mesh.start()
+        
+        # Message on weather channel (channel_idx 1)
+        msg = MeshCoreMessage(
+            sender="M3UXC",
+            content="Wx York",
+            message_type="text",
+            channel="weather",
+            channel_idx=1
+        )
+        
+        print("Simulating incoming message:")
+        print(f"  From: {msg.sender}")
+        print(f"  Content: {msg.content}")
+        print(f"  Channel_idx: {msg.channel_idx}")
+        print(f"  Bot configured with: --channel weather")
+        print()
+        
+        sent_messages.clear()
+        bot.handle_message(msg)
+        
+        print("Checking bot reply...")
+        assert len(sent_messages) == 1
+        
+        sent = sent_messages[0]
+        print(f"  Bot replied on: channel_idx={sent['channel_idx']}, channel='{sent['channel']}'")
+        print()
+        
+        # Bot should reply on channel_idx 1 (where message came from)
+        if sent['channel_idx'] == 1:
+            print("✅ SUCCESS!")
+            print()
+            print("Bot correctly replied on channel_idx 1")
+            print("(the channel where the message came from)")
+            success = True
+        else:
+            print("❌ FAILED!")
+            print(f"Expected: channel_idx=1")
+            print(f"Got: channel_idx={sent['channel_idx']}")
+            success = False
+        
+        bot.mesh.stop()
+        
+        return success
+
+
 def main():
-    """Run the tests"""
+    """
+    Run the tests.
+    
+    Returns:
+        int: Exit code - 0 if all tests pass, 1 if any test fails
+    """
     print()
     print("╔" + "=" * 68 + "╗")
     print("║" + " " * 15 + "Client Reply Fix Test" + " " * 32 + "║")
@@ -249,10 +358,11 @@ def main():
     try:
         success1 = test_bot_replies_to_client_on_incoming_channel()
         success2 = test_bot_without_channel_config()
+        success3 = test_bot_replies_on_weather_channel()
         
         print()
         print("=" * 70)
-        if success1 and success2:
+        if success1 and success2 and success3:
             print("✅ ALL TESTS PASSED")
             print()
             print("The fix is working correctly!")
@@ -262,13 +372,15 @@ def main():
         else:
             print("❌ SOME TESTS FAILED")
             if not success1:
-                print("  • Bot with --channel not working correctly")
+                print("  • Bot with --channel on channel_idx 0 not working correctly")
             if not success2:
                 print("  • Bot without --channel not working correctly")
+            if not success3:
+                print("  • Bot with --channel on channel_idx 1 not working correctly")
         print("=" * 70)
         print()
         
-        return 0 if (success1 and success2) else 1
+        return 0 if (success1 and success2 and success3) else 1
         
     except Exception as e:
         print(f"❌ ERROR: {e}")
