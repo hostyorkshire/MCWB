@@ -87,17 +87,17 @@ def test_weather_channel():
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
         
-        if sent['channel'] == 'weather':
+        if sent['channel_idx'] == 0:
             print("✅ SUCCESS!")
             print()
-            print("Bot correctly replied on 'weather' channel (configured channel)")
-            print("All users monitoring the 'weather' channel will see the reply")
-            print("This ensures dedicated channel services work as expected!")
+            print("Bot correctly replied on channel_idx 0 (where message came from)")
+            print("This ensures the sender receives the reply regardless of their")
+            print("channel configuration (different users map #weather to different channel_idx)")
             success = True
         else:
             print("❌ FAILED!")
-            print(f"  Expected: channel='weather'")
-            print(f"  Got: channel='{sent['channel']}'")
+            print(f"  Expected: channel_idx=0")
+            print(f"  Got: channel_idx={sent['channel_idx']}")
             success = False
         
         bot.mesh.stop()
@@ -119,9 +119,11 @@ def main():
         if success:
             print("✅ TEST PASSED")
             print()
-            print("The bot now correctly replies on the configured channel")
-            print("ensuring all users monitoring that channel see responses")
-            print("even when queries come from other channels")
+            print("The bot correctly replies on the same channel where")
+            print("the query came from. This is critical because different")
+            print("users may have #weather mapped to different channel_idx values")
+            print("depending on their join order. Replying on the incoming")
+            print("channel ensures the sender always receives the response.")
         else:
             print("❌ TEST FAILED")
         print("=" * 70)
