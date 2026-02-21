@@ -56,6 +56,8 @@ WEATHER_CODES = {
 }
 
 # Country name to country code mapping
+# Note: For United Kingdom, we use "UK" as it's more recognizable to users,
+# even though the ISO 3166-1 alpha-2 code is "GB"
 COUNTRY_CODES = {
     "United Kingdom": "UK",
     "Great Britain": "GB",
@@ -235,13 +237,13 @@ class WeatherBot:
         Convert country name to country code
 
         Args:
-            country: Country name (e.g., "United Kingdom", "GB")
+            country: Country name (e.g., "United Kingdom", "GB", "UK")
 
         Returns:
-            Country code (e.g., "UK", "GB")
+            Country code (e.g., "UK", "GB", "US") - typically 2 characters
         """
-        # If it's already a short code (2-3 chars), return as is
-        if len(country) <= 3:
+        # If it's already a 2-letter code, return as is
+        if len(country) == 2:
             return country
         
         # Look up in mapping, otherwise return original
