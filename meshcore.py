@@ -287,10 +287,20 @@ class MeshCore:
         """
         # Apply channel filter if set
         if self.channel_filter:
-            # Special case: Messages on default channel (idx 0, channel=None) are accepted
-            # when a filter is set, since users may not explicitly configure channels in their radios
+            # When a channel filter is configured, accept messages from:
+            # 1. Default channel (idx 0, no explicit channel name) - users may send here
+            # 2. Messages with matching channel name (for Python/simulation mode)
+            # 3. Messages from non-default channel_idx with NO channel name (from radios)
+            #
+            # The third case handles the real-world scenario where users configure their
+            # radios to use a specific channel_idx for the "weatherbot" channel, but we
+            # can't predict which channel_idx they chose. So we accept any non-zero
+            # channel_idx as long as no explicit (non-matching) channel name is set.
             is_default_channel = (message.channel_idx == 0 and message.channel is None)
-            if not is_default_channel and message.channel not in self.channel_filter:
+            is_matching_channel_name = (message.channel in self.channel_filter)
+            is_unnamed_channel = (message.channel_idx is not None and message.channel_idx > 0 and message.channel is None)
+            
+            if not is_default_channel and not is_matching_channel_name and not is_unnamed_channel:
                 channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
                 self.log(f"Ignoring message from channel '{message.channel}' (filter: {channels_str})")
                 return
