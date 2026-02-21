@@ -68,12 +68,12 @@ class WeatherBot:
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Channel(s) for bot-initiated broadcasts (optional). The bot accepts weather
-                     queries from ALL channels and always replies on the same channel where each
-                     query came from. This ensures users receive responses regardless of their
-                     channel configuration. Can be a single channel or comma-separated list
-                     (e.g., "weather" or "weather,alerts"). This parameter is reserved for
-                     future bot-initiated broadcasts or announcements.
+            channel: Channel(s) to listen to for weather queries (optional). When specified,
+                     the bot ONLY responds to queries from these channel(s) and ignores messages
+                     from other channels. When not specified, the bot accepts queries from ALL
+                     channels. The bot always replies on the same channel where each query came
+                     from. Can be a single channel or comma-separated list (e.g., "weather" or
+                     "weather,alerts").
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
@@ -94,8 +94,9 @@ class WeatherBot:
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
 
-        # Set up channel configuration for bot-initiated broadcasts
-        # Note: Bot accepts queries from ALL channels (no filtering)
+        # Set up channel filtering
+        # When channels are specified, bot only accepts messages from those channels
+        # When not specified, bot accepts messages from all channels
         if self.channels:
             self.mesh.set_channel_filter(self.channels)
 
@@ -420,9 +421,10 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel(s) for bot-initiated broadcasts (optional). The bot accepts weather queries "
-             "from ALL channels and always replies on the same channel where each query came from. "
-             "This ensures users receive responses regardless of their channel configuration. "
+        help="Channel(s) to listen to for weather queries (optional). When specified, "
+             "the bot ONLY responds to queries from these channel(s) and ignores messages "
+             "from other channels. When not specified, the bot accepts queries from ALL channels. "
+             "The bot always replies on the same channel where each query came from. "
              "Can be a single channel or comma-separated list (e.g., 'weather' or 'weather,alerts')."
     )
 

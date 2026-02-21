@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
 """
-Test for channel filtering: Bot should only accept messages from configured channels
-when channel filter is set, and accept all messages when no filter is set.
+Test for weather bot channel filtering: Bot should only accept messages from configured channels
 """
 
 import sys
 from meshcore import MeshCore, MeshCoreMessage
 
 
-def test_with_channel_filtering():
+def test_channel_filtering():
     """
-    Test that the bot only accepts messages from configured channels when
-    channel filter is set.
+    Test that the bot only accepts messages from configured channels.
     
-    When channel filter is set to 'weather', the bot should:
-    1. REJECT messages on channel_idx 0 (default)
-    2. ACCEPT messages on channel_idx 1 (weather)
-    3. REJECT messages on any other channel_idx value
-    4. Reply on the same channel_idx where the message came from
+    When channel filter is set to 'weather':
+    1. Messages on the 'weather' channel should be ACCEPTED
+    2. Messages on other channels (including channel_idx 0) should be IGNORED
     """
     print()
     print("=" * 70)
-    print("TEST: With Channel Filter (weather only)")
+    print("TEST: Channel Filtering (weather channel only)")
     print("=" * 70)
     print()
     
@@ -39,7 +35,7 @@ def test_with_channel_filtering():
     mesh.register_handler("text", handler)
     mesh.start()
     
-    # Set channel filter to 'weather' - this SHOULD filter incoming messages
+    # Set channel filter to 'weather' - should only accept messages from weather channel
     mesh.set_channel_filter("weather")
     
     # Verify the mapping
@@ -80,7 +76,7 @@ def test_with_channel_filtering():
     mesh.receive_message(msg_weather)
     
     if len(received_messages) == 1:
-        print("✅ PASS: Message on channel_idx 1 was ACCEPTED")
+        print("✅ PASS: Message on channel_idx 1 (weather) was ACCEPTED")
     else:
         print(f"❌ FAIL: Message on channel_idx 1 was not processed")
         print(f"  Received: {received_messages}")
@@ -111,20 +107,13 @@ def test_with_channel_filtering():
     return True
 
 
-def test_without_channel_filtering():
+def test_no_filtering():
     """
-    Test that the bot accepts messages from ALL channels when no
-    channel filter is set.
-    
-    When no channel filter is set, the bot should:
-    1. ACCEPT messages on channel_idx 0 (default)
-    2. ACCEPT messages on channel_idx 1 (weather or any other)
-    3. ACCEPT messages on any channel_idx value
-    4. Reply on the same channel_idx where the message came from
+    Test that when no channel filter is set, bot accepts messages from all channels.
     """
     print()
     print("=" * 70)
-    print("TEST: Without Channel Filter (accepts all channels)")
+    print("TEST: No Filtering (accepts all channels)")
     print("=" * 70)
     print()
     
@@ -142,11 +131,10 @@ def test_without_channel_filtering():
     mesh.register_handler("text", handler)
     mesh.start()
     
-    # DO NOT set channel filter - should accept all messages
-    print("✓ No channel filter set")
-    print()
+    # No channel filter - should accept all messages
+    # (set_channel_filter is not called, so channel_filter remains None)
     
-    # Test 1: Message on channel_idx 0 (default) should be ACCEPTED
+    # Test 1: Message on channel_idx 0 should be ACCEPTED
     print("Test 1: Message on channel_idx 0 (default channel)")
     received_messages.clear()
     msg_default = MeshCoreMessage(
@@ -166,17 +154,17 @@ def test_without_channel_filtering():
         return False
     print()
     
-    # Test 2: Message on channel_idx 1 (weather) should be ACCEPTED
-    print("Test 2: Message on channel_idx 1 (weather channel)")
+    # Test 2: Message on channel_idx 1 should be ACCEPTED
+    print("Test 2: Message on channel_idx 1")
     received_messages.clear()
-    msg_weather = MeshCoreMessage(
+    msg_ch1 = MeshCoreMessage(
         sender="USER2",
         content="wx London",
         message_type="text",
         channel=None,
         channel_idx=1
     )
-    mesh.receive_message(msg_weather)
+    mesh.receive_message(msg_ch1)
     
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 1 was ACCEPTED")
@@ -186,43 +174,23 @@ def test_without_channel_filtering():
         return False
     print()
     
-    # Test 3: Message on channel_idx 2 (different channel) should be ACCEPTED
-    print("Test 3: Message on channel_idx 2 (different channel)")
-    received_messages.clear()
-    msg_other = MeshCoreMessage(
-        sender="USER3",
-        content="wx Manchester",
-        message_type="text",
-        channel=None,
-        channel_idx=2
-    )
-    mesh.receive_message(msg_other)
-    
-    if len(received_messages) == 1:
-        print("✅ PASS: Message on channel_idx 2 was ACCEPTED")
-    else:
-        print(f"❌ FAIL: Message on channel_idx 2 was not processed")
-        print(f"  Received: {received_messages}")
-        return False
-    print()
-    
     mesh.stop()
     return True
 
 
 def main():
-    """Run the test"""
+    """Run the tests"""
     print()
     print("╔" + "=" * 68 + "╗")
-    print("║" + " " * 20 + "Channel Filtering Test" + " " * 24 + "║")
+    print("║" + " " * 20 + "Channel Filtering Tests" + " " * 25 + "║")
     print("╚" + "=" * 68 + "╝")
     
     try:
         # Test 1: With channel filter
-        success1 = test_with_channel_filtering()
+        success1 = test_channel_filtering()
         
         # Test 2: Without channel filter
-        success2 = test_without_channel_filtering()
+        success2 = test_no_filtering()
         
         print()
         print("=" * 70)
@@ -230,15 +198,13 @@ def main():
             print("✅ ALL TESTS PASSED")
             print()
             print("Channel filtering is working correctly:")
-            print("- When --channel IS set: Only accepts messages from that channel")
-            print("- When --channel is NOT set: Accepts messages from ALL channels")
+            print("- When --channel is specified: Only accepts messages from that channel")
+            print("- When --channel is NOT specified: Accepts messages from ALL channels")
             print()
             print("The bot always replies on the same channel_idx where each")
             print("message came from.")
         else:
-            print("❌ TEST FAILED")
-            print()
-            print("Channel filtering is not working as expected.")
+            print("❌ SOME TESTS FAILED")
         print("=" * 70)
         print()
         
