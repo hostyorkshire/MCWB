@@ -153,13 +153,17 @@ class WeatherBot:
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
 
-    def log(self, message: str, level: str = "debug"):
+    def log(self, message: str, level: str = "info"):
         """
         Log messages to both console (if debug) and file.
         
         Args:
             message: Message to log
-            level: Log level (debug, info, warning, error, critical)
+            level: Log level - "debug", "info", "warning", "error", "critical" (default: "info")
+        
+        Note:
+            Debug level messages are only logged to file when debug mode is enabled.
+            Info level and above are always logged to file.
         """
         # Also print to console if debug mode
         if self.debug:
@@ -167,7 +171,7 @@ class WeatherBot:
             print(f"[{timestamp}] WeatherBot: {message}")
         
         # Log to file
-        log_func = getattr(self.logger, level.lower(), self.logger.debug)
+        log_func = getattr(self.logger, level.lower(), self.logger.info)
         log_func(message)
 
     def geocode_location(self, location: str) -> Optional[Dict[str, Any]]:

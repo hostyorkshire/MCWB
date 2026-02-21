@@ -85,11 +85,10 @@ def setup_error_logger(name: str, error_log_file: str):
     if error_logger.handlers:
         return error_logger
     
-    # Create formatter
+    # Create formatter with detailed error information
     formatter = logging.Formatter(
         fmt='[%(asctime)s] %(name)s [%(levelname)s]: %(message)s\n'
-            'Location: %(pathname)s:%(lineno)d in %(funcName)s\n'
-            'Message: %(message)s\n',
+            'Location: %(pathname)s:%(lineno)d in %(funcName)s\n',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
