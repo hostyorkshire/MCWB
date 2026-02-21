@@ -68,12 +68,12 @@ class WeatherBot:
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Channel(s) to listen to and respond on. This parameter is primarily used for
-                     organizing bot broadcasts and announcements. The bot will always reply to
-                     queries on the same channel where they came from to ensure the sender receives
-                     the response (since different users may have the same channel name mapped to
-                     different channel_idx values). Can be a single channel or comma-separated list
-                     (e.g., "weather" or "weather,alerts"). When None, the bot listens to ALL channels.
+            channel: Channel(s) for bot-initiated broadcasts (optional). The bot accepts weather
+                     queries from ALL channels and always replies on the same channel where each
+                     query came from. This ensures users receive responses regardless of their
+                     channel configuration. Can be a single channel or comma-separated list
+                     (e.g., "weather" or "weather,alerts"). This parameter is reserved for
+                     future bot-initiated broadcasts or announcements.
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
@@ -94,8 +94,8 @@ class WeatherBot:
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
 
-        # Set channel filter to listen only to configured channels
-        # This makes the bot act as a dedicated service for specific channels
+        # Set up channel configuration for bot-initiated broadcasts
+        # Note: Bot accepts queries from ALL channels (no filtering)
         if self.channels:
             self.mesh.set_channel_filter(self.channels)
 
@@ -420,10 +420,9 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel(s) for organizing bot communications. The bot will listen to messages "
-             "from any channel and always reply on the channel where each message came from "
-             "(to ensure senders receive responses regardless of their channel_idx mapping). "
-             "This parameter can be used for bot-initiated broadcasts. "
+        help="Channel(s) for bot-initiated broadcasts (optional). The bot accepts weather queries "
+             "from ALL channels and always replies on the same channel where each query came from. "
+             "This ensures users receive responses regardless of their channel configuration. "
              "Can be a single channel or comma-separated list (e.g., 'weather' or 'weather,alerts')."
     )
 
