@@ -212,7 +212,8 @@ class MeshCore:
             message_type: Type of message
             channel: Optional channel name to broadcast to
             channel_idx: Optional raw channel index (0-7) to use directly.
-                        If provided, takes precedence over channel name mapping.
+                        When provided, takes precedence over channel name mapping.
+                        This allows direct replies on the exact channel_idx received from.
 
         Returns:
             MeshCoreMessage object
