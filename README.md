@@ -92,7 +92,9 @@ options:
   -n NODE_ID, --node-id NODE_ID
                         Node ID for this bot (default: weather_bot)
   -c CHANNEL, --channel CHANNEL
-                        Channel to broadcast responses on (optional)
+                        Channel(s) to broadcast responses on. Can be a single
+                        channel or comma-separated list (e.g., 'weather' or
+                        'weather,wxtest')
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
@@ -105,14 +107,20 @@ options:
 
 #### Channel Broadcasting
 
-The weather bot can broadcast responses to a specific channel:
+The weather bot can broadcast responses to one or more channels:
 
 ```bash
-# Broadcast weather responses on the 'weather' channel
+# Broadcast weather responses on a single channel
 python3 weather_bot.py --channel weather --interactive
 
-# Run with LoRa hardware on /dev/ttyUSB0
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
+# Broadcast to multiple channels (e.g., 'weather' and 'wxtest')
+python3 weather_bot.py --channel weather,wxtest --interactive
+
+# Broadcast to multiple channels with spaces (use quotes)
+python3 weather_bot.py --channel "weather, wxtest, alerts" --interactive
+
+# Run with LoRa hardware broadcasting to multiple channels
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather,wxtest
 
 # Run without channel (default - broadcast to all)
 python3 weather_bot.py --interactive

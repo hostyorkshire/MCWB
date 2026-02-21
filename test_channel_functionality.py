@@ -141,13 +141,18 @@ def test_weather_bot_with_channel():
 
     # Create bot without channel
     bot1 = WeatherBot(node_id="bot1", debug=False)
-    assert bot1.channel is None
-    print("✓ WeatherBot without channel: channel is None")
+    assert bot1.channels == []
+    print("✓ WeatherBot without channel: channels is empty list")
 
-    # Create bot with channel
+    # Create bot with single channel
     bot2 = WeatherBot(node_id="bot2", debug=False, channel="weather")
-    assert bot2.channel == "weather"
-    print("✓ WeatherBot with channel: channel is 'weather'")
+    assert bot2.channels == ["weather"]
+    print("✓ WeatherBot with single channel: channels is ['weather']")
+
+    # Create bot with multiple channels
+    bot3 = WeatherBot(node_id="bot3", debug=False, channel="weather,wxtest")
+    assert bot3.channels == ["weather", "wxtest"]
+    print("✓ WeatherBot with multiple channels: channels is ['weather', 'wxtest']")
 
     print()
 
