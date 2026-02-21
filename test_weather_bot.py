@@ -162,8 +162,8 @@ def test_reply_channel():
         }
         mock_get.side_effect = [geocoding_response, weather_response]
 
-        # Create bot with configured channel
-        bot = WeatherBot(node_id="test_bot", debug=False, channel="default")
+        # Create bot (no channel parameter - accepts all channels)
+        bot = WeatherBot(node_id="test_bot", debug=False)
         
         # Track sent messages
         sent_messages = []
@@ -175,7 +175,7 @@ def test_reply_channel():
         bot.mesh.start()
 
         # Test 1: Message from default channel (idx=0) - bot should reply on same channel
-        print("\n1. Message from default channel (idx=0, bot configured with 'default'):")
+        print("\n1. Message from default channel (idx=0):")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None, channel_idx=0)
         sent_messages.clear()
         bot.handle_message(msg)
@@ -186,7 +186,7 @@ def test_reply_channel():
 
         # Test 2: Message from named channel - bot should reply on same channel_idx
         mock_get.side_effect = [geocoding_response, weather_response]
-        print("\n2. Message from 'weather' channel (bot configured with 'default'):")
+        print("\n2. Message from channel_idx 1:")
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel="weather", channel_idx=1)
         sent_messages.clear()
         bot.handle_message(msg)
@@ -196,10 +196,10 @@ def test_reply_channel():
         bot.mesh.stop()
     
     # Test bot WITHOUT configured channel - should reply on incoming channel
-    print("\n3. Bot WITHOUT configured channel:")
+    print("\n3. Bot WITHOUT configured channel (default behavior):")
     with patch('weather_bot.requests.get') as mock_get:
         mock_get.side_effect = [geocoding_response, weather_response]
-        bot_no_channel = WeatherBot(node_id="test_bot", debug=False, channel=None)
+        bot_no_channel = WeatherBot(node_id="test_bot", debug=False)
         
         sent_messages = []
         original_send = bot_no_channel.mesh.send_message
@@ -214,7 +214,7 @@ def test_reply_channel():
         bot_no_channel.handle_message(msg)
         assert len(sent_messages) == 1
         assert sent_messages[0]['channel_idx'] == 2, f"Expected channel_idx=2, got {sent_messages[0]['channel_idx']}"
-        print("   ✓ Bot without configured channel replied on channel_idx 2 (where message came from)")
+        print("   ✓ Bot replied on channel_idx 2 (where message came from)")
         
         bot_no_channel.mesh.stop()
     print()

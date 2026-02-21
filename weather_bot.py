@@ -60,45 +60,30 @@ class WeatherBot:
     """Weather Bot for MeshCore network"""
 
     def __init__(self, node_id: str = "weather_bot", debug: bool = False,
-                 channel: Optional[str] = None, serial_port: Optional[str] = None,
-                 baud_rate: int = 9600):
+                 serial_port: Optional[str] = None, baud_rate: int = 9600):
         """
         Initialize Weather Bot
 
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Channel(s) to listen to for weather queries (optional). When specified,
-                     the bot ONLY responds to queries from these channel(s) and ignores messages
-                     from other channels. When not specified, the bot accepts queries from ALL
-                     channels. The bot always replies on the same channel where each query came
-                     from. Can be a single channel or comma-separated list (e.g., "weather" or
-                     "weather,alerts").
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
+        
+        Note:
+            The bot accepts weather queries (wx/weather commands) from ALL channels.
+            It replies on the same channel where each query came from.
         """
         self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
-        # Parse channels - support comma-separated list
-        if channel:
-            self.channels = [ch.strip() for ch in channel.split(',') if ch.strip()]
-            # Log warning if input had empty channel names
-            original_count = len(channel.split(','))
-            if len(self.channels) < original_count:
-                self.log(f"Warning: Ignored {original_count - len(self.channels)} empty channel name(s) in input")
-        else:
-            self.channels = []
 
         # Open-Meteo API endpoints
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
 
-        # Set up channel filtering
-        # When channels are specified, bot only accepts messages from those channels
-        # When not specified, bot accepts messages from all channels
-        if self.channels:
-            self.mesh.set_channel_filter(self.channels)
+        # No channel filtering - accept messages from all channels
+        # Bot replies on the same channel_idx where each message came from
 
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
@@ -313,61 +298,38 @@ class WeatherBot:
     def send_response(self, content: str, reply_to_channel: Optional[str] = None,
                       reply_to_channel_idx: Optional[int] = None):
         """
-        Send a response message. Priority order:
-        1. Reply to the channel_idx the message came from (reply_to_channel_idx) - ensures sender sees reply
-        2. Reply to the channel the message came from (reply_to_channel)
-        3. Broadcast to configured channels (self.channels) - bot acts as dedicated service
-        4. Broadcast to all (no channel specified)
+        Send a response message.
 
-        The bot always replies on the channel where the message came from (Priority 1).
-        This is critical because different users may have the same channel name (e.g., #weather)
-        mapped to different channel_idx values depending on their join order.
+        The bot always replies on the same channel_idx where the message came from.
+        This ensures the sender receives the reply regardless of their channel configuration.
 
         Args:
             content: Response message content
             reply_to_channel: Channel name to reply to (from incoming message)
             reply_to_channel_idx: Raw channel index to reply to (from incoming message)
         """
-        # Priority 1: Reply using the raw channel_idx (most reliable for replies)
-        # This handles all channel_idx values including 0 (default channel)
+        # Priority 1: Reply using the raw channel_idx from the incoming message
+        # This is the most reliable method and works regardless of channel name mappings
         if reply_to_channel_idx is not None:
-            # Special logging for default channel to make it clear
-            if reply_to_channel_idx == 0:
-                self.log(f"Replying on default channel (channel_idx 0): {content}")
-            else:
-                self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
+            self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
             self.mesh.send_message(content, "text", channel=None, channel_idx=reply_to_channel_idx)
-            if reply_to_channel_idx == 0:
-                self._print_response(content, "Reply on channel_idx: 0 (default)")
-            else:
-                self._print_response(content, f"Reply on channel_idx: {reply_to_channel_idx}")
-        # Priority 2: Reply to the named channel
+            self._print_response(content, f"Reply on channel_idx: {reply_to_channel_idx}")
+        # Priority 2: Fallback to named channel
         elif reply_to_channel:
             self.log(f"Replying on channel '{reply_to_channel}': {content}")
             self.mesh.send_message(content, "text", reply_to_channel)
             self._print_response(content, f"Reply on channel: '{reply_to_channel}'")
-        # Priority 3: Broadcast to all configured channels (dedicated service mode)
-        # When --channel is specified and no incoming channel info, broadcast on configured channels
-        elif self.channels:
-            for i, channel in enumerate(self.channels):
-                self.log(f"Sending response on channel '{channel}': {content}")
-                self.mesh.send_message(content, "text", channel)
-                # Add small delay between sends to avoid any potential timing issues
-                # with rapid sequential transmissions over LoRa
-                if i < len(self.channels) - 1:
-                    time.sleep(0.05)
-            channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
-            self._print_response(content, f"Broadcast on channels: {channels_str}")
-        # Priority 4: No channel specified - broadcast to all
+        # Priority 3: No channel info - broadcast on default channel
         else:
-            self.log(f"Sending response (broadcast): {content}")
+            self.log(f"Sending response on default channel: {content}")
             self.mesh.send_message(content, "text", None)
-            print(f"\n{content}\n")
+            self._print_response(content, "Reply on default channel")
 
     def start(self):
         """Start the weather bot"""
         self.mesh.start()
-        print("Weather Bot started. Send 'wx [location]' to get weather.")
+        print("Weather Bot started. Accepts queries from ALL channels.")
+        print("Send 'wx [location]' to get weather.")
         print("Example: wx London")
         print("Listening for messages...")
 
@@ -420,15 +382,6 @@ def main():
     )
 
     parser.add_argument(
-        "-c", "--channel",
-        help="Channel(s) to listen to for weather queries (optional). When specified, "
-             "the bot ONLY responds to queries from these channel(s) and ignores messages "
-             "from other channels. When not specified, the bot accepts queries from ALL channels. "
-             "The bot always replies on the same channel where each query came from. "
-             "Can be a single channel or comma-separated list (e.g., 'weather' or 'weather,alerts')."
-    )
-
-    parser.add_argument(
         "-d", "--debug",
         action="store_true",
         help="Enable debug output"
@@ -460,8 +413,8 @@ def main():
 
     args = parser.parse_args()
 
-    # Create bot instance
-    bot = WeatherBot(node_id=args.node_id, debug=args.debug, channel=args.channel,
+    # Create bot instance (now hardcoded to weather channel)
+    bot = WeatherBot(node_id=args.node_id, debug=args.debug,
                      serial_port=args.port, baud_rate=args.baud)
 
     if args.location:
