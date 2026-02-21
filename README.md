@@ -79,7 +79,10 @@ Run the bot as a daemon to listen for mesh network messages:
 # Basic usage - accepts queries from all channels
 python3 weather_bot.py
 
-# With LoRa hardware
+# With LoRa hardware (auto-detect USB port)
+python3 weather_bot.py --port auto --baud 115200 -d
+
+# With specific LoRa hardware port
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 
 # With debug output
@@ -87,6 +90,8 @@ python3 weather_bot.py -d
 ```
 
 **Note:** The bot accepts weather queries from ALL channels and replies on the same channel where each query came from.
+
+**USB Port Auto-Detection:** If your USB port changes after a reboot (e.g., from `/dev/ttyUSB0` to `/dev/ttyUSB1`), use `--port auto` to automatically detect and connect to available USB serial ports. The bot will attempt to connect to all available USB ports (ttyUSB*, ttyACM*, ttyAMA*) and use the first one that responds.
 
 ### Command Line Options
 
@@ -103,6 +108,7 @@ options:
   -d, --debug           Enable debug output
   -i, --interactive     Run in interactive mode for testing
   -p PORT, --port PORT  Serial port for LoRa module (e.g., /dev/ttyUSB0).
+                        Use 'auto' to automatically detect available ports.
                         When omitted the bot runs in simulation mode
                         (no radio hardware required).
   -b BAUD, --baud BAUD  Baud rate for LoRa serial connection (default: 9600)
@@ -306,7 +312,11 @@ python3 -m pip install -r requirements.txt
 
 3. Run the bot:
 ```bash
+# Interactive mode for testing
 python3 weather_bot.py --interactive
+
+# Or with LoRa hardware (auto-detect port)
+python3 weather_bot.py --port auto --baud 115200 -d
 ```
 
 4. (Optional) Set up as a systemd service for automatic startup:
@@ -316,6 +326,8 @@ sudo systemctl daemon-reload
 sudo systemctl enable weather_bot
 sudo systemctl start weather_bot
 ```
+
+**Note:** The included `weather_bot.service` file uses `--port auto` to automatically detect USB ports after reboots.
 
 ## API Information
 
@@ -407,6 +419,29 @@ python3 example_channels.py
 All tests use mock objects and simulation mode, so no hardware is required.
 
 ## Troubleshooting
+
+### USB Port Issues After Reboot
+If your bot stops listening after a reboot, the USB port may have changed:
+- **Solution:** Use `--port auto` to automatically detect available USB ports
+- Update your systemd service file to use `--port auto` instead of a specific port
+- The bot will automatically find and connect to available USB serial devices (ttyUSB*, ttyACM*, ttyAMA*)
+
+Example:
+```bash
+# Check available ports
+ls -l /dev/ttyUSB* /dev/ttyACM*
+
+# Use auto-detection
+python3 weather_bot.py --port auto --baud 115200 -d
+
+# Or specify a port manually
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
+```
+
+For systemd service, update `/etc/systemd/system/weather_bot.service`:
+```
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --port auto --baud 115200 -d
+```
 
 ### Location Not Found
 If the bot can't find a location, try:

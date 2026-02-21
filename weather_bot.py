@@ -496,6 +496,7 @@ def main():
     parser.add_argument(
         "-p", "--port",
         help="Serial port for LoRa module (e.g., /dev/ttyUSB0). "
+             "Use 'auto' to automatically detect available ports. "
              "When omitted the bot runs in simulation mode (no radio hardware required)."
     )
 
@@ -527,9 +528,21 @@ def main():
 
     args = parser.parse_args()
 
+    # Handle auto-detection of serial port
+    serial_port = args.port
+    if serial_port and serial_port.lower() == 'auto':
+        from meshcore import find_serial_ports
+        available_ports = find_serial_ports(debug=args.debug)
+        if available_ports:
+            serial_port = available_ports[0]
+            print(f"Auto-detected serial port: {serial_port}")
+        else:
+            print("No serial ports found. Running in simulation mode.")
+            serial_port = None
+
     # Create bot instance with optional channel filtering
     bot = WeatherBot(node_id=args.node_id, debug=args.debug,
-                     serial_port=args.port, baud_rate=args.baud,
+                     serial_port=serial_port, baud_rate=args.baud,
                      channel=args.channel,
                      announce_channel=args.announce_channel or None)
 
