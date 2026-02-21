@@ -87,7 +87,6 @@ def test_send_without_channel():
 
     written_bytes = mock_serial.write.call_args[0][0]
     payload = written_bytes[3:]
-    
     # Verify channel_idx is 0 for no-channel (broadcast)
     assert payload[2] == 0, "channel_idx must be 0 for broadcast (no channel)"
     print("✓ send_message without channel uses channel_idx=0 (broadcast)")
