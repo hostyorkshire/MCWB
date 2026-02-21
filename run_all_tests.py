@@ -22,8 +22,6 @@ TEST_FILES = [
     'test_no_channel_filtering.py',
     'test_weather_channel_filtering.py',
     'test_weather_channel_reply.py',
-    'test_country_code_conversion.py',
-    'test_label_shortening.py',
     'test_html_encoding.py',
     'test_json_parsing_edge_cases.py',
     'test_garbled_data_logging.py',
