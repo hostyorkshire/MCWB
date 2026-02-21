@@ -200,16 +200,16 @@ Press Ctrl+A then K to exit screen.
 ### Bot Configuration: `--channel weather`
 
 This configuration means:
-- **RECEIVING**: Accept messages from ALL channels (see channel filter logic above)
-- **SENDING**: When broadcasting (not replying), send on the "weather" channel (mapped to channel_idx 1)
-- **REPLYING**: Always reply on the same channel the message came from
+- **RECEIVING**: Accept messages from ALL channels (default and non-default)
+- **REPLYING**: Always reply on the configured "weather" channel (mapped to channel_idx 1)
+- **BROADCASTING**: Any broadcasts also go to the "weather" channel
 
 ### Example Flow
 
-1. User on channel_idx 3 sends: "wx London"
-2. Bot receives on channel_idx 3 (accepted because it's non-default)
+1. User on channel_idx 0 sends: "wx London"
+2. Bot receives on channel_idx 0 (accepted - bot listens to all channels)
 3. Bot processes the command
-4. Bot replies on channel_idx 3 (same as received)
-5. User sees the response on their channel
+4. Bot replies on channel_idx 1 (the configured "weather" channel)
+5. All users monitoring the weather channel see the response
 
-This design ensures the bot works with any channel configuration!
+This design ensures all users monitoring the configured channel see all bot responses!

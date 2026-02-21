@@ -69,10 +69,12 @@ class WeatherBot:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
             channel: Channel(s) to listen to and respond on. When specified, the bot acts as a
-                     dedicated service for these channels - it will ONLY process messages sent to
-                     these channels and will reply on the same channel. Can be a single channel
-                     or comma-separated list (e.g., "weather" or "weather,alerts"). When None,
-                     the bot listens to ALL channels.
+                     dedicated service for these channels - it will process messages from any
+                     channel but will always reply on the configured channel(s). This ensures
+                     all users monitoring the configured channel(s) see all responses.
+                     Can be a single channel or comma-separated list (e.g., "weather" or 
+                     "weather,alerts"). When None, the bot listens to ALL channels and replies
+                     on the channel where the message came from.
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
@@ -274,8 +276,13 @@ class WeatherBot:
 
             if not location_data:
                 response = f"Sorry, I couldn't find the location: {location}"
-                self.send_response(response, reply_to_channel=message.channel,
-                                   reply_to_channel_idx=message.channel_idx)
+                # When bot is configured with specific channels, always reply on those channels
+                # Otherwise, reply on the channel where the message came from
+                if self.channels:
+                    self.send_response(response)
+                else:
+                    self.send_response(response, reply_to_channel=message.channel,
+                                       reply_to_channel_idx=message.channel_idx)
                 return
 
             # Get weather data
@@ -286,14 +293,24 @@ class WeatherBot:
 
             if not weather_data:
                 response = f"Sorry, I couldn't get weather data for {location}"
-                self.send_response(response, reply_to_channel=message.channel,
-                                   reply_to_channel_idx=message.channel_idx)
+                # When bot is configured with specific channels, always reply on those channels
+                # Otherwise, reply on the channel where the message came from
+                if self.channels:
+                    self.send_response(response)
+                else:
+                    self.send_response(response, reply_to_channel=message.channel,
+                                       reply_to_channel_idx=message.channel_idx)
                 return
 
             # Format and send response
             response = self.format_weather_response(location_data, weather_data)
-            self.send_response(response, reply_to_channel=message.channel,
-                               reply_to_channel_idx=message.channel_idx)
+            # When bot is configured with specific channels, always reply on those channels
+            # Otherwise, reply on the channel where the message came from
+            if self.channels:
+                self.send_response(response)
+            else:
+                self.send_response(response, reply_to_channel=message.channel,
+                                   reply_to_channel_idx=message.channel_idx)
         else:
             self.log(f"Not a weather command: {message.content}")
 
@@ -306,13 +323,14 @@ class WeatherBot:
                       reply_to_channel_idx: Optional[int] = None):
         """
         Send a response message. Priority order:
-        1. Reply to the channel_idx the message came from (reply_to_channel_idx) - ensures clients see replies
-        2. Reply to the channel the message came from (reply_to_channel)
+        1. Reply to the channel_idx the message came from (reply_to_channel_idx) - for direct replies
+        2. Reply to the channel the message came from (reply_to_channel) - for direct replies
         3. Broadcast to configured channels (self.channels) - bot acts as dedicated service
         4. Broadcast to all (no channel specified)
 
-        The bot always replies to the client on the channel where the message came from.
-        This ensures clients receive responses even if they're not on the bot's configured channel.
+        When the bot is configured with --channel parameter, it should use Priority 3
+        (broadcast to configured channels) to ensure all users monitoring those channels
+        receive responses. This is the expected behavior for dedicated channel services.
 
         Args:
             content: Response message content
@@ -412,10 +430,12 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel(s) to listen to and respond on. When specified, the bot acts as a "
-             "dedicated service for these channels - it will ONLY process messages sent to "
-             "these channels. Can be a single channel or comma-separated list "
-             "(e.g., 'weather' or 'weather,alerts'). When omitted, bot listens to ALL channels."
+        help="Channel(s) to respond on. When specified, the bot acts as a "
+             "dedicated service - it will process messages from any channel but always "
+             "reply on the configured channel(s), ensuring all users monitoring those "
+             "channel(s) see responses. Can be a single channel or comma-separated list "
+             "(e.g., 'weather' or 'weather,alerts'). When omitted, bot replies on the "
+             "channel where each message came from."
     )
 
     parser.add_argument(
