@@ -222,7 +222,7 @@ class WeatherBot:
         condition = self.get_weather_description(weather_code)
 
         # Build response message
-        response = f"Weather for {location_name}"
+        response = f"{location_name}"
         if country:
             response += f", {country}"
         response += "\n"
