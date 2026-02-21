@@ -86,11 +86,11 @@ def test_multiple_channels_with_spaces():
     print("=" * 60)
     
     # Test with spaces around commas
-    bot = WeatherBot(node_id="test_bot", debug=False, channel="weather, alerts, alerts")
+    bot = WeatherBot(node_id="test_bot", debug=False, channel="weather, alerts, emergency")
     
     # Verify channels are parsed correctly (spaces should be stripped)
-    assert bot.channels == ["weather", "alerts", "alerts"], f"Expected ['weather', 'alerts', 'alerts'], got {bot.channels}"
-    print("✓ Bot correctly parses channels with spaces: 'weather, alerts, alerts'")
+    assert bot.channels == ["weather", "alerts", "emergency"], f"Expected ['weather', 'alerts', 'emergency'], got {bot.channels}"
+    print("✓ Bot correctly parses channels with spaces: 'weather, alerts, emergency'")
     
     # Mock the mesh send_message to capture calls
     sent_messages = []
@@ -110,9 +110,9 @@ def test_multiple_channels_with_spaces():
     channels_sent = [msg["channel"] for msg in sent_messages]
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
     assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
-    assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
+    assert "emergency" in channels_sent, "Expected message on 'emergency' channel"
     
-    print("✓ Message broadcast to all 3 channels: 'weather', 'alerts', 'alerts'")
+    print("✓ Message broadcast to all 3 channels: 'weather', 'alerts', 'emergency'")
     print()
 
 
@@ -267,7 +267,7 @@ def main():
         print("  python3 weather_bot.py --channel weather,alerts --interactive")
         print()
         print("  # Multiple channels with spaces:")
-        print("  python3 weather_bot.py --channel 'weather, alerts, alerts' --interactive")
+        print("  python3 weather_bot.py --channel 'weather, alerts, emergency' --interactive")
         print()
 
         return 0
