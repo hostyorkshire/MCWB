@@ -137,10 +137,18 @@ class MeshCore:
 
     def set_channel_filter(self, channels):
         """
-        Set channel filter for receiving messages
+        Configure channel mappings for the bot.
+        
+        This method sets up channel name to channel_idx mappings that the bot
+        will use for sending messages. It does NOT filter incoming messages -
+        the bot accepts messages from all channels and replies on the same
+        channel where each message came from.
+        
+        This is primarily used for bot-initiated broadcasts (e.g., scheduled
+        announcements, alerts) where the bot needs to send to specific channels.
 
         Args:
-            channels: Channel name (str), list of channel names, or None to receive all channels
+            channels: Channel name (str), list of channel names, or None
         """
         # Normalize input to a list or None
         if channels is None:
@@ -152,17 +160,16 @@ class MeshCore:
         else:
             raise TypeError(f"channels must be str, list, or None, not {type(channels).__name__}")
         
-        # Pre-populate channel mappings for filtered channels
-        # This ensures incoming messages on these channels can be matched to the filter
+        # Pre-populate channel mappings for broadcast channels
         if self.channel_filter:
             for channel in self.channel_filter:
                 if channel not in self._channel_map:
                     self._get_channel_idx(channel)
             
             channel_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-            self.log(f"Channel filter set to: {channel_str}")
+            self.log(f"Channel configuration: {channel_str} (for bot-initiated broadcasts)")
         else:
-            self.log("Channel filter set to: all channels")
+            self.log("Channel configuration: none (accepts all messages, no filtering)")
 
     def _get_channel_idx(self, channel: Optional[str]) -> int:
         """
@@ -285,29 +292,13 @@ class MeshCore:
         Args:
             message: MeshCoreMessage object to process
         """
-        # Apply channel filter if set
-        if self.channel_filter:
-            # When a channel filter is configured, accept messages from:
-            # 1. Messages with matching channel name (for Python/simulation mode)
-            # 2. Messages from unnamed channels (channel_idx present, no channel name from radios)
-            # 3. Messages from the default/public channel (channel_idx 0) to allow general queries
-            #
-            # The second case handles the real-world scenario where users configure their
-            # radios to use a specific channel_idx for a named channel (e.g., "weather"), but we
-            # can't predict which channel_idx they chose. So we accept any
-            # channel_idx as long as no explicit (non-matching) channel name is set.
-            is_matching_channel_name = (message.channel in self.channel_filter)
-            # Check for any channel_idx with no channel name (from LoRa radios)
-            # This includes channel_idx 0 (default/public channel) to allow general queries
-            # Note: explicit None check required to avoid TypeError on comparison
-            is_unnamed_channel = (message.channel is None and message.channel_idx is not None and message.channel_idx >= 0)
-            
-            if not is_matching_channel_name and not is_unnamed_channel:
-                channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-                self.log(f"Ignoring message from channel '{message.channel}' (channel_idx={message.channel_idx}, filter: {channels_str})")
-                return
-
+        # No channel filtering - accept messages from all channels
+        # The bot will reply on the same channel where the message came from,
+        # ensuring users receive responses regardless of their channel configuration
+        
         channel_info = f" on channel '{message.channel}'" if message.channel else ""
+        if message.channel_idx is not None:
+            channel_info += f" (channel_idx={message.channel_idx})"
         self.log(f"Received message from {message.sender}{channel_info}: {message.content}")
 
         # Check if we have a handler for this message type
@@ -606,14 +597,6 @@ class MeshCore:
         self.log(f"LoRa RX channel msg from {sender}{channel_info}: {content}")
         msg = MeshCoreMessage(sender=sender, content=content, message_type="text", 
                             channel=channel_name, channel_idx=channel_idx)
-        
-        # Log for debugging: show if message will be filtered
-        if self.channel_filter:
-            is_matching = (channel_name in self.channel_filter)
-            is_unnamed = (channel_name is None and channel_idx is not None and channel_idx >= 0)
-            will_process = is_matching or is_unnamed
-            filter_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-            self.log(f"Channel filter check: matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")
         
         self.receive_message(msg)
 

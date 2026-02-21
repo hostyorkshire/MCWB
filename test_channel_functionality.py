@@ -70,9 +70,9 @@ def test_send_message_with_channel():
 
 
 def test_channel_filtering():
-    """Test channel filtering on receive"""
+    """Test that channel configuration does NOT filter incoming messages"""
     print("=" * 60)
-    print("TEST 3: Channel Filtering")
+    print("TEST 3: No Channel Filtering (accepts all)")
     print("=" * 60)
 
     mesh = MeshCore("test_node", debug=False)
@@ -90,42 +90,40 @@ def test_channel_filtering():
     msg_weather = MeshCoreMessage("sender", "Weather channel", "text", channel="weather")
     msg_news = MeshCoreMessage("sender", "News channel", "text", channel="news")
 
-    # Test 1: No filter - all messages received
+    # Test 1: No configuration - all messages received
     received_messages.clear()
     mesh.receive_message(msg_no_channel)
     mesh.receive_message(msg_weather)
     mesh.receive_message(msg_news)
     assert len(received_messages) == 3
-    print("✓ No filter: received 3/3 messages")
+    print("✓ No configuration: received 3/3 messages")
 
-    # Test 2: Filter on 'weather' channel
+    # Test 2: Set 'weather' configuration - still receives ALL messages
     received_messages.clear()
     mesh.set_channel_filter("weather")
-    mesh.receive_message(msg_no_channel)  # Should be ignored
+    mesh.receive_message(msg_no_channel)  # Should be received
     mesh.receive_message(msg_weather)     # Should be received
-    mesh.receive_message(msg_news)        # Should be ignored
-    assert len(received_messages) == 1
-    assert received_messages[0] == "Weather channel"
-    print("✓ 'weather' filter: received 1/3 messages (only weather)")
+    mesh.receive_message(msg_news)        # Should be received
+    assert len(received_messages) == 3
+    print("✓ 'weather' configuration: received 3/3 messages (no filtering)")
 
-    # Test 3: Filter on 'news' channel
+    # Test 3: Set 'news' configuration - still receives ALL messages
     received_messages.clear()
     mesh.set_channel_filter("news")
-    mesh.receive_message(msg_no_channel)  # Should be ignored
-    mesh.receive_message(msg_weather)     # Should be ignored
+    mesh.receive_message(msg_no_channel)  # Should be received
+    mesh.receive_message(msg_weather)     # Should be received
     mesh.receive_message(msg_news)        # Should be received
-    assert len(received_messages) == 1
-    assert received_messages[0] == "News channel"
-    print("✓ 'news' filter: received 1/3 messages (only news)")
+    assert len(received_messages) == 3
+    print("✓ 'news' configuration: received 3/3 messages (no filtering)")
 
-    # Test 4: Remove filter
+    # Test 4: Remove configuration
     received_messages.clear()
     mesh.set_channel_filter(None)
     mesh.receive_message(msg_no_channel)
     mesh.receive_message(msg_weather)
     mesh.receive_message(msg_news)
     assert len(received_messages) == 3
-    print("✓ Filter removed: received 3/3 messages")
+    print("✓ Configuration removed: received 3/3 messages")
 
     mesh.stop()
     print()
