@@ -79,6 +79,10 @@ class WeatherBot:
         # Parse channels - support comma-separated list
         if channel:
             self.channels = [ch.strip() for ch in channel.split(',') if ch.strip()]
+            # Log warning if input had empty channel names
+            original_count = len(channel.split(','))
+            if len(self.channels) < original_count:
+                self.log(f"Warning: Ignored {original_count - len(self.channels)} empty channel name(s) in input")
         else:
             self.channels = []
 

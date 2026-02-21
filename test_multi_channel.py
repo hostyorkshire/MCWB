@@ -116,6 +116,22 @@ def test_multiple_channels_with_spaces():
     print()
 
 
+def test_empty_channel_names():
+    """Test bot with empty channel names in input"""
+    print("=" * 60)
+    print("TEST: Empty Channel Names Handling")
+    print("=" * 60)
+    
+    # Test with empty channel names (should be filtered out with warning)
+    bot = WeatherBot(node_id="test_bot", debug=True, channel="weather,,,wxtest")
+    
+    # Verify only valid channels are kept
+    assert bot.channels == ["weather", "wxtest"], f"Expected ['weather', 'wxtest'], got {bot.channels}"
+    print("✓ Bot correctly filters out empty channel names from 'weather,,,wxtest'")
+    print("✓ Warning should have been logged about empty channel names")
+    print()
+
+
 def test_no_channel():
     """Test bot without channel (broadcast to all)"""
     print("=" * 60)
@@ -172,7 +188,6 @@ def test_problem_statement_scenario():
         return MeshCoreMessage(bot.mesh.node_id, content, msg_type, channel=channel)
     
     bot.mesh.send_message = mock_send
-    bot.start()
     
     # Simulate a weather request
     msg = MeshCoreMessage(
@@ -201,9 +216,10 @@ def test_problem_statement_scenario():
         }
     }
     
-    # Process the weather request
+    # Process the weather request directly without starting the event loop
     bot.handle_message(msg)
     
+    # Verify message was broadcast to both channels    
     # Verify message was broadcast to both channels
     assert len(sent_messages) == 2, f"Expected 2 messages (one per channel), got {len(sent_messages)}"
     
@@ -213,8 +229,6 @@ def test_problem_statement_scenario():
     
     print("✓ Weather response broadcast to both 'wxtest' and 'weather' channels")
     print("✓ Bot now supports multiple channels as requested!")
-    
-    bot.stop()
     print()
 
 
@@ -230,6 +244,7 @@ def main():
         test_single_channel()
         test_multiple_channels()
         test_multiple_channels_with_spaces()
+        test_empty_channel_names()
         test_no_channel()
         test_problem_statement_scenario()
 
@@ -242,6 +257,8 @@ def main():
         print("  • Bot can broadcast to multiple channels simultaneously")
         print("  • Channel list accepts comma-separated values")
         print("  • Whitespace around commas is handled correctly")
+        print("  • Empty channel names are filtered out with warning")
+        print("  • Bot can still broadcast without channels (to all)")
         print("  • Bot can still broadcast without channels (to all)")
         print()
         print("Usage examples:")
