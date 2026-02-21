@@ -141,6 +141,60 @@ def test_meshcore_integration():
     print()
 
 
+def test_reply_channel():
+    """Test reply channel functionality"""
+    print("=" * 60)
+    print("TEST 6: Reply Channel Logic")
+    print("=" * 60)
+
+    from unittest.mock import MagicMock, patch
+
+    with patch('weather_bot.requests.get') as mock_get:
+        # Mock geocoding and weather responses
+        geocoding_response = MagicMock()
+        geocoding_response.json.return_value = {
+            "results": [{"name": "York", "country": "UK", "latitude": 53.9, "longitude": -1.1}]
+        }
+        weather_response = MagicMock()
+        weather_response.json.return_value = {
+            "current": {"temperature_2m": 10, "apparent_temperature": 8, "relative_humidity_2m": 70,
+                       "wind_speed_10m": 12, "wind_direction_10m": 180, "precipitation": 0, "weather_code": 1}
+        }
+        mock_get.side_effect = [geocoding_response, weather_response]
+
+        # Create bot with configured channel
+        bot = WeatherBot(node_id="test_bot", debug=False, channel="default")
+        
+        # Track sent messages
+        sent_messages = []
+        original_send = bot.mesh.send_message
+        def track_send(content, message_type, channel):
+            sent_messages.append({'channel': channel})
+            return original_send(content, message_type, channel)
+        bot.mesh.send_message = track_send
+        bot.mesh.start()
+
+        # Test 1: Message with channel - bot should reply to that channel
+        print("\n1. Message from 'weather' channel:")
+        msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel="weather")
+        sent_messages.clear()
+        bot.handle_message(msg)
+        assert len(sent_messages) == 1 and sent_messages[0]['channel'] == 'weather'
+        print("   ✓ Bot replied to 'weather' channel")
+
+        # Test 2: Message without channel - bot should use configured channel
+        mock_get.side_effect = [geocoding_response, weather_response]
+        print("\n2. Message without channel (fallback to configured):")
+        msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None)
+        sent_messages.clear()
+        bot.handle_message(msg)
+        assert len(sent_messages) == 1 and sent_messages[0]['channel'] == 'default'
+        print("   ✓ Bot used configured 'default' channel")
+
+        bot.mesh.stop()
+    print()
+
+
 def main():
     """Run all tests"""
     print("\n")
@@ -154,6 +208,7 @@ def main():
         test_weather_code_descriptions()
         test_weather_formatting()
         test_meshcore_integration()
+        test_reply_channel()
 
         print("=" * 60)
         print("All component tests completed!")
