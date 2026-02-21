@@ -73,7 +73,7 @@ def test_garbled_data_not_logged():
             valid_in_lora_rx = True
             break
     
-    # Should see "Ignoring non-JSON LoRa data" for garbled data
+    # The message should now be silently skipped (no "Ignoring" message)
     ignoring_message_present = 'Ignoring non-JSON LoRa data' in output
     
     print("\n" + "=" * 60)
@@ -81,13 +81,13 @@ def test_garbled_data_not_logged():
     print("=" * 60)
     print(f"✓ Garbled data in 'LoRa RX:' log: {garbled_in_lora_rx} (should be False)")
     print(f"✓ Valid JSON in 'LoRa RX:' log: {valid_in_lora_rx} (should be True)")
-    print(f"✓ 'Ignoring non-JSON' message present: {ignoring_message_present} (should be True)")
+    print(f"✓ 'Ignoring non-JSON' message present: {ignoring_message_present} (should be False - silently skipped)")
     
     assert not garbled_in_lora_rx, "Garbled data should NOT be logged with 'LoRa RX:'"
     assert valid_in_lora_rx, "Valid JSON should be logged with 'LoRa RX:'"
-    assert ignoring_message_present, "Should log 'Ignoring non-JSON LoRa data'"
+    assert not ignoring_message_present, "Should silently skip non-JSON data (not log 'Ignoring' message)"
     
-    print("\n✅ Fix verified: Garbled data is no longer logged with 'LoRa RX:'")
+    print("\n✅ Fix verified: Garbled data is silently skipped without confusing log messages")
     print()
 
 
@@ -107,8 +107,8 @@ def main():
         print("=" * 60)
         print()
         print("The fix successfully prevents garbled LoRa data from")
-        print("appearing in 'LoRa RX:' log entries, while still logging")
-        print("that non-JSON data is being ignored.")
+        print("appearing in logs entirely - it's now silently skipped")
+        print("to avoid confusing users.")
         print()
         
         return 0

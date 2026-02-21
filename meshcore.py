@@ -455,7 +455,7 @@ class MeshCore:
                 # Raw LoRa frames from non-MeshCore devices are silently skipped.
                 # Additional validation: must start with { AND end with }
                 if not (line.startswith("{") and line.endswith("}")):
-                    self.log(f"Ignoring non-JSON LoRa data")
+                    # Silently skip non-JSON data (binary protocol responses, radio noise, etc.)
                     continue
                 # Log only after validating it looks like JSON to avoid logging garbled data
                 self.log(f"LoRa RX: {line}")
@@ -533,7 +533,10 @@ class MeshCore:
             if len(payload) >= 8:
                 channel_idx = payload[1]  # Extract channel_idx from payload
                 text = payload[8:].decode("utf-8", "ignore")
+                self.log(f"Binary frame: CHANNEL_MSG on channel_idx {channel_idx}")
                 self._dispatch_channel_message(text, channel_idx)
+            else:
+                self.log(f"Binary frame: CHANNEL_MSG payload too short ({len(payload)} bytes)")
             # Fetch the next queued message
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
@@ -543,7 +546,10 @@ class MeshCore:
             if len(payload) >= 12:
                 channel_idx = payload[4]  # Extract channel_idx from payload (after SNR + reserved)
                 text = payload[12:].decode("utf-8", "ignore")
+                self.log(f"Binary frame: CHANNEL_MSG_V3 on channel_idx {channel_idx}")
                 self._dispatch_channel_message(text, channel_idx)
+            else:
+                self.log(f"Binary frame: CHANNEL_MSG_V3 payload too short ({len(payload)} bytes)")
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CONTACT_MSG:
@@ -600,6 +606,16 @@ class MeshCore:
         self.log(f"LoRa RX channel msg from {sender}{channel_info}: {content}")
         msg = MeshCoreMessage(sender=sender, content=content, message_type="text", 
                             channel=channel_name, channel_idx=channel_idx)
+        
+        # Log for debugging: show if message will be filtered
+        if self.channel_filter:
+            is_default = (channel_idx == 0 and channel_name is None)
+            is_matching = (channel_name in self.channel_filter)
+            is_unnamed = (channel_name is None and channel_idx is not None and channel_idx > 0)
+            will_process = is_default or is_matching or is_unnamed
+            filter_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
+            self.log(f"Channel filter check: default={is_default}, matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")
+        
         self.receive_message(msg)
 
     def start(self):
