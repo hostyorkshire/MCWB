@@ -4,8 +4,6 @@ Demonstration script showing USB port auto-detection functionality
 """
 
 import sys
-sys.path.insert(0, '/home/runner/work/MCWB/MCWB')
-
 from meshcore import find_serial_ports
 
 def main():

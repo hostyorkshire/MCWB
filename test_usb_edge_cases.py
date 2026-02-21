@@ -38,8 +38,8 @@ class TestUSBPortEdgeCases(unittest.TestCase):
 
     @patch('meshcore.SERIAL_AVAILABLE', True)
     @patch('meshcore.list_ports')
-    def test_duplicate_ports_removed(self, mock_list_ports):
-        """Test that duplicate ports are handled correctly"""
+    def test_duplicate_ports_handled(self, mock_list_ports):
+        """Test that duplicate port entries are handled (pyserial may return duplicates)"""
         port1 = MagicMock()
         port1.device = '/dev/ttyUSB0'
         port1.description = 'Device 1'
@@ -51,9 +51,11 @@ class TestUSBPortEdgeCases(unittest.TestCase):
         mock_list_ports.comports.return_value = [port1, port2]
         
         ports = find_serial_ports(debug=False)
-        # Should have only one /dev/ttyUSB0 (sorted list removes duplicates naturally)
-        self.assertEqual(len(ports), 2)  # Actually, sort doesn't remove duplicates
-        # But this is OK - Serial.open() will handle it
+        # pyserial may return duplicate entries; we return them all
+        # The Serial.open() will handle connection to the first working one
+        self.assertEqual(len(ports), 2)
+        self.assertEqual(ports[0], '/dev/ttyUSB0')
+        self.assertEqual(ports[1], '/dev/ttyUSB0')
 
     @patch('meshcore.SERIAL_AVAILABLE', True)
     @patch('meshcore.list_ports')
