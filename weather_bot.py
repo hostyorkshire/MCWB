@@ -297,6 +297,11 @@ class WeatherBot:
         else:
             self.log(f"Not a weather command: {message.content}")
 
+    def _print_response(self, content: str, description: str):
+        """Helper method to print response message with channel info"""
+        print(f"\n{content}")
+        print(f"[{description}]\n")
+
     def send_response(self, content: str, reply_to_channel: Optional[str] = None,
                       reply_to_channel_idx: Optional[int] = None):
         """
@@ -323,17 +328,15 @@ class WeatherBot:
             else:
                 self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
             self.mesh.send_message(content, "text", channel=None, channel_idx=reply_to_channel_idx)
-            print(f"\n{content}")
             if reply_to_channel_idx == 0:
-                print(f"[Reply on channel_idx: 0 (default)]\n")
+                self._print_response(content, "Reply on channel_idx: 0 (default)")
             else:
-                print(f"[Reply on channel_idx: {reply_to_channel_idx}]\n")
+                self._print_response(content, f"Reply on channel_idx: {reply_to_channel_idx}")
         # Priority 2: Reply to the named channel
         elif reply_to_channel:
             self.log(f"Replying on channel '{reply_to_channel}': {content}")
             self.mesh.send_message(content, "text", reply_to_channel)
-            print(f"\n{content}")
-            print(f"[Reply on channel: '{reply_to_channel}']\n")
+            self._print_response(content, f"Reply on channel: '{reply_to_channel}'")
         # Priority 3: Broadcast to all configured channels (dedicated service mode)
         # When --channel is specified and no incoming channel info, broadcast on configured channels
         elif self.channels:
@@ -345,8 +348,7 @@ class WeatherBot:
                 if i < len(self.channels) - 1:
                     time.sleep(0.05)
             channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
-            print(f"\n{content}")
-            print(f"[Broadcast on channels: {channels_str}]\n")
+            self._print_response(content, f"Broadcast on channels: {channels_str}")
         # Priority 4: No channel specified - broadcast to all
         else:
             self.log(f"Sending response (broadcast): {content}")
