@@ -72,14 +72,8 @@ class WeatherBot:
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
         
         Note:
-            The bot is hardcoded to listen ONLY on the "weather" channel.
-            
-            IMPORTANT: Due to how MeshCore channel indexing works, the "weather" 
-            channel must be the FIRST channel created/joined on all nodes. This 
-            ensures "weather" maps to channel_idx 1 consistently across all nodes.
-            
-            If users create other channels before "weather", the channel_idx 
-            mappings will differ between nodes, and the bot won't receive messages.
+            The bot accepts weather queries (wx/weather commands) from ALL channels.
+            It replies on the same channel where each query came from.
         """
         self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
@@ -88,9 +82,8 @@ class WeatherBot:
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
 
-        # Hardcode to only work on the "weather" channel
-        # This MUST be the first channel created to ensure consistent channel_idx mapping
-        self.mesh.set_channel_filter("weather")
+        # No channel filtering - accept messages from all channels
+        # Bot replies on the same channel_idx where each message came from
 
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
@@ -305,35 +298,37 @@ class WeatherBot:
     def send_response(self, content: str, reply_to_channel: Optional[str] = None,
                       reply_to_channel_idx: Optional[int] = None):
         """
-        Send a response message on the weather channel.
+        Send a response message.
 
-        The bot always replies on the channel_idx where the message came from.
+        The bot always replies on the same channel_idx where the message came from.
+        This ensures the sender receives the reply regardless of their channel configuration.
 
         Args:
             content: Response message content
             reply_to_channel: Channel name to reply to (from incoming message)
             reply_to_channel_idx: Raw channel index to reply to (from incoming message)
         """
-        # Reply using the raw channel_idx from the incoming message
+        # Priority 1: Reply using the raw channel_idx from the incoming message
+        # This is the most reliable method and works regardless of channel name mappings
         if reply_to_channel_idx is not None:
             self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
             self.mesh.send_message(content, "text", channel=None, channel_idx=reply_to_channel_idx)
             self._print_response(content, f"Reply on channel_idx: {reply_to_channel_idx}")
-        # Fallback to named channel
+        # Priority 2: Fallback to named channel
         elif reply_to_channel:
             self.log(f"Replying on channel '{reply_to_channel}': {content}")
             self.mesh.send_message(content, "text", reply_to_channel)
             self._print_response(content, f"Reply on channel: '{reply_to_channel}'")
-        # Default to weather channel
+        # Priority 3: No channel info - broadcast on default channel
         else:
-            self.log(f"Sending response on 'weather' channel: {content}")
-            self.mesh.send_message(content, "text", "weather")
-            self._print_response(content, "Reply on channel: 'weather'")
+            self.log(f"Sending response on default channel: {content}")
+            self.mesh.send_message(content, "text", None)
+            self._print_response(content, "Reply on default channel")
 
     def start(self):
         """Start the weather bot"""
         self.mesh.start()
-        print("Weather Bot started. Listening ONLY on 'weather' channel.")
+        print("Weather Bot started. Accepts queries from ALL channels.")
         print("Send 'wx [location]' to get weather.")
         print("Example: wx London")
         print("Listening for messages...")

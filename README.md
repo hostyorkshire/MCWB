@@ -76,7 +76,7 @@ python3 weather_bot.py --location "London"
 Run the bot as a daemon to listen for mesh network messages:
 
 ```bash
-# Basic usage - listens only on the 'weather' channel
+# Basic usage - accepts queries from all channels
 python3 weather_bot.py
 
 # With LoRa hardware
@@ -86,7 +86,7 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 python3 weather_bot.py -d
 ```
 
-**Note:** The bot is hardcoded to ONLY listen on the 'weather' channel. Messages from other channels are ignored.
+**Note:** The bot accepts weather queries from ALL channels and replies on the same channel where each query came from.
 
 ### Command Line Options
 
@@ -112,50 +112,35 @@ options:
 
 #### How the Bot Handles Channels
 
-The weather bot is hardcoded to work exclusively on the 'weather' channel:
+The weather bot accepts queries from ALL channels and replies accordingly:
 
-**✅ Accepts queries ONLY from the 'weather' channel**
-- Users must send "wx London" from the #weather channel
-- Messages from the default channel (channel_idx 0) are IGNORED
-- Messages from any other channel are IGNORED
+**✅ Accepts queries from ANY channel**
+- Users can send "wx London" from the default channel (channel_idx 0)
+- Users can send "wx London" from #weather channel
+- Users can send "wx London" from any other channel
+- The bot processes ALL weather queries regardless of channel
 
-**✅ Replies on the 'weather' channel**
-- All replies are sent back on the same channel_idx where the query came from
-- This ensures users on the weather channel always receive their responses
+**✅ Replies on the SAME channel**
+- If query came from channel_idx 0 (default), reply goes to channel_idx 0
+- If query came from channel_idx 1, reply goes to channel_idx 1
+- If query came from channel_idx 2, reply goes to channel_idx 2
+- This ensures users always receive their responses on the channel they used
 
-**⚠️ IMPORTANT: Channel Index Mapping**
-
-The MeshCore protocol uses numeric channel indices (0-7) over the wire, not channel names. 
-Each node creates its own mapping from channel names to indices based on the order channels 
-are created/joined:
-- First channel created → channel_idx 1
-- Second channel created → channel_idx 2
-- etc.
-
-**For the weather bot to work correctly:**
-1. The bot maps "weather" to channel_idx 1 (it's created first in the bot)
-2. **All users must also map "weather" to channel_idx 1**
-3. This means users must create/join the "weather" channel BEFORE any other channels
-
-If users create other channels (e.g., "alerts") before "weather", their "weather" 
-channel will have a different channel_idx, and the bot won't receive their messages.
+**How it works:**
+The bot uses the `channel_idx` from the incoming message to send replies. This works 
+regardless of how different nodes map channel names to indices, because the reply uses 
+the exact same numeric index that the query came from.
 
 **Example:**
 ```bash
-# Run the bot (weather is mapped to channel_idx 1)
+# Run the bot
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 
-# ✅ CORRECT - User creates "weather" channel first
-# On user's node: "weather" → channel_idx 1
-# User sends "wx London" from #weather → Bot receives it
-
-# ❌ INCORRECT - User creates "alerts" first, then "weather"
-# On user's node: "alerts" → channel_idx 1, "weather" → channel_idx 2  
-# User sends "wx London" from #weather → Bot does NOT receive it (wrong channel_idx)
+# ✅ User1 sends "wx London" from default channel → Gets reply on default channel
+# ✅ User2 sends "wx York" from #weather → Gets reply on #weather
+# ✅ User3 sends "wx Leeds" from #alerts → Gets reply on #alerts
+# All queries are processed, all users get their replies!
 ```
-
-**Recommendation:** For consistent operation across all nodes, establish a standard 
-channel creation order in your mesh network (e.g., always create "weather" first).
 
 ## Command Format
 
@@ -243,10 +228,12 @@ Messages are transmitted as newline-delimited JSON:
 
 ```bash
 # Listen for 'wx <location>' requests and reply – all over LoRa
-# Bot listens ONLY on the 'weather' channel
+# Bot accepts queries from ALL channels
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600
 
-# From another node: send a weather query over LoRa on the weather channel
+# From another node: send a weather query over LoRa (on any channel)
+python3 meshcore_send.py "wx London" --port /dev/ttyUSB0 --node-id user_node
+# Or on a specific channel
 python3 meshcore_send.py "wx London" --port /dev/ttyUSB0 --channel weather --node-id user_node
 ```
 
@@ -269,7 +256,7 @@ Precipitation: 0.0 mm
 ### Example 2: Interactive Session
 ```bash
 $ python3 weather_bot.py --interactive
-Weather Bot started. Listening ONLY on 'weather' channel.
+Weather Bot started. Accepts queries from ALL channels.
 Send 'wx [location]' to get weather.
 Example: wx London
 Listening for messages...
@@ -286,15 +273,19 @@ Precipitation: 0.0 mm
 
 ### Example 3: Using with LoRa Hardware
 ```bash
-# Start weather bot listening on 'weather' channel
+# Start weather bot - accepts queries from all channels
 $ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
-Weather Bot started. Listening ONLY on 'weather' channel.
+Weather Bot started. Accepts queries from ALL channels.
 Send 'wx [location]' to get weather.
 Example: wx London
 Listening for messages...
 
-# Send a message to the weather channel from another node
+# Send a message from any channel from another node
 $ python3 meshcore_send.py "wx Manchester" --channel weather --node-id user_node --port /dev/ttyUSB0
+# OR from default channel
+$ python3 meshcore_send.py "wx Manchester" --node-id user_node --port /dev/ttyUSB0
+# OR from any other channel
+$ python3 meshcore_send.py "wx Manchester" --channel alerts --node-id user_node --port /dev/ttyUSB0
 ```
 
 ## Raspberry Pi Zero 2 Setup
