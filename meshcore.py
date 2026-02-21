@@ -310,8 +310,8 @@ class MeshCore:
             incoming_channel_name = self._get_channel_name(message.channel_idx)
             
             # Check if message is from a filtered channel
-            # Note: channel_idx 0 (default) has no channel name, so it will be rejected
-            # if channel_filter is set (unless explicitly mapped to a filtered channel)
+            # Note: channel_idx 0 (default channel) always maps to None and will be rejected
+            # when channel_filter is set. Only messages from mapped named channels are accepted.
             if incoming_channel_name not in self.channel_filter:
                 self.log(f"Ignoring message: channel_idx {message.channel_idx} "
                          f"('{incoming_channel_name}') not in filter {self.channel_filter}")
