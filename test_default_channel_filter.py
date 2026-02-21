@@ -75,6 +75,18 @@ def test_default_channel_with_filter():
     )
     mesh.receive_message(msg3)
     
+    # Test 4: Edge case - message with channel_idx=0 but channel set to non-None
+    # This shouldn't happen in normal operation, but test the edge case
+    print("\nTest 4: Edge case - channel_idx=0 with channel='other'")
+    msg4 = MeshCoreMessage(
+        sender="M3UXC",
+        content="Wx test",
+        message_type="text",
+        channel="other",
+        channel_idx=0
+    )
+    mesh.receive_message(msg4)
+    
     mesh.stop()
     
     # Verify results
@@ -89,11 +101,13 @@ def test_default_channel_with_filter():
     assert "Wx leeds" in received_messages, "Message from default channel not received"
     assert "Wx york" in received_messages, "Message from matching channel not received"
     assert "Wx london" not in received_messages, "Message from non-matching channel should be ignored"
+    assert "Wx test" not in received_messages, "Edge case message (idx=0, channel='other') should be ignored"
     
     print("✅ TEST PASSED")
-    print("  - Message on default channel (idx 0) was accepted")
+    print("  - Message on default channel (idx 0, channel=None) was accepted")
     print("  - Message on matching channel was accepted")
     print("  - Message on non-matching channel was correctly ignored")
+    print("  - Edge case (idx=0, channel='other') was correctly ignored")
     print()
     
     return True
@@ -106,10 +120,27 @@ def test_multiple_scenarios():
     print("=" * 70)
     print()
     
+    # Structure: (filter, messages_to_receive, messages_to_ignore)
+    # Each message is a tuple of (content, channel, channel_idx)
     scenarios = [
-        ("weather", ["Wx leeds (idx 0)"], ["Wx london (wxtest)"]),
-        ("wxtest", ["Wx york (idx 0)"], ["Wx paris (weather)"]),
-        (["weather", "wxtest"], ["Wx berlin (idx 0)", "Wx madrid (weather)"], ["Wx rome (alerts)"]),
+        (
+            "weather",
+            [("Wx leeds", None, 0)],  # Default channel should be accepted
+            [("Wx london", "wxtest", 1)]  # Non-matching channel should be ignored
+        ),
+        (
+            "wxtest",
+            [("Wx york", None, 0)],  # Default channel should be accepted
+            [("Wx paris", "weather", 2)]  # Non-matching channel should be ignored
+        ),
+        (
+            ["weather", "wxtest"],
+            [
+                ("Wx berlin", None, 0),  # Default channel should be accepted
+                ("Wx madrid", "weather", 2)  # Matching channel should be accepted
+            ],
+            [("Wx rome", "alerts", 3)]  # Non-matching channel should be ignored
+        ),
     ]
     
     for filter_channels, should_receive, should_ignore in scenarios:
@@ -124,26 +155,14 @@ def test_multiple_scenarios():
         mesh.register_handler("text", lambda msg: received.append(msg.content))
         mesh.start()
         
-        # Send message on default channel (should always be accepted)
-        for content in should_receive:
-            if "idx 0" in content:
-                msg = MeshCoreMessage("user", content, "text", channel=None, channel_idx=0)
-            elif "weather" in content:
-                msg = MeshCoreMessage("user", content, "text", channel="weather", channel_idx=2)
-            elif "wxtest" in content:
-                msg = MeshCoreMessage("user", content, "text", channel="wxtest", channel_idx=1)
-            else:
-                msg = MeshCoreMessage("user", content, "text", channel="alerts", channel_idx=3)
+        # Send messages that should be received
+        for content, channel, channel_idx in should_receive:
+            msg = MeshCoreMessage("user", content, "text", channel=channel, channel_idx=channel_idx)
             mesh.receive_message(msg)
         
         # Send messages that should be ignored
-        for content in should_ignore:
-            if "weather" in content:
-                msg = MeshCoreMessage("user", content, "text", channel="weather", channel_idx=2)
-            elif "wxtest" in content:
-                msg = MeshCoreMessage("user", content, "text", channel="wxtest", channel_idx=1)
-            else:
-                msg = MeshCoreMessage("user", content, "text", channel="alerts", channel_idx=3)
+        for content, channel, channel_idx in should_ignore:
+            msg = MeshCoreMessage("user", content, "text", channel=channel, channel_idx=channel_idx)
             mesh.receive_message(msg)
         
         mesh.stop()
