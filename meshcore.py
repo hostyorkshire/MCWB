@@ -455,7 +455,9 @@ class MeshCore:
                 # Raw LoRa frames from non-MeshCore devices are silently skipped.
                 # Additional validation: must start with { AND end with }
                 if not (line.startswith("{") and line.endswith("}")):
-                    self.log(f"Ignoring non-JSON LoRa data")
+                    # Log first 40 chars in hex for debugging without cluttering logs with garbage
+                    sample = raw[:40] if len(raw) > 40 else raw
+                    self.log(f"Ignoring non-JSON LoRa data (first {len(sample)} bytes hex: {sample.hex()})")
                     continue
                 # Log only after validating it looks like JSON to avoid logging garbled data
                 self.log(f"LoRa RX: {line}")
@@ -600,6 +602,16 @@ class MeshCore:
         self.log(f"LoRa RX channel msg from {sender}{channel_info}: {content}")
         msg = MeshCoreMessage(sender=sender, content=content, message_type="text", 
                             channel=channel_name, channel_idx=channel_idx)
+        
+        # Log for debugging: show if message will be filtered
+        if self.channel_filter:
+            is_default = (channel_idx == 0 and channel_name is None)
+            is_matching = (channel_name in self.channel_filter)
+            is_unnamed = (channel_name is None and channel_idx is not None and channel_idx > 0)
+            will_process = is_default or is_matching or is_unnamed
+            filter_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
+            self.log(f"Channel filter check: default={is_default}, matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")
+        
         self.receive_message(msg)
 
     def start(self):
