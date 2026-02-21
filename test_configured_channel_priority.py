@@ -6,8 +6,7 @@ it replies on the configured channel, not the incoming channel.
 This test validates the fix for the problem:
 - Bot started with --channel weather
 - Receives message on channel_idx 0 (default/wxtest)
-- Should reply on the configured 'weather' channel
-- But currently replies on channel_idx 0
+- Now correctly replies on the configured 'weather' channel
 """
 
 import sys
