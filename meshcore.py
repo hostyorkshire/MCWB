@@ -289,20 +289,22 @@ class MeshCore:
         if self.channel_filter:
             # When a channel filter is configured, accept messages from:
             # 1. Messages with matching channel name (for Python/simulation mode)
-            # 2. Messages from unnamed channels (channel_idx present, no channel name from radios)
-            # 3. Messages from the default/public channel (channel_idx 0) to allow general queries
-            #
-            # The second case handles the real-world scenario where users configure their
-            # radios to use a specific channel_idx for a named channel (e.g., "weather"), but we
-            # can't predict which channel_idx they chose. So we accept any
-            # channel_idx as long as no explicit (non-matching) channel name is set.
+            # 2. Messages with channel_idx matching one of the filtered channels
+            #    (from LoRa radios where channel name is not transmitted)
             is_matching_channel_name = (message.channel in self.channel_filter)
-            # Check for any channel_idx with no channel name (from LoRa radios)
-            # This includes channel_idx 0 (default/public channel) to allow general queries
-            # Note: explicit None check required to avoid TypeError on comparison
-            is_unnamed_channel = (message.channel is None and message.channel_idx is not None and message.channel_idx >= 0)
             
-            if not is_matching_channel_name and not is_unnamed_channel:
+            # Check if the channel_idx matches any of the filtered channel's mapped channel_idx values
+            # Get the channel_idx values for all filtered channels
+            filtered_channel_idx_values = set(
+                self._channel_map.get(ch) for ch in self.channel_filter if ch in self._channel_map
+            )
+            is_matching_channel_idx = (
+                message.channel is None and 
+                message.channel_idx is not None and 
+                message.channel_idx in filtered_channel_idx_values
+            )
+            
+            if not is_matching_channel_name and not is_matching_channel_idx:
                 channels_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
                 self.log(f"Ignoring message from channel '{message.channel}' (channel_idx={message.channel_idx}, filter: {channels_str})")
                 return
@@ -609,11 +611,14 @@ class MeshCore:
         
         # Log for debugging: show if message will be filtered
         if self.channel_filter:
-            is_matching = (channel_name in self.channel_filter)
-            is_unnamed = (channel_name is None and channel_idx is not None and channel_idx >= 0)
-            will_process = is_matching or is_unnamed
+            is_matching_name = (channel_name in self.channel_filter)
+            filtered_channel_idx_values = set(
+                self._channel_map.get(ch) for ch in self.channel_filter if ch in self._channel_map
+            )
+            is_matching_idx = (channel_name is None and channel_idx is not None and channel_idx in filtered_channel_idx_values)
+            will_process = is_matching_name or is_matching_idx
             filter_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-            self.log(f"Channel filter check: matching={is_matching}, unnamed={is_unnamed} → will_process={will_process} (filter: {filter_str})")
+            self.log(f"Channel filter check: matching_name={is_matching_name}, matching_idx={is_matching_idx} → will_process={will_process} (filter: {filter_str})")
         
         self.receive_message(msg)
 
