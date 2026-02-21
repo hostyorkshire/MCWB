@@ -117,7 +117,7 @@ def example_4_custom_handler():
     # Simulate receiving a weather response
     response = MeshCoreMessage(
         sender="weather_bot",
-        content="London, GB\nConditions: Partly cloudy\nTemp: 12°C",
+        content="London, GB\nCond: Partly cloudy\nTemp: 12°C",
         message_type="text"
     )
 

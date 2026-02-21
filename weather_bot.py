@@ -275,17 +275,17 @@ class WeatherBot:
 
         condition = self.get_weather_description(weather_code)
 
-        # Build response message with country code
+        # Build response message with country code and shortened labels
         response = f"{location_name}"
         if country:
             country_code = self.get_country_code(country)
             response += f", {country_code}"
         response += "\n"
-        response += f"Conditions: {condition}\n"
-        response += f"Temp: {temp}°C (feels like {feels_like}°C)\n"
-        response += f"Humidity: {humidity}%\n"
+        response += f"Cond: {condition}\n"
+        response += f"Temp: {temp}°C (feels {feels_like}°C)\n"
+        response += f"Humid: {humidity}%\n"
         response += f"Wind: {wind_speed} km/h at {wind_dir}°\n"
-        response += f"Precipitation: {precip} mm"
+        response += f"Precip: {precip} mm"
 
         return response
 
