@@ -137,15 +137,21 @@ class MeshCore:
 
     def set_channel_filter(self, channels):
         """
-        Configure channel mappings for the bot.
+        Configure channel filtering for the bot.
         
-        This method sets up channel name to channel_idx mappings that the bot
-        will use for sending messages. It does NOT filter incoming messages -
-        the bot accepts messages from all channels and replies on the same
-        channel where each message came from.
+        This method sets up channel name to channel_idx mappings and enables
+        filtering of incoming messages. When channel_filter is set:
+        - The bot ONLY accepts messages from the specified channel(s)
+        - Messages from other channels are ignored
+        - The bot replies on the same channel_idx where each message came from
         
-        This is primarily used for bot-initiated broadcasts (e.g., scheduled
-        announcements, alerts) where the bot needs to send to specific channels.
+        When channel_filter is None (default):
+        - The bot accepts messages from ALL channels
+        - The bot replies on the same channel_idx where each message came from
+        
+        This is used for:
+        1. Filtering which channels the bot responds to
+        2. Bot-initiated broadcasts (e.g., scheduled announcements, alerts)
 
         Args:
             channels: Channel name (str), list of channel names, or None
@@ -167,9 +173,9 @@ class MeshCore:
                     self._get_channel_idx(channel)
             
             channel_str = ", ".join(f"'{ch}'" for ch in self.channel_filter)
-            self.log(f"Channel configuration: {channel_str} (for bot-initiated broadcasts)")
+            self.log(f"Channel filter enabled: {channel_str} (only accepts messages from these channels)")
         else:
-            self.log("Channel configuration: none (accepts all messages, no filtering)")
+            self.log("Channel filter disabled: accepts messages from all channels")
 
     def _get_channel_idx(self, channel: Optional[str]) -> int:
         """
@@ -292,14 +298,24 @@ class MeshCore:
         Args:
             message: MeshCoreMessage object to process
         """
-        # No channel filtering - accept messages from all channels
-        # The bot will reply on the same channel where the message came from,
-        # ensuring users receive responses regardless of their channel configuration
-        
         channel_info = f" on channel '{message.channel}'" if message.channel else ""
         if message.channel_idx is not None:
             channel_info += f" (channel_idx={message.channel_idx})"
         self.log(f"Received message from {message.sender}{channel_info}: {message.content}")
+
+        # Apply channel filtering if configured
+        if self.channel_filter is not None:
+            # If channel_filter is set, only accept messages from those channels
+            # Map the incoming channel_idx to a channel name and check if it's in the filter
+            incoming_channel_name = self._get_channel_name(message.channel_idx)
+            
+            # Check if message is from a filtered channel
+            # Note: channel_idx 0 (default) has no channel name, so it will be rejected
+            # if channel_filter is set (unless explicitly mapped to a filtered channel)
+            if incoming_channel_name not in self.channel_filter:
+                self.log(f"Ignoring message: channel_idx {message.channel_idx} "
+                         f"('{incoming_channel_name}') not in filter {self.channel_filter}")
+                return
 
         # Check if we have a handler for this message type
         if message.message_type in self.message_handlers:
