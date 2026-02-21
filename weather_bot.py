@@ -68,14 +68,19 @@ class WeatherBot:
         Args:
             node_id: Unique identifier for this bot node
             debug: Enable debug output
-            channel: Optional channel to broadcast responses on
+            channel: Optional channel(s) to broadcast responses on. Can be a single channel
+                     or comma-separated list of channels (e.g., "weather,wxtest")
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
         """
         self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
-        self.channel = channel
+        # Parse channels - support comma-separated list
+        if channel:
+            self.channels = [ch.strip() for ch in channel.split(',') if ch.strip()]
+        else:
+            self.channels = []
 
         # Open-Meteo API endpoints
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
@@ -279,17 +284,24 @@ class WeatherBot:
 
     def send_response(self, content: str):
         """
-        Send a response message
+        Send a response message to all configured channels
 
         Args:
             content: Response message content
         """
-        channel_info = f" on channel '{self.channel}'" if self.channel else ""
-        self.log(f"Sending response{channel_info}: {content}")
-        self.mesh.send_message(content, "text", self.channel)
-
-        # Also print to console for visibility
-        print(f"\n{content}\n")
+        if self.channels:
+            # Broadcast to all configured channels
+            for channel in self.channels:
+                self.log(f"Sending response on channel '{channel}': {content}")
+                self.mesh.send_message(content, "text", channel)
+            channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
+            print(f"\n{content}")
+            print(f"[Broadcast on channels: {channels_str}]\n")
+        else:
+            # No channel specified - broadcast to all
+            self.log(f"Sending response (broadcast): {content}")
+            self.mesh.send_message(content, "text", None)
+            print(f"\n{content}\n")
 
     def start(self):
         """Start the weather bot"""
@@ -348,7 +360,8 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel to broadcast responses on (optional)"
+        help="Channel(s) to broadcast responses on. Can be a single channel or "
+             "comma-separated list (e.g., 'weather' or 'weather,wxtest')"
     )
 
     parser.add_argument(

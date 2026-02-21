@@ -27,13 +27,19 @@ python3 meshcore_send.py "Sunny today!" --channel weather
 python3 meshcore_send.py "Hello everyone!"
 ```
 
-### Running Weather Bot on a Channel
+### Running Weather Bot on Channels
 
 ```bash
-# Weather bot broadcasts responses on 'weather' channel
+# Weather bot broadcasts responses on a single channel
 python3 weather_bot.py --channel weather --interactive
 
-# Weather bot without channel (default behavior)
+# Weather bot broadcasts to multiple channels
+python3 weather_bot.py --channel weather,wxtest --interactive
+
+# Weather bot broadcasts to multiple channels with spaces (use quotes)
+python3 weather_bot.py --channel "weather, wxtest, alerts" --interactive
+
+# Weather bot without channel (default behavior - broadcast to all)
 python3 weather_bot.py --interactive
 ```
 
@@ -104,8 +110,12 @@ msg = MeshCoreMessage(
 ### 1. Dedicated Weather Service
 
 ```bash
-# Start weather bot on dedicated channel
+# Start weather bot on a single dedicated channel
 python3 weather_bot.py --channel weather --node-id weather_service
+
+# Start weather bot broadcasting to multiple channels
+# (e.g., both 'weather' and 'wxtest' channels)
+python3 weather_bot.py --channel weather,wxtest --node-id weather_service
 
 # Users query weather on the weather channel
 python3 meshcore_send.py "wx London" --channel weather --node-id user1
@@ -192,7 +202,10 @@ python3 weather_bot.py --channel weather --interactive
 - Verify the channel name matches exactly (case-sensitive)
 
 **Q: Can I send to multiple channels at once?**
-- No, each message can only be on one channel. Send separate messages for multiple channels.
+- Yes! The weather bot now supports broadcasting to multiple channels. Use a comma-separated 
+  list with the `--channel` parameter (e.g., `--channel weather,wxtest`). Each message will 
+  be sent to all specified channels.
+- For individual messages in code, send separate messages to different channels as needed.
 
 **Q: What if I don't specify a channel?**
 - Messages without a channel are broadcast to everyone (except nodes filtering on a specific channel)
