@@ -103,9 +103,6 @@ python3 weather_bot.py -d
 # Enable periodic announcements every 3 hours
 python3 weather_bot.py --announce
 
-# Restrict bot to only respond on channel index 1 (e.g., #weather channel)
-python3 weather_bot.py --channel-idx 1
-
 # Quick weather lookup (no radio hardware needed)
 python3 weather_bot.py --location Leeds
 ```
@@ -117,27 +114,9 @@ python3 weather_bot.py --location Leeds
   -b BAUD, --baud BAUD    Baud rate (default: 115200)
   -d, --debug             Enable debug output
   -a, --announce          Send periodic announcements every 3 hours
-  -c CHANNEL_IDX, --channel-idx CHANNEL_IDX
-                          Only respond to messages from this channel index (e.g., 1 for #weather)
   -l LOCATION, --location LOCATION
                           Look up weather and exit (no radio needed)
 ```
-
-## Channel Filtering
-
-By default, the bot responds to weather queries from **any channel**. To restrict the bot to only respond on a specific channel, use the `--channel-idx` option:
-
-```bash
-# Only respond to messages on channel index 1
-python3 weather_bot.py --channel-idx 1 --port /dev/ttyUSB0 --baud 115200
-```
-
-This is useful when:
-- You want to keep the weather bot isolated to a dedicated weather channel
-- You have multiple bots running and need to prevent conflicts
-- You want to control which channels can invoke the bot
-
-**Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel slots on your MeshCore device. Check your device's channel configuration to determine which index corresponds to your #weather channel.
 
 ## Running as a systemd service
 
