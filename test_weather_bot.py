@@ -194,6 +194,29 @@ def test_reply_channel():
         print("   ✓ Bot replied on channel_idx 1 (where message came from)")
 
         bot.mesh.stop()
+    
+    # Test bot WITHOUT configured channel - should reply on incoming channel
+    print("\n3. Bot WITHOUT configured channel:")
+    with patch('weather_bot.requests.get') as mock_get:
+        mock_get.side_effect = [geocoding_response, weather_response]
+        bot_no_channel = WeatherBot(node_id="test_bot", debug=False, channel=None)
+        
+        sent_messages = []
+        original_send = bot_no_channel.mesh.send_message
+        def track_send(content, message_type, channel, channel_idx=None):
+            sent_messages.append({'channel': channel, 'channel_idx': channel_idx})
+            return original_send(content, message_type, channel, channel_idx)
+        bot_no_channel.mesh.send_message = track_send
+        bot_no_channel.mesh.start()
+        
+        msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None, channel_idx=2)
+        sent_messages.clear()
+        bot_no_channel.handle_message(msg)
+        assert len(sent_messages) == 1
+        assert sent_messages[0]['channel_idx'] == 2, f"Expected channel_idx=2, got {sent_messages[0]['channel_idx']}"
+        print("   ✓ Bot without configured channel replied on channel_idx 2 (where message came from)")
+        
+        bot_no_channel.mesh.stop()
     print()
 
 

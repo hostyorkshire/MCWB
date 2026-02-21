@@ -200,16 +200,27 @@ Press Ctrl+A then K to exit screen.
 ### Bot Configuration: `--channel weather`
 
 This configuration means:
-- **RECEIVING**: Accept messages from ALL channels (see channel filter logic above)
-- **SENDING**: When broadcasting (not replying), send on the "weather" channel (mapped to channel_idx 1)
-- **REPLYING**: Always reply on the same channel the message came from
+- **RECEIVING**: Accept messages from ALL channels (default and non-default)
+- **REPLYING**: Always reply on the same channel_idx where the message came from
+- **BROADCASTING**: Any bot-initiated broadcasts go to the "weather" channel
+
+**Why reply on the incoming channel?**
+
+In the MeshCore app, different users have `#weather` mapped to different channel_idx values:
+- User A: `#weather` = channel_idx 1
+- User B: `#weather` = channel_idx 2  
+- User C: `#weather` = channel_idx 3
+
+This happens because channel_idx depends on join order. The bot cannot know which
+channel_idx corresponds to `#weather` for each user. Replying on the incoming
+channel ensures the sender always receives the response.
 
 ### Example Flow
 
-1. User on channel_idx 3 sends: "wx London"
-2. Bot receives on channel_idx 3 (accepted because it's non-default)
+1. User on channel_idx 0 sends: "wx London"
+2. Bot receives on channel_idx 0 (accepted - bot listens to all channels)
 3. Bot processes the command
-4. Bot replies on channel_idx 3 (same as received)
-5. User sees the response on their channel
+4. Bot replies on channel_idx 0 (same as incoming)
+5. User (who sent on channel_idx 0) sees the response
 
-This design ensures the bot works with any channel configuration!
+This design ensures senders always receive replies regardless of their channel configuration!

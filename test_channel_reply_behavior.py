@@ -65,7 +65,7 @@ def test_channel_reply_behavior():
         if len(sent_messages) > 0 and sent_messages[0]['channel_idx'] == 0:
             print("✅ PASS: Bot replied on channel_idx 0 (where message came from)\n")
         else:
-            print("❌ FAIL: Bot did not reply on channel_idx 0\n")
+            print(f"❌ FAIL: Bot did not reply on channel_idx 0 (got: {sent_messages[0] if sent_messages else 'no message'})\n")
             return False
     else:
         print("❌ FAIL: Message from default channel was not processed\n")
@@ -90,7 +90,7 @@ def test_channel_reply_behavior():
         if len(sent_messages) > 0 and sent_messages[0]['channel_idx'] == 1:
             print(f"✅ PASS: Bot replied on channel_idx 1 (where message came from)\n")
         else:
-            print(f"❌ FAIL: Bot did not reply on channel_idx 1\n")
+            print(f"❌ FAIL: Bot did not reply on channel_idx 1 (got: {sent_messages[0] if sent_messages else 'no message'})\n")
             return False
     else:
         print("❌ FAIL: Message from channel_idx 1 was not processed\n")
@@ -115,7 +115,7 @@ def test_channel_reply_behavior():
         if len(sent_messages) > 0 and sent_messages[0]['channel_idx'] == 1:
             print(f"✅ PASS: Bot replied on channel_idx 1 (where message came from)\n")
         else:
-            print(f"❌ FAIL: Bot did not reply on channel_idx 1\n")
+            print(f"❌ FAIL: Bot did not reply on channel_idx 1 (got: {sent_messages[0] if sent_messages else 'no message'})\n")
             return False
     else:
         print("❌ FAIL: Message from 'weather' channel was not processed\n")
@@ -135,6 +135,7 @@ if __name__ == "__main__":
         print("  • Bot accepts messages from non-zero channel_idx")
         print("  • Bot accepts messages from matching channel name")
         print("  • Bot replies on the channel where message came from")
+        print("  • This ensures senders receive replies regardless of their channel_idx mapping")
     else:
         print("❌ TESTS FAILED")
         sys.exit(1)

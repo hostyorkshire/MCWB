@@ -91,8 +91,8 @@ def test_weather_channel():
             print("✅ SUCCESS!")
             print()
             print("Bot correctly replied on channel_idx 0 (where message came from)")
-            print("User USER1 will see the reply even though bot is configured for 'weather' channel")
-            print("This ensures clients always receive responses regardless of channel configuration!")
+            print("This ensures the sender receives the reply regardless of their")
+            print("channel configuration (different users map #weather to different channel_idx)")
             success = True
         else:
             print("❌ FAILED!")
@@ -119,9 +119,11 @@ def main():
         if success:
             print("✅ TEST PASSED")
             print()
-            print("The bot now correctly replies on the same channel where")
-            print("the query came from, ensuring clients always see responses")
-            print("even when bot is configured with a specific --channel")
+            print("The bot correctly replies on the same channel where")
+            print("the query came from. This is critical because different")
+            print("users may have #weather mapped to different channel_idx values")
+            print("depending on their join order. Replying on the incoming")
+            print("channel ensures the sender always receives the response.")
         else:
             print("❌ TEST FAILED")
         print("=" * 70)
