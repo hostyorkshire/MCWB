@@ -9,11 +9,15 @@ from meshcore import MeshCore, MeshCoreMessage
 
 def test_channel_filtering():
     """
-    Test that the bot only accepts messages from configured channels.
+    Test that the bot filters messages based on channel name, but accepts
+    binary-protocol messages (with channel_idx only) regardless of filter.
     
     When channel filter is set to 'weather':
-    1. Messages on the 'weather' channel should be ACCEPTED
-    2. Messages on other channels (including channel_idx 0) should be IGNORED
+    1. Messages with explicit channel names NOT in filter should be REJECTED
+    2. Messages with explicit channel names IN filter should be ACCEPTED  
+    3. Binary-protocol messages (channel=None, channel_idx set) should be ACCEPTED
+       regardless of channel_idx, because physical radio slot indices are independent
+       of the bot's internal channel-name mapping
     """
     print()
     print("=" * 70)
@@ -35,7 +39,7 @@ def test_channel_filtering():
     mesh.register_handler("text", handler)
     mesh.start()
     
-    # Set channel filter to 'weather' - should only accept messages from weather channel
+    # Set channel filter to 'weather' - should only filter by channel name
     mesh.set_channel_filter("weather")
     
     # Verify the mapping
@@ -43,62 +47,106 @@ def test_channel_filtering():
     print(f"✓ Channel 'weather' mapped to channel_idx 1")
     print()
     
-    # Test 1: Message on channel_idx 0 (default) should be REJECTED
-    print("Test 1: Message on channel_idx 0 (default channel)")
+    # Test 1: Binary-protocol message on channel_idx 0 (no channel name) should be ACCEPTED
+    # This is because binary messages don't carry channel names, only indices
+    print("Test 1: Binary-protocol message on channel_idx 0 (default channel)")
     received_messages.clear()
     msg_default = MeshCoreMessage(
         sender="USER1",
         content="wx Brighton",
         message_type="text",
-        channel=None,
+        channel=None,  # Binary protocol - no channel name
         channel_idx=0
     )
     mesh.receive_message(msg_default)
     
-    if len(received_messages) == 0:
-        print("✅ PASS: Message on channel_idx 0 was REJECTED (as expected)")
+    if len(received_messages) == 1:
+        print("✅ PASS: Binary message on channel_idx 0 was ACCEPTED (as expected)")
+        print("  (Binary-protocol messages are not filtered by channel_idx)")
     else:
-        print(f"❌ FAIL: Message on channel_idx 0 was ACCEPTED (should be rejected)")
+        print(f"❌ FAIL: Binary message on channel_idx 0 was REJECTED (should be accepted)")
         print(f"  Received: {received_messages}")
         return False
     print()
     
-    # Test 2: Message on channel_idx 1 (weather) should be ACCEPTED
-    print("Test 2: Message on channel_idx 1 (weather channel)")
+    # Test 2: Binary-protocol message on channel_idx 1 (weather) should be ACCEPTED
+    print("Test 2: Binary-protocol message on channel_idx 1")
     received_messages.clear()
     msg_weather = MeshCoreMessage(
         sender="USER2",
         content="wx London",
         message_type="text",
-        channel=None,
+        channel=None,  # Binary protocol - no channel name
         channel_idx=1
     )
     mesh.receive_message(msg_weather)
     
     if len(received_messages) == 1:
-        print("✅ PASS: Message on channel_idx 1 (weather) was ACCEPTED")
+        print("✅ PASS: Binary message on channel_idx 1 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel_idx 1 was not processed")
+        print(f"❌ FAIL: Binary message on channel_idx 1 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
     
-    # Test 3: Message on channel_idx 2 (different channel) should be REJECTED
-    print("Test 3: Message on channel_idx 2 (different channel)")
+    # Test 3: Binary-protocol message on channel_idx 2 (different channel) should be ACCEPTED
+    # Even though filter is set to 'weather', binary messages are accepted from all indices
+    print("Test 3: Binary-protocol message on channel_idx 2 (different channel)")
     received_messages.clear()
     msg_other = MeshCoreMessage(
         sender="USER3",
         content="wx Manchester",
         message_type="text",
-        channel=None,
+        channel=None,  # Binary protocol - no channel name
         channel_idx=2
     )
     mesh.receive_message(msg_other)
     
-    if len(received_messages) == 0:
-        print("✅ PASS: Message on channel_idx 2 was REJECTED (as expected)")
+    if len(received_messages) == 1:
+        print("✅ PASS: Binary message on channel_idx 2 was ACCEPTED (as expected)")
+        print("  (Binary-protocol messages are not filtered by channel_idx)")
     else:
-        print(f"❌ FAIL: Message on channel_idx 2 was ACCEPTED (should be rejected)")
+        print(f"❌ FAIL: Binary message on channel_idx 2 was REJECTED (should be accepted)")
+        print(f"  Received: {received_messages}")
+        return False
+    print()
+    
+    # Test 4: Named-channel message NOT in filter should be REJECTED
+    print("Test 4: Named message channel='news' (not in filter)")
+    received_messages.clear()
+    msg_news = MeshCoreMessage(
+        sender="USER4",
+        content="some news",
+        message_type="text",
+        channel="news",  # Explicit channel name - will be filtered
+        channel_idx=None
+    )
+    mesh.receive_message(msg_news)
+    
+    if len(received_messages) == 0:
+        print("✅ PASS: Named message on channel 'news' was REJECTED (as expected)")
+    else:
+        print(f"❌ FAIL: Named message on channel 'news' was ACCEPTED (should be rejected)")
+        print(f"  Received: {received_messages}")
+        return False
+    print()
+    
+    # Test 5: Named-channel message IN filter should be ACCEPTED
+    print("Test 5: Named message channel='weather' (in filter)")
+    received_messages.clear()
+    msg_weather_named = MeshCoreMessage(
+        sender="USER5",
+        content="wx Leeds",
+        message_type="text",
+        channel="weather",  # Explicit channel name in filter
+        channel_idx=None
+    )
+    mesh.receive_message(msg_weather_named)
+    
+    if len(received_messages) == 1:
+        print("✅ PASS: Named message on channel 'weather' was ACCEPTED")
+    else:
+        print(f"❌ FAIL: Named message on channel 'weather' was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -198,8 +246,10 @@ def main():
             print("✅ ALL TESTS PASSED")
             print()
             print("Channel filtering is working correctly:")
-            print("- When --channel is specified: Only accepts messages from that channel")
-            print("- When --channel is NOT specified: Accepts messages from ALL channels")
+            print("- Named-channel messages are filtered by channel name")
+            print("- Binary-protocol messages (channel=None) are NOT filtered")
+            print("  (because channel_idx mapping is independent of bot's names)")
+            print("- When no channel filter is set: Accepts ALL messages")
             print()
             print("The bot always replies on the same channel_idx where each")
             print("message came from.")
