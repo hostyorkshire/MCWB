@@ -67,11 +67,12 @@ ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply typ
 class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
-    def __init__(self, port=None, baud=115200, debug=False, announce=False):
+    def __init__(self, port=None, baud=115200, debug=False, announce=False, allowed_channel_idx=None):
         self.port = port
         self.baud = baud
         self.debug = debug
         self.announce = announce
+        self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
         # channel_idx used for periodic announcements (set on first received message)
@@ -208,6 +209,11 @@ class WeatherBot:
 
     def _handle_channel_message(self, text: str, channel_idx: int):
         """Parse a raw channel message and respond if it is a weather command."""
+        # Filter by channel_idx if specified
+        if self.allowed_channel_idx is not None and channel_idx != self.allowed_channel_idx:
+            self._log(f"Ignoring message from channel_idx={channel_idx} (filter={self.allowed_channel_idx})")
+            return
+
         # MeshCore prepends "SenderName: " to channel messages
         colon = text.find(": ")
         if colon > 0:
@@ -314,7 +320,11 @@ class WeatherBot:
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
-        print("MCWBv2 running. Send 'WX [location]' or 'weather [location]' on the #weather channel.")
+        if self.allowed_channel_idx is not None:
+            print(f"MCWBv2 running. Listening ONLY on channel_idx={self.allowed_channel_idx}.")
+            print(f"Send 'WX [location]' or 'weather [location]' on that channel.")
+        else:
+            print("MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel.")
         print("Press Ctrl+C to stop.\n", flush=True)
 
         last_announce = time.time()
@@ -348,12 +358,15 @@ def main():
                         help="Enable debug output")
     parser.add_argument("-a", "--announce", action="store_true",
                         help="Send periodic announcements every 3 hours")
+    parser.add_argument("-c", "--channel-idx", type=int,
+                        help="Only respond to messages from this channel index (e.g., 1 for #weather)")
     parser.add_argument("-l", "--location",
                         help="Look up weather for LOCATION and exit (no radio needed)")
     args = parser.parse_args()
 
     bot = WeatherBot(port=args.port, baud=args.baud,
-                     debug=args.debug, announce=args.announce)
+                     debug=args.debug, announce=args.announce,
+                     allowed_channel_idx=args.channel_idx)
 
     if args.location:
         print(bot._get_weather(args.location))
