@@ -23,6 +23,10 @@ from meshcore import MeshCore, MeshCoreMessage
 # Weather parameters to request from Open-Meteo API
 WEATHER_PARAMETERS = "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m"
 
+# Periodic announcement settings
+ANNOUNCE_INTERVAL = 3 * 60 * 60  # 3 hours in seconds
+ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location."
+
 # WMO Weather codes mapping
 WEATHER_CODES = {
     0: "Clear sky",
@@ -98,7 +102,8 @@ class WeatherBot:
 
     def __init__(self, node_id: str = "weather_bot", debug: bool = False,
                  serial_port: Optional[str] = None, baud_rate: int = 9600,
-                 channel: Optional[str] = None):
+                 channel: Optional[str] = None,
+                 announce_channel: Optional[str] = "wxtest"):
         """
         Initialize Weather Bot
 
@@ -112,6 +117,8 @@ class WeatherBot:
                     messages from these channels. Can be a single channel name or
                     comma-separated list (e.g., "weather" or "weather,alerts").
                     When None (default), accepts messages from ALL channels.
+            announce_channel: Channel to broadcast periodic announcements on
+                    (default: "wxtest"). Set to None to disable announcements.
         
         Note:
             - Without channel filter: Bot accepts queries from ALL channels
@@ -135,6 +142,9 @@ class WeatherBot:
         else:
             self.channels = []
             # No channel filtering - accept messages from all channels
+
+        # Announcement channel (None disables periodic announcements)
+        self.announce_channel = announce_channel
 
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
@@ -403,6 +413,14 @@ class WeatherBot:
             self.mesh.send_message(content, "text", None)
             self._print_response(content, "Reply on default channel")
 
+    def send_announcement(self):
+        """Send a periodic announcement to the announce channel"""
+        if not self.announce_channel:
+            return
+        self.log(f"Sending announcement on channel '{self.announce_channel}'")
+        self.mesh.send_message(ANNOUNCE_MESSAGE, "text", self.announce_channel)
+        self._print_response(ANNOUNCE_MESSAGE, f"Announcement on channel: '{self.announce_channel}'")
+
     def start(self):
         """Start the weather bot"""
         self.mesh.start()
@@ -496,6 +514,13 @@ def main():
     )
 
     parser.add_argument(
+        "-a", "--announce-channel",
+        default="wxtest",
+        help="Channel to broadcast periodic announcements on every 3 hours "
+             "(default: wxtest). Pass an empty string to disable announcements."
+    )
+
+    parser.add_argument(
         "-l", "--location",
         help="Get weather for a specific location and exit"
     )
@@ -505,7 +530,8 @@ def main():
     # Create bot instance with optional channel filtering
     bot = WeatherBot(node_id=args.node_id, debug=args.debug,
                      serial_port=args.port, baud_rate=args.baud,
-                     channel=args.channel)
+                     channel=args.channel,
+                     announce_channel=args.announce_channel or None)
 
     if args.location:
         # One-shot mode: get weather for location and exit
@@ -524,9 +550,15 @@ def main():
         # Normal daemon mode
         bot.start()
         try:
-            # Keep running
+            # Send initial announcement, then repeat every ANNOUNCE_INTERVAL seconds
+            bot.send_announcement()
+            last_announce = time.time()
             while bot.mesh.is_running():
                 time.sleep(1)
+                now = time.time()
+                if now - last_announce >= ANNOUNCE_INTERVAL:
+                    bot.send_announcement()
+                    last_announce = now
         except KeyboardInterrupt:
             print("\nShutting down...")
         finally:

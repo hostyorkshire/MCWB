@@ -220,6 +220,55 @@ def test_reply_channel():
     print()
 
 
+def test_announcement():
+    """Test periodic announcement functionality"""
+    print("=" * 60)
+    print("TEST 7: Periodic Announcement")
+    print("=" * 60)
+
+    from weather_bot import ANNOUNCE_MESSAGE, ANNOUNCE_INTERVAL
+
+    # Verify constants
+    assert ANNOUNCE_INTERVAL == 3 * 60 * 60, "ANNOUNCE_INTERVAL should be 3 hours"
+    assert "WX" in ANNOUNCE_MESSAGE, "Announcement should mention WX command"
+    print(f"  Announcement message: {ANNOUNCE_MESSAGE}")
+    print(f"  Announcement interval: {ANNOUNCE_INTERVAL}s ({ANNOUNCE_INTERVAL // 3600}h)")
+
+    # Test send_announcement sends to the configured announce_channel
+    bot = WeatherBot(node_id="test_bot", debug=False, announce_channel="wxtest")
+    bot.mesh.start()
+
+    sent_messages = []
+    original_send = bot.mesh.send_message
+    def track_send(content, message_type, channel, channel_idx=None):
+        sent_messages.append({"content": content, "channel": channel})
+        return original_send(content, message_type, channel, channel_idx)
+    bot.mesh.send_message = track_send
+
+    bot.send_announcement()
+    assert len(sent_messages) == 1, "Announcement should send exactly one message"
+    assert sent_messages[0]["channel"] == "wxtest", f"Expected channel 'wxtest', got '{sent_messages[0]['channel']}'"
+    assert sent_messages[0]["content"] == ANNOUNCE_MESSAGE, "Announcement content mismatch"
+    print("  ✓ Announcement sent to 'wxtest' channel with correct message")
+
+    # Test that announcement is suppressed when announce_channel is None
+    bot_no_announce = WeatherBot(node_id="test_bot2", debug=False, announce_channel=None)
+    bot_no_announce.mesh.start()
+    no_announce_messages = []
+    original_send2 = bot_no_announce.mesh.send_message
+    def track_send2(content, message_type, channel, channel_idx=None):
+        no_announce_messages.append({"content": content, "channel": channel})
+        return original_send2(content, message_type, channel, channel_idx)
+    bot_no_announce.mesh.send_message = track_send2
+    bot_no_announce.send_announcement()
+    assert len(no_announce_messages) == 0, "No announcement should be sent when announce_channel is None"
+    print("  ✓ Announcement suppressed when announce_channel is None")
+
+    bot.mesh.stop()
+    bot_no_announce.mesh.stop()
+    print()
+
+
 def main():
     """Run all tests"""
     print("\n")
@@ -234,6 +283,7 @@ def main():
         test_weather_formatting()
         test_meshcore_integration()
         test_reply_channel()
+        test_announcement()
 
         print("=" * 60)
         print("All component tests completed!")
