@@ -306,15 +306,18 @@ class MeshCore:
         # Apply channel filtering if configured
         if self.channel_filter is not None:
             # If channel_filter is set, only accept messages from those channels
-            # Map the incoming channel_idx to a channel name and check if it's in the filter
-            incoming_channel_name = self._get_channel_name(message.channel_idx)
+            # Determine the channel name from either:
+            # 1. The message.channel attribute (for JSON-serialized messages)
+            # 2. Map the incoming channel_idx to a channel name (for binary protocol messages)
+            # Note: Use 'is not None' to distinguish None from empty string
+            incoming_channel_name = message.channel if message.channel is not None else self._get_channel_name(message.channel_idx)
             
             # Check if message is from a filtered channel
             # Note: channel_idx 0 (default channel) always maps to None and will be rejected
             # when channel_filter is set. Only messages from mapped named channels are accepted.
             if incoming_channel_name not in self.channel_filter:
-                self.log(f"Ignoring message: channel_idx {message.channel_idx} "
-                         f"('{incoming_channel_name}') not in filter {self.channel_filter}")
+                self.log(f"Ignoring message: channel {incoming_channel_name} "
+                         f"not in filter {self.channel_filter}")
                 return
 
         # Check if we have a handler for this message type

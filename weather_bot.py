@@ -60,7 +60,8 @@ class WeatherBot:
     """Weather Bot for MeshCore network"""
 
     def __init__(self, node_id: str = "weather_bot", debug: bool = False,
-                 serial_port: Optional[str] = None, baud_rate: int = 9600):
+                 serial_port: Optional[str] = None, baud_rate: int = 9600,
+                 channel: Optional[str] = None):
         """
         Initialize Weather Bot
 
@@ -70,10 +71,15 @@ class WeatherBot:
             serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                          When None, the bot operates in simulation mode.
             baud_rate: Baud rate for LoRa serial connection (default: 9600)
+            channel: Optional channel filter. When specified, the bot ONLY accepts
+                    messages from these channels. Can be a single channel name or
+                    comma-separated list (e.g., "weather" or "weather,alerts").
+                    When None (default), accepts messages from ALL channels.
         
         Note:
-            The bot accepts weather queries (wx/weather commands) from ALL channels.
-            It replies on the same channel where each query came from.
+            - Without channel filter: Bot accepts queries from ALL channels
+            - With channel filter: Bot ONLY accepts queries from specified channel(s)
+            - Bot always replies on the same channel_idx where each query came from
         """
         self.mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
         self.debug = debug
@@ -82,8 +88,16 @@ class WeatherBot:
         self.geocoding_api = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_api = "https://api.open-meteo.com/v1/forecast"
 
-        # No channel filtering - accept messages from all channels
-        # Bot replies on the same channel_idx where each message came from
+        # Configure channel filtering
+        # Parse comma-separated channel names if provided
+        if channel:
+            self.channels = [ch.strip() for ch in channel.split(',') if ch.strip()]
+            # Only set the channel filter if we have valid channels after parsing
+            if self.channels:
+                self.mesh.set_channel_filter(self.channels)
+        else:
+            self.channels = []
+            # No channel filtering - accept messages from all channels
 
         # Register message handler
         self.mesh.register_handler("text", self.handle_message)
@@ -300,8 +314,9 @@ class WeatherBot:
         """
         Send a response message.
 
-        The bot always replies on the same channel_idx where the message came from.
-        This ensures the sender receives the reply regardless of their channel configuration.
+        When replying to a query, the bot replies on the same channel_idx where the
+        message came from. For bot-initiated broadcasts (when no reply_to info is
+        provided), the bot broadcasts to all its configured channel(s) or default channel.
 
         Args:
             content: Response message content
@@ -319,7 +334,15 @@ class WeatherBot:
             self.log(f"Replying on channel '{reply_to_channel}': {content}")
             self.mesh.send_message(content, "text", reply_to_channel)
             self._print_response(content, f"Reply on channel: '{reply_to_channel}'")
-        # Priority 3: No channel info - broadcast on default channel
+        # Priority 3: Bot-initiated broadcast - send to all configured channels
+        elif self.channels:
+            # Bot has configured channel(s) - broadcast to all of them
+            for channel in self.channels:
+                self.log(f"Broadcasting on channel '{channel}': {content}")
+                self.mesh.send_message(content, "text", channel)
+            channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
+            self._print_response(content, f"Broadcast on channel(s): {channels_str}")
+        # Priority 4: No channel info and no configured channels - use default channel
         else:
             self.log(f"Sending response on default channel: {content}")
             self.mesh.send_message(content, "text", None)
@@ -328,7 +351,11 @@ class WeatherBot:
     def start(self):
         """Start the weather bot"""
         self.mesh.start()
-        print("Weather Bot started. Accepts queries from ALL channels.")
+        if self.channels:
+            channel_str = ", ".join(self.channels)
+            print(f"Weather Bot started. ONLY accepts queries from channel(s): {channel_str}")
+        else:
+            print("Weather Bot started. Accepts queries from ALL channels.")
         print("Send 'wx [location]' to get weather.")
         print("Example: wx London")
         print("Listening for messages...")
@@ -407,15 +434,23 @@ def main():
     )
 
     parser.add_argument(
+        "-c", "--channel",
+        help="Channel filter: only accept messages from specified channel(s). "
+             "Can be a single channel (e.g., 'weather') or comma-separated list "
+             "(e.g., 'weather,alerts'). When omitted, accepts messages from ALL channels."
+    )
+
+    parser.add_argument(
         "-l", "--location",
         help="Get weather for a specific location and exit"
     )
 
     args = parser.parse_args()
 
-    # Create bot instance (now hardcoded to weather channel)
+    # Create bot instance with optional channel filtering
     bot = WeatherBot(node_id=args.node_id, debug=args.debug,
-                     serial_port=args.port, baud_rate=args.baud)
+                     serial_port=args.port, baud_rate=args.baud,
+                     channel=args.channel)
 
     if args.location:
         # One-shot mode: get weather for location and exit
