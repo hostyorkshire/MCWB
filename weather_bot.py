@@ -301,23 +301,42 @@ class WeatherBot:
                       reply_to_channel_idx: Optional[int] = None):
         """
         Send a response message. Priority order:
-        1. Broadcast to configured channels (self.channels) - bot acts as dedicated service
-        2. Reply to incoming default channel (channel_idx=0) - ensures users see replies
-        3. Reply to the channel_idx the message came from (reply_to_channel_idx)
-        4. Reply to the channel the message came from (reply_to_channel)
+        1. Reply to incoming default channel (channel_idx=0) - ensures clients see replies
+        2. Reply to the channel_idx the message came from (reply_to_channel_idx)
+        3. Reply to the channel the message came from (reply_to_channel)
+        4. Broadcast to configured channels (self.channels) - bot acts as dedicated service
         5. Broadcast to all (no channel specified)
 
-        When --channel is specified, the bot acts as a dedicated service for those channels
-        and always replies there. Otherwise, reply on the channel where the message came from.
+        The bot always replies to the client on the channel where the message came from.
+        This ensures clients receive responses even if they're not on the bot's configured channel.
 
         Args:
             content: Response message content
             reply_to_channel: Channel name to reply to (from incoming message)
             reply_to_channel_idx: Raw channel index to reply to (from incoming message)
         """
-        # Priority 1: Broadcast to all configured channels (dedicated service mode)
-        # When --channel is specified, bot always replies on those channels
-        if self.channels:
+        # Priority 1: Reply to incoming default channel (idx=0) - best UX
+        # Users sending on default channel should see replies on default channel
+        if reply_to_channel_idx == 0:
+            self.log(f"Replying on default channel (channel_idx 0): {content}")
+            self.mesh.send_message(content, "text", channel=None, channel_idx=0)
+            print(f"\n{content}")
+            print(f"[Reply on channel_idx: 0 (default)]\n")
+        # Priority 2: Reply using the raw channel_idx (most reliable for replies)
+        elif reply_to_channel_idx is not None:
+            self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
+            self.mesh.send_message(content, "text", channel=None, channel_idx=reply_to_channel_idx)
+            print(f"\n{content}")
+            print(f"[Reply on channel_idx: {reply_to_channel_idx}]\n")
+        # Priority 3: Reply to the named channel
+        elif reply_to_channel:
+            self.log(f"Replying on channel '{reply_to_channel}': {content}")
+            self.mesh.send_message(content, "text", reply_to_channel)
+            print(f"\n{content}")
+            print(f"[Reply on channel: '{reply_to_channel}']\n")
+        # Priority 4: Broadcast to all configured channels (dedicated service mode)
+        # When --channel is specified and no incoming channel info, broadcast on configured channels
+        elif self.channels:
             for i, channel in enumerate(self.channels):
                 self.log(f"Sending response on channel '{channel}': {content}")
                 self.mesh.send_message(content, "text", channel)
@@ -328,25 +347,6 @@ class WeatherBot:
             channels_str = ", ".join(f"'{ch}'" for ch in self.channels)
             print(f"\n{content}")
             print(f"[Broadcast on channels: {channels_str}]\n")
-        # Priority 2: Reply to incoming default channel (idx=0) - best UX
-        # Users sending on default channel should see replies on default channel
-        elif reply_to_channel_idx == 0:
-            self.log(f"Replying on default channel (channel_idx 0): {content}")
-            self.mesh.send_message(content, "text", channel=None, channel_idx=0)
-            print(f"\n{content}")
-            print(f"[Reply on channel_idx: 0 (default)]\n")
-        # Priority 3: Reply using the raw channel_idx (most reliable for replies)
-        elif reply_to_channel_idx is not None:
-            self.log(f"Replying on channel_idx {reply_to_channel_idx}: {content}")
-            self.mesh.send_message(content, "text", channel=None, channel_idx=reply_to_channel_idx)
-            print(f"\n{content}")
-            print(f"[Reply on channel_idx: {reply_to_channel_idx}]\n")
-        # Priority 4: Reply to the named channel
-        elif reply_to_channel:
-            self.log(f"Replying on channel '{reply_to_channel}': {content}")
-            self.mesh.send_message(content, "text", reply_to_channel)
-            print(f"\n{content}")
-            print(f"[Reply on channel: '{reply_to_channel}']\n")
         # Priority 5: No channel specified - broadcast to all
         else:
             self.log(f"Sending response (broadcast): {content}")
