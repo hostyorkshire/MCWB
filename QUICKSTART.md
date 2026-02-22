@@ -2,6 +2,10 @@
 
 ## Installation on Raspberry Pi Zero 2
 
+**🍓 For headless setup with auto-start on boot, see [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md)**
+
+This is a quick manual installation guide. For automated installation with systemd service, use the installation script or see the full Raspberry Pi setup guide.
+
 ### 1. Update System
 ```bash
 sudo apt-get update
@@ -36,8 +40,21 @@ python3 weather_bot.py --interactive
 # wx York
 ```
 
-### 6. Run as Background Service (Optional)
+### 6. Run as Background Service (Auto-Start on Boot)
 
+**Option A: Automated Installation (Recommended)**
+```bash
+# Run the installation script
+./install_service.sh
+
+# The script will:
+# - Configure the service for your user and paths
+# - Install it to systemd
+# - Enable auto-start on boot
+# - Optionally start it immediately
+```
+
+**Option B: Manual Installation**
 ```bash
 # Copy service file
 sudo cp weather_bot.service /etc/systemd/system/
@@ -58,6 +75,8 @@ sudo systemctl status weather_bot
 # View logs
 sudo journalctl -u weather_bot -f
 ```
+
+For complete headless setup instructions, troubleshooting, and advanced configuration, see **[RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md)**.
 
 ## Usage Examples
 

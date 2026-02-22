@@ -1,17 +1,32 @@
 [Unit]
 Description=MCWBv2 - MeshCore Weather Bot
+# Wait for network to be fully online before starting
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
+# Change 'pi' to your username if different
 User=pi
+# Change paths if you installed to a different location
 WorkingDirectory=/home/pi/MCWB
 ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
+# Automatically restart if the bot crashes
 Restart=on-failure
 RestartSec=10
+# Log to systemd journal (view with: sudo journalctl -u weather_bot -f)
 StandardOutput=journal
 StandardError=journal
 
+# Optional: Uncomment to enable announcements every 3 hours
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
+
+# Optional: Uncomment to enable debug logging
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 -d
+
+# Optional: Uncomment to restrict to a specific channel index
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --channel-idx 1
+
 [Install]
+# Start automatically on boot
 WantedBy=multi-user.target
