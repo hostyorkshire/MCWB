@@ -449,6 +449,27 @@ sudo systemctl daemon-reload
 sudo systemctl restart weather_bot
 ```
 
+### Filtering by Country (Location Disambiguation)
+
+If you're deploying in a specific country, you can filter location searches to prefer cities in that country. This is useful when city names are ambiguous (e.g., "York" exists in both UK and USA):
+
+```bash
+# Edit the service file
+sudo nano /etc/systemd/system/weather_bot.service
+
+# For UK deployments, change ExecStart line to:
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --country GB
+
+# Or for US deployments:
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --country US
+
+# Reload and restart
+sudo systemctl daemon-reload
+sudo systemctl restart weather_bot
+```
+
+**Note:** Use [ISO 3166-1 alpha-2 country codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (e.g., GB, US, FR, DE, CA, AU).
+
 ### Debug Mode in Production
 
 To run with debug logging enabled:
