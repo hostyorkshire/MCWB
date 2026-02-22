@@ -416,16 +416,17 @@ def main():
     parser.add_argument("-c", "--channel-idx", type=int,
                         help="Only respond to messages from this channel index (e.g., 1 for #weather)")
     parser.add_argument("-w", "--weather-channel-idx", type=int,
-                        help="Specify which channel index the weather service is on (for announcements and filtering). "
-                             "Use this when the weather channel is assigned a different number in the MeshCore app.")
+                        help="Specify which channel index to use for announcements. "
+                             "Bot will still respond to messages from ANY channel unless --channel-idx is also specified.")
     parser.add_argument("-l", "--location",
                         help="Look up weather for LOCATION and exit (no radio needed)")
     args = parser.parse_args()
 
-    # If weather_channel_idx is specified, use it for both filtering and announcements
-    # Otherwise, use allowed_channel_idx for backward compatibility
+    # --weather-channel-idx controls announcement channel only
+    # --channel-idx controls message filtering (if set, only accept messages from that channel)
+    # If neither is set, accept messages from all channels (default behavior)
     weather_idx = args.weather_channel_idx
-    allowed_idx = args.channel_idx if args.weather_channel_idx is None else args.weather_channel_idx
+    allowed_idx = args.channel_idx  # Only filter if explicitly set via --channel-idx
 
     bot = WeatherBot(port=args.port, baud=args.baud,
                      debug=args.debug, announce=args.announce,
