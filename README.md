@@ -111,6 +111,9 @@ python3 weather_bot.py -d
 # Enable periodic announcements every 3 hours
 python3 weather_bot.py --announce
 
+# Filter location searches to prefer UK cities (useful if most users are in UK)
+python3 weather_bot.py --country GB
+
 # Quick weather lookup (no radio hardware needed)
 python3 weather_bot.py --location Leeds
 ```
@@ -142,6 +145,9 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -w WEATHER_CHANNEL_IDX, --weather-channel-idx WEATHER_CHANNEL_IDX
                           Specify which channel index to use for announcements. Bot will still
                           respond to messages from ANY channel unless --channel-idx is also specified.
+  --country COUNTRY       Default country code for geocoding (e.g., GB, US, FR). Filters location
+                          searches to prefer cities in this country. Useful when city names are
+                          ambiguous (e.g., York, Paris, etc.).
   -l LOCATION, --location LOCATION
                           Look up weather and exit (no radio needed)
 ```
@@ -271,6 +277,24 @@ sudo systemctl start weather_bot
 
 ### Location not found
 - Use the full city name, or add country/region: `wx York, UK`.
+
+### Wrong city returned (city in another country)
+Some city names exist in multiple countries (e.g., "York" in UK, USA; "Paris" in France, USA).
+By default, the bot returns the first match from the geocoding API.
+
+**Solutions:**
+1. **Be specific in the query:** Users can add the country to their request:
+   - `wx York, UK` instead of just `wx York`
+   - `wx Paris, France` instead of just `wx Paris`
+
+2. **Configure a default country:** If most users are in one country, run the bot with the `--country` flag:
+   ```bash
+   python3 weather_bot.py --country GB  # Prefers UK cities
+   python3 weather_bot.py --country US  # Prefers US cities
+   ```
+   
+   This filters location searches to prefer cities in the specified country while still
+   allowing users to override by specifying a different country in their query.
 
 ## API
 
