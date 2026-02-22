@@ -73,14 +73,14 @@ def test_with_channel_filtering():
     Test that channel filtering works when explicitly configured.
     """
     print("\n" + "=" * 70)
-    print("TEST: Bot with Channel Filtering (--weather-channel-idx 1)")
+    print("TEST: Bot with Channel Filtering (--channel-idx 1)")
     print("=" * 70 + "\n")
     
-    # Create bot WITH channel filtering (--weather-channel-idx 1)
-    bot = WeatherBot(allowed_channel_idx=1, weather_channel_idx=1, debug=True)
+    # Create bot WITH channel filtering (--channel-idx 1)
+    bot = WeatherBot(allowed_channel_idx=1, debug=True)
     
     print(f"Bot configured with allowed_channel_idx={bot.allowed_channel_idx}")
-    print(f"This simulates running: python3 weather_bot.py --weather-channel-idx 1\n")
+    print(f"This simulates running: python3 weather_bot.py --channel-idx 1\n")
     
     # Test different channel indices
     test_cases = [
