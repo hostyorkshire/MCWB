@@ -4,6 +4,8 @@ Lightweight Python3 weather bot for the MeshCore `#weather` channel.
 
 **✨ Zero Configuration Required** - The bot automatically works on any channel without needing to configure channel IDs!
 
+**🍓 Raspberry Pi Zero 2 Ready** - See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) for headless auto-start on boot setup!
+
 ## Overview
 
 MCWBv2 listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
@@ -240,12 +242,16 @@ See `CHANNEL_GUIDE.md` for a full explanation of the channel name / channel inde
 
 ## Running as a systemd service
 
+For production deployments, especially on Raspberry Pi, you can run the bot as a systemd service that starts automatically on boot:
+
 ```bash
 sudo cp weather_bot.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable weather_bot
 sudo systemctl start weather_bot
 ```
+
+**📖 Raspberry Pi Zero 2 Headless Setup:** See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) for complete instructions on setting up the bot to run automatically on boot in headless mode (no display required).
 
 ## Troubleshooting
 
