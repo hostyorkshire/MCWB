@@ -157,6 +157,22 @@ different MeshCore devices may assign the #weather channel to different slot num
 `--weather-channel-idx`, you tell the bot exactly which channel index to use for both listening 
 to weather requests and sending announcements.
 
+### Finding Your Weather Channel Index
+
+**Important:** The bot cannot automatically detect which channel index corresponds to #weather 
+because the MeshCore protocol only provides numeric indices, not channel names. You must 
+configure this manually.
+
+To find your weather channel index:
+
+1. **Check your MeshCore app** - Look at Channel Settings to see which slot #weather is assigned to
+2. **Use debug mode** - Run `python3 weather_bot.py --debug`, send a test message on #weather, 
+   and observe the `channel_idx` in the output
+3. **See `FAQ_CHANNEL_DETECTION.md`** for detailed instructions and examples
+
+Once you know the index, configure it with `--weather-channel-idx` so the bot uses the correct 
+channel from startup.
+
 You can also send a message directly on a specific channel slot using `meshcore_send.py`:
 
 ```bash
