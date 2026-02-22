@@ -112,10 +112,14 @@ class WeatherBot:
         """Send reboot notification message."""
         if self.reboot_notify and self._is_reboot():
             print("Detected restart/reboot - sending notification...")
-            # Use the configured weather channel or announcement channel
-            channel = self._announce_channel_idx
-            self._send_channel_msg(REBOOT_NOTIFY_MESSAGE, channel)
-            self._log(f"Sent reboot notification on channel_idx={channel}")
+            try:
+                # Use the configured weather channel or announcement channel
+                channel = self._announce_channel_idx
+                self._send_channel_msg(REBOOT_NOTIFY_MESSAGE, channel)
+                self._log(f"Sent reboot notification on channel_idx={channel}")
+            except Exception as e:
+                print(f"Warning: Failed to send reboot notification: {e}")
+                self._log(f"Failed to send reboot notification: {e}")
 
     # ------------------------------------------------------------------
     # Logging helpers
@@ -400,7 +404,10 @@ class WeatherBot:
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
-        # Send reboot notification if enabled and this is a restart
+        # Send reboot notification if enabled and this is a restart.
+        # Note: We send the notification BEFORE marking as running, so that if
+        # the bot crashes during the notification send, the next restart will
+        # correctly detect and notify about that crash event as well.
         self._send_reboot_notification()
         
         # Mark bot as running for future restart detection
