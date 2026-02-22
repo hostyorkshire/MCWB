@@ -11,7 +11,8 @@ from meshcore import MeshCore
 
 
 def send_message(node_id: str, content: str, message_type: str = "text",
-                 channel: Optional[str] = None, debug: bool = False,
+                 channel: Optional[str] = None, channel_idx: Optional[int] = None,
+                 debug: bool = False,
                  serial_port: Optional[str] = None, baud_rate: int = 9600):
     """
     Send a message via MeshCore network
@@ -20,7 +21,13 @@ def send_message(node_id: str, content: str, message_type: str = "text",
         node_id: Unique identifier for this node
         content: Message content to send
         message_type: Type of message (default: "text")
-        channel: Optional channel to broadcast to
+        channel: Optional channel name to broadcast to (e.g. "weather").
+        channel_idx: Optional raw channel slot index (0-7) to use directly.
+                     This is the MESHCORE_CHANNEL_IDX value – the numeric slot
+                     configured on the companion radio.  When provided, it takes
+                     precedence over the channel name.  Use this when you know
+                     exactly which physical channel slot you want to send on
+                     (e.g. ``--channel-idx 1`` for channel slot 1).
         debug: Enable debug output
         serial_port: Serial port for LoRa module (e.g., /dev/ttyUSB0).
                      When None, runs in simulation mode.
@@ -32,7 +39,7 @@ def send_message(node_id: str, content: str, message_type: str = "text",
     mesh = MeshCore(node_id, debug=debug, serial_port=serial_port, baud_rate=baud_rate)
     mesh.start()
 
-    message = mesh.send_message(content, message_type, channel)
+    message = mesh.send_message(content, message_type, channel, channel_idx)
 
     mesh.stop()
 
@@ -64,7 +71,19 @@ def main():
 
     parser.add_argument(
         "-c", "--channel",
-        help="Channel to broadcast to (optional)"
+        help="Channel name to broadcast to (e.g. 'weather'). "
+             "The name is mapped to a channel slot index internally."
+    )
+
+    parser.add_argument(
+        "-x", "--channel-idx",
+        type=int,
+        metavar="IDX",
+        help="Channel slot index (0-7) to send on directly "
+             "(MESHCORE_CHANNEL_IDX). "
+             "Use this when you know the exact numeric slot configured on "
+             "your companion radio (e.g. 1 for the first named channel). "
+             "Takes precedence over --channel when both are given."
     )
 
     parser.add_argument(
@@ -94,6 +113,7 @@ def main():
         content=args.content,
         message_type=args.type,
         channel=args.channel,
+        channel_idx=args.channel_idx,
         debug=args.debug,
         serial_port=args.port,
         baud_rate=args.baud
@@ -101,6 +121,8 @@ def main():
 
     if not args.debug:
         channel_info = f" on channel '{args.channel}'" if args.channel else ""
+        if args.channel_idx is not None:
+            channel_info += f" (channel_idx={args.channel_idx})"
         print(f"Message sent{channel_info}: {message.content}")
 
     return 0
