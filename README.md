@@ -137,7 +137,23 @@ This is useful when:
 - You have multiple bots running and need to prevent conflicts
 - You want to control which channels can invoke the bot
 
-**Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel slots on your MeshCore device. Check your device's channel configuration to determine which index corresponds to your #weather channel.
+**Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel
+slots on your MeshCore device. Slot 0 is the public/default channel. Slots 1–7 are named
+channels configured in the MeshCore app. Check your device's channel configuration to
+determine which index corresponds to your `#weather` channel (the `#` prefix is the MeshCore
+app UI label; in Python code and CLI options the name is used without it, e.g. `"weather"`).
+
+You can also send a message directly on a specific channel slot using `meshcore_send.py`:
+
+```bash
+# Send on channel slot 1 by index (MESHCORE_CHANNEL_IDX)
+python3 meshcore_send.py "wx Leeds" --channel-idx 1
+
+# Send by name (mapped to a slot automatically)
+python3 meshcore_send.py "wx Leeds" --channel weather
+```
+
+See `CHANNEL_GUIDE.md` for a full explanation of the channel name / channel index relationship.
 
 ## Running as a systemd service
 
