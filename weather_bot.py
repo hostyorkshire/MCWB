@@ -173,15 +173,30 @@ class WeatherBot:
         Returns:
             tuple: (channel_idx, text) or (None, None) if parsing fails
         """
+        # Minimum 8 bytes required for old format:
+        # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
         if len(payload) < 8:
             return (None, None)
         
-        # Try V3 format if payload is long enough
+        # Try V3 format if payload is long enough (minimum 12 bytes for V3)
         if len(payload) >= 12:
-            # Check if channel_idx at position 4 is in valid range (0-7)
+            # V3 format detection: check multiple criteria to avoid false positives
+            # 1. SNR at position 1 should be in realistic range for radio signals (typically 20-60 dB)
+            # 2. channel_idx at position 4 must be in valid range (0-7)
+            snr_value = payload[1]
             v3_channel_idx = payload[4]
-            if 0 <= v3_channel_idx <= 7:
-                # Likely V3 format
+            
+            # Heuristic: If SNR is in realistic range AND channel_idx is valid, use V3 format
+            # SNR range 20-60 covers most real-world scenarios
+            if 20 <= snr_value <= 60 and 0 <= v3_channel_idx <= 7:
+                # Very likely V3 format
+                channel_idx = v3_channel_idx
+                text = payload[11:].decode("utf-8", "ignore")
+                return (channel_idx, text)
+            # Edge case: If byte at position 1 is > 7 (impossible as channel_idx in old format)
+            # AND position 4 has valid channel_idx, assume V3 format even if SNR is outside typical range
+            elif snr_value > 7 and 0 <= v3_channel_idx <= 7:
+                # Likely V3 format (SNR could be unusually high or low)
                 channel_idx = v3_channel_idx
                 text = payload[11:].decode("utf-8", "ignore")
                 return (channel_idx, text)
