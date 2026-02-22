@@ -426,7 +426,7 @@ def main():
     # Otherwise, use allowed_channel_idx for backward compatibility
     weather_idx = args.weather_channel_idx
     allowed_idx = args.channel_idx if args.weather_channel_idx is None else args.weather_channel_idx
-    
+
     bot = WeatherBot(port=args.port, baud=args.baud,
                      debug=args.debug, announce=args.announce,
                      allowed_channel_idx=allowed_idx,
