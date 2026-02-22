@@ -261,12 +261,14 @@ python3 weather_bot.py --reboot-notify
 
 ### How It Works
 
-1. **First Run:** The bot creates a state file (`/tmp/mcwb_state.txt`) but does NOT send a notification
+1. **First Run:** The bot creates a state file (`/var/tmp/mcwb_state.txt`) but does NOT send a notification
 2. **Subsequent Restarts:** If the state file exists when the bot starts, it detects this as a restart and sends a notification message
 3. **Notification Message:** "MCWBv2 weather bot has restarted and is now online."
 4. **Channel Selection:** The notification is sent on the same channel used for announcements (see `--weather-channel-idx`)
 
-### Use Cases
+The state file is stored in `/var/tmp/` which persists across system reboots, allowing the bot to detect and notify about both:
+- **Power loss/system reboots:** After the system restarts, the state file still exists
+- **Bot crashes:** When systemd restarts the service, the state file indicates the previous run
 
 - **Remote Monitoring:** Get alerted when your Raspberry Pi weather bot reboots after power loss
 - **Reliability Tracking:** Know when the bot crashes and automatically recovers
@@ -288,9 +290,9 @@ python3 weather_bot.py --reboot-notify --weather-channel-idx 1
 python3 weather_bot.py --reboot-notify --announce --weather-channel-idx 1
 ```
 
-**Note:** The reboot notification feature uses a simple file-based detection mechanism. The state file is stored in `/tmp/` which is cleared on full system reboots, ensuring clean detection of power loss scenarios.
+**Note:** The reboot notification feature uses a state file stored in `/var/tmp/` which persists across system reboots. This allows detection of both power loss scenarios (full system reboot) and bot-only crashes (systemd service restart).
 
-## Running as a systemd service
+### Use Cases
 
 For production deployments, especially on Raspberry Pi, you can run the bot as a systemd service that starts automatically on boot:
 

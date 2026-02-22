@@ -72,7 +72,8 @@ This is useful for detecting:
   • Service restarts
   • Unexpected reboots
 
-The state file is stored at: {STATE_FILE}
+The state file is stored at: /var/tmp/mcwb_state.txt
+(This location persists across system reboots)
     """.format(STATE_FILE=STATE_FILE))
     
     # Clean up any existing state

@@ -7,7 +7,7 @@ This implementation adds reboot notification functionality to MCWBv2, allowing t
 
 ### 1. Core Functionality (weather_bot.py)
 - **New constant**: `REBOOT_NOTIFY_MESSAGE` - the message sent on reboot
-- **New constant**: `STATE_FILE` - path to the state file (`/tmp/mcwb_state.txt`)
+- **New constant**: `STATE_FILE` - path to the state file (`/var/tmp/mcwb_state.txt`)
 - **New parameter**: `reboot_notify` in `WeatherBot.__init__()` - enables/disables the feature
 - **New method**: `_is_reboot()` - checks if state file exists (indicates previous run)
 - **New method**: `_mark_running()` - creates/updates state file with current timestamp
@@ -45,9 +45,10 @@ This implementation adds reboot notification functionality to MCWBv2, allowing t
 ## How It Works
 
 ### Detection Mechanism
-1. **State File**: Simple file-based approach using `/tmp/mcwb_state.txt`
+1. **State File**: Simple file-based approach using `/var/tmp/mcwb_state.txt`
    - Contains a timestamp of when bot was last marked as running
-   - Stored in `/tmp/` so it persists across bot restarts but not full system reboots
+   - Stored in `/var/tmp/` so it persists across full system reboots
+   - This allows detection of BOTH power loss (system reboot) AND bot crashes
    
 2. **Detection Logic**:
    - On startup, check if state file exists
@@ -77,8 +78,8 @@ This implementation adds reboot notification functionality to MCWBv2, allowing t
 ### Why file-based detection?
 - **Simple**: No dependencies, no database, no complex state management
 - **Reliable**: File existence is a straightforward indicator
-- **Persistent**: Survives bot crashes but not full system reboots
-- **Appropriate**: `/tmp/` location clears on full reboot, providing clean detection
+- **Persistent**: Survives both bot crashes AND full system reboots
+- **Appropriate**: `/var/tmp/` location is designed for persistent temporary files
 
 ### Why send notification before marking as running?
 If the bot crashes during notification send, the state file remains from the previous run, so the next restart will correctly detect and notify about that crash event. This ensures all restart events are reported.

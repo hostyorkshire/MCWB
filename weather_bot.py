@@ -66,7 +66,7 @@ WEATHER_CODES = {
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location."
 REBOOT_NOTIFY_MESSAGE = "MCWBv2 weather bot has restarted and is now online."
-STATE_FILE = "/tmp/mcwb_state.txt"
+STATE_FILE = "/var/tmp/mcwb_state.txt"  # persists across reboots
 
 
 class WeatherBot:
