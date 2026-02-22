@@ -78,7 +78,7 @@ class WeatherBot:
 
     def __init__(self, port=None, baud=115200, debug=False, announce=False,
                  allowed_channel_idx=None, node_id=None, announce_channel=None,
-                 weather_channel_idx=None):
+                 weather_channel_idx=None, country=None):
         self.port = port
         self.baud = baud
         self.debug = debug
@@ -91,6 +91,8 @@ class WeatherBot:
         self.weather_channel_idx = weather_channel_idx
         self._announce_channel_idx = weather_channel_idx if weather_channel_idx is not None else 0
         self.announce_channel = announce_channel
+        # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
+        self.country = country
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
                              serial_port=port, baud_rate=self.baud)
@@ -358,9 +360,15 @@ class WeatherBot:
     def _get_weather(self, location: str) -> str:
         """Fetch weather for *location* and return a formatted string."""
         try:
+            # Build geocoding params
+            geo_params = {"name": location, "count": 1, "language": "en", "format": "json"}
+            # Add country code filter if configured
+            if self.country:
+                geo_params["country"] = self.country
+            
             geo = requests.get(
                 "https://geocoding-api.open-meteo.com/v1/search",
-                params={"name": location, "count": 1, "language": "en", "format": "json"},
+                params=geo_params,
                 timeout=10,
             ).json()
 
@@ -477,6 +485,9 @@ def main():
     parser.add_argument("-w", "--weather-channel-idx", type=int,
                         help="Specify which channel index to use for announcements. "
                              "Bot will still respond to messages from ANY channel unless --channel-idx is also specified.")
+    parser.add_argument("--country",
+                        help="Default country code for geocoding (e.g., GB, US, FR). "
+                             "Filters location searches to prefer cities in this country.")
     parser.add_argument("-l", "--location",
                         help="Look up weather for LOCATION and exit (no radio needed)")
     args = parser.parse_args()
@@ -490,7 +501,8 @@ def main():
     bot = WeatherBot(port=args.port, baud=args.baud,
                      debug=args.debug, announce=args.announce,
                      allowed_channel_idx=allowed_idx,
-                     weather_channel_idx=weather_idx)
+                     weather_channel_idx=weather_idx,
+                     country=args.country)
 
     if args.location:
         print(bot._get_weather(args.location))
