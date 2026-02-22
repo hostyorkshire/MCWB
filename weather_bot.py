@@ -45,6 +45,12 @@ _PUSH_MSG_WAITING = 0x83    # Push: new message queued
 _PUSH_CHAN_MSG = 0x88        # Push: inline channel message (0x80 | RESP_CHANNEL_MSG)
 _RESP_NO_MORE_MSGS = 0x0A   # No more messages in queue (same value as CMD_SYNC_NEXT_MSG)
 
+# Channel message format constants
+_OLD_FORMAT_HEADER_SIZE = 8   # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_V3_FORMAT_HEADER_SIZE = 11   # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
+_MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
+
 # WMO weather interpretation codes
 WEATHER_CODES = {
     0: "Clear sky",
@@ -167,43 +173,44 @@ class WeatherBot:
         Parse channel message payload and extract channel_idx and text.
         Handles both old format and V3 format (with SNR).
         
+        Format Detection Heuristics:
+        - If payload >= 12 bytes and SNR (byte 1) is in realistic range (20-60 dB)
+          and channel_idx (byte 4) is valid (0-7), use V3 format
+        - If payload >= 12 bytes and byte 1 > 7 (impossible as channel_idx in old format)
+          and byte 4 is valid channel_idx, use V3 format
+        - Otherwise, use old format
+        
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         
         Returns:
             tuple: (channel_idx, text) or (None, None) if parsing fails
         """
-        # Minimum 8 bytes required for old format:
-        # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
-        if len(payload) < 8:
+        # Minimum 8 bytes required for old format header
+        if len(payload) < _OLD_FORMAT_HEADER_SIZE:
             return (None, None)
         
-        # Try V3 format if payload is long enough (minimum 12 bytes for V3)
-        if len(payload) >= 12:
-            # V3 format detection: check multiple criteria to avoid false positives
-            # 1. SNR at position 1 should be in realistic range for radio signals (typically 20-60 dB)
-            # 2. channel_idx at position 4 must be in valid range (0-7)
+        # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
+        if len(payload) >= _V3_FORMAT_HEADER_SIZE + 1:
             snr_value = payload[1]
             v3_channel_idx = payload[4]
             
-            # Heuristic: If SNR is in realistic range AND channel_idx is valid, use V3 format
-            # SNR range 20-60 covers most real-world scenarios
-            if 20 <= snr_value <= 60 and 0 <= v3_channel_idx <= 7:
-                # Very likely V3 format
+            # Heuristic 1: SNR in realistic range AND valid channel_idx = V3 format
+            if _MIN_REALISTIC_SNR <= snr_value <= _MAX_REALISTIC_SNR and 0 <= v3_channel_idx <= 7:
                 channel_idx = v3_channel_idx
-                text = payload[11:].decode("utf-8", "ignore")
+                text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
                 return (channel_idx, text)
-            # Edge case: If byte at position 1 is > 7 (impossible as channel_idx in old format)
-            # AND position 4 has valid channel_idx, assume V3 format even if SNR is outside typical range
+            
+            # Heuristic 2: SNR > 7 (impossible as channel_idx) AND valid channel_idx = V3 format
+            # This handles cases where SNR is outside typical range but still valid
             elif snr_value > 7 and 0 <= v3_channel_idx <= 7:
-                # Likely V3 format (SNR could be unusually high or low)
                 channel_idx = v3_channel_idx
-                text = payload[11:].decode("utf-8", "ignore")
+                text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
                 return (channel_idx, text)
         
         # Fall back to old format
         channel_idx = payload[1]
-        text = payload[8:].decode("utf-8", "ignore")
+        text = payload[_OLD_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
         return (channel_idx, text)
 
     def _dispatch(self, payload: bytes):
