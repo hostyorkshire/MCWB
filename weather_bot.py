@@ -187,16 +187,46 @@ class WeatherBot:
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _PUSH_CHAN_MSG and len(payload) >= 8:
-            # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 8 bytes; text follows
-            channel_idx = payload[1]
-            text = payload[8:].decode("utf-8", "ignore")
+            # Handle both old format and V3 format (with SNR)
+            # V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 11 bytes
+            # Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 8 bytes
+            if len(payload) >= 12:
+                # Try V3 format first - check if channel_idx at position 4 is in valid range (0-7)
+                v3_channel_idx = payload[4]
+                if 0 <= v3_channel_idx <= 7:
+                    # Likely V3 format
+                    channel_idx = v3_channel_idx
+                    text = payload[11:].decode("utf-8", "ignore")
+                else:
+                    # Fall back to old format
+                    channel_idx = payload[1]
+                    text = payload[8:].decode("utf-8", "ignore")
+            else:
+                # Old format (payload too short for V3)
+                channel_idx = payload[1]
+                text = payload[8:].decode("utf-8", "ignore")
             self._handle_channel_message(text, channel_idx)
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG and len(payload) >= 8:
-            # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 8 bytes; text follows
-            channel_idx = payload[1]
-            text = payload[8:].decode("utf-8", "ignore")
+            # Handle both old format and V3 format (with SNR)
+            # V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 11 bytes
+            # Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 8 bytes
+            if len(payload) >= 12:
+                # Try V3 format first - check if channel_idx at position 4 is in valid range (0-7)
+                v3_channel_idx = payload[4]
+                if 0 <= v3_channel_idx <= 7:
+                    # Likely V3 format
+                    channel_idx = v3_channel_idx
+                    text = payload[11:].decode("utf-8", "ignore")
+                else:
+                    # Fall back to old format
+                    channel_idx = payload[1]
+                    text = payload[8:].decode("utf-8", "ignore")
+            else:
+                # Old format (payload too short for V3)
+                channel_idx = payload[1]
+                text = payload[8:].decode("utf-8", "ignore")
             self._handle_channel_message(text, channel_idx)
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
