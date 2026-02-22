@@ -47,6 +47,8 @@ network={
 
 Replace `GB` with your [ISO 3166-1 alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (e.g., `US` for United States, `CA` for Canada, `AU` for Australia, `DE` for Germany, `GB` for United Kingdom) to comply with local WiFi regulations. Also update the SSID and password for your network.
 
+**📡 Remote Access:** For accessing your Pi from outside your local network (e.g., when deployed in a remote location), see the [SSH Remote Access Guide](SSH_REMOTE_ACCESS.md) for comprehensive instructions on secure remote SSH access, VPN setup, and more.
+
 ### 2. Connect to Your Pi
 
 After booting the Pi:
@@ -522,6 +524,17 @@ The Pi Zero 2 has limited resources. Here are some tips:
 passwd
 ```
 
+### Secure SSH Access
+
+For comprehensive SSH security including key-based authentication, hardening, and remote access:
+- 📖 See the [SSH Remote Access Guide](SSH_REMOTE_ACCESS.md)
+
+Quick security improvement:
+```bash
+# Set up SSH key authentication instead of passwords
+# See SSH_REMOTE_ACCESS.md for detailed instructions
+```
+
 ### Enable Firewall (Optional)
 
 ```bash
@@ -571,6 +584,7 @@ The bot runs entirely in the background with no display, keyboard, or active SSH
 
 ## Further Reading
 
+- [SSH Remote Access Guide](SSH_REMOTE_ACCESS.md) - Secure remote SSH access, VPN setup, and troubleshooting
 - [Main README](README.md) - Full bot documentation
 - [Quick Start Guide](QUICKSTART.md) - General setup instructions
 - [Channel Guide](CHANNEL_GUIDE.md) - Understanding channel behavior
