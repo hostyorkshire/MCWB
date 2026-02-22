@@ -52,8 +52,8 @@ def test_encrypted_message_not_logged():
     
     try:
         # Test 1: Encrypted/garbled message without "SenderName: " format
-        print("\nTest 1: Encrypted message on channel 6 (no colon, encrypted content)")
-        # Using simple text without colon to represent encrypted/improperly formatted message
+        print("\nTest 1: Encrypted message on channel 6 (without SenderName: format)")
+        # Using simple text without "SenderName: " format to represent encrypted/improperly formatted message
         encrypted_text = "encrypted_binary_data_xyz123"
         payload1 = create_channel_message(6, encrypted_text)
         
@@ -64,7 +64,7 @@ def test_encrypted_message_not_logged():
         assert len(sent_responses) == 0, "Bot should not respond to encrypted messages"
         
         # Test 2: Another encrypted message
-        print("\nTest 2: Encrypted message on channel 0")
+        print("\nTest 2: Encrypted message on channel 0 (without SenderName: format)")
         encrypted_text2 = "garbled_encrypted_content"
         payload2 = create_channel_message(0, encrypted_text2)
         
@@ -113,8 +113,8 @@ def test_encrypted_message_not_logged():
     valid_message_count = 0
     
     for line in lines:
-        # Check for skipped messages (new behavior with debug log)
-        if 'skipping message without sender format' in line:
+        # Check for skipped messages (debug log only appears in debug mode)
+        if 'skipping message without SenderName: format' in line:
             skipped_message_count += 1
             print(f"✓ Skipped encrypted message (debug log): {line[:80]}")
         # Check for old-style "unknown:" logs (should not appear)
