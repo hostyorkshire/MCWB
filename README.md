@@ -125,7 +125,8 @@ Only use these options if you need to restrict the bot to a specific channel:
 # OPTIONAL: Restrict bot to only respond on channel index 1
 python3 weather_bot.py --channel-idx 1
 
-# OPTIONAL: Configure weather channel as index 2 (for announcements and filtering)
+# OPTIONAL: Configure announcements to be sent on channel index 2
+# (Bot will still respond to messages from ANY channel)
 python3 weather_bot.py --weather-channel-idx 2 --announce
 ```
 
@@ -139,9 +140,8 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -c CHANNEL_IDX, --channel-idx CHANNEL_IDX
                           Only respond to messages from this channel index (e.g., 1 for #weather)
   -w WEATHER_CHANNEL_IDX, --weather-channel-idx WEATHER_CHANNEL_IDX
-                          Specify which channel index the weather service is on (for announcements
-                          and filtering). Use this when the weather channel is assigned a different
-                          number in the MeshCore app.
+                          Specify which channel index to use for announcements. Bot will still
+                          respond to messages from ANY channel unless --channel-idx is also specified.
   -l LOCATION, --location LOCATION
                           Look up weather and exit (no radio needed)
 ```
@@ -195,14 +195,18 @@ python3 weather_bot.py --channel-idx 1
 ### Option 2: Weather-Specific Channel Configuration
 
 ```bash
-# Weather channel is on index 2 (responds only there, sends announcements there)
+# Configure announcements to be sent on channel index 2
+# Bot will still respond to messages from ALL channels
 python3 weather_bot.py --weather-channel-idx 2 --announce
+
+# To ALSO restrict responses to only channel 2, combine both flags:
+python3 weather_bot.py --weather-channel-idx 2 --channel-idx 2 --announce
 ```
 
 This is useful when:
-- You want explicit control over announcement channels
+- You want explicit control over where announcement messages are sent
 - You need to ensure announcements start on a specific channel from bot startup
-- **The weather channel is assigned different channel indices on different MeshCore devices**
+- You want announcements on one channel but responses on all channels
 
 **Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel
 slots on your MeshCore device. Slot 0 is the public/default channel. Slots 1–7 are named
