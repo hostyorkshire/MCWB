@@ -289,8 +289,11 @@ class WeatherBot:
             sender = text[:colon]
             content = text[colon + 2:]
         else:
-            sender = "unknown"
-            content = text
+            # Messages without "SenderName: " format (colon + space) are likely encrypted
+            # messages from other users. Skip them to avoid confusing logs.
+            # This debug log only appears when debug mode is enabled.
+            self._log(f"channel_idx={channel_idx} skipping message without SenderName: format")
+            return
 
         self._log(f"channel_idx={channel_idx} {sender}: {content}")
 
