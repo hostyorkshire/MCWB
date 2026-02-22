@@ -263,6 +263,8 @@ sudo systemctl start weather_bot
 
 **📖 Raspberry Pi Zero 2 Headless Setup:** See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) for complete instructions on setting up the bot to run automatically on boot in headless mode (no display required).
 
+**📡 Remote SSH Access:** See [SSH_REMOTE_ACCESS.md](SSH_REMOTE_ACCESS.md) for comprehensive instructions on accessing your Raspberry Pi remotely when deployed in remote locations, including VPN setup, port forwarding, and security best practices.
+
 ## Troubleshooting
 
 ### No serial port found
