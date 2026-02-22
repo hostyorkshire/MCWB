@@ -12,6 +12,8 @@ import time
 import threading
 import argparse
 
+from meshcore import MeshCore, MeshCoreMessage
+
 try:
     import requests
 except ImportError:
@@ -67,16 +69,21 @@ ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply typ
 class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
-    def __init__(self, port=None, baud=115200, debug=False, announce=False, allowed_channel_idx=None):
+    def __init__(self, port=None, baud=115200, debug=False, announce=False,
+                 allowed_channel_idx=None, node_id=None, announce_channel=None):
         self.port = port
         self.baud = baud
         self.debug = debug
-        self.announce = announce
+        self.announce = announce or (announce_channel is not None)
         self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
         # channel_idx used for periodic announcements (set on first received message)
         self._announce_channel_idx = 0
+        self.announce_channel = announce_channel
+        # MeshCore integration for public message-handling API
+        self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
+                             serial_port=port, baud_rate=self.baud)
 
     # ------------------------------------------------------------------
     # Logging helpers
@@ -240,6 +247,46 @@ class WeatherBot:
         """Return location string if text matches WX/weather command, else None."""
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text.strip(), re.IGNORECASE)
         return m.group(1).strip() if m else None
+
+    def parse_weather_command(self, text: str):
+        """Public alias for _parse_command."""
+        return self._parse_command(text)
+
+    def get_weather_description(self, code: int) -> str:
+        """Return human-readable description for a WMO weather code."""
+        return WEATHER_CODES.get(code, f"Code {code}")
+
+    def format_weather_response(self, location_data: dict, weather_data: dict) -> str:
+        """Format a weather response from pre-fetched location and weather data."""
+        name = location_data.get("name", "Unknown")
+        country = location_data.get("country_code", location_data.get("country", ""))
+        loc_str = f"{name}, {country}" if country else name
+        c = weather_data.get("current", {})
+        weather_code = c.get("weather_code", 0)
+        cond = WEATHER_CODES.get(weather_code, f"Code {weather_code}")
+        return (
+            f"{loc_str}\n"
+            f"{cond}\n"
+            f"Temp: {c.get('temperature_2m', 'N/A')}°C "
+            f"(feels {c.get('apparent_temperature', 'N/A')}°C)\n"
+            f"Humid: {c.get('relative_humidity_2m', 'N/A')}%\n"
+            f"Wind: {c.get('wind_speed_10m', 'N/A')} km/h "
+            f"at {c.get('wind_direction_10m', 'N/A')}°\n"
+            f"Precip: {c.get('precipitation', 'N/A')} mm"
+        )
+
+    def handle_message(self, msg: MeshCoreMessage):
+        """Handle a MeshCoreMessage and send a weather response via self.mesh."""
+        location = self._parse_command(msg.content)
+        if location:
+            response = self._get_weather(location)
+            self.mesh.send_message(response, "text", msg.channel, msg.channel_idx)
+
+    def send_announcement(self):
+        """Send the periodic announcement message to the configured announce channel."""
+        if self.announce_channel is None:
+            return
+        self.mesh.send_message(ANNOUNCE_MESSAGE, "text", self.announce_channel)
 
     # ------------------------------------------------------------------
     # Weather data
