@@ -11,6 +11,7 @@ import re
 import time
 import threading
 import argparse
+import os
 
 from meshcore import MeshCore, MeshCoreMessage
 
@@ -64,6 +65,8 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location."
+REBOOT_NOTIFY_MESSAGE = "MCWBv2 weather bot has restarted and is now online."
+STATE_FILE = "/tmp/mcwb_state.txt"
 
 
 class WeatherBot:
@@ -71,11 +74,12 @@ class WeatherBot:
 
     def __init__(self, port=None, baud=115200, debug=False, announce=False,
                  allowed_channel_idx=None, node_id=None, announce_channel=None,
-                 weather_channel_idx=None):
+                 weather_channel_idx=None, reboot_notify=False):
         self.port = port
         self.baud = baud
         self.debug = debug
         self.announce = announce or (announce_channel is not None)
+        self.reboot_notify = reboot_notify
         self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
@@ -87,6 +91,31 @@ class WeatherBot:
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
                              serial_port=port, baud_rate=self.baud)
+
+    # ------------------------------------------------------------------
+    # Reboot notification
+    # ------------------------------------------------------------------
+
+    def _is_reboot(self) -> bool:
+        """Check if this is a restart/reboot by examining state file."""
+        return os.path.exists(STATE_FILE)
+
+    def _mark_running(self):
+        """Mark the bot as running by creating state file."""
+        try:
+            with open(STATE_FILE, "w") as f:
+                f.write(f"{int(time.time())}\n")
+        except Exception as e:
+            self._log(f"Failed to create state file: {e}")
+
+    def _send_reboot_notification(self):
+        """Send reboot notification message."""
+        if self.reboot_notify and self._is_reboot():
+            print("Detected restart/reboot - sending notification...")
+            # Use the configured weather channel or announcement channel
+            channel = self._announce_channel_idx
+            self._send_channel_msg(REBOOT_NOTIFY_MESSAGE, channel)
+            self._log(f"Sent reboot notification on channel_idx={channel}")
 
     # ------------------------------------------------------------------
     # Logging helpers
@@ -371,6 +400,12 @@ class WeatherBot:
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
+        # Send reboot notification if enabled and this is a restart
+        self._send_reboot_notification()
+        
+        # Mark bot as running for future restart detection
+        self._mark_running()
+
         if self.weather_channel_idx is not None:
             print(f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}.")
             print(f"Listening ONLY on channel_idx={self.weather_channel_idx}.")
@@ -413,6 +448,8 @@ def main():
                         help="Enable debug output")
     parser.add_argument("-a", "--announce", action="store_true",
                         help="Send periodic announcements every 3 hours")
+    parser.add_argument("-r", "--reboot-notify", action="store_true",
+                        help="Send notification on reboot/restart (useful for detecting power loss or crashes)")
     parser.add_argument("-c", "--channel-idx", type=int,
                         help="Only respond to messages from this channel index (e.g., 1 for #weather)")
     parser.add_argument("-w", "--weather-channel-idx", type=int,
@@ -430,7 +467,8 @@ def main():
     bot = WeatherBot(port=args.port, baud=args.baud,
                      debug=args.debug, announce=args.announce,
                      allowed_channel_idx=allowed_idx,
-                     weather_channel_idx=weather_idx)
+                     weather_channel_idx=weather_idx,
+                     reboot_notify=args.reboot_notify)
 
     if args.location:
         print(bot._get_weather(args.location))
