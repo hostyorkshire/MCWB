@@ -290,7 +290,8 @@ class WeatherBot:
             content = text[colon + 2:]
         else:
             # Messages without "SenderName: " format are likely encrypted/garbled
-            # messages from other users. Silently skip them to avoid confusing logs.
+            # messages from other users. Skip them to avoid confusing logs.
+            self._log(f"channel_idx={channel_idx} skipping message without sender format")
             return
 
         self._log(f"channel_idx={channel_idx} {sender}: {content}")

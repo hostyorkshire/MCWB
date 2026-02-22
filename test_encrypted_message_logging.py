@@ -52,20 +52,21 @@ def test_encrypted_message_not_logged():
     
     try:
         # Test 1: Encrypted/garbled message without "SenderName: " format
-        print("\nTest 1: Encrypted message on channel 6 (no colon, garbled content)")
-        garbled_text = "يfa+E⯻ڳ@b]r⻭3NjJAC"  # Actual garbled text from issue
-        payload1 = create_channel_message(6, garbled_text)
+        print("\nTest 1: Encrypted message on channel 6 (no colon, encrypted content)")
+        # Using simple text without colon to represent encrypted/improperly formatted message
+        encrypted_text = "encrypted_binary_data_xyz123"
+        payload1 = create_channel_message(6, encrypted_text)
         
         sent_responses.clear()
         bot._dispatch(payload1)
         
-        # Should NOT respond (no WX command) and should NOT log the garbled text
-        assert len(sent_responses) == 0, "Bot should not respond to garbled messages"
+        # Should NOT respond (no WX command) and should skip with debug log
+        assert len(sent_responses) == 0, "Bot should not respond to encrypted messages"
         
         # Test 2: Another encrypted message
         print("\nTest 2: Encrypted message on channel 0")
-        garbled_text2 = "`^k$Y_J$Xj6f"
-        payload2 = create_channel_message(0, garbled_text2)
+        encrypted_text2 = "garbled_encrypted_content"
+        payload2 = create_channel_message(0, encrypted_text2)
         
         sent_responses.clear()
         bot._dispatch(payload2)
@@ -106,29 +107,38 @@ def test_encrypted_message_not_logged():
     # Check what was logged
     lines = output.split('\n')
     
-    # Count how many times garbled messages appear with "unknown:"
-    unknown_garbled_count = 0
+    # Count messages with and without proper format
+    skipped_message_count = 0
+    unknown_logged_count = 0
     valid_message_count = 0
     
     for line in lines:
-        if 'channel_idx=' in line and 'unknown:' in line:
-            # Check if it contains garbled text
-            if any(garbled in line for garbled in [garbled_text, garbled_text2]):
-                unknown_garbled_count += 1
-                print(f"❌ Found garbled message in log: {line[:80]}")
-        if 'channel_idx=' in line and ('M3UXC/M' in line or 'Alice' in line):
+        # Check for skipped messages (new behavior with debug log)
+        if 'skipping message without sender format' in line:
+            skipped_message_count += 1
+            print(f"✓ Skipped encrypted message (debug log): {line[:80]}")
+        # Check for old-style "unknown:" logs (should not appear)
+        elif 'channel_idx=' in line and 'unknown:' in line:
+            unknown_logged_count += 1
+            print(f"❌ Found 'unknown:' in log: {line[:80]}")
+        # Check for valid messages with sender format
+        elif 'channel_idx=' in line and ('M3UXC/M' in line or 'Alice' in line):
             valid_message_count += 1
             print(f"✓ Valid message logged: {line[:80]}")
     
-    print(f"\nGarbled messages with 'unknown:' logged: {unknown_garbled_count} (should be 0)")
+    print(f"\nSkipped messages (with debug log): {skipped_message_count} (should be 2)")
+    print(f"Messages with 'unknown:' logged: {unknown_logged_count} (should be 0)")
     print(f"Valid messages logged: {valid_message_count} (should be 2)")
     
-    # The fix should ensure that messages without proper "SenderName: " format
-    # and containing non-printable/garbled content are silently skipped
-    assert unknown_garbled_count == 0, f"Garbled messages should NOT be logged, found {unknown_garbled_count}"
+    # The fix should ensure that:
+    # 1. Encrypted messages are skipped (with debug log)
+    # 2. No "unknown:" entries appear in logs
+    # 3. Valid messages are still logged normally
+    assert skipped_message_count == 2, f"Should skip 2 encrypted messages, skipped {skipped_message_count}"
+    assert unknown_logged_count == 0, f"'unknown:' should NOT appear in logs, found {unknown_logged_count}"
     assert valid_message_count == 2, f"Valid messages should be logged, found {valid_message_count}"
     
-    print("\n✅ Fix verified: Encrypted/garbled messages are silently skipped")
+    print("\n✅ Fix verified: Encrypted messages are skipped with debug log")
     print("=" * 80)
 
 
@@ -136,11 +146,11 @@ def main():
     try:
         test_encrypted_message_not_logged()
         print("\n✅ TEST PASSED!")
-        print("\nThe bot now silently skips encrypted/garbled messages that:")
+        print("\nThe bot now skips encrypted messages that:")
         print("  - Don't have the 'SenderName: ' format")
-        print("  - Contain garbled/binary content")
-        print("\nThis prevents confusing log entries like:")
-        print("  [21:53:23] channel_idx=6 unknown: يfa+E⯻ڳ@b]r⻭3NjJAC")
+        print("  - Logs them at debug level for troubleshooting")
+        print("\nThis prevents confusing 'unknown:' log entries while still")
+        print("allowing debug visibility when needed.")
         return 0
     except AssertionError as e:
         print(f"\n❌ TEST FAILED: {e}")
