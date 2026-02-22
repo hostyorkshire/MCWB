@@ -194,6 +194,7 @@ class WeatherBot:
         if len(payload) >= _V3_FORMAT_HEADER_SIZE + 1:
             snr_value = payload[1]
             v3_channel_idx = payload[4]
+            old_format_channel_idx = payload[1]
             
             # Heuristic 1: SNR in realistic range AND valid channel_idx = V3 format
             if _MIN_REALISTIC_SNR <= snr_value <= _MAX_REALISTIC_SNR and 0 <= v3_channel_idx <= 7:
@@ -201,15 +202,19 @@ class WeatherBot:
                 text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
                 return (channel_idx, text)
             
-            # Heuristic 2: SNR > 7 (impossible as channel_idx) AND valid channel_idx = V3 format
-            # This handles cases where SNR is outside typical range but still valid
-            elif snr_value > 7 and 0 <= v3_channel_idx <= 7:
+            # Heuristic 2: Old format would be invalid (channel_idx > 7), but V3 is valid
+            # This handles cases where the old format interpretation doesn't make sense
+            elif old_format_channel_idx > 7 and 0 <= v3_channel_idx <= 7:
                 channel_idx = v3_channel_idx
                 text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
                 return (channel_idx, text)
         
         # Fall back to old format
         channel_idx = payload[1]
+        # Validate channel_idx is in valid range (0-7)
+        # Invalid indices indicate encrypted/garbled messages
+        if not (0 <= channel_idx <= 7):
+            return (None, None)
         text = payload[_OLD_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
         return (channel_idx, text)
 
@@ -254,8 +259,10 @@ class WeatherBot:
         elif code == _RESP_CHANNEL_MSG_V3 and len(payload) >= 12:
             # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 11 bytes; text follows
             channel_idx = payload[4]
-            text = payload[11:].decode("utf-8", "ignore")
-            self._handle_channel_message(text, channel_idx)
+            # Validate channel_idx is in valid range (0-7)
+            if 0 <= channel_idx <= 7:
+                text = payload[11:].decode("utf-8", "ignore")
+                self._handle_channel_message(text, channel_idx)
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_NO_MORE_MSGS:
