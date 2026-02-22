@@ -162,6 +162,35 @@ class WeatherBot:
         except serial.SerialException:
             return None
 
+    def _parse_channel_message(self, payload: bytes):
+        """
+        Parse channel message payload and extract channel_idx and text.
+        Handles both old format and V3 format (with SNR).
+        
+        V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+        Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+        
+        Returns:
+            tuple: (channel_idx, text) or (None, None) if parsing fails
+        """
+        if len(payload) < 8:
+            return (None, None)
+        
+        # Try V3 format if payload is long enough
+        if len(payload) >= 12:
+            # Check if channel_idx at position 4 is in valid range (0-7)
+            v3_channel_idx = payload[4]
+            if 0 <= v3_channel_idx <= 7:
+                # Likely V3 format
+                channel_idx = v3_channel_idx
+                text = payload[11:].decode("utf-8", "ignore")
+                return (channel_idx, text)
+        
+        # Fall back to old format
+        channel_idx = payload[1]
+        text = payload[8:].decode("utf-8", "ignore")
+        return (channel_idx, text)
+
     def _dispatch(self, payload: bytes):
         """Dispatch a received frame payload."""
         code = payload[0]
@@ -187,47 +216,17 @@ class WeatherBot:
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _PUSH_CHAN_MSG and len(payload) >= 8:
-            # Handle both old format and V3 format (with SNR)
-            # V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 11 bytes
-            # Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 8 bytes
-            if len(payload) >= 12:
-                # Try V3 format first - check if channel_idx at position 4 is in valid range (0-7)
-                v3_channel_idx = payload[4]
-                if 0 <= v3_channel_idx <= 7:
-                    # Likely V3 format
-                    channel_idx = v3_channel_idx
-                    text = payload[11:].decode("utf-8", "ignore")
-                else:
-                    # Fall back to old format
-                    channel_idx = payload[1]
-                    text = payload[8:].decode("utf-8", "ignore")
-            else:
-                # Old format (payload too short for V3)
-                channel_idx = payload[1]
-                text = payload[8:].decode("utf-8", "ignore")
-            self._handle_channel_message(text, channel_idx)
+            # Parse channel message (handles both old format and V3 format with SNR)
+            channel_idx, text = self._parse_channel_message(payload)
+            if channel_idx is not None:
+                self._handle_channel_message(text, channel_idx)
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG and len(payload) >= 8:
-            # Handle both old format and V3 format (with SNR)
-            # V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 11 bytes
-            # Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 8 bytes
-            if len(payload) >= 12:
-                # Try V3 format first - check if channel_idx at position 4 is in valid range (0-7)
-                v3_channel_idx = payload[4]
-                if 0 <= v3_channel_idx <= 7:
-                    # Likely V3 format
-                    channel_idx = v3_channel_idx
-                    text = payload[11:].decode("utf-8", "ignore")
-                else:
-                    # Fall back to old format
-                    channel_idx = payload[1]
-                    text = payload[8:].decode("utf-8", "ignore")
-            else:
-                # Old format (payload too short for V3)
-                channel_idx = payload[1]
-                text = payload[8:].decode("utf-8", "ignore")
-            self._handle_channel_message(text, channel_idx)
+            # Parse channel message (handles both old format and V3 format with SNR)
+            channel_idx, text = self._parse_channel_message(payload)
+            if channel_idx is not None:
+                self._handle_channel_message(text, channel_idx)
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG_V3 and len(payload) >= 12:
