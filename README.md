@@ -2,10 +2,16 @@
 
 Lightweight Python3 weather bot for the MeshCore `#weather` channel.
 
+**✨ Zero Configuration Required** - The bot automatically works on any channel without needing to configure channel IDs!
+
 ## Overview
 
-MCWBv2 listens on the MeshCore `#weather` channel and responds to weather
-queries using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
+MCWBv2 listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
+
+**Simple Setup:**
+1. Connect your MeshCore companion radio via USB
+2. Run `python3 weather_bot.py`
+3. Done! The bot works on ANY channel where users send weather commands
 
 ## Usage
 
@@ -91,7 +97,7 @@ pip install -r requirements.txt
 ## Running the bot
 
 ```bash
-# Auto-detect USB port (recommended)
+# Auto-detect USB port (recommended) - works on any channel automatically
 python3 weather_bot.py
 
 # Specify port and baud rate
@@ -103,14 +109,22 @@ python3 weather_bot.py -d
 # Enable periodic announcements every 3 hours
 python3 weather_bot.py --announce
 
-# Restrict bot to only respond on channel index 1 (e.g., #weather channel)
-python3 weather_bot.py --channel-idx 1
-
-# Specify weather channel index 2 (for announcements and filtering)
-python3 weather_bot.py --weather-channel-idx 2 --announce
-
 # Quick weather lookup (no radio hardware needed)
 python3 weather_bot.py --location Leeds
+```
+
+### Advanced: Channel-Specific Configuration
+
+**Most users don't need this!** The bot automatically adapts to work on any channel.
+
+Only use these options if you need to restrict the bot to a specific channel:
+
+```bash
+# OPTIONAL: Restrict bot to only respond on channel index 1
+python3 weather_bot.py --channel-idx 1
+
+# OPTIONAL: Configure weather channel as index 2 (for announcements and filtering)
+python3 weather_bot.py --weather-channel-idx 2 --announce
 ```
 
 ### Command line options
@@ -130,48 +144,87 @@ python3 weather_bot.py --location Leeds
                           Look up weather and exit (no radio needed)
 ```
 
-## Channel Filtering
+## How It Works
 
-By default, the bot responds to weather queries from **any channel**. To restrict the bot to only respond on a specific channel, use the `--channel-idx` or `--weather-channel-idx` option:
+### Automatic Channel Adaptation
+
+**No configuration needed!** The bot automatically:
+- ✅ Listens on **ALL channels** for weather commands
+- ✅ Responds on the **SAME channel** where each request came from  
+- ✅ Adapts announcements to use the **channel that users are active on**
+
+Users on different MeshCore devices can have #weather mapped to different channel indices, and the bot handles this automatically.
+
+### Example Scenario
+
+```
+User A's device: #weather → channel_idx 1
+User B's device: #weather → channel_idx 2  
+User C's device: #weather → channel_idx 3
+
+Bot behavior:
+- User A sends "wx London" on channel_idx 1 → Bot replies on channel_idx 1
+- User B sends "wx Paris" on channel_idx 2 → Bot replies on channel_idx 2
+- User C sends "wx Berlin" on channel_idx 3 → Bot replies on channel_idx 3
+- All users get responses on their respective channels automatically!
+```
+
+## Channel Filtering (Advanced)
+
+By default, the bot responds to weather queries from **any channel**. 
+
+**When to use channel filtering:**
+- You want to isolate the bot to a dedicated weather channel only
+- You have multiple bots running and need to prevent conflicts
+- You want explicit control over which channel the bot uses
+
+**When NOT to use channel filtering:**
+- For most typical deployments (just run `python3 weather_bot.py`)
+- When users might have #weather on different channel indices
+- When you want maximum flexibility
+
+### Option 1: Basic Channel Filtering
 
 ```bash
 # Only respond to messages on channel index 1
-python3 weather_bot.py --channel-idx 1 --port /dev/ttyUSB0 --baud 115200
+python3 weather_bot.py --channel-idx 1
+```
 
-# Weather channel is on index 2 (responds only on that channel, sends announcements there)
+### Option 2: Weather-Specific Channel Configuration
+
+```bash
+# Weather channel is on index 2 (responds only there, sends announcements there)
 python3 weather_bot.py --weather-channel-idx 2 --announce
 ```
 
 This is useful when:
-- You want to keep the weather bot isolated to a dedicated weather channel
-- You have multiple bots running and need to prevent conflicts
-- You want to control which channels can invoke the bot
+- You want explicit control over announcement channels
+- You need to ensure announcements start on a specific channel from bot startup
 - **The weather channel is assigned different channel indices on different MeshCore devices**
 
 **Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel
 slots on your MeshCore device. Slot 0 is the public/default channel. Slots 1–7 are named
 channels configured in the MeshCore app. 
 
-**The `--weather-channel-idx` option solves the problem of channel indices being configurable** - 
-different MeshCore devices may assign the #weather channel to different slot numbers. By using 
-`--weather-channel-idx`, you tell the bot exactly which channel index to use for both listening 
-to weather requests and sending announcements.
+### Finding Your Weather Channel Index (If Needed)
 
-### Finding Your Weather Channel Index
+**Remember:** You usually don't need to find this! The bot works automatically.
 
-**Important:** The bot cannot automatically detect which channel index corresponds to #weather 
-because the MeshCore protocol only provides numeric indices, not channel names. You must 
-configure this manually.
-
-To find your weather channel index:
+If you do need to configure a specific channel index for advanced scenarios:
 
 1. **Check your MeshCore app** - Look at Channel Settings to see which slot #weather is assigned to
 2. **Use debug mode** - Run `python3 weather_bot.py --debug`, send a test message on #weather, 
-   and observe the `channel_idx` in the output
-3. **See `FAQ_CHANNEL_DETECTION.md`** for detailed instructions and examples
+   and observe the `channel_idx` in the output:
+   ```
+   [17:45:32] channel_idx=2 SomeUser: wx test
+   ```
 
-Once you know the index, configure it with `--weather-channel-idx` so the bot uses the correct 
-channel from startup.
+Once you know the index, configure it with `--weather-channel-idx` if needed.
+
+**Important:** The bot cannot automatically detect which channel index corresponds to #weather 
+because the MeshCore protocol only provides numeric indices, not channel names. However, since 
+the bot automatically replies on whatever channel receives requests, manual configuration is 
+usually not necessary.
 
 You can also send a message directly on a specific channel slot using `meshcore_send.py`:
 
