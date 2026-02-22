@@ -70,7 +70,8 @@ class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
     def __init__(self, port=None, baud=115200, debug=False, announce=False,
-                 allowed_channel_idx=None, node_id=None, announce_channel=None):
+                 allowed_channel_idx=None, node_id=None, announce_channel=None,
+                 weather_channel_idx=None):
         self.port = port
         self.baud = baud
         self.debug = debug
@@ -78,8 +79,10 @@ class WeatherBot:
         self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
-        # channel_idx used for periodic announcements (set on first received message)
-        self._announce_channel_idx = 0
+        # channel_idx used for periodic announcements and weather responses
+        # If weather_channel_idx is specified, use it; otherwise use first received message's channel
+        self.weather_channel_idx = weather_channel_idx
+        self._announce_channel_idx = weather_channel_idx if weather_channel_idx is not None else 0
         self.announce_channel = announce_channel
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
@@ -232,8 +235,9 @@ class WeatherBot:
 
         self._log(f"channel_idx={channel_idx} {sender}: {content}")
 
-        # Remember this channel for periodic announcements
-        self._announce_channel_idx = channel_idx
+        # Remember this channel for periodic announcements (only if not explicitly configured)
+        if self.weather_channel_idx is None:
+            self._announce_channel_idx = channel_idx
 
         location = self._parse_command(content)
         if location:
@@ -367,7 +371,11 @@ class WeatherBot:
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
-        if self.allowed_channel_idx is not None:
+        if self.weather_channel_idx is not None:
+            print(f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}.")
+            print(f"Listening ONLY on channel_idx={self.weather_channel_idx}.")
+            print(f"Send 'WX [location]' or 'weather [location]' on that channel.")
+        elif self.allowed_channel_idx is not None:
             print(f"MCWBv2 running. Listening ONLY on channel_idx={self.allowed_channel_idx}.")
             print(f"Send 'WX [location]' or 'weather [location]' on that channel.")
         else:
@@ -407,13 +415,22 @@ def main():
                         help="Send periodic announcements every 3 hours")
     parser.add_argument("-c", "--channel-idx", type=int,
                         help="Only respond to messages from this channel index (e.g., 1 for #weather)")
+    parser.add_argument("-w", "--weather-channel-idx", type=int,
+                        help="Specify which channel index the weather service is on (for announcements and filtering). "
+                             "Use this when the weather channel is assigned a different number in the MeshCore app.")
     parser.add_argument("-l", "--location",
                         help="Look up weather for LOCATION and exit (no radio needed)")
     args = parser.parse_args()
 
+    # If weather_channel_idx is specified, use it for both filtering and announcements
+    # Otherwise, use allowed_channel_idx for backward compatibility
+    weather_idx = args.weather_channel_idx
+    allowed_idx = args.channel_idx if args.weather_channel_idx is None else args.weather_channel_idx
+    
     bot = WeatherBot(port=args.port, baud=args.baud,
                      debug=args.debug, announce=args.announce,
-                     allowed_channel_idx=args.channel_idx)
+                     allowed_channel_idx=allowed_idx,
+                     weather_channel_idx=weather_idx)
 
     if args.location:
         print(bot._get_weather(args.location))
