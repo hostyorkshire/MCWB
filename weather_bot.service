@@ -27,6 +27,12 @@ StandardError=journal
 # Optional: Uncomment to restrict to a specific channel index
 # ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --channel-idx 1
 
+# Optional: Uncomment to filter location searches to prefer UK cities (useful for UK deployments)
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --country GB
+
+# Optional: For US deployments, use --country US
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --country US
+
 [Install]
 # Start automatically on boot
 WantedBy=multi-user.target
