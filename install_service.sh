@@ -62,8 +62,7 @@ echo ""
 echo "📝 Creating customized service file..."
 SERVICE_FILE=$(mktemp)
 sed "s|User=pi|User=$CURRENT_USER|g" weather_bot.service > $SERVICE_FILE
-sed -i "s|WorkingDirectory=/home/pi/MCWB|WorkingDirectory=$INSTALL_DIR|g" $SERVICE_FILE
-sed -i "s|ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py|ExecStart=/usr/bin/python3 $INSTALL_DIR/weather_bot.py|g" $SERVICE_FILE
+sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" $SERVICE_FILE
 
 echo "📄 Service file contents:"
 echo "----------------------------------------"

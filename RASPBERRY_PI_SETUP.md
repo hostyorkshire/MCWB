@@ -45,7 +45,7 @@ network={
 }
 ```
 
-Replace `GB` with your country code, and update the SSID and password.
+Replace `GB` with your [ISO 3166-1 alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) (e.g., `US` for United States, `CA` for Canada, `AU` for Australia, `DE` for Germany, `GB` for United Kingdom) to comply with local WiFi regulations. Also update the SSID and password for your network.
 
 ### 2. Connect to Your Pi
 
