@@ -1,5 +1,22 @@
 # Troubleshooting: Bot Not Responding to Messages
 
+## ⚠️ PREREQUISITE: Configure Channels BEFORE Starting the Bot
+
+**The #1 reason the bot doesn't receive messages:** The companion radio is not subscribed to the channels where users are sending messages.
+
+**Critical Setup Step (Do This First):**
+1. **Before** connecting your radio or starting the bot
+2. Open the MeshCore app on your phone/tablet
+3. Connect to your companion radio
+4. Go to Channel Settings
+5. Join/subscribe to ALL channels you want the bot to monitor (e.g., `#weather`, `#wxtest`, `#forecast`)
+6. Save your configuration
+7. **Then** connect the radio to your Pi/PC and start the bot
+
+**Remember:** The bot software cannot add channels for you. This must be done through the MeshCore app BEFORE running the bot.
+
+---
+
 ## Problem: Bot is listening but not responding to messages sent on a channel
 
 If your weather bot is running but not responding to weather queries sent on a specific channel (like "#wxtest"), this guide will help you diagnose and fix the issue.

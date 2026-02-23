@@ -29,7 +29,29 @@ cd MCWB
 python3 -m pip install -r requirements.txt
 ```
 
-### 5. Test the Bot
+### 5. Configure Radio Channels (Critical Step)
+
+**Before running the bot with your radio, configure which channels it should monitor:**
+
+```bash
+# This step CANNOT be done in software - you must use the MeshCore app
+```
+
+**Using the MeshCore mobile app:**
+1. Open the MeshCore app on your phone/tablet
+2. Connect to your companion radio
+3. Go to Channel Settings
+4. Join/subscribe to channels you want the bot to use:
+   - Common examples: `#weather`, `#wxtest`, `#forecast`
+   - You can add multiple channels
+5. Save your configuration
+
+**Why this matters:**
+- The bot cannot add channels for you
+- Without this step, the bot won't receive messages from those channels
+- This is a one-time setup (unless you want to add more channels later)
+
+### 6. Test the Bot
 ```bash
 # Interactive mode
 python3 weather_bot.py --interactive
@@ -165,6 +187,9 @@ All tests run in simulation mode (no hardware required) and should complete succ
 ## Troubleshooting
 
 ### Bot not responding
+- **First check:** Is the radio subscribed to the channels where users are sending messages?
+- Use the MeshCore app to verify/add channel subscriptions
+- After adding channels, restart the bot
 - Check internet connection
 - Verify API is accessible: `curl https://api.open-meteo.com/v1/forecast`
 - Check logs: `python3 weather_bot.py --debug`

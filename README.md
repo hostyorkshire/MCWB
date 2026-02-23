@@ -92,9 +92,14 @@ USB serial port (no extra libraries beyond `pyserial`).  It handles:
 ### Connecting the radio
 
 1. Flash your ESP32/LoRa board with [MeshCore firmware](https://github.com/ripplebiz/MeshCore).
-2. Connect it to your Pi (or PC) via USB.
-3. The device typically appears as `/dev/ttyUSB0` or `/dev/ttyACM0` on Linux.
-4. Start the bot – it auto-detects the port:
+2. **IMPORTANT: Configure channels on your radio BEFORE starting the bot**
+   - Open the MeshCore app on your phone
+   - Join/subscribe to the channels you want the bot to monitor (e.g., `#weather`, `#wxtest`)
+   - The bot cannot add channels for you - this must be done through the MeshCore app
+   - Without this step, the bot won't receive messages from those channels
+3. Connect it to your Pi (or PC) via USB.
+4. The device typically appears as `/dev/ttyUSB0` or `/dev/ttyACM0` on Linux.
+5. Start the bot – it auto-detects the port:
 
 ```bash
 python3 weather_bot.py
@@ -296,9 +301,11 @@ sudo systemctl start weather_bot
 - Try `--port /dev/ttyUSB0` (or whichever port appears).
 
 ### Bot connects but receives no messages
-- Ensure the companion radio is subscribed to the `#weather` channel in the
-  MeshCore app / firmware configuration.
-- Use `--debug` (`-d`) to see raw protocol frames.
+- **Most common cause:** The companion radio is NOT subscribed to the channels where users are sending messages
+- **Solution:** Use the MeshCore app to join/subscribe to channels (e.g., `#weather`, `#wxtest`) BEFORE starting the bot
+- The bot cannot configure channels automatically - you must add them through the MeshCore app first
+- Verify your channel subscriptions in the MeshCore app's Channel Settings
+- Use `--debug` (`-d`) to see raw protocol frames and verify if messages are being received
 
 ### Location not found
 - Use the full city name, or add country/region: `wx York, UK`.

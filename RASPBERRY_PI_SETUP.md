@@ -104,6 +104,25 @@ pip install -r requirements.txt
 
 ### 3. Connect Your MeshCore Radio
 
+**CRITICAL STEP:** Before connecting the radio, you must configure which channels it should monitor.
+
+#### Configure Channels First (Required)
+
+1. **Using the MeshCore mobile app:**
+   - Open the MeshCore app on your phone/tablet
+   - Connect to your companion radio
+   - Go to Channel Settings
+   - Join/subscribe to the channels you want the bot to monitor
+   - Common channels: `#weather`, `#wxtest`, `#forecast`, etc.
+   - **Important:** The bot software cannot add channels for you - this MUST be done through the MeshCore app
+
+2. **Why this matters:**
+   - The companion radio protocol does not provide commands to subscribe to channels programmatically
+   - If you skip this step, the bot won't receive messages from those channels
+   - You can always add more channels later, but you'll need to restart the bot
+
+#### Connect the Radio
+
 1. Connect your MeshCore companion radio to the Pi via USB
 2. Verify it's detected:
 
@@ -357,6 +376,14 @@ sudo journalctl -u weather_bot -f
 # Send a test message and watch for it in the logs
 ```
 
+**Most common cause: Radio not subscribed to channels**
+- The companion radio must be subscribed to channels BEFORE starting the bot
+- Use the MeshCore app to verify channel subscriptions
+- Add missing channels in the MeshCore app, then restart the bot:
+  ```bash
+  sudo systemctl restart weather_bot
+  ```
+
 **Verify radio connection:**
 - Ensure the MeshCore radio is connected to the mesh network
 - Check the radio's configuration includes the weather channel
@@ -559,6 +586,8 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 - [ ] Git and Python3 installed
 - [ ] Repository cloned to /home/pi/MCWB
 - [ ] Python dependencies installed
+- [ ] **MeshCore radio channels configured (CRITICAL: do this BEFORE connecting to Pi)**
+- [ ] **Verified radio is subscribed to desired channels using MeshCore app**
 - [ ] MeshCore radio connected via USB
 - [ ] Bot tested manually (works correctly)
 - [ ] systemd service file copied and customized
