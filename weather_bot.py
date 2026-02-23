@@ -312,11 +312,12 @@ class WeatherBot:
             if use_v3_format:
                 channel_idx = v3_channel_idx
                 text_bytes = payload[_V3_FORMAT_HEADER_SIZE:]
-                # Check if raw bytes are encrypted (mostly non-printable/control characters)
-                if not self._is_valid_message_bytes(text_bytes):
-                    self._log(f"V3 format: Message appears encrypted/garbled (channel_idx={channel_idx})")
+                # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
+                # Trust the radio's decryption and let command matching filter valid requests
+                text = text_bytes.decode("utf-8", "ignore").strip()
+                # Only reject if completely empty after decoding
+                if not text:
                     return (None, None)
-                text = text_bytes.decode("utf-8", "ignore")
                 return (channel_idx, text)
         
         # Fall back to old format
@@ -324,73 +325,16 @@ class WeatherBot:
         # Validate channel_idx is in valid range (0-7)
         # Invalid indices indicate encrypted/garbled messages
         if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
-            self._log(f"Old format: Invalid channel_idx={channel_idx} (valid range: 0-{_MAX_VALID_CHANNEL_IDX})")
+            # Silently skip - this is expected for encrypted messages from other channels
             return (None, None)
         text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
-        # Check if raw bytes are encrypted (mostly non-printable/control characters)
-        if not self._is_valid_message_bytes(text_bytes):
-            self._log(f"Old format: Message appears encrypted/garbled (channel_idx={channel_idx})")
+        # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
+        # Trust the radio's decryption and let command matching filter valid requests
+        text = text_bytes.decode("utf-8", "ignore").strip()
+        # Only reject if completely empty after decoding
+        if not text:
             return (None, None)
-        text = text_bytes.decode("utf-8", "ignore")
         return (channel_idx, text)
-
-    def _is_valid_message_bytes(self, data: bytes) -> bool:
-        """
-        Check if raw message bytes appear to be valid text (not encrypted/garbled).
-        
-        Encrypted messages typically contain many non-printable control characters.
-        Valid messages should have mostly printable ASCII/UTF-8 bytes.
-        
-        This checks the RAW bytes before UTF-8 decoding to avoid losing information
-        about invalid byte sequences that would be stripped by decode("utf-8", "ignore").
-        
-        Args:
-            data: The raw message bytes (after header)
-            
-        Returns:
-            True if bytes appear to be valid text, False if likely encrypted/garbled
-        """
-        if not data:
-            return False
-        
-        # First, try to decode as UTF-8 to check for valid encoding
-        # Encrypted/garbled data often has invalid UTF-8 sequences
-        try:
-            decoded = data.decode('utf-8', errors='strict')
-        except UnicodeDecodeError:
-            # If it can't be decoded as valid UTF-8, it's likely encrypted/garbled
-            return False
-        
-        # Count printable ASCII characters in the decoded string
-        # Encrypted data, even if it happens to decode as UTF-8, will have
-        # many control characters or unprintable Unicode characters
-        printable_count = 0
-        control_count = 0
-        for char in decoded:
-            char_code = ord(char)
-            # Printable ASCII (space through ~) or newline/tab/carriage return
-            if 32 <= char_code <= 126 or char_code in (9, 10, 13):
-                printable_count += 1
-            # Control characters (excluding whitespace)
-            elif char_code < 32 or char_code == 127:
-                control_count += 1
-            # For non-ASCII Unicode characters (> 127), count as printable if they're
-            # in commonly used Unicode ranges. We use 0x1000 (4096) as the threshold
-            # which covers most Latin, Cyrillic, Greek, and other common scripts
-            # while excluding more exotic Unicode blocks that are unlikely in normal text.
-            elif char_code < 0x1000:
-                printable_count += 1
-        
-        # Reject if too many control characters
-        if len(decoded) > 0 and control_count / len(decoded) > 0.1:
-            return False
-        
-        # Require at least 70% printable characters
-        if len(decoded) > 0:
-            printable_ratio = printable_count / len(decoded)
-            return printable_ratio >= 0.70
-        
-        return False
 
     def _dispatch(self, payload: bytes):
         """Dispatch a received frame payload."""
