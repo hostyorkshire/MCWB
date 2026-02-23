@@ -40,9 +40,13 @@ _CMD_SEND_CHAN_MSG = 0x03    # Send a channel (flood) text message
 _RESP_CURR_TIME = 0x09      # Response: current time (4-byte UNIX timestamp LE)
 _RESP_CHANNEL_MSG = 0x08    # Channel message received
 _RESP_CHANNEL_MSG_V3 = 0x11 # Channel message received (V3, includes SNR)
+_RESP_CONTACT_MSG_V3 = 0x10 # Direct (contact) message received (V3, includes SNR)
+_PUSH_BASE = 0x80           # Push: base flag for push notifications (bit 7 set)
 _PUSH_SEND_CONFIRMED = 0x82 # Push: outgoing message ACK'd by mesh
 _PUSH_MSG_WAITING = 0x83    # Push: new message queued
 _PUSH_CHAN_MSG = 0x88        # Push: inline channel message (0x80 | RESP_CHANNEL_MSG)
+_PUSH_NO_MORE_MSGS = 0x8A   # Push: no more messages (0x80 | CMD_SYNC_NEXT_MSG)
+_PUSH_CONTACT_MSG_V3 = 0x90 # Push: inline contact message V3 (0x80 | RESP_CONTACT_MSG_V3)
 _RESP_NO_MORE_MSGS = 0x0A   # No more messages in queue (same value as CMD_SYNC_NEXT_MSG)
 
 # Channel message format constants
@@ -433,6 +437,19 @@ class WeatherBot:
 
         elif code == _RESP_NO_MORE_MSGS:
             pass  # queue empty – nothing to do
+
+        elif code == _PUSH_BASE:
+            # Base push notification frame (0x80) - may occur on some firmware versions
+            pass  # ignore silently
+
+        elif code == _PUSH_NO_MORE_MSGS:
+            # Push notification: no more messages (0x8a = 0x80 | 0x0a)
+            pass  # queue empty – nothing to do
+
+        elif code == _PUSH_CONTACT_MSG_V3:
+            # Push notification: inline contact message V3 (0x90 = 0x80 | 0x10)
+            # Contact (direct) messages are not handled by weather bot
+            self._log("Received contact message (ignored by weather bot)")
 
         else:
             self._log(f"Unhandled frame code {code:#04x}")
