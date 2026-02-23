@@ -744,33 +744,6 @@ class MeshCore:
         printable_ratio = printable_count / len(data)
         return printable_ratio >= 0.70
 
-    def _is_valid_text(self, text: str) -> bool:
-        """
-        Check if decoded text appears to be valid (not encrypted/garbled).
-        
-        Encrypted messages typically contain many non-printable control characters.
-        Valid messages should have mostly printable ASCII/UTF-8 characters.
-        
-        Args:
-            text: The decoded text string
-            
-        Returns:
-            True if text appears valid, False if it looks encrypted/garbled
-        """
-        if not text:
-            return False
-        
-        # Count printable characters (ASCII 32-126, plus common unicode)
-        # Allow newlines, tabs, and other common whitespace
-        printable_count = 0
-        for char in text:
-            if char.isprintable() or char in '\n\r\t':
-                printable_count += 1
-        
-        # If less than 70% of characters are printable, likely encrypted
-        printable_ratio = printable_count / len(text)
-        return printable_ratio >= 0.70
-
     def _parse_binary_frame(self, payload: bytes):
         """
         Dispatch a received companion radio frame payload based on its code byte.

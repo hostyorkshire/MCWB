@@ -137,7 +137,12 @@ def test_byte_validation_directly():
             all_passed = False
         
         # Calculate actual ratio for debugging
-        printable = sum(1 for b in text_bytes if 32 <= b <= 126 or b in (9,10,13) or 0x80 <= b <= 0xF7)
+        printable = sum(1 for b in text_bytes if (
+            32 <= b <= 126 or               # Printable ASCII
+            b in (9, 10, 13) or             # Whitespace (tab, newline, CR)
+            0x80 <= b <= 0xBF or            # UTF-8 continuation bytes
+            0xC2 <= b <= 0xF4               # UTF-8 start bytes (2-4 byte sequences)
+        ))
         ratio = printable / len(text_bytes) if text_bytes else 0
         
         print(f"{status} {description}: expected={expected}, got={result}, ratio={ratio:.2f}")
