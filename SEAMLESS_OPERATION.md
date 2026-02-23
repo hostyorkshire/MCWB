@@ -44,18 +44,22 @@ By default, the bot:
 
 ### For End Users
 
-1. **Configure your radio ONCE** in the MeshCore app:
+1. **Configure your radio FIRST** (BEFORE connecting to PC/Pi or starting the bot):
    - Open MeshCore mobile app
+   - Connect to your companion radio
    - Go to Channel Settings  
    - Join/subscribe to channels you want (#weather, #alerts, etc.)
    - Your radio performs Diffie-Hellman key exchange automatically
+   - **Important:** This step MUST be done through the MeshCore app - the bot cannot configure channels for you
 
-2. **Run the bot** - that's it!
+2. **Connect your radio** to your PC/Pi via USB
+
+3. **Run the bot** - that's it!
    ```bash
    python3 weather_bot.py
    ```
 
-3. **Send weather commands** on any channel your radio is subscribed to:
+4. **Send weather commands** on any channel your radio is subscribed to:
    ```
    WX Leeds
    weather London
