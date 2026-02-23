@@ -2,6 +2,8 @@
 
 ## TL;DR
 
+**⚠️ FIRST:** Configure channels on your radio using the MeshCore app BEFORE starting the bot!
+
 ```bash
 # Run the weather bot (that's it!)
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
@@ -11,6 +13,8 @@ No `--channel` parameter needed. The bot automatically:
 - ✅ Accepts weather queries from **all channels**
 - ✅ Replies on the **same channel** where each query came from
 - ✅ Ensures users receive responses regardless of their channel setup
+
+**Important:** The bot cannot add channels for you. Use the MeshCore app to join/subscribe to channels (e.g., `#weather`, `#wxtest`) before running the bot.
 
 ## Problem Solved
 
@@ -63,9 +67,10 @@ Both commands do the same thing: accept queries from all channels and reply appr
 ### "Bot not responding to my queries"
 
 Check:
-1. Bot is running: `python3 weather_bot.py -d`
-2. Your radio is connected to the mesh network
-3. Query format is correct: `wx [location]` or `weather [location]`
+1. **Most common:** Is your radio subscribed to the channels where users are sending messages? Use the MeshCore app to verify/add channel subscriptions.
+2. Bot is running: `python3 weather_bot.py -d`
+3. Your radio is connected to the mesh network
+4. Query format is correct: `wx [location]` or `weather [location]`
 
 ### "I have --channel weather in my systemd service"
 
