@@ -247,6 +247,7 @@ class WeatherBot:
         """
         # Minimum 8 bytes required for old format header
         if len(payload) < _OLD_FORMAT_HEADER_SIZE:
+            self._log(f"Message too short ({len(payload)} bytes < {_OLD_FORMAT_HEADER_SIZE} required) - likely encrypted or corrupted")
             return (None, None)
         
         # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
@@ -286,6 +287,8 @@ class WeatherBot:
         # Validate channel_idx is in valid range (0-7)
         # Invalid indices indicate encrypted/garbled messages
         if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
+            self._log(f"Invalid channel_idx={channel_idx} (valid range: 0-7) - message is likely encrypted or corrupted")
+            self._log(f"If this channel should work, check: 1) Channel is not encrypted, 2) Bot's radio is subscribed to this channel")
             return (None, None)
         text = payload[_OLD_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
         return (channel_idx, text)
@@ -319,6 +322,10 @@ class WeatherBot:
             channel_idx, text = self._parse_channel_message(payload)
             if channel_idx is not None:
                 self._handle_channel_message(text, channel_idx)
+            else:
+                # Message parsing failed - likely encrypted or corrupted
+                # The _parse_channel_message method already logged details
+                pass
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG and len(payload) >= 8:
@@ -326,6 +333,10 @@ class WeatherBot:
             channel_idx, text = self._parse_channel_message(payload)
             if channel_idx is not None:
                 self._handle_channel_message(text, channel_idx)
+            else:
+                # Message parsing failed - likely encrypted or corrupted
+                # The _parse_channel_message method already logged details
+                pass
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG_V3 and len(payload) >= 12:
@@ -335,6 +346,8 @@ class WeatherBot:
             if 0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX:
                 text = payload[11:].decode("utf-8", "ignore")
                 self._handle_channel_message(text, channel_idx)
+            else:
+                self._log(f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted")
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_NO_MORE_MSGS:
