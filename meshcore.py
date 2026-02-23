@@ -216,6 +216,27 @@ class MeshCore:
         self._serial = None
         self._listener_thread = None
 
+    def _sanitize_for_log(self, text: str) -> str:
+        """
+        Sanitize text for safe logging by removing control characters and
+        limiting length. This prevents terminal corruption from garbled/encrypted data.
+        """
+        if not text:
+            return text
+        
+        # Remove control characters except newline, tab, carriage return
+        sanitized = ''.join(
+            char if (ord(char) >= 32 or char in '\n\t\r') else f'\\x{ord(char):02x}'
+            for char in text
+        )
+        
+        # Limit length to prevent log spam
+        max_len = 200
+        if len(sanitized) > max_len:
+            sanitized = sanitized[:max_len] + f"... ({len(sanitized) - max_len} more chars)"
+        
+        return sanitized
+
     def log(self, message: str):
         """Log debug messages"""
         if self.debug:
@@ -722,27 +743,42 @@ class MeshCore:
         if not data:
             return False
         
-        # Count printable ASCII bytes (32-126) and common whitespace (9, 10, 13)
-        # Also allow valid UTF-8 continuation bytes (0x80-0xBF) and start bytes (0xC2-0xF4)
-        # Note: 0xC0, 0xC1, 0xF5-0xFF are invalid in UTF-8
+        # First, try to decode as UTF-8 to check for valid encoding
+        # Encrypted/garbled data often has invalid UTF-8 sequences
+        try:
+            decoded = data.decode('utf-8', errors='strict')
+        except UnicodeDecodeError:
+            # If it can't be decoded as valid UTF-8, it's likely encrypted/garbled
+            return False
+        
+        # Count printable ASCII characters in the decoded string
+        # Encrypted data, even if it happens to decode as UTF-8, will have
+        # many control characters or unprintable Unicode characters
         printable_count = 0
-        for byte_val in data:
-            # Printable ASCII (space through ~)
-            if 32 <= byte_val <= 126:
+        control_count = 0
+        for char in decoded:
+            char_code = ord(char)
+            # Printable ASCII (space through ~) or newline/tab/carriage return
+            if 32 <= char_code <= 126 or char_code in (9, 10, 13):
                 printable_count += 1
-            # Common whitespace: tab, newline, carriage return
-            elif byte_val in (9, 10, 13):
-                printable_count += 1
-            # Valid UTF-8 continuation bytes (10xxxxxx)
-            elif 0x80 <= byte_val <= 0xBF:
-                printable_count += 1
-            # Valid UTF-8 start bytes for 2-4 byte sequences
-            elif 0xC2 <= byte_val <= 0xF4:
+            # Control characters (excluding whitespace)
+            elif char_code < 32 or char_code == 127:
+                control_count += 1
+            # For non-ASCII Unicode characters (> 127), count as printable if they're
+            # in common Unicode ranges (Latin Extended, etc.)
+            elif char_code < 0x1000:  # Basic Multilingual Plane common chars
                 printable_count += 1
         
-        # If less than 70% of bytes are reasonable text bytes, likely encrypted
-        printable_ratio = printable_count / len(data)
-        return printable_ratio >= 0.70
+        # Reject if too many control characters
+        if len(decoded) > 0 and control_count / len(decoded) > 0.1:
+            return False
+        
+        # Require at least 70% printable characters
+        if len(decoded) > 0:
+            printable_ratio = printable_count / len(decoded)
+            return printable_ratio >= 0.70
+        
+        return False
 
     def _parse_binary_frame(self, payload: bytes):
         """
@@ -886,8 +922,12 @@ class MeshCore:
         # Map channel_idx back to Python channel name
         channel_name = self._get_channel_name(channel_idx)
         
+        # Sanitize sender and content for logging to prevent terminal corruption
+        safe_sender = self._sanitize_for_log(sender)
+        safe_content = self._sanitize_for_log(content)
+        
         channel_info = f" on channel '{channel_name}'" if channel_name else f" on channel_idx {channel_idx}"
-        self.log(f"LoRa RX channel msg from {sender}{channel_info}: {content}")
+        self.log(f"LoRa RX channel msg from {safe_sender}{channel_info}: {safe_content}")
         msg = MeshCoreMessage(sender=sender, content=content, message_type="text", 
                             channel=channel_name, channel_idx=channel_idx)
         
