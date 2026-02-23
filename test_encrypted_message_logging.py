@@ -52,6 +52,10 @@ def test_encrypted_message_not_logged():
     old_stdout = sys.stdout
     sys.stdout = captured_output = StringIO()
     
+    # Test counts - used for validation
+    EXPECTED_MESSAGES_WITHOUT_PREFIX = 3  # Tests 1, 2, 3
+    EXPECTED_WX_RESPONSES = 2  # Tests 3, 4
+    
     try:
         # Test 1: Encrypted/garbled message without "SenderName: " format
         # Should be logged but NOT responded to (no WX command)
@@ -151,16 +155,18 @@ def test_encrypted_message_not_logged():
         if is_wx_response_log(line):
             wx_responses += 1
     
-    print(f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be 3)")
+    print(f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be {EXPECTED_MESSAGES_WITHOUT_PREFIX})")
     print(f"Messages with proper format logged: {messages_with_sender_count} (should be at least 2)")
-    print(f"WX responses sent: {wx_responses} (should be 2 - one with prefix, one without)")
+    print(f"WX responses sent: {wx_responses} (should be {EXPECTED_WX_RESPONSES} - one with prefix, one without)")
     
     # Verify new behavior:
     # 1. Messages without prefix are logged (with debug message about the prefix)
     # 2. Garbled content doesn't trigger WX responses
     # 3. Valid WX commands work with or without sender prefix
-    assert messages_without_prefix_count == 3, f"Should log 3 messages without prefix, logged {messages_without_prefix_count}"
-    assert wx_responses == 2, f"Should respond to 2 WX commands (with and without prefix), responded to {wx_responses}"
+    assert messages_without_prefix_count == EXPECTED_MESSAGES_WITHOUT_PREFIX, \
+        f"Should log {EXPECTED_MESSAGES_WITHOUT_PREFIX} messages without prefix, logged {messages_without_prefix_count}"
+    assert wx_responses == EXPECTED_WX_RESPONSES, \
+        f"Should respond to {EXPECTED_WX_RESPONSES} WX commands (with and without prefix), responded to {wx_responses}"
     
     print("\n✅ New behavior verified:")
     print("  - Messages without SenderName: prefix are processed (sender='channel')")

@@ -52,6 +52,10 @@ _MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
 _MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
 _MAX_VALID_CHANNEL_IDX = 7    # Maximum valid channel index (0-7)
 
+# Default sender name for messages without "SenderName: " prefix
+# Matches meshcore.py's behavior in _dispatch_channel_message
+_DEFAULT_SENDER = "channel"
+
 # WMO weather interpretation codes
 WEATHER_CODES = {
     0: "Clear sky",
@@ -338,7 +342,6 @@ class WeatherBot:
         # MeshCore prepends "SenderName: " to channel messages.
         # However, messages from new hashtag channels or self-sent messages
         # may not have this prefix, so we should still process them.
-        DEFAULT_SENDER = "channel"  # Matches meshcore.py behavior
         colon = text.find(": ")
         if colon > 0:
             sender = text[:colon]
@@ -346,7 +349,7 @@ class WeatherBot:
         else:
             # No "SenderName: " prefix found - treat as message from channel
             # This matches meshcore.py's behavior in _dispatch_channel_message
-            sender = DEFAULT_SENDER
+            sender = _DEFAULT_SENDER
             content = text
             self._log(f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{sender}'")
 
