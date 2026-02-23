@@ -123,6 +123,9 @@ class WeatherBot:
     # Logging helpers
     # ------------------------------------------------------------------
 
+    # Maximum length for logged content to prevent log spam
+    _MAX_LOG_LENGTH = 200
+
     def _sanitize_for_log(self, text: str) -> str:
         """
         Sanitize text for safe logging by removing control characters and
@@ -138,9 +141,8 @@ class WeatherBot:
         )
         
         # Limit length to prevent log spam
-        max_len = 200
-        if len(sanitized) > max_len:
-            sanitized = sanitized[:max_len] + f"... ({len(sanitized) - max_len} more chars)"
+        if len(sanitized) > self._MAX_LOG_LENGTH:
+            sanitized = sanitized[:self._MAX_LOG_LENGTH] + f"... ({len(sanitized) - self._MAX_LOG_LENGTH} more chars)"
         
         return sanitized
 
@@ -365,8 +367,10 @@ class WeatherBot:
             elif char_code < 32 or char_code == 127:
                 control_count += 1
             # For non-ASCII Unicode characters (> 127), count as printable if they're
-            # in common Unicode ranges (Latin Extended, etc.)
-            elif char_code < 0x1000:  # Basic Multilingual Plane common chars
+            # in commonly used Unicode ranges. We use 0x1000 (4096) as the threshold
+            # which covers most Latin, Cyrillic, Greek, and other common scripts
+            # while excluding more exotic Unicode blocks that are unlikely in normal text.
+            elif char_code < 0x1000:
                 printable_count += 1
         
         # Reject if too many control characters

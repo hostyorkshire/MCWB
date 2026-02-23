@@ -44,9 +44,7 @@ def test_garbled_messages_filtered():
     
     print("\n--- Test 1: Garbled message from channel_idx=0 (like in user's log) ---")
     # Simulate encrypted/garbled data that might come from channel 0
-    # This represents encrypted data with random bytes
-    garbled_bytes_1 = b'\x67\x46\x3a\x44\x25\x3f\x3b\xc8\xa7\x63\x4d\x43'  # "gF:D%?;ȧcMC" after UTF-8 decode
-    # But add some invalid UTF-8 to ensure it's rejected
+    # This represents encrypted data with invalid UTF-8 to ensure it's rejected
     garbled_bytes_1 = b'\x67\x46\x3a\x44\x25\x3f\x3b\xff\xfe\x63\x4d\x43'  # Invalid UTF-8
     payload1 = create_channel_message(0, garbled_bytes_1)
     
