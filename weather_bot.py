@@ -253,6 +253,20 @@ class WeatherBot:
         except serial.SerialException:
             return None
 
+    @staticmethod
+    def _looks_like_valid_text(text: str) -> bool:
+        """
+        Simple check if decoded text looks like valid readable text.
+        Uses the Jeff ping bot approach: just check if most characters are printable.
+        Encrypted/garbled messages will have many non-printable or control characters.
+        """
+        if not text:
+            return False
+        # Count printable characters (space to ~, plus common whitespace)
+        printable = sum(1 for c in text if 32 <= ord(c) <= 126 or c in '\n\t\r')
+        # Require at least 70% printable - simpler than strict validation
+        return (printable / len(text)) >= 0.70
+
     def _parse_channel_message(self, payload: bytes):
         """
         Parse channel message payload and extract channel_idx and text.
@@ -268,8 +282,9 @@ class WeatherBot:
         - Otherwise, use old format
         
         Encryption Detection:
-        - After parsing, check if raw message bytes contain reasonable printable characters
-        - Encrypted messages will have mostly non-printable/control characters in raw bytes
+        - After parsing, check if decoded text looks like valid readable text
+        - Encrypted messages will have many non-printable/control characters
+        - Uses simple printable character ratio check (Jeff ping bot approach)
         
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
@@ -314,10 +329,11 @@ class WeatherBot:
                 channel_idx = v3_channel_idx
                 text_bytes = payload[_V3_FORMAT_HEADER_SIZE:]
                 # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
-                # Trust the radio's decryption and let command matching filter valid requests
                 text = text_bytes.decode("utf-8", "ignore").strip()
-                # Only reject if completely empty after decoding
-                if not text:
+                # Check if text looks valid (not encrypted/garbled)
+                # This uses the simple Jeff ping bot approach: just check printable ratio
+                if not text or not self._looks_like_valid_text(text):
+                    # Silently skip encrypted/garbled messages from other channels
                     return (None, None)
                 return (channel_idx, text)
         
@@ -330,10 +346,11 @@ class WeatherBot:
             return (None, None)
         text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
         # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
-        # Trust the radio's decryption and let command matching filter valid requests
         text = text_bytes.decode("utf-8", "ignore").strip()
-        # Only reject if completely empty after decoding
-        if not text:
+        # Check if text looks valid (not encrypted/garbled)
+        # This uses the simple Jeff ping bot approach: just check printable ratio
+        if not text or not self._looks_like_valid_text(text):
+            # Silently skip encrypted/garbled messages from other channels
             return (None, None)
         return (channel_idx, text)
 
