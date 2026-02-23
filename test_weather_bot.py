@@ -18,20 +18,27 @@ def test_command_parsing():
     bot = WeatherBot(debug=False)
 
     test_cases = [
-        ("wx London", "London"),
-        ("weather Manchester", "Manchester"),
-        ("WX York", "York"),
-        ("WEATHER Leeds", "Leeds"),
-        ("wx  Birmingham  ", "Birmingham"),
-        ("hello", None),
-        ("wx", None),
-        ("weather", None),
+        ("wx London", "London", None),
+        ("weather Manchester", "Manchester", None),
+        ("WX York", "York", None),
+        ("WEATHER Leeds", "Leeds", None),
+        ("wx  Birmingham  ", "Birmingham", None),
+        ("wx York UK", "York", "GB"),
+        ("wx York USA", "York", "US"),
+        ("hello", None, None),
+        ("wx", None, None),
+        ("weather", None, None),
     ]
 
-    for command, expected in test_cases:
-        result = bot.parse_weather_command(command)
-        status = "✓" if result == expected else "✗"
-        print(f"{status} '{command}' -> {result} (expected: {expected})")
+    for command, expected_location, expected_country in test_cases:
+        location, country = bot.parse_weather_command(command)
+        # For backward compatibility tests without country
+        if expected_country is None and country is None:
+            status = "✓" if location == expected_location else "✗"
+            print(f"{status} '{command}' -> location={location} (expected: {expected_location})")
+        else:
+            status = "✓" if (location == expected_location and country == expected_country) else "✗"
+            print(f"{status} '{command}' -> location={location}, country={country} (expected: {expected_location}, {expected_country})")
 
     print()
 

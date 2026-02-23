@@ -474,24 +474,63 @@ class WeatherBot:
         if self.weather_channel_idx is None:
             self._announce_channel_idx = channel_idx
 
-        location = self._parse_command(content)
+        location, country = self._parse_command(content)
         if location:
             # Sanitize sender for print output to prevent terminal corruption
             safe_sender_print = self._sanitize_for_log(sender)
             safe_location = self._sanitize_for_log(location)
-            print(f"WX request for '{safe_location}' from {safe_sender_print}", flush=True)
-            response = self._get_weather(location)
+            country_str = f" ({country})" if country else ""
+            print(f"WX request for '{safe_location}'{country_str} from {safe_sender_print}", flush=True)
+            response = self._get_weather(location, country)
             print(f"Response:\n{response}\n", flush=True)
             self._send_channel_msg(response, channel_idx)
 
     @staticmethod
     def _parse_command(text: str):
-        """Return location string if text matches WX/weather command, else None."""
+        """Return (location, country) tuple if text matches WX/weather command, else (None, None).
+        
+        Supports formats:
+        - "wx York" -> ("York", None)
+        - "wx York UK" -> ("York", "GB")
+        - "wx York USA" -> ("York", "US")
+        - "wx York, UK" -> ("York, UK", None)  # Explicit format, no extraction
+        """
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text.strip(), re.IGNORECASE)
-        return m.group(1).strip() if m else None
+        if not m:
+            return None, None
+        
+        location_str = m.group(1).strip()
+        
+        # Country code mappings (common variations)
+        country_mappings = {
+            'uk': 'GB',
+            'gb': 'GB',
+            'usa': 'US',
+            'us': 'US',
+            'united kingdom': 'GB',
+            'united states': 'US',
+        }
+        
+        # Try to extract country from end of location string
+        # Pattern: location name followed by whitespace and country name/code
+        # Only extract if it's a simple space-separated pattern (not comma-separated)
+        words = location_str.split()
+        if len(words) >= 2 and ',' not in location_str:
+            potential_country = words[-1].lower()
+            if potential_country in country_mappings:
+                # Found a country code/name at the end
+                location = ' '.join(words[:-1])
+                country = country_mappings[potential_country]
+                return location, country
+        
+        return location_str, None
 
     def parse_weather_command(self, text: str):
-        """Public alias for _parse_command."""
+        """Public alias for _parse_command.
+        
+        Returns:
+            tuple: (location, country) where country may be None
+        """
         return self._parse_command(text)
 
     def get_weather_description(self, code: int) -> str:
@@ -519,9 +558,9 @@ class WeatherBot:
 
     def handle_message(self, msg: MeshCoreMessage):
         """Handle a MeshCoreMessage and send a weather response via self.mesh."""
-        location = self._parse_command(msg.content)
+        location, country = self._parse_command(msg.content)
         if location:
-            response = self._get_weather(location)
+            response = self._get_weather(location, country)
             # Reply on the exact channel slot the query arrived on (when known),
             # or broadcast to all configured channels.  Using send_response
             # keeps the routing logic in one place.
@@ -538,12 +577,20 @@ class WeatherBot:
     # Weather data
     # ------------------------------------------------------------------
 
-    def geocode_location(self, location: str):
+    def geocode_location(self, location: str, country_override: str = None):
         """Geocode *location* name via Open-Meteo.  Returns the first result
-        dict (with ``latitude``, ``longitude``, ``name``, etc.) or ``None``."""
+        dict (with ``latitude``, ``longitude``, ``name``, etc.) or ``None``.
+        
+        Args:
+            location: City/location name to geocode
+            country_override: Optional country code to filter results (e.g., "GB", "US").
+                            Takes precedence over self.country if provided.
+        """
         geo_params = {"name": location, "count": 1, "language": "en", "format": "json"}
-        if self.country:
-            geo_params["country"] = self.country
+        # Per-query country override takes precedence over bot's default country
+        country = country_override if country_override is not None else self.country
+        if country:
+            geo_params["country"] = country
         geo = requests.get(
             "https://geocoding-api.open-meteo.com/v1/search",
             params=geo_params,
@@ -571,10 +618,15 @@ class WeatherBot:
             timeout=10,
         ).json()
 
-    def _get_weather(self, location: str) -> str:
-        """Fetch weather for *location* and return a formatted string."""
+    def _get_weather(self, location: str, country: str = None) -> str:
+        """Fetch weather for *location* and return a formatted string.
+        
+        Args:
+            location: City/location name to get weather for
+            country: Optional country code to filter geocoding results (e.g., "GB", "US")
+        """
         try:
-            r = self.geocode_location(location)
+            r = self.geocode_location(location, country)
             if r is None:
                 return f"Location not found: {location}"
             lat, lon = r["latitude"], r["longitude"]
