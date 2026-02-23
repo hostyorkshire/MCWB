@@ -312,7 +312,7 @@ class WeatherBot:
             if use_v3_format:
                 channel_idx = v3_channel_idx
                 text_bytes = payload[_V3_FORMAT_HEADER_SIZE:]
-                # Decode as UTF-8, ignoring invalid sequences
+                # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
                 # Trust the radio's decryption and let command matching filter valid requests
                 text = text_bytes.decode("utf-8", "ignore").strip()
                 # Only reject if completely empty after decoding
@@ -328,7 +328,7 @@ class WeatherBot:
             # Silently skip - this is expected for encrypted messages from other channels
             return (None, None)
         text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
-        # Decode as UTF-8, ignoring invalid sequences
+        # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
         # Trust the radio's decryption and let command matching filter valid requests
         text = text_bytes.decode("utf-8", "ignore").strip()
         # Only reject if completely empty after decoding
