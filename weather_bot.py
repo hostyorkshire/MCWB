@@ -87,7 +87,7 @@ class WeatherBot:
     def __init__(self, port=None, baud=115200, debug=False, announce=False,
                  allowed_channel_idx=None, node_id=None, announce_channel=None,
                  weather_channel_idx=None, country=None, channel=None,
-                 serial_port=None, baud_rate=None):
+                 serial_port=None, baud_rate=None, verify_channels=False):
         # serial_port and baud_rate are aliases for port and baud
         self.port = serial_port or port
         self.baud = baud_rate or baud
@@ -103,6 +103,11 @@ class WeatherBot:
         self.announce_channel = announce_channel
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
         self.country = country
+        # Channel verification mode - shows diagnostic info about encrypted messages
+        self.verify_channels = verify_channels
+        # Track channels with valid messages vs encrypted messages for diagnostics
+        self._valid_channels = set()  # channel_idx with successfully decrypted messages
+        self._encrypted_channels = set()  # channel_idx with encrypted/garbled messages
         # Parse comma-separated channel names (e.g. "weather,alerts") into a list.
         # Used for broadcasting responses and setting up channel name filtering via
         # the JSON-based MeshCore channel map rather than relying solely on
@@ -253,6 +258,20 @@ class WeatherBot:
         except serial.SerialException:
             return None
 
+    @staticmethod
+    def _looks_like_valid_text(text: str) -> bool:
+        """
+        Simple check if decoded text looks like valid readable text.
+        Uses the Jeff ping bot approach: just check if most characters are printable.
+        Encrypted/garbled messages will have many non-printable or control characters.
+        """
+        if not text:
+            return False
+        # Count printable characters (space to ~, plus common whitespace)
+        printable = sum(1 for c in text if 32 <= ord(c) <= 126 or c in '\n\t\r')
+        # Require at least 70% printable - simpler than strict validation
+        return (printable / len(text)) >= 0.70
+
     def _parse_channel_message(self, payload: bytes):
         """
         Parse channel message payload and extract channel_idx and text.
@@ -268,8 +287,9 @@ class WeatherBot:
         - Otherwise, use old format
         
         Encryption Detection:
-        - After parsing, check if raw message bytes contain reasonable printable characters
-        - Encrypted messages will have mostly non-printable/control characters in raw bytes
+        - After parsing, check if decoded text looks like valid readable text
+        - Encrypted messages will have many non-printable/control characters
+        - Uses simple printable character ratio check (Jeff ping bot approach)
         
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
@@ -314,11 +334,19 @@ class WeatherBot:
                 channel_idx = v3_channel_idx
                 text_bytes = payload[_V3_FORMAT_HEADER_SIZE:]
                 # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
-                # Trust the radio's decryption and let command matching filter valid requests
                 text = text_bytes.decode("utf-8", "ignore").strip()
-                # Only reject if completely empty after decoding
-                if not text:
+                # Check if text looks valid (not encrypted/garbled)
+                # This uses the simple Jeff ping bot approach: just check printable ratio
+                if not text or not self._looks_like_valid_text(text):
+                    # Silently skip encrypted/garbled messages from channels without keys
+                    # Track for diagnostics only if verification mode is enabled
+                    if self.verify_channels and 0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                        self._encrypted_channels.add(channel_idx)
+                        self._log(f"⚠️  Encrypted message on channel_idx={channel_idx}")
                     return (None, None)
+                # Track successfully decrypted messages for diagnostics
+                if self.verify_channels and 0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                    self._valid_channels.add(channel_idx)
                 return (channel_idx, text)
         
         # Fall back to old format
@@ -330,11 +358,19 @@ class WeatherBot:
             return (None, None)
         text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
         # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
-        # Trust the radio's decryption and let command matching filter valid requests
         text = text_bytes.decode("utf-8", "ignore").strip()
-        # Only reject if completely empty after decoding
-        if not text:
+        # Check if text looks valid (not encrypted/garbled)
+        # This uses the simple Jeff ping bot approach: just check printable ratio
+        if not text or not self._looks_like_valid_text(text):
+            # Silently skip encrypted/garbled messages from channels without keys
+            # Track for diagnostics only if verification mode is enabled
+            if self.verify_channels:
+                self._encrypted_channels.add(channel_idx)
+                self._log(f"⚠️  Encrypted message on channel_idx={channel_idx}")
             return (None, None)
+        # Track successfully decrypted messages for diagnostics
+        if self.verify_channels:
+            self._valid_channels.add(channel_idx)
         return (channel_idx, text)
 
     def _dispatch(self, payload: bytes):
@@ -582,6 +618,11 @@ class WeatherBot:
             print(f"Send 'WX [location]' or 'weather [location]' on that channel.")
         else:
             print("MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel.")
+        
+        if self.verify_channels:
+            print("\n📡 Channel Verification Mode: Monitoring channel encryption status...")
+            print("   Will report which channels are properly configured with decryption keys.\n")
+        
         print("Press Ctrl+C to stop.\n", flush=True)
 
         last_announce = time.time()
@@ -598,9 +639,46 @@ class WeatherBot:
             print("\nStopping...")
         finally:
             self._running = False
+            if self.verify_channels:
+                self._print_channel_diagnostic()
             if self._ser:
                 self._ser.close()
             print("MCWBv2 stopped.")
+
+    def _print_channel_diagnostic(self):
+        """Print diagnostic summary of channel encryption status."""
+        print("\n" + "="*70)
+        print("📡 CHANNEL VERIFICATION REPORT")
+        print("="*70)
+        
+        if self._valid_channels:
+            print("\n✅ Channels with successfully decrypted messages:")
+            for ch_idx in sorted(self._valid_channels):
+                print(f"   • channel_idx {ch_idx} - Radio has valid keys for this channel")
+        
+        if self._encrypted_channels:
+            print("\n⚠️  Channels with encrypted messages (could not decrypt):")
+            for ch_idx in sorted(self._encrypted_channels):
+                print(f"   • channel_idx {ch_idx} - Radio does not have keys for this channel")
+            
+            print("\n💡 WHAT THIS MEANS:")
+            print("   The radio received messages on channels it's not subscribed to.")
+            print("   This is normal! The bot automatically works on subscribed channels.")
+            print()
+            print("   If you need the bot to work on these encrypted channels:")
+            print("   1. Join/subscribe to those channels in your MeshCore app")
+            print("   2. Ensure the same channel is configured on all devices in your mesh")
+            print("   3. The radio will then perform Diffie-Hellman key exchange")
+            print("   4. Future messages on those channels will be automatically decrypted")
+            print()
+            print("   Note: The bot seamlessly works on any channels your radio is")
+            print("         already subscribed to. No app configuration needed!")
+        
+        if not self._valid_channels and not self._encrypted_channels:
+            print("\n📭 No messages received during this session.")
+            print("   This is just a diagnostic tool. Try sending messages to test.")
+        
+        print("="*70 + "\n")
 
 
 def main():
@@ -628,6 +706,10 @@ def main():
     parser.add_argument("--country",
                         help="Default country code for geocoding (e.g., GB, US, FR). "
                              "Filters location searches to prefer cities in this country.")
+    parser.add_argument("--verify-channels", action="store_true",
+                        help="Enable channel verification mode. Shows diagnostic info about which "
+                             "channels are properly configured with decryption keys. Useful for "
+                             "troubleshooting when the radio receives encrypted messages it cannot decrypt.")
     parser.add_argument("-l", "--location",
                         help="Look up weather for LOCATION and exit (no radio needed)")
     args = parser.parse_args()
@@ -643,7 +725,8 @@ def main():
                      allowed_channel_idx=allowed_idx,
                      weather_channel_idx=weather_idx,
                      country=args.country,
-                     channel=args.channel)
+                     channel=args.channel,
+                     verify_channels=args.verify_channels)
 
     if args.location:
         print(bot._get_weather(args.location))
