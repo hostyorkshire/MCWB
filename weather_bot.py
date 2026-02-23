@@ -623,9 +623,6 @@ class WeatherBot:
             raise requests.exceptions.RequestException("Cannot reach geocoding service - check network connection")
         except requests.exceptions.HTTPError as e:
             raise requests.exceptions.RequestException(f"Geocoding service error: {e.response.status_code}")
-        except requests.exceptions.RequestException as e:
-            # Catch any other requests exceptions
-            raise
         
         if "results" not in geo or not geo["results"]:
             return None
@@ -661,9 +658,6 @@ class WeatherBot:
             raise requests.exceptions.RequestException("Cannot reach weather service - check network connection")
         except requests.exceptions.HTTPError as e:
             raise requests.exceptions.RequestException(f"Weather service error: {e.response.status_code}")
-        except requests.exceptions.RequestException as e:
-            # Catch any other requests exceptions
-            raise
 
     def _get_weather(self, location: str, country: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
@@ -682,19 +676,19 @@ class WeatherBot:
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
             return self.format_weather_response(r, wx)
-        except requests.exceptions.Timeout:
-            return "⏱️ Request timeout\nWeather service is slow - try again in a moment"
-        except requests.exceptions.ConnectionError:
-            return "🌐 Connection error\nCannot reach weather service - check your internet connection"
         except requests.exceptions.RequestException as e:
             # Handle custom error messages from geocode_location and get_weather
             error_msg = str(e)
-            if "timeout" in error_msg.lower():
+            # Check for our custom error messages
+            if "timeout" in error_msg:
                 return "⏱️ Request timeout - please try again"
-            elif "cannot reach" in error_msg.lower() or "connection" in error_msg.lower():
+            elif "Cannot reach" in error_msg or "check network" in error_msg:
                 return "🌐 Connection error - check network"
-            else:
+            elif "service error" in error_msg:
                 return f"⚠️ Weather service error\n{error_msg}"
+            else:
+                # Generic network error
+                return "⚠️ Network error - please check your connection"
         except KeyError as e:
             return f"⚠️ Unexpected response format\nMissing field: {e}"
         except Exception as e:

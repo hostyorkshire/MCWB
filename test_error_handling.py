@@ -3,6 +3,7 @@
 Test improved error handling for network issues.
 Demonstrates better user-facing error messages when the weather service is unreachable.
 """
+import sys
 from unittest.mock import Mock, patch
 import requests
 from weather_bot import WeatherBot
@@ -25,11 +26,14 @@ def test_timeout_error():
     print(f"User sees: {result}")
     print()
     
+    passed = True
     if "timeout" in result.lower() and "try again" in result.lower():
         print("✅ PASS: Clear timeout message with actionable advice")
     else:
         print("❌ FAIL: Message doesn't clearly indicate timeout")
+        passed = False
     print()
+    return passed
 
 
 def test_connection_error():
@@ -49,11 +53,14 @@ def test_connection_error():
     print(f"User sees: {result}")
     print()
     
+    passed = True
     if "connection" in result.lower() and "network" in result.lower():
         print("✅ PASS: Clear connection error message")
     else:
         print("❌ FAIL: Message doesn't clearly indicate connection issue")
+        passed = False
     print()
+    return passed
 
 
 def test_http_error():
@@ -76,11 +83,14 @@ def test_http_error():
     print(f"User sees: {result}")
     print()
     
+    passed = True
     if "error" in result.lower() or "service" in result.lower():
         print("✅ PASS: HTTP error communicated to user")
     else:
         print("❌ FAIL: HTTP error not clearly communicated")
+        passed = False
     print()
+    return passed
 
 
 def test_location_not_found_with_country():
@@ -103,16 +113,20 @@ def test_location_not_found_with_country():
     print(f"User sees: {result}")
     print()
     
+    passed = True
     if "not found" in result.lower() and "UK" in result:
         print("✅ PASS: Clear 'not found' message mentions the country")
     else:
         print("❌ FAIL: Message doesn't clearly indicate location wasn't found")
+        passed = False
     
     if "try without" in result.lower() or "check spelling" in result.lower():
         print("✅ PASS: Message suggests helpful actions")
     else:
         print("❌ FAIL: Message doesn't suggest next steps")
+        passed = False
     print()
+    return passed
 
 
 def test_location_not_found_without_country():
@@ -135,16 +149,20 @@ def test_location_not_found_without_country():
     print(f"User sees: {result}")
     print()
     
+    passed = True
     if "not found" in result.lower():
         print("✅ PASS: Clear 'not found' message")
     else:
         print("❌ FAIL: Message doesn't clearly indicate location wasn't found")
+        passed = False
     
     if "[country]" in result or "UK" in result or "USA" in result:
         print("✅ PASS: Message suggests trying with country code")
     else:
         print("❌ FAIL: Message doesn't suggest adding country code")
+        passed = False
     print()
+    return passed
 
 
 def test_success_case_unchanged():
@@ -191,11 +209,14 @@ def test_success_case_unchanged():
     print(result)
     print()
     
+    passed = True
     if "York, GB" in result and "Temp:" in result and "Wind:" in result:
         print("✅ PASS: Normal weather lookup still works correctly")
     else:
         print("❌ FAIL: Weather response format changed unexpectedly")
+        passed = False
     print()
+    return passed
 
 
 if __name__ == "__main__":
@@ -203,21 +224,40 @@ if __name__ == "__main__":
     print("║       Improved Error Handling Tests                               ║")
     print("╚════════════════════════════════════════════════════════════════════╝\n")
     
-    test_timeout_error()
-    test_connection_error()
-    test_http_error()
-    test_location_not_found_with_country()
-    test_location_not_found_without_country()
-    test_success_case_unchanged()
+    # Run all tests and track results
+    results = []
+    results.append(("Timeout Error", test_timeout_error()))
+    results.append(("Connection Error", test_connection_error()))
+    results.append(("HTTP Error", test_http_error()))
+    results.append(("Location Not Found (with country)", test_location_not_found_with_country()))
+    results.append(("Location Not Found (without country)", test_location_not_found_without_country()))
+    results.append(("Success Case", test_success_case_unchanged()))
     
     print("=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print("✅ All error handling tests completed successfully")
+    
+    # Count passes and failures
+    passed = sum(1 for _, result in results if result)
+    failed = len(results) - passed
+    
+    for test_name, result in results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{status}: {test_name}")
+    
     print()
-    print("Key improvements:")
-    print("  • Timeout errors now show friendly '⏱️ Request timeout' message")
-    print("  • Connection errors show '🌐 Connection error' with advice")
-    print("  • Location not found messages suggest helpful next steps")
-    print("  • HTTP errors are caught and handled gracefully")
-    print("  • Success cases continue to work unchanged")
+    print(f"Results: {passed}/{len(results)} tests passed")
+    
+    if failed == 0:
+        print("\n✅ All error handling tests passed successfully")
+        print()
+        print("Key improvements:")
+        print("  • Timeout errors now show friendly '⏱️ Request timeout' message")
+        print("  • Connection errors show '🌐 Connection error' with advice")
+        print("  • Location not found messages suggest helpful next steps")
+        print("  • HTTP errors are caught and handled gracefully")
+        print("  • Success cases continue to work unchanged")
+        sys.exit(0)
+    else:
+        print(f"\n❌ {failed} test(s) failed")
+        sys.exit(1)
