@@ -599,38 +599,71 @@ class WeatherBot:
             location: City/location name to geocode
             country_override: Optional country code to filter results (e.g., "GB", "US").
                             Takes precedence over self.country if provided.
+        
+        Raises:
+            requests.exceptions.RequestException: On network or API errors
         """
         geo_params = {"name": location, "count": 1, "language": "en", "format": "json"}
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
         if country:
             geo_params["country"] = country
-        geo = requests.get(
-            "https://geocoding-api.open-meteo.com/v1/search",
-            params=geo_params,
-            timeout=10,
-        ).json()
+        
+        try:
+            response = requests.get(
+                "https://geocoding-api.open-meteo.com/v1/search",
+                params=geo_params,
+                timeout=10,
+            )
+            response.raise_for_status()  # Raise exception for HTTP errors
+            geo = response.json()
+        except requests.exceptions.Timeout:
+            raise requests.exceptions.RequestException("Geocoding service timeout - please try again")
+        except requests.exceptions.ConnectionError:
+            raise requests.exceptions.RequestException("Cannot reach geocoding service - check network connection")
+        except requests.exceptions.HTTPError as e:
+            raise requests.exceptions.RequestException(f"Geocoding service error: {e.response.status_code}")
+        except requests.exceptions.RequestException as e:
+            # Catch any other requests exceptions
+            raise
+        
         if "results" not in geo or not geo["results"]:
             return None
         return geo["results"][0]
 
     def get_weather(self, lat: float, lon: float) -> dict:
         """Fetch current weather for the given coordinates.  Returns the raw
-        Open-Meteo response dict (with a ``"current"`` key)."""
-        return requests.get(
-            "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": lat,
-                "longitude": lon,
-                "current": (
-                    "temperature_2m,apparent_temperature,"
-                    "relative_humidity_2m,precipitation,"
-                    "weather_code,wind_speed_10m,wind_direction_10m"
-                ),
-                "timezone": "auto",
-            },
-            timeout=10,
-        ).json()
+        Open-Meteo response dict (with a ``"current"`` key).
+        
+        Raises:
+            requests.exceptions.RequestException: On network or API errors
+        """
+        try:
+            response = requests.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current": (
+                        "temperature_2m,apparent_temperature,"
+                        "relative_humidity_2m,precipitation,"
+                        "weather_code,wind_speed_10m,wind_direction_10m"
+                    ),
+                    "timezone": "auto",
+                },
+                timeout=10,
+            )
+            response.raise_for_status()  # Raise exception for HTTP errors
+            return response.json()
+        except requests.exceptions.Timeout:
+            raise requests.exceptions.RequestException("Weather service timeout - please try again")
+        except requests.exceptions.ConnectionError:
+            raise requests.exceptions.RequestException("Cannot reach weather service - check network connection")
+        except requests.exceptions.HTTPError as e:
+            raise requests.exceptions.RequestException(f"Weather service error: {e.response.status_code}")
+        except requests.exceptions.RequestException as e:
+            # Catch any other requests exceptions
+            raise
 
     def _get_weather(self, location: str, country: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
@@ -642,12 +675,34 @@ class WeatherBot:
         try:
             r = self.geocode_location(location, country)
             if r is None:
-                return f"Location not found: {location}"
+                if country:
+                    return f"Location not found: {location} in {country}\nTry without country code or check spelling"
+                else:
+                    return f"Location not found: {location}\nTry: 'wx {location} [country]' (e.g., 'wx {location} UK')"
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
             return self.format_weather_response(r, wx)
+        except requests.exceptions.Timeout:
+            return "⏱️ Request timeout\nWeather service is slow - try again in a moment"
+        except requests.exceptions.ConnectionError:
+            return "🌐 Connection error\nCannot reach weather service - check your internet connection"
+        except requests.exceptions.RequestException as e:
+            # Handle custom error messages from geocode_location and get_weather
+            error_msg = str(e)
+            if "timeout" in error_msg.lower():
+                return "⏱️ Request timeout - please try again"
+            elif "cannot reach" in error_msg.lower() or "connection" in error_msg.lower():
+                return "🌐 Connection error - check network"
+            else:
+                return f"⚠️ Weather service error\n{error_msg}"
+        except KeyError as e:
+            return f"⚠️ Unexpected response format\nMissing field: {e}"
         except Exception as e:
-            return f"Weather error: {e}"
+            # Fallback for any unexpected errors
+            if self.debug:
+                return f"⚠️ Error: {type(e).__name__}: {e}"
+            else:
+                return "⚠️ Unexpected error - try again or contact bot operator"
 
     # ------------------------------------------------------------------
     # Main run loop
