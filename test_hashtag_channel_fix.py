@@ -19,7 +19,7 @@ def create_channel_message(channel_idx, text, code=0x88):
     Create a channel message payload in old format.
     
     Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
-    V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+    V3 format: code(1) + SNR(1) + reserved(2)[0x00] + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
     
     This function uses the old format for compatibility testing, as both formats are
     still supported by the bot. V3 format adds SNR (signal-to-noise ratio) tracking

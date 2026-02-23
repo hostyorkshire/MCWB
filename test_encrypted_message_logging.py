@@ -17,6 +17,13 @@ import sys
 from weather_bot import WeatherBot
 
 
+# Test case constants
+EXPECTED_MESSAGES_WITHOUT_PREFIX = 3  # Tests 1, 2, 3
+EXPECTED_WX_RESPONSES = 2  # Tests 3, 4
+EXPECTED_MESSAGES_WITH_SENDER = 5  # All 5 tests log message (with or without prefix)
+EXPECTED_SENDERS = ['M3UXC/M', 'Alice', 'channel:']  # Known senders from test cases
+
+
 def create_channel_message(channel_idx, text, code=0x88):
     """
     Create a channel message payload in old format.
@@ -51,10 +58,6 @@ def test_encrypted_message_not_logged():
     # Capture stdout to check what gets logged
     old_stdout = sys.stdout
     sys.stdout = captured_output = StringIO()
-    
-    # Test counts - used for validation
-    EXPECTED_MESSAGES_WITHOUT_PREFIX = 3  # Tests 1, 2, 3
-    EXPECTED_WX_RESPONSES = 2  # Tests 3, 4
     
     try:
         # Test 1: Encrypted/garbled message without "SenderName: " format
@@ -133,8 +136,8 @@ def test_encrypted_message_not_logged():
         """Check if line contains a properly logged message with sender info"""
         if 'channel_idx=' not in line or ': ' not in line:
             return False
-        # Look for known senders or the default 'channel' sender
-        return any(sender in line for sender in ['M3UXC/M', 'Alice', 'channel:'])
+        # Look for known senders from our test cases
+        return any(sender in line for sender in EXPECTED_SENDERS)
     
     def is_wx_response_log(line):
         """Check if line indicates a WX weather request was processed"""
@@ -156,7 +159,7 @@ def test_encrypted_message_not_logged():
             wx_responses += 1
     
     print(f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be {EXPECTED_MESSAGES_WITHOUT_PREFIX})")
-    print(f"Messages with proper format logged: {messages_with_sender_count} (should be at least 2)")
+    print(f"Messages with sender logged: {messages_with_sender_count} (should be {EXPECTED_MESSAGES_WITH_SENDER})")
     print(f"WX responses sent: {wx_responses} (should be {EXPECTED_WX_RESPONSES} - one with prefix, one without)")
     
     # Verify new behavior:
@@ -165,6 +168,8 @@ def test_encrypted_message_not_logged():
     # 3. Valid WX commands work with or without sender prefix
     assert messages_without_prefix_count == EXPECTED_MESSAGES_WITHOUT_PREFIX, \
         f"Should log {EXPECTED_MESSAGES_WITHOUT_PREFIX} messages without prefix, logged {messages_without_prefix_count}"
+    assert messages_with_sender_count == EXPECTED_MESSAGES_WITH_SENDER, \
+        f"Should log {EXPECTED_MESSAGES_WITH_SENDER} messages with sender info, logged {messages_with_sender_count}"
     assert wx_responses == EXPECTED_WX_RESPONSES, \
         f"Should respond to {EXPECTED_WX_RESPONSES} WX commands (with and without prefix), responded to {wx_responses}"
     
