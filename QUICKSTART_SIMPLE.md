@@ -46,6 +46,23 @@ User2 on #weather channel: "wx Brighton"  → Gets reply on #weather
 User3 on #alerts channel:  "wx York"      → Gets reply on #alerts
 ```
 
+### Enable Periodic Announcements
+
+The bot can broadcast a welcome/help message every 3 hours so users know it is active:
+
+```bash
+# Run with announcements enabled
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 --announce
+
+# Announcements + debug output
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 --announce -d
+```
+
+The announcement message is:
+> "Hello this is the WX BoT. To get a weather update simply type WX and your location."
+
+It is sent immediately on startup and then repeated every 3 hours on whichever channel users are active on.
+
 ### What About `--channel`?
 
 The `--channel` parameter is **optional** and reserved for future features (like scheduled weather broadcasts). 
