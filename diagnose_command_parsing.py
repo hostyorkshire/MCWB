@@ -102,7 +102,7 @@ def main():
     print("  wx [location] [country]    - e.g., 'wx York UK'")
     print("  weather [location]         - e.g., 'weather Paris FR'")
     print("\nSupported country codes:")
-    print("  UK, usa, US, GB, or any 2-letter ISO code (FR, DE, CA, etc.)")
+    print("  UK, USA, US, GB, or any 2-letter ISO code (FR, DE, CA, etc.)")
     print("\nCase insensitive:")
     print("  'wx', 'WX', 'Wx' all work")
     print("  'UK', 'uk', 'Uk' all work")

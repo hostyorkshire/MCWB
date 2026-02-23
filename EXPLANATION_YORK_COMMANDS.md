@@ -207,7 +207,7 @@ The geocoding API can interpret these, but the space-separated format (e.g., `wx
 
 ### The Problem
 Many city names exist in multiple countries:
-- York (UK, USA, Canada, Australia)
+- York (UK, USA, Canada, Australia - examples throughout this doc focus on UK/USA)
 - Paris (France, USA)
 - Birmingham (UK, USA)
 - Manchester (UK, USA)
