@@ -122,9 +122,11 @@ def test_byte_validation_directly():
         (b"\x01\x02\x03\x04\x05test", False, "Lots of control chars"),
         (b"\x00\x01\x15\x8a\x99\xf1\xaa\xbb", False, "All non-printable"),
         (b"\x1f\x1e\x1d\x1c\x1b\x1a", False, "Control characters only"),
-        # Note: This borderline case (77% valid) passes validation
-        # Real encrypted messages have much lower ratios (<50%)
-        (b"hello\x00world\xff\xfe", True, "Mixed with some non-printable (borderline)"),
+        # Borderline case: 10 valid bytes (hello + world) + 3 invalid (NULL, 0xFF, 0xFE) = 77% valid
+        # This passes our 70% threshold, which is intentional - we want to be lenient enough
+        # to allow messages with occasional null bytes or encoding errors while still
+        # filtering out truly encrypted data (which typically has <50% valid bytes)
+        (b"hello\x00world\xff\xfe", True, "Mixed with some non-printable (77% valid, passes 70% threshold)"),
         # More realistic encrypted data
         (b"\x00\x01\x02hi\xff\xfe\xfd", False, "Mostly encrypted with short text"),
     ]

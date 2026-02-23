@@ -318,7 +318,7 @@ class WeatherBot:
         Returns:
             True if bytes appear to be valid text, False if likely encrypted/garbled
         """
-        if not data or len(data) == 0:
+        if not data:
             return False
         
         # Count printable ASCII bytes (32-126) and common whitespace (9, 10, 13)
