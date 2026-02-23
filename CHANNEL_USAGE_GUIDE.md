@@ -79,10 +79,17 @@ Pick any name that makes sense for you:
 
 ### Step 2: Create Channel in MeshCore App
 
-1. Open MeshCore app
-2. Go to Channels section
-3. Create new channel with your chosen name
-4. MeshCore automatically assigns it a channel_idx (1-7)
+**IMPORTANT:** Do this BEFORE starting the bot!
+
+1. Open MeshCore app on your phone/tablet
+2. Connect to your companion radio (the one that will be connected to your bot)
+3. Go to Channels section
+4. Create new channel with your chosen name
+5. Join/subscribe to the channel
+6. MeshCore automatically assigns it a channel_idx (1-7)
+7. Save your configuration
+
+**Note:** The bot cannot create or subscribe to channels automatically. This must be done through the MeshCore app.
 
 ### Step 3: Use the Bot
 
