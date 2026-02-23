@@ -52,6 +52,10 @@ _MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
 _MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
 _MAX_VALID_CHANNEL_IDX = 7    # Maximum valid channel index (0-7)
 
+# Default sender name for messages without "SenderName: " prefix
+# Matches meshcore.py's behavior in _dispatch_channel_message
+_DEFAULT_SENDER = "channel"
+
 # WMO weather interpretation codes
 WEATHER_CODES = {
     0: "Clear sky",
@@ -335,17 +339,19 @@ class WeatherBot:
             self._log(f"Ignoring message from channel_idx={channel_idx} (filter={self.allowed_channel_idx})")
             return
 
-        # MeshCore prepends "SenderName: " to channel messages
+        # MeshCore prepends "SenderName: " to channel messages.
+        # However, messages from new hashtag channels or self-sent messages
+        # may not have this prefix, so we should still process them.
         colon = text.find(": ")
         if colon > 0:
             sender = text[:colon]
             content = text[colon + 2:]
         else:
-            # Messages without "SenderName: " format (colon + space) are likely encrypted
-            # messages from other users. Skip them to avoid confusing logs.
-            # This debug log only appears when debug mode is enabled.
-            self._log(f"channel_idx={channel_idx} skipping message without SenderName: format")
-            return
+            # No "SenderName: " prefix found - treat as message from channel
+            # This matches meshcore.py's behavior in _dispatch_channel_message
+            sender = _DEFAULT_SENDER
+            content = text
+            self._log(f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{sender}'")
 
         self._log(f"channel_idx={channel_idx} {sender}: {content}")
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-Test to verify that encrypted/garbled messages are NOT logged.
-These are messages from other users/channels that the bot cannot decrypt.
+Test to verify that messages without "SenderName: " prefix are handled correctly.
+These could be messages from new hashtag channels or self-sent messages.
 
-The issue: Bot logs "channel_idx=X unknown: [garbled text]" for encrypted messages.
-Expected: Bot should silently skip messages that don't have the "SenderName: " format.
+Expected behavior:
+- Messages without "SenderName: " prefix should be processed (sender="channel")
+- Encrypted/garbled content won't match WX command pattern, so no response
+- Valid WX commands without prefix SHOULD be responded to
 """
 
 import struct
@@ -13,6 +15,13 @@ from unittest.mock import MagicMock
 from io import StringIO
 import sys
 from weather_bot import WeatherBot
+
+
+# Test case constants
+EXPECTED_MESSAGES_WITHOUT_PREFIX = 3  # Tests 1, 2, 3
+EXPECTED_WX_RESPONSES = 2  # Tests 3, 4
+EXPECTED_MESSAGES_WITH_SENDER = 5  # All 5 tests log message (with or without prefix)
+EXPECTED_SENDERS = ['M3UXC/M', 'Alice', 'channel:']  # Known senders from test cases
 
 
 def create_channel_message(channel_idx, text, code=0x88):
@@ -30,9 +39,9 @@ def create_channel_message(channel_idx, text, code=0x88):
 
 
 def test_encrypted_message_not_logged():
-    """Test that encrypted/garbled messages without sender format are silently skipped"""
+    """Test that messages without sender prefix are processed but don't trigger responses for garbled content"""
     print("=" * 80)
-    print("TEST: Encrypted Message Logging")
+    print("TEST: Messages Without SenderName Prefix")
     print("=" * 80)
     
     bot = WeatherBot(debug=True)
@@ -52,47 +61,58 @@ def test_encrypted_message_not_logged():
     
     try:
         # Test 1: Encrypted/garbled message without "SenderName: " format
-        print("\nTest 1: Encrypted message on channel 6 (without SenderName: format)")
-        # Using simple text without "SenderName: " format to represent encrypted/improperly formatted message
+        # Should be logged but NOT responded to (no WX command)
+        print("\nTest 1: Garbled message on channel 6 (without SenderName: format)")
         encrypted_text = "encrypted_binary_data_xyz123"
         payload1 = create_channel_message(6, encrypted_text)
         
         sent_responses.clear()
         bot._dispatch(payload1)
         
-        # Should NOT respond (no WX command) and should skip with debug log
-        assert len(sent_responses) == 0, "Bot should not respond to encrypted messages"
+        # Should NOT respond (no WX command in garbled text)
+        assert len(sent_responses) == 0, "Bot should not respond to garbled messages without WX command"
         
         # Test 2: Another encrypted message
-        print("\nTest 2: Encrypted message on channel 0 (without SenderName: format)")
+        print("\nTest 2: Garbled message on channel 0 (without SenderName: format)")
         encrypted_text2 = "garbled_encrypted_content"
         payload2 = create_channel_message(0, encrypted_text2)
         
         sent_responses.clear()
         bot._dispatch(payload2)
         
-        assert len(sent_responses) == 0, "Bot should not respond to garbled messages"
+        assert len(sent_responses) == 0, "Bot should not respond to garbled messages without WX command"
         
-        # Test 3: Valid message with proper format (should be logged)
-        print("\nTest 3: Valid message with SenderName: format")
-        valid_text = "M3UXC/M: WX Leeds"
-        payload3 = create_channel_message(0, valid_text)
+        # Test 3: Valid WX command WITHOUT sender prefix (NEW: should work!)
+        print("\nTest 3: Valid WX command without SenderName: format")
+        wx_without_sender = "WX London"
+        payload3 = create_channel_message(2, wx_without_sender)
         
         sent_responses.clear()
         bot._dispatch(payload3)
         
-        # Should respond to WX command
-        assert len(sent_responses) == 1, "Bot should respond to valid WX command"
+        # Should respond to WX command even without sender prefix
+        assert len(sent_responses) == 1, "Bot should respond to valid WX command even without sender prefix"
         
-        # Test 4: Another valid message
-        print("\nTest 4: Another valid message")
-        valid_text2 = "Alice: Hello everyone"
-        payload4 = create_channel_message(1, valid_text2)
+        # Test 4: Valid message with proper format (should still work)
+        print("\nTest 4: Valid message with SenderName: format")
+        valid_text = "M3UXC/M: WX Leeds"
+        payload4 = create_channel_message(0, valid_text)
         
         sent_responses.clear()
         bot._dispatch(payload4)
         
-        # Should not respond (no WX command) but should log normally
+        # Should respond to WX command
+        assert len(sent_responses) == 1, "Bot should respond to valid WX command with sender prefix"
+        
+        # Test 5: Non-WX message with sender prefix
+        print("\nTest 5: Non-WX message with sender prefix")
+        valid_text2 = "Alice: Hello everyone"
+        payload5 = create_channel_message(1, valid_text2)
+        
+        sent_responses.clear()
+        bot._dispatch(payload5)
+        
+        # Should not respond (no WX command)
         assert len(sent_responses) == 0, "Bot should not respond to non-WX messages"
         
     finally:
@@ -107,38 +127,56 @@ def test_encrypted_message_not_logged():
     # Check what was logged
     lines = output.split('\n')
     
-    # Count messages with and without proper format
-    skipped_message_count = 0
-    unknown_logged_count = 0
-    valid_message_count = 0
+    # Helper function to classify log lines
+    def is_message_without_prefix_log(line):
+        """Check if line indicates a message without SenderName prefix"""
+        return "message without SenderName: prefix" in line
+    
+    def is_message_with_sender_log(line):
+        """Check if line contains a properly logged message with sender info"""
+        if 'channel_idx=' not in line or ': ' not in line:
+            return False
+        # Look for known senders from our test cases
+        return any(sender in line for sender in EXPECTED_SENDERS)
+    
+    def is_wx_response_log(line):
+        """Check if line indicates a WX weather request was processed"""
+        return 'WX request' in line
+    
+    # Count different types of messages
+    messages_without_prefix_count = 0
+    messages_with_sender_count = 0
+    wx_responses = 0
     
     for line in lines:
-        # Check for skipped messages (debug log only appears in debug mode)
-        if 'skipping message without SenderName: format' in line:
-            skipped_message_count += 1
-            print(f"✓ Skipped encrypted message (debug log): {line[:80]}")
-        # Check for old-style "unknown:" logs (should not appear)
-        elif 'channel_idx=' in line and 'unknown:' in line:
-            unknown_logged_count += 1
-            print(f"❌ Found 'unknown:' in log: {line[:80]}")
-        # Check for valid messages with sender format
-        elif 'channel_idx=' in line and ('M3UXC/M' in line or 'Alice' in line):
-            valid_message_count += 1
-            print(f"✓ Valid message logged: {line[:80]}")
+        if is_message_without_prefix_log(line):
+            messages_without_prefix_count += 1
+            print(f"✓ Message without prefix logged: {line[:80]}")
+        elif is_message_with_sender_log(line):
+            messages_with_sender_count += 1
+            print(f"✓ Message logged: {line[:80]}")
+        if is_wx_response_log(line):
+            wx_responses += 1
     
-    print(f"\nSkipped messages (with debug log): {skipped_message_count} (should be 2)")
-    print(f"Messages with 'unknown:' logged: {unknown_logged_count} (should be 0)")
-    print(f"Valid messages logged: {valid_message_count} (should be 2)")
+    print(f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be {EXPECTED_MESSAGES_WITHOUT_PREFIX})")
+    print(f"Messages with sender logged: {messages_with_sender_count} (should be {EXPECTED_MESSAGES_WITH_SENDER})")
+    print(f"WX responses sent: {wx_responses} (should be {EXPECTED_WX_RESPONSES} - one with prefix, one without)")
     
-    # The fix should ensure that:
-    # 1. Encrypted messages are skipped (with debug log)
-    # 2. No "unknown:" entries appear in logs
-    # 3. Valid messages are still logged normally
-    assert skipped_message_count == 2, f"Should skip 2 encrypted messages, skipped {skipped_message_count}"
-    assert unknown_logged_count == 0, f"'unknown:' should NOT appear in logs, found {unknown_logged_count}"
-    assert valid_message_count == 2, f"Valid messages should be logged, found {valid_message_count}"
+    # Verify new behavior:
+    # 1. Messages without prefix are logged (with debug message about the prefix)
+    # 2. Garbled content doesn't trigger WX responses
+    # 3. Valid WX commands work with or without sender prefix
+    assert messages_without_prefix_count == EXPECTED_MESSAGES_WITHOUT_PREFIX, \
+        f"Should log {EXPECTED_MESSAGES_WITHOUT_PREFIX} messages without prefix, logged {messages_without_prefix_count}"
+    assert messages_with_sender_count == EXPECTED_MESSAGES_WITH_SENDER, \
+        f"Should log {EXPECTED_MESSAGES_WITH_SENDER} messages with sender info, logged {messages_with_sender_count}"
+    assert wx_responses == EXPECTED_WX_RESPONSES, \
+        f"Should respond to {EXPECTED_WX_RESPONSES} WX commands (with and without prefix), responded to {wx_responses}"
     
-    print("\n✅ Fix verified: Encrypted messages are skipped with debug log")
+    print("\n✅ New behavior verified:")
+    print("  - Messages without SenderName: prefix are processed (sender='channel')")
+    print("  - Garbled content is logged but doesn't trigger responses")
+    print("  - Valid WX commands work with or without sender prefix")
     print("=" * 80)
 
 
@@ -146,11 +184,13 @@ def main():
     try:
         test_encrypted_message_not_logged()
         print("\n✅ TEST PASSED!")
-        print("\nThe bot now skips encrypted messages that:")
-        print("  - Don't have the 'SenderName: ' format")
-        print("  - Logs them at debug level for troubleshooting")
-        print("\nThis prevents confusing 'unknown:' log entries while still")
-        print("allowing debug visibility when needed.")
+        print("\nThe bot now handles messages without 'SenderName: ' prefix:")
+        print("  - Processes them with sender='channel' (like meshcore.py)")
+        print("  - Logs them at debug level for visibility")
+        print("  - Responds to WX commands even without sender prefix")
+        print("  - Ignores garbled content that doesn't match WX pattern")
+        print("\nThis enables support for new hashtag channels and self-sent messages")
+        print("while still preventing responses to encrypted/garbled content.")
         return 0
     except AssertionError as e:
         print(f"\n❌ TEST FAILED: {e}")
