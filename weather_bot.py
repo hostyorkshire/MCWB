@@ -235,6 +235,8 @@ class WeatherBot:
           and channel_idx (byte 4) is valid (0-7), use V3 format
         - If payload >= 12 bytes and byte 1 > 7 (impossible as channel_idx in old format)
           and byte 4 is valid channel_idx, use V3 format
+        - If payload >= 12 bytes and bytes 2-3 (reserved in V3) are both 0x00
+          and byte 4 is a valid channel_idx, use V3 format
         - Otherwise, use old format
         
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
@@ -250,18 +252,31 @@ class WeatherBot:
         # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
         if len(payload) >= _V3_FORMAT_HEADER_SIZE + 1:
             snr_value = payload[1]
+            reserved1 = payload[2]
+            reserved2 = payload[3]
             v3_channel_idx = payload[4]
             old_channel_idx = payload[1]
             
+            # Check if this looks like V3 format using multiple heuristics
+            use_v3_format = False
+            
             # Heuristic 1: SNR in realistic range AND valid channel_idx = V3 format
             if _MIN_REALISTIC_SNR <= snr_value <= _MAX_REALISTIC_SNR and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
-                channel_idx = v3_channel_idx
-                text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
-                return (channel_idx, text)
+                use_v3_format = True
             
             # Heuristic 2: Old format would be invalid (channel_idx > 7), but V3 is valid
             # This handles cases where the old format interpretation doesn't make sense
             elif old_channel_idx > _MAX_VALID_CHANNEL_IDX and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                use_v3_format = True
+            
+            # Heuristic 3: Reserved bytes are 0x00 AND valid channel_idx at position 4 = V3 format
+            # This handles V3 messages with low SNR values (0-7) that could be confused with
+            # old format channel_idx. The reserved bytes being 0x00 is a strong V3 indicator.
+            elif reserved1 == 0x00 and reserved2 == 0x00 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                use_v3_format = True
+            
+            # If any heuristic matched, parse as V3 format
+            if use_v3_format:
                 channel_idx = v3_channel_idx
                 text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
                 return (channel_idx, text)
