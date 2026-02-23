@@ -215,8 +215,7 @@ This is useful when:
 - You want announcements on one channel but responses on all channels
 
 **Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel
-slots on your MeshCore device. Slot 0 is the public/default channel. Slots 1–7 are named
-channels configured in the MeshCore app. 
+slots on your MeshCore device. Slot 0 is the default channel (typically using a well-known PSK for broad accessibility). Slots 1–7 are hashtag/named channels configured in the MeshCore app with unique encryption keys (PSKs).
 
 ### Finding Your Weather Channel Index (If Needed)
 

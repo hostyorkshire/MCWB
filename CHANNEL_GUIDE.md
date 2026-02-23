@@ -26,7 +26,7 @@ Every named channel is transmitted over a specific **channel slot** on the compa
 
 Key rules:
 - The companion radio supports **8 channel slots** (indices `0`–`7`).
-- **Slot 0** is the default (public) channel used when no channel name is given.
+- **Slot 0** is the default channel used when no channel name is given. In MeshCore firmware, slot 0 typically uses a well-known PSK for broad accessibility, while slots 1-7 (hashtag channels) use unique PSKs for encrypted communication.
 - Named channels are mapped to slots `1`–`7` automatically, or you can specify the index directly.
 - The channel index in a **received** message tells you exactly which slot it arrived on; replies should use the same index to reach the same audience.
 
@@ -286,7 +286,7 @@ python3 weather_bot.py --channel weather --interactive
   `--channel-idx` values) or remove the filter to respond on all channels.
 
 **Q: What if I don't specify a channel?**
-- Messages without a channel are broadcast on slot 0 (the default public channel).
+- Messages without a channel are broadcast on slot 0 (the default channel, which typically uses a well-known PSK for broad accessibility).
 
 **Q: What is `MESHCORE_CHANNEL_IDX`?**
 - It is the numeric slot index (0–7) used in the MeshCore binary protocol to identify which
@@ -294,7 +294,7 @@ python3 weather_bot.py --channel weather --interactive
   CLI or `channel_idx=` in the Python API to work with it directly.
 
 **Q: Are channels secure?**
-- No, channels are just labels. They organize messages but don't provide encryption or access control.
+- In MeshCore, hashtag channels (channels 1-7, e.g., #weather, #wxtest, #alerts) **are encrypted** using channel-specific Pre-Shared Keys (PSKs). Only channel 0 (the default/public channel) typically uses a well-known PSK, making it effectively public. Channels organize messages AND provide encryption when configured with proper PSKs in the MeshCore firmware.
 
 ## More Information
 
