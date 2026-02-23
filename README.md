@@ -25,6 +25,11 @@ MCWBv2 listens for weather queries and responds using the free [Open-Meteo](http
 2. Run `python3 weather_bot.py`
 3. Done! The bot works on ANY channel where users send weather commands
 
+**✨ NEW: Country Specification** - Users can now specify country in their commands:
+- `wx York UK` → York, United Kingdom
+- `wx York USA` → York, USA
+- No more confusion with ambiguous city names!
+
 ## Usage
 
 **Send weather commands on ANY channel you've created!** Examples:
@@ -48,6 +53,21 @@ In YOUR custom channel (whatever name you chose):
 ```
 wx [your location]
 ```
+
+### Specifying Country in Your Query
+
+When city names are ambiguous (like York, Paris, Birmingham), you can specify the country directly in your command:
+
+```
+wx York UK        # York, United Kingdom
+wx York USA       # York, Pennsylvania USA
+wx Paris France   # Paris, France
+```
+
+**Supported country codes:**
+- `UK`, `GB`, or `United Kingdom` → United Kingdom
+- `USA`, `US`, or `United States` → United States
+- Any ISO-3166-1 alpha-2 country code (e.g., `FR`, `DE`, `CA`)
 
 The bot replies on the same channel with current conditions:
 
@@ -315,18 +335,25 @@ Some city names exist in multiple countries (e.g., "York" in UK, USA; "Paris" in
 By default, the bot returns the first match from the geocoding API.
 
 **Solutions:**
-1. **Be specific in the query:** Users can add the country to their request:
+
+1. **Specify country in the command (recommended):** Users can add the country directly in their weather request:
+   - `wx York UK` → Returns York, United Kingdom
+   - `wx York USA` → Returns York, Pennsylvania USA  
+   - `wx Paris France` → Returns Paris, France
+   - Supports: `UK`, `USA`, `US`, `GB`, or any ISO-3166-1 alpha-2 country code
+
+2. **Use comma-separated format:** Traditional explicit format:
    - `wx York, UK` instead of just `wx York`
    - `wx Paris, France` instead of just `wx Paris`
 
-2. **Configure a default country:** If most users are in one country, run the bot with the `--country` flag:
+3. **Configure a default country:** If most users are in one country, run the bot with the `--country` flag:
    ```bash
    python3 weather_bot.py --country GB  # Prefers UK cities
    python3 weather_bot.py --country US  # Prefers US cities
    ```
    
    This filters location searches to prefer cities in the specified country while still
-   allowing users to override by specifying a different country in their query.
+   allowing users to override by specifying a different country in their query (e.g., `wx York USA`).
 
 ## API
 
