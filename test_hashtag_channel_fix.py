@@ -17,7 +17,11 @@ from weather_bot import WeatherBot
 def create_channel_message(channel_idx, text, code=0x88):
     """
     Create a channel message payload in old format.
-    Format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+    
+    Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+    V3 format adds SNR(1) + reserved(2) before channel_idx for signal quality tracking.
+    
+    This function uses the old format for compatibility with existing deployments.
     """
     path_len = 0x00
     txt_type = 0x00

@@ -120,22 +120,35 @@ def test_encrypted_message_not_logged():
     # Check what was logged
     lines = output.split('\n')
     
+    # Helper function to classify log lines
+    def is_message_without_prefix_log(line):
+        """Check if line indicates a message without SenderName prefix"""
+        return "message without SenderName: prefix" in line
+    
+    def is_message_with_sender_log(line):
+        """Check if line contains a properly logged message with sender info"""
+        if 'channel_idx=' not in line or ': ' not in line:
+            return False
+        # Look for known senders or the default 'channel' sender
+        return any(sender in line for sender in ['M3UXC/M', 'Alice', 'channel:'])
+    
+    def is_wx_response_log(line):
+        """Check if line indicates a WX weather request was processed"""
+        return 'WX request' in line
+    
     # Count different types of messages
     messages_without_prefix_count = 0
     messages_with_sender_count = 0
     wx_responses = 0
     
     for line in lines:
-        # Check for messages without prefix (new behavior - should be logged)
-        if "message without SenderName: prefix" in line:
+        if is_message_without_prefix_log(line):
             messages_without_prefix_count += 1
             print(f"✓ Message without prefix logged: {line[:80]}")
-        # Check for messages with sender
-        elif 'channel_idx=' in line and (': ' in line) and ('M3UXC/M' in line or 'Alice' in line or 'channel:' in line):
+        elif is_message_with_sender_log(line):
             messages_with_sender_count += 1
             print(f"✓ Message logged: {line[:80]}")
-        # Check for WX responses
-        if 'WX request' in line:
+        if is_wx_response_log(line):
             wx_responses += 1
     
     print(f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be 3)")

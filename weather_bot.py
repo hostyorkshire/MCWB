@@ -338,6 +338,7 @@ class WeatherBot:
         # MeshCore prepends "SenderName: " to channel messages.
         # However, messages from new hashtag channels or self-sent messages
         # may not have this prefix, so we should still process them.
+        DEFAULT_SENDER = "channel"  # Matches meshcore.py behavior
         colon = text.find(": ")
         if colon > 0:
             sender = text[:colon]
@@ -345,7 +346,7 @@ class WeatherBot:
         else:
             # No "SenderName: " prefix found - treat as message from channel
             # This matches meshcore.py's behavior in _dispatch_channel_message
-            sender = "channel"
+            sender = DEFAULT_SENDER
             content = text
             self._log(f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{sender}'")
 
