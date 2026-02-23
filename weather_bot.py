@@ -239,11 +239,15 @@ class WeatherBot:
           and byte 4 is a valid channel_idx, use V3 format
         - Otherwise, use old format
         
+        Encryption Detection:
+        - After parsing, check if decoded text contains reasonable printable characters
+        - Encrypted messages will have mostly non-printable/control characters
+        
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         
         Returns:
-            tuple: (channel_idx, text) or (None, None) if parsing fails
+            tuple: (channel_idx, text) or (None, None) if parsing fails or message is encrypted
         """
         # Minimum 8 bytes required for old format header
         if len(payload) < _OLD_FORMAT_HEADER_SIZE:
@@ -279,6 +283,9 @@ class WeatherBot:
             if use_v3_format:
                 channel_idx = v3_channel_idx
                 text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
+                # Check if text is encrypted (mostly non-printable characters)
+                if not self._is_valid_text(text):
+                    return (None, None)
                 return (channel_idx, text)
         
         # Fall back to old format
@@ -288,7 +295,37 @@ class WeatherBot:
         if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
             return (None, None)
         text = payload[_OLD_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
+        # Check if text is encrypted (mostly non-printable characters)
+        if not self._is_valid_text(text):
+            return (None, None)
         return (channel_idx, text)
+
+    def _is_valid_text(self, text: str) -> bool:
+        """
+        Check if decoded text appears to be valid (not encrypted/garbled).
+        
+        Encrypted messages typically contain many non-printable control characters.
+        Valid messages should have mostly printable ASCII/UTF-8 characters.
+        
+        Args:
+            text: The decoded text string
+            
+        Returns:
+            True if text appears valid, False if it looks encrypted/garbled
+        """
+        if not text:
+            return False
+        
+        # Count printable characters (ASCII 32-126, plus common unicode)
+        # Allow newlines, tabs, and other common whitespace
+        printable_count = 0
+        for char in text:
+            if char.isprintable() or char in '\n\r\t':
+                printable_count += 1
+        
+        # If less than 70% of characters are printable, likely encrypted
+        printable_ratio = printable_count / len(text)
+        return printable_ratio >= 0.70
 
     def _dispatch(self, payload: bytes):
         """Dispatch a received frame payload."""

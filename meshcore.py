@@ -30,6 +30,13 @@ _RESP_CONTACT_MSG_V3 = 16   # V3 variant of contact message (includes SNR)
 _RESP_CHANNEL_MSG_V3 = 17   # V3 variant of channel message (includes SNR)
 _MAX_FRAME_SIZE = 300       # Maximum valid frame payload size in bytes
 
+# Channel message format constants
+_OLD_FORMAT_HEADER_SIZE = 8   # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_V3_FORMAT_HEADER_SIZE = 11   # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
+_MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
+_MAX_VALID_CHANNEL_IDX = 7    # Maximum valid channel index (0-7)
+
 try:
     import serial
     from serial import SerialException
@@ -618,6 +625,109 @@ class MeshCore:
             except SerialException as e:
                 self.log(f"LoRa CMD error: {e}")
 
+    def _parse_channel_message(self, payload: bytes):
+        """
+        Parse channel message payload and extract channel_idx and text.
+        Handles both old format and V3 format (with SNR).
+        Validates channel_idx to detect encrypted/garbled messages.
+        
+        Format Detection Heuristics:
+        - If payload >= 12 bytes and SNR (byte 1) is in realistic range (20-60 dB)
+          and channel_idx (byte 4) is valid (0-7), use V3 format
+        - If payload >= 12 bytes and byte 1 > 7 (impossible as channel_idx in old format)
+          and byte 4 is valid channel_idx, use V3 format
+        - If payload >= 12 bytes and bytes 2-3 (reserved in V3) are both 0x00
+          and byte 4 is a valid channel_idx, use V3 format
+        - Otherwise, use old format
+        
+        Encryption Detection:
+        - After parsing, check if decoded text contains reasonable printable characters
+        - Encrypted messages will have mostly non-printable/control characters
+        
+        V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+        Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
+        
+        Returns:
+            tuple: (channel_idx, text) or (None, None) if parsing fails or message is encrypted
+        """
+        # Minimum 8 bytes required for old format header
+        if len(payload) < _OLD_FORMAT_HEADER_SIZE:
+            return (None, None)
+        
+        # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
+        if len(payload) >= _V3_FORMAT_HEADER_SIZE + 1:
+            snr_value = payload[1]
+            reserved1 = payload[2]
+            reserved2 = payload[3]
+            v3_channel_idx = payload[4]
+            old_channel_idx = payload[1]
+            
+            # Check if this looks like V3 format using multiple heuristics
+            use_v3_format = False
+            
+            # Heuristic 1: SNR in realistic range AND valid channel_idx = V3 format
+            if _MIN_REALISTIC_SNR <= snr_value <= _MAX_REALISTIC_SNR and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                use_v3_format = True
+            
+            # Heuristic 2: Old format would be invalid (channel_idx > 7), but V3 is valid
+            # This handles cases where the old format interpretation doesn't make sense
+            elif old_channel_idx > _MAX_VALID_CHANNEL_IDX and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                use_v3_format = True
+            
+            # Heuristic 3: Reserved bytes are 0x00 AND valid channel_idx at position 4 = V3 format
+            # This handles V3 messages with low SNR values (0-7) that could be confused with
+            # old format channel_idx. The reserved bytes being 0x00 is a strong V3 indicator.
+            elif reserved1 == 0x00 and reserved2 == 0x00 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+                use_v3_format = True
+            
+            # If any heuristic matched, parse as V3 format
+            if use_v3_format:
+                channel_idx = v3_channel_idx
+                text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
+                # Check if text is encrypted (mostly non-printable characters)
+                if not self._is_valid_text(text):
+                    return (None, None)
+                return (channel_idx, text)
+        
+        # Fall back to old format
+        channel_idx = payload[1]
+        # Validate channel_idx is in valid range (0-7)
+        # Invalid indices indicate encrypted/garbled messages
+        if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
+            return (None, None)
+        text = payload[_OLD_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
+        # Check if text is encrypted (mostly non-printable characters)
+        if not self._is_valid_text(text):
+            return (None, None)
+        return (channel_idx, text)
+
+    def _is_valid_text(self, text: str) -> bool:
+        """
+        Check if decoded text appears to be valid (not encrypted/garbled).
+        
+        Encrypted messages typically contain many non-printable control characters.
+        Valid messages should have mostly printable ASCII/UTF-8 characters.
+        
+        Args:
+            text: The decoded text string
+            
+        Returns:
+            True if text appears valid, False if it looks encrypted/garbled
+        """
+        if not text:
+            return False
+        
+        # Count printable characters (ASCII 32-126, plus common unicode)
+        # Allow newlines, tabs, and other common whitespace
+        printable_count = 0
+        for char in text:
+            if char.isprintable() or char in '\n\r\t':
+                printable_count += 1
+        
+        # If less than 70% of characters are printable, likely encrypted
+        printable_ratio = printable_count / len(text)
+        return printable_ratio >= 0.70
+
     def _parse_binary_frame(self, payload: bytes):
         """
         Dispatch a received companion radio frame payload based on its code byte.
@@ -664,10 +774,14 @@ class MeshCore:
             # channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
             self.log("MeshCore: channel message received (push)")
             if len(payload) >= 8:
-                channel_idx = payload[1]
-                text = payload[8:].decode("utf-8", "ignore")
-                self.log(f"Binary frame: PUSH_CHAN_MSG on channel_idx {channel_idx}")
-                self._dispatch_channel_message(text, channel_idx)
+                # Use _parse_channel_message to handle both V3 format and validate channel_idx
+                channel_idx, text = self._parse_channel_message(payload)
+                if channel_idx is not None:
+                    self.log(f"Binary frame: PUSH_CHAN_MSG on channel_idx {channel_idx}")
+                    self._dispatch_channel_message(text, channel_idx)
+                else:
+                    # Invalid channel_idx or encrypted message - log and skip
+                    self.log(f"Binary frame: PUSH_CHAN_MSG with invalid/encrypted data, skipping")
             else:
                 self.log(f"Binary frame: PUSH_CHAN_MSG payload too short ({len(payload)} bytes)")
             # Drain any further queued messages
@@ -677,10 +791,14 @@ class MeshCore:
             # RESP_CODE_CHANNEL_MSG_RECV:
             # channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
             if len(payload) >= 8:
-                channel_idx = payload[1]  # Extract channel_idx from payload
-                text = payload[8:].decode("utf-8", "ignore")
-                self.log(f"Binary frame: CHANNEL_MSG on channel_idx {channel_idx}")
-                self._dispatch_channel_message(text, channel_idx)
+                # Use _parse_channel_message to handle both V3 format and validate channel_idx
+                channel_idx, text = self._parse_channel_message(payload)
+                if channel_idx is not None:
+                    self.log(f"Binary frame: CHANNEL_MSG on channel_idx {channel_idx}")
+                    self._dispatch_channel_message(text, channel_idx)
+                else:
+                    # Invalid channel_idx or encrypted message - log and skip
+                    self.log(f"Binary frame: CHANNEL_MSG with invalid/encrypted data, skipping")
             else:
                 self.log(f"Binary frame: CHANNEL_MSG payload too short ({len(payload)} bytes)")
             # Fetch the next queued message
@@ -690,10 +808,14 @@ class MeshCore:
             # RESP_CODE_CHANNEL_MSG_RECV_V3 (includes SNR prefix):
             # SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
             if len(payload) >= 12:
-                channel_idx = payload[4]  # Extract channel_idx from payload (after SNR + reserved)
-                text = payload[11:].decode("utf-8", "ignore")
-                self.log(f"Binary frame: CHANNEL_MSG_V3 on channel_idx {channel_idx}")
-                self._dispatch_channel_message(text, channel_idx)
+                # Use _parse_channel_message to handle V3 format properly and validate
+                channel_idx, text = self._parse_channel_message(payload)
+                if channel_idx is not None:
+                    self.log(f"Binary frame: CHANNEL_MSG_V3 on channel_idx {channel_idx}")
+                    self._dispatch_channel_message(text, channel_idx)
+                else:
+                    # Invalid channel_idx or encrypted message - log and skip
+                    self.log(f"Binary frame: CHANNEL_MSG_V3 with invalid/encrypted data, skipping")
             else:
                 self.log(f"Binary frame: CHANNEL_MSG_V3 payload too short ({len(payload)} bytes)")
             self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
