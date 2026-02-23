@@ -641,8 +641,8 @@ class MeshCore:
         - Otherwise, use old format
         
         Encryption Detection:
-        - After parsing, check if decoded text contains reasonable printable characters
-        - Encrypted messages will have mostly non-printable/control characters
+        - After parsing, check if raw message bytes contain reasonable printable characters
+        - Encrypted messages will have mostly non-printable/control characters in raw bytes
         
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
@@ -683,10 +683,11 @@ class MeshCore:
             # If any heuristic matched, parse as V3 format
             if use_v3_format:
                 channel_idx = v3_channel_idx
-                text = payload[_V3_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
-                # Check if text is encrypted (mostly non-printable characters)
-                if not self._is_valid_text(text):
+                text_bytes = payload[_V3_FORMAT_HEADER_SIZE:]
+                # Check if raw bytes are encrypted (mostly non-printable/control characters)
+                if not self._is_valid_message_bytes(text_bytes):
                     return (None, None)
+                text = text_bytes.decode("utf-8", "ignore")
                 return (channel_idx, text)
         
         # Fall back to old format
@@ -695,11 +696,53 @@ class MeshCore:
         # Invalid indices indicate encrypted/garbled messages
         if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
             return (None, None)
-        text = payload[_OLD_FORMAT_HEADER_SIZE:].decode("utf-8", "ignore")
-        # Check if text is encrypted (mostly non-printable characters)
-        if not self._is_valid_text(text):
+        text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
+        # Check if raw bytes are encrypted (mostly non-printable/control characters)
+        if not self._is_valid_message_bytes(text_bytes):
             return (None, None)
+        text = text_bytes.decode("utf-8", "ignore")
         return (channel_idx, text)
+
+    def _is_valid_message_bytes(self, data: bytes) -> bool:
+        """
+        Check if raw message bytes appear to be valid text (not encrypted/garbled).
+        
+        Encrypted messages typically contain many non-printable control characters.
+        Valid messages should have mostly printable ASCII/UTF-8 bytes.
+        
+        This checks the RAW bytes before UTF-8 decoding to avoid losing information
+        about invalid byte sequences that would be stripped by decode("utf-8", "ignore").
+        
+        Args:
+            data: The raw message bytes (after header)
+            
+        Returns:
+            True if bytes appear to be valid text, False if likely encrypted/garbled
+        """
+        if not data or len(data) == 0:
+            return False
+        
+        # Count printable ASCII bytes (32-126) and common whitespace (9, 10, 13)
+        # Also allow valid UTF-8 continuation bytes (0x80-0xBF) and start bytes (0xC2-0xF4)
+        # Note: 0xC0, 0xC1, 0xF5-0xFF are invalid in UTF-8
+        printable_count = 0
+        for byte_val in data:
+            # Printable ASCII (space through ~)
+            if 32 <= byte_val <= 126:
+                printable_count += 1
+            # Common whitespace: tab, newline, carriage return
+            elif byte_val in (9, 10, 13):
+                printable_count += 1
+            # Valid UTF-8 continuation bytes (10xxxxxx)
+            elif 0x80 <= byte_val <= 0xBF:
+                printable_count += 1
+            # Valid UTF-8 start bytes for 2-4 byte sequences
+            elif 0xC2 <= byte_val <= 0xF4:
+                printable_count += 1
+        
+        # If less than 70% of bytes are reasonable text bytes, likely encrypted
+        printable_ratio = printable_count / len(data)
+        return printable_ratio >= 0.70
 
     def _is_valid_text(self, text: str) -> bool:
         """
