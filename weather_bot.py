@@ -297,7 +297,8 @@ class WeatherBot:
             # Heuristic 3: Reserved bytes are 0x00 AND valid channel_idx at position 4 = V3 format
             # This handles V3 messages with low SNR values (0-7) that could be confused with
             # old format channel_idx. The reserved bytes being 0x00 is a strong V3 indicator.
-            elif reserved1 == 0x00 and reserved2 == 0x00 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+            # However, exclude SNR=0 as it's unrealistic (signals need some SNR to be received)
+            elif reserved1 == 0x00 and reserved2 == 0x00 and snr_value > 0 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
                 use_v3_format = True
             
             # If any heuristic matched, parse as V3 format

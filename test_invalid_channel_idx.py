@@ -19,9 +19,12 @@ def test_invalid_channel_idx_filtering():
     
     # Test Case 1: Valid channel index (0-7)
     print("\n1. Testing valid channel indices (0-7):")
+    import time
     for idx in range(8):
         # Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
-        payload = bytes([0x88, idx, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) + b"Test message"
+        # Use a realistic timestamp to avoid V3 format detection issues
+        ts = int(time.time()).to_bytes(4, "little")
+        payload = bytes([0x88, idx, 0x00, 0x00]) + ts + b"Test message"
         channel_idx, text = bot._parse_channel_message(payload)
         print(f"   channel_idx={idx}: parsed as {channel_idx} ✓" if channel_idx is not None else f"   channel_idx={idx}: rejected ✗")
         assert channel_idx == idx, f"Valid channel_idx {idx} should be accepted"
