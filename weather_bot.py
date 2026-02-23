@@ -78,9 +78,11 @@ class WeatherBot:
 
     def __init__(self, port=None, baud=115200, debug=False, announce=False,
                  allowed_channel_idx=None, node_id=None, announce_channel=None,
-                 weather_channel_idx=None, country=None):
-        self.port = port
-        self.baud = baud
+                 weather_channel_idx=None, country=None, channel=None,
+                 serial_port=None, baud_rate=None):
+        # serial_port and baud_rate are aliases for port and baud
+        self.port = serial_port or port
+        self.baud = baud_rate or baud
         self.debug = debug
         self.announce = announce or (announce_channel is not None)
         self.allowed_channel_idx = allowed_channel_idx
@@ -93,9 +95,25 @@ class WeatherBot:
         self.announce_channel = announce_channel
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
         self.country = country
+        # Parse comma-separated channel names (e.g. "weather,alerts") into a list.
+        # Used for broadcasting responses and setting up channel name filtering via
+        # the JSON-based MeshCore channel map rather than relying solely on
+        # numeric channel_idx heuristics.
+        if channel:
+            self.channels = [ch.strip() for ch in channel.split(",") if ch.strip()]
+        else:
+            self.channels = []
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
-                             serial_port=port, baud_rate=self.baud)
+                             serial_port=self.port, baud_rate=self.baud)
+        # Register this bot as the text message handler so that binary-protocol
+        # frames dispatched by meshcore._parse_binary_frame reach handle_message.
+        self.mesh.register_handler("text", self.handle_message)
+        # Apply channel name filter when specific channels are configured.
+        # Binary-protocol frames (channel=None) are always accepted regardless
+        # of this filter – see meshcore.receive_message for details.
+        if self.channels:
+            self.mesh.set_channel_filter(self.channels)
 
     # ------------------------------------------------------------------
     # Logging helpers
@@ -104,6 +122,38 @@ class WeatherBot:
     def _log(self, msg):
         if self.debug:
             print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+    # ------------------------------------------------------------------
+    # Lifecycle helpers (mesh-level start/stop)
+    # ------------------------------------------------------------------
+
+    def start(self):
+        """Start the MeshCore listener (mesh-level only)."""
+        self.mesh.start()
+
+    def stop(self):
+        """Stop the MeshCore listener (mesh-level only)."""
+        self.mesh.stop()
+
+    def send_response(self, content: str, reply_to_channel: str = None,
+                      reply_to_channel_idx: int = None):
+        """
+        Send a weather response via the MeshCore mesh.
+
+        If *reply_to_channel_idx* is given, the response is sent back on
+        exactly that channel slot (the slot the query arrived on).
+        Otherwise the response is broadcast to every channel in
+        ``self.channels``.  When no channels are configured the message
+        is sent without a channel identifier.
+        """
+        if reply_to_channel_idx is not None:
+            self.mesh.send_message(content, "text", reply_to_channel,
+                                   reply_to_channel_idx)
+        elif self.channels:
+            for ch in self.channels:
+                self.mesh.send_message(content, "text", ch)
+        else:
+            self.mesh.send_message(content, "text", None)
 
     # ------------------------------------------------------------------
     # Serial / MeshCore protocol helpers
@@ -348,7 +398,11 @@ class WeatherBot:
         location = self._parse_command(msg.content)
         if location:
             response = self._get_weather(location)
-            self.mesh.send_message(response, "text", msg.channel, msg.channel_idx)
+            # Reply on the exact channel slot the query arrived on (when known),
+            # or broadcast to all configured channels.  Using send_response
+            # keeps the routing logic in one place.
+            self.send_response(response, reply_to_channel=msg.channel,
+                               reply_to_channel_idx=msg.channel_idx)
 
     def send_announcement(self):
         """Send the periodic announcement message to the configured announce channel."""
@@ -360,58 +414,48 @@ class WeatherBot:
     # Weather data
     # ------------------------------------------------------------------
 
+    def geocode_location(self, location: str):
+        """Geocode *location* name via Open-Meteo.  Returns the first result
+        dict (with ``latitude``, ``longitude``, ``name``, etc.) or ``None``."""
+        geo_params = {"name": location, "count": 1, "language": "en", "format": "json"}
+        if self.country:
+            geo_params["country"] = self.country
+        geo = requests.get(
+            "https://geocoding-api.open-meteo.com/v1/search",
+            params=geo_params,
+            timeout=10,
+        ).json()
+        if "results" not in geo or not geo["results"]:
+            return None
+        return geo["results"][0]
+
+    def get_weather(self, lat: float, lon: float) -> dict:
+        """Fetch current weather for the given coordinates.  Returns the raw
+        Open-Meteo response dict (with a ``"current"`` key)."""
+        return requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": lat,
+                "longitude": lon,
+                "current": (
+                    "temperature_2m,apparent_temperature,"
+                    "relative_humidity_2m,precipitation,"
+                    "weather_code,wind_speed_10m,wind_direction_10m"
+                ),
+                "timezone": "auto",
+            },
+            timeout=10,
+        ).json()
+
     def _get_weather(self, location: str) -> str:
         """Fetch weather for *location* and return a formatted string."""
         try:
-            # Build geocoding params
-            geo_params = {"name": location, "count": 1, "language": "en", "format": "json"}
-            # Add country code filter if configured
-            if self.country:
-                geo_params["country"] = self.country
-            
-            geo = requests.get(
-                "https://geocoding-api.open-meteo.com/v1/search",
-                params=geo_params,
-                timeout=10,
-            ).json()
-
-            if "results" not in geo or not geo["results"]:
+            r = self.geocode_location(location)
+            if r is None:
                 return f"Location not found: {location}"
-
-            r = geo["results"][0]
-            name = r.get("name", location)
-            country = r.get("country_code", r.get("country", ""))
             lat, lon = r["latitude"], r["longitude"]
-
-            wx = requests.get(
-                "https://api.open-meteo.com/v1/forecast",
-                params={
-                    "latitude": lat,
-                    "longitude": lon,
-                    "current": (
-                        "temperature_2m,apparent_temperature,"
-                        "relative_humidity_2m,precipitation,"
-                        "weather_code,wind_speed_10m,wind_direction_10m"
-                    ),
-                    "timezone": "auto",
-                },
-                timeout=10,
-            ).json()
-
-            c = wx.get("current", {})
-            cond = WEATHER_CODES.get(c.get("weather_code", 0), f"Code {c.get('weather_code', 0)}")
-            loc_str = f"{name}, {country}" if country else name
-
-            return (
-                f"{loc_str}\n"
-                f"{cond}\n"
-                f"Temp: {c.get('temperature_2m', 'N/A')}°C "
-                f"(feels {c.get('apparent_temperature', 'N/A')}°C)\n"
-                f"Humid: {c.get('relative_humidity_2m', 'N/A')}%\n"
-                f"Wind: {c.get('wind_speed_10m', 'N/A')} km/h "
-                f"at {c.get('wind_direction_10m', 'N/A')}°\n"
-                f"Precip: {c.get('precipitation', 'N/A')} mm"
-            )
+            wx = self.get_weather(lat, lon)
+            return self.format_weather_response(r, wx)
         except Exception as e:
             return f"Weather error: {e}"
 
@@ -483,6 +527,11 @@ def main():
                         help="Enable debug output")
     parser.add_argument("-a", "--announce", action="store_true",
                         help="Send periodic announcements every 3 hours")
+    parser.add_argument("--channel",
+                        help="Comma-separated list of MeshCore hashtag channel names to listen "
+                             "and respond on (e.g. 'weather' or 'weather,alerts'). "
+                             "Binary-protocol frames without a channel name are always accepted. "
+                             "When omitted the bot responds on any channel.")
     parser.add_argument("-c", "--channel-idx", type=int,
                         help="Only respond to messages from this channel index (e.g., 1 for #weather)")
     parser.add_argument("-w", "--weather-channel-idx", type=int,
@@ -505,7 +554,8 @@ def main():
                      debug=args.debug, announce=args.announce,
                      allowed_channel_idx=allowed_idx,
                      weather_channel_idx=weather_idx,
-                     country=args.country)
+                     country=args.country,
+                     channel=args.channel)
 
     if args.location:
         print(bot._get_weather(args.location))
