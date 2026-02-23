@@ -61,13 +61,14 @@ When city names are ambiguous (like York, Paris, Birmingham), you can specify th
 ```
 wx York UK        # York, United Kingdom
 wx York USA       # York, Pennsylvania USA
-wx Paris France   # Paris, France
+wx Paris FR       # Paris, France
+wx Berlin DE      # Berlin, Germany
 ```
 
 **Supported country codes:**
 - `UK`, `GB`, or `United Kingdom` → United Kingdom
 - `USA`, `US`, or `United States` → United States
-- Any ISO-3166-1 alpha-2 country code (e.g., `FR`, `DE`, `CA`)
+- Any ISO-3166-1 alpha-2 country code (2 letters): `FR`, `DE`, `CA`, `JP`, `AU`, etc.
 
 The bot replies on the same channel with current conditions:
 
@@ -339,8 +340,8 @@ By default, the bot returns the first match from the geocoding API.
 1. **Specify country in the command (recommended):** Users can add the country directly in their weather request:
    - `wx York UK` → Returns York, United Kingdom
    - `wx York USA` → Returns York, Pennsylvania USA  
-   - `wx Paris France` → Returns Paris, France
-   - Supports: `UK`, `USA`, `US`, `GB`, or any ISO-3166-1 alpha-2 country code
+   - `wx Paris FR` → Returns Paris, France
+   - Supports: `UK`, `USA`, `US`, `GB`, or any ISO-3166-1 alpha-2 country code (2 letters)
 
 2. **Use comma-separated format:** Traditional explicit format:
    - `wx York, UK` instead of just `wx York`
