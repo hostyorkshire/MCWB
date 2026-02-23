@@ -322,10 +322,8 @@ class WeatherBot:
             channel_idx, text = self._parse_channel_message(payload)
             if channel_idx is not None:
                 self._handle_channel_message(text, channel_idx)
-            else:
-                # Message parsing failed - likely encrypted or corrupted
-                # The _parse_channel_message method already logged details
-                pass
+            # If channel_idx is None, message parsing failed (encrypted/corrupted)
+            # The _parse_channel_message method already logged diagnostic details
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG and len(payload) >= 8:
@@ -333,10 +331,8 @@ class WeatherBot:
             channel_idx, text = self._parse_channel_message(payload)
             if channel_idx is not None:
                 self._handle_channel_message(text, channel_idx)
-            else:
-                # Message parsing failed - likely encrypted or corrupted
-                # The _parse_channel_message method already logged details
-                pass
+            # If channel_idx is None, message parsing failed (encrypted/corrupted)
+            # The _parse_channel_message method already logged diagnostic details
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG_V3 and len(payload) >= 12:
