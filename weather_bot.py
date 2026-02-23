@@ -229,7 +229,8 @@ class WeatherBot:
         ts = int(time.time()).to_bytes(4, "little")
         payload = bytes([_CMD_SEND_CHAN_MSG, 0, channel_idx]) + ts + text.encode("utf-8")
         self._send_cmd(payload)
-        self._log(f"Sent on channel_idx={channel_idx}: {text}")
+        safe_text = self._sanitize_for_log(text)
+        self._log(f"Sent on channel_idx={channel_idx}: {safe_text}")
 
     def _read_frame(self):
         """Read one binary frame from serial. Returns payload bytes or None."""
@@ -425,7 +426,8 @@ class WeatherBot:
             # This matches meshcore.py's behavior in _dispatch_channel_message
             sender = _DEFAULT_SENDER
             content = text
-            self._log(f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{sender}'")
+            safe_sender_for_log = self._sanitize_for_log(sender)
+            self._log(f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{safe_sender_for_log}'")
 
         # Sanitize content for logging to prevent terminal corruption
         safe_sender = self._sanitize_for_log(sender)
@@ -438,7 +440,10 @@ class WeatherBot:
 
         location = self._parse_command(content)
         if location:
-            print(f"WX request for '{location}' from {sender}", flush=True)
+            # Sanitize sender for print output to prevent terminal corruption
+            safe_sender_print = self._sanitize_for_log(sender)
+            safe_location = self._sanitize_for_log(location)
+            print(f"WX request for '{safe_location}' from {safe_sender_print}", flush=True)
             response = self._get_weather(location)
             print(f"Response:\n{response}\n", flush=True)
             self._send_channel_msg(response, channel_idx)
