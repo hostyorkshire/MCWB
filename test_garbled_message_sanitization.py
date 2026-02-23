@@ -90,7 +90,21 @@ def test_weather_command_output_sanitization():
     
     bot = WeatherBot(port=None, debug=True)
     
+    # Mock the _get_weather method to avoid actual API calls
+    def mock_get_weather(location):
+        return f"Mock weather for {location}"
+    
+    # Mock the _send_channel_msg to avoid serial operations
+    def mock_send_channel_msg(text, channel_idx):
+        pass  # Don't actually send anything
+    
+    original_get_weather = bot._get_weather
+    original_send_channel_msg = bot._send_channel_msg
+    bot._get_weather = mock_get_weather
+    bot._send_channel_msg = mock_send_channel_msg
+    
     captured_output = io.StringIO()
+    original_stdout = sys.stdout
     sys.stdout = captured_output
     
     try:
@@ -102,6 +116,9 @@ def test_weather_command_output_sanitization():
         bot._handle_channel_message(garbled_sender_text, channel_idx)
         
         output = captured_output.getvalue()
+        
+        # Restore stdout before assertions so we can print results
+        sys.stdout = original_stdout
         
         # Verify that the sender name in the print output is sanitized
         # Look for the WX request line
@@ -119,7 +136,10 @@ def test_weather_command_output_sanitization():
         return True
         
     finally:
-        sys.stdout = sys.__stdout__
+        # Restore original methods and stdout
+        bot._get_weather = original_get_weather
+        bot._send_channel_msg = original_send_channel_msg
+        sys.stdout = original_stdout
 
 
 def test_send_message_log_sanitization():
@@ -148,8 +168,7 @@ if __name__ == "__main__":
         test_garbled_message_sanitization()
         test_garbled_sender_sanitization()
         test_send_message_log_sanitization()
-        # Skip the weather command test as it requires API calls
-        # test_weather_command_output_sanitization()
+        test_weather_command_output_sanitization()
         
         print("\n✅ All sanitization tests passed!")
         sys.exit(0)
