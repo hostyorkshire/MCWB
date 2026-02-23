@@ -63,6 +63,19 @@ The announcement message is:
 
 It is sent immediately on startup and then repeated every 3 hours on whichever channel users are active on.
 
+#### Announce on a specific channel only
+
+Use `--weather-channel-idx <N>` to pin announcements to one channel index regardless of where users are active.  
+Find `<N>` by running with `-d` (debug) and checking the `channel_idx=` value shown when a message arrives on your target channel.
+
+```bash
+# Announce only on channel index 2 (e.g. your #weather channel)
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 --announce --weather-channel-idx 2
+
+# To also restrict *responses* to that channel, add --channel-idx too:
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 --announce --weather-channel-idx 2 --channel-idx 2
+```
+
 ### What About `--channel`?
 
 The `--channel` parameter is **optional** and reserved for future features (like scheduled weather broadcasts). 
