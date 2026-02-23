@@ -278,6 +278,7 @@ class WeatherBot:
         """
         # Minimum 8 bytes required for old format header
         if len(payload) < _OLD_FORMAT_HEADER_SIZE:
+            self._log(f"Message too short ({len(payload)} bytes, need >= {_OLD_FORMAT_HEADER_SIZE})")
             return (None, None)
         
         # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
@@ -313,6 +314,7 @@ class WeatherBot:
                 text_bytes = payload[_V3_FORMAT_HEADER_SIZE:]
                 # Check if raw bytes are encrypted (mostly non-printable/control characters)
                 if not self._is_valid_message_bytes(text_bytes):
+                    self._log(f"V3 format: Message appears encrypted/garbled (channel_idx={channel_idx})")
                     return (None, None)
                 text = text_bytes.decode("utf-8", "ignore")
                 return (channel_idx, text)
@@ -322,10 +324,12 @@ class WeatherBot:
         # Validate channel_idx is in valid range (0-7)
         # Invalid indices indicate encrypted/garbled messages
         if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
+            self._log(f"Old format: Invalid channel_idx={channel_idx} (valid range: 0-{_MAX_VALID_CHANNEL_IDX})")
             return (None, None)
         text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
         # Check if raw bytes are encrypted (mostly non-printable/control characters)
         if not self._is_valid_message_bytes(text_bytes):
+            self._log(f"Old format: Message appears encrypted/garbled (channel_idx={channel_idx})")
             return (None, None)
         text = text_bytes.decode("utf-8", "ignore")
         return (channel_idx, text)
