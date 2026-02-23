@@ -285,6 +285,76 @@ def test_case_insensitive_parsing():
         return False
 
 
+def test_iso_country_codes():
+    """Test that arbitrary ISO-3166-1 alpha-2 country codes work"""
+    print("\n" + "=" * 70)
+    print("TEST: ISO Country Codes")
+    print("=" * 70)
+    
+    bot = WeatherBot(debug=False)
+    
+    test_cases = [
+        ("wx Paris FR", "Paris", "FR"),
+        ("wx Berlin DE", "Berlin", "DE"),
+        ("wx Toronto CA", "Toronto", "CA"),
+        ("wx Tokyo JP", "Tokyo", "JP"),
+        ("wx Sydney AU", "Sydney", "AU"),
+    ]
+    
+    all_passed = True
+    for input_cmd, expected_loc, expected_country in test_cases:
+        location, country = bot._parse_command(input_cmd)
+        if location == expected_loc and country == expected_country:
+            print(f"✅ '{input_cmd}' -> location='{location}', country='{country}'")
+        else:
+            print(f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country='{expected_country}', got location='{location}', country='{country}'")
+            all_passed = False
+    
+    print()
+    if all_passed:
+        print("✅ PASS: All ISO country codes parsed correctly")
+        return True
+    else:
+        print("❌ FAIL: Some ISO country codes failed")
+        return False
+
+
+def test_edge_cases():
+    """Test edge cases like cities with commas or multi-word names"""
+    print("\n" + "=" * 70)
+    print("TEST: Edge Cases")
+    print("=" * 70)
+    
+    bot = WeatherBot(debug=False)
+    
+    test_cases = [
+        # Multi-word city with country
+        ("wx New York USA", "New York", "US"),
+        ("wx Los Angeles USA", "Los Angeles", "US"),
+        ("wx Big Ben UK", "Big Ben", "GB"),
+        # Comma-separated format should NOT extract country
+        ("wx Washington, D.C.", "Washington, D.C.", None),
+        ("wx St. Louis, Missouri", "St. Louis, Missouri", None),
+    ]
+    
+    all_passed = True
+    for input_cmd, expected_loc, expected_country in test_cases:
+        location, country = bot._parse_command(input_cmd)
+        if location == expected_loc and country == expected_country:
+            print(f"✅ '{input_cmd}' -> location='{location}', country={country}")
+        else:
+            print(f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country={expected_country}, got location='{location}', country={country}")
+            all_passed = False
+    
+    print()
+    if all_passed:
+        print("✅ PASS: All edge cases handled correctly")
+        return True
+    else:
+        print("❌ FAIL: Some edge cases failed")
+        return False
+
+
 if __name__ == "__main__":
     print("\n╔════════════════════════════════════════════════════════════════════╗")
     print("║       Per-Message Country Specification Tests                     ║")
@@ -299,6 +369,8 @@ if __name__ == "__main__":
     results.append(("Weather with UK", test_weather_request_with_uk()))
     results.append(("Weather with USA override", test_weather_request_with_usa()))
     results.append(("Case insensitive", test_case_insensitive_parsing()))
+    results.append(("ISO country codes", test_iso_country_codes()))
+    results.append(("Edge cases", test_edge_cases()))
     
     print("\n" + "=" * 70)
     print("SUMMARY")

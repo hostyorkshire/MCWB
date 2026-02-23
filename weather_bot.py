@@ -493,6 +493,7 @@ class WeatherBot:
         - "wx York" -> ("York", None)
         - "wx York UK" -> ("York", "GB")
         - "wx York USA" -> ("York", "US")
+        - "wx York FR" -> ("York", "FR")
         - "wx York, UK" -> ("York, UK", None)  # Explicit format, no extraction
         """
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text.strip(), re.IGNORECASE)
@@ -501,7 +502,7 @@ class WeatherBot:
         
         location_str = m.group(1).strip()
         
-        # Country code mappings (common variations)
+        # Country code mappings (common variations that map to ISO codes)
         country_mappings = {
             'uk': 'GB',
             'gb': 'GB',
@@ -513,14 +514,27 @@ class WeatherBot:
         
         # Try to extract country from end of location string
         # Pattern: location name followed by whitespace and country name/code
-        # Only extract if it's a simple space-separated pattern (not comma-separated)
+        # Only extract if there's no comma near the end (comma-separated format)
         words = location_str.split()
-        if len(words) >= 2 and ',' not in location_str:
+        if len(words) >= 2:
+            # Check if last word could be a country code
             potential_country = words[-1].lower()
+            
+            # Check if there's a comma in the last few words (indicates comma-separated format)
+            last_few_words = ' '.join(words[-3:]) if len(words) >= 3 else ' '.join(words)
+            if ',' in last_few_words:
+                # Comma-separated format like "York, UK" - don't extract country
+                return location_str, None
+            
+            # Map common country names to ISO codes, or use as-is if already valid
             if potential_country in country_mappings:
-                # Found a country code/name at the end
-                location = ' '.join(words[:-1])
                 country = country_mappings[potential_country]
+                location = ' '.join(words[:-1])
+                return location, country
+            elif len(potential_country) == 2:
+                # Assume it's an ISO-3166-1 alpha-2 country code (2 letters)
+                country = potential_country.upper()
+                location = ' '.join(words[:-1])
                 return location, country
         
         return location_str, None
