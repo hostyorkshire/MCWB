@@ -2,32 +2,35 @@
 
 ## Summary
 
-The Weather Bot **IS correctly broadcasting to #wxtest channel** as specified.
+The Weather Bot correctly broadcasts announcements on the channel where users are active.
+
+**Note:** `#wxtest` is just an example channel name used in documentation. You can use ANY channel name you create!
 
 ## Default Configuration
 
-- **Channel**: `wxtest` (default)
+- **Channel**: Adapts to first received message (or channel 0 if no messages)
 - **Interval**: Every 3 hours (10,800 seconds)
 - **Message**: "Hello this is the WX BoT. To get a weather update simply type WX and your location."
 - **Behavior**: 
-  - Sends announcement immediately on startup
+  - Sends announcement immediately on startup (if --announce flag is used)
   - Repeats every 3 hours while running
+  - Automatically uses the channel where users send commands
 
 ## How to Start Bot
 
-### Default (broadcasts to #wxtest):
+### Default (works on all channels, announcements adapt to usage):
 ```bash
-python3 weather_bot.py -n WX_BOT --port /dev/ttyUSB1 --baud 115200 -d
+python3 weather_bot.py --port /dev/ttyUSB1 --baud 115200 -d --announce
 ```
 
-### Custom channel:
+### Specify announcement channel index (advanced):
 ```bash
-python3 weather_bot.py -n WX_BOT --port /dev/ttyUSB1 --baud 115200 -d --announce-channel mychannelname
+python3 weather_bot.py --port /dev/ttyUSB1 --baud 115200 -d --announce --weather-channel-idx 2
 ```
 
-### Disable announcements:
+### Without announcements (recommended for most users):
 ```bash
-python3 weather_bot.py -n WX_BOT --port /dev/ttyUSB1 --baud 115200 -d --announce-channel ""
+python3 weather_bot.py --port /dev/ttyUSB1 --baud 115200 -d
 ```
 
 ## Verification Output

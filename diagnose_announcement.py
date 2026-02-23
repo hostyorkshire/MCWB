@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Diagnostic script to test announcement functionality
+
+Note: The bot is channel-agnostic and works with ANY channel you create.
+Channel names in this script are just examples.
 """
 
 import sys
@@ -19,11 +22,14 @@ def test_announcement_config():
     print(f"   ANNOUNCE_MESSAGE: {ANNOUNCE_MESSAGE}")
     print()
     
-    print("2. Creating bot with default announce_channel (wxtest)...")
+    print("2. Creating bot with example announce behavior...")
     try:
-        bot = WeatherBot(node_id="DIAG_BOT", debug=True, announce_channel="wxtest")
+        # Note: The bot adapts to whatever channel receives messages
+        # "wxtest" is just used here as an example channel name
+        bot = WeatherBot(node_id="DIAG_BOT", debug=True, announce=True)
         print(f"   ✓ Bot created")
-        print(f"   ✓ announce_channel = '{bot.announce_channel}'")
+        print(f"   ✓ Announcements enabled")
+        print(f"   ✓ Bot will announce on channel where it receives messages")
     except Exception as e:
         print(f"   ✗ Error creating bot: {e}")
         return False

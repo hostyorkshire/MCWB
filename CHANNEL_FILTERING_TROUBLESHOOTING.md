@@ -43,17 +43,18 @@ sudo systemctl daemon-reload
 sudo systemctl restart weather_bot
 ```
 
-#### Issue 2: Confusion Between Announce Channel and Channel Filter
+#### Issue 2: Confusion Between Announcement Options and Channel Filter
 
 **Important:** These are TWO DIFFERENT things:
 
-1. **`--announce-channel`** (default: wxtest)
-   - Controls WHERE periodic announcements are sent
+1. **`--weather-channel-idx`** (optional, adapts automatically if not specified)
+   - Controls WHERE periodic announcements are sent (by channel index number)
    - Does NOT affect which channels the bot listens to
    - Does NOT affect where responses are sent
    - Only affects bot-initiated announcements every 3 hours
+   - If not specified, bot uses the channel where it receives messages
 
-2. **`--channel`** (default: none/disabled)
+2. **`--channel`** (default: none/disabled - accepts all channels)
    - Controls WHICH channels the bot accepts queries FROM
    - When set: Bot ONLY accepts queries from specified channel(s)
    - When NOT set: Bot accepts queries from ALL channels
@@ -61,8 +62,8 @@ sudo systemctl restart weather_bot
 
 **Example:**
 ```bash
-# This accepts queries from ALL channels, but sends announcements to wxtest
-python3 weather_bot.py --port auto --baud 115200 --announce-channel wxtest -d
+# This accepts queries from ALL channels, announcements adapt to usage
+python3 weather_bot.py --port auto --baud 115200 --announce -d
 
 # This ONLY accepts queries from 'weather' channel (and will ignore others!)
 python3 weather_bot.py --port auto --baud 115200 --channel weather -d

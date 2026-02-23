@@ -6,8 +6,8 @@
 
 In the MeshCore app, users configure channels with names like `#weather`, `#alerts`, `#news`, etc. However, the underlying LoRa protocol only supports 8 numeric channel indices (0-7):
 
-- **channel_idx 0** = Default/public channel
-- **channel_idx 1-7** = Available for named channels
+- **channel_idx 0** = Default channel (typically uses well-known PSK for broad accessibility)
+- **channel_idx 1-7** = Hashtag/named channels (each with unique encryption keys/PSKs)
 
 **The critical issue:** Different users map the same channel name to different channel_idx values depending on their join order.
 

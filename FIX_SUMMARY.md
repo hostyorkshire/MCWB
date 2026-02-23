@@ -126,8 +126,8 @@ If you need to revert to accepting messages from all channels:
 1. **Channel Mapping:**
    - Each channel name (e.g., "weather") is mapped to a channel_idx (0-7)
    - The mapping is created when `set_channel_filter()` is called
-   - channel_idx 0 is reserved for the default/public channel
-   - channel_idx 1-7 are available for named channels
+   - channel_idx 0 is the default channel (typically uses well-known PSK)
+   - channel_idx 1-7 are hashtag/named channels (each with unique encryption keys)
 
 2. **Filtering Logic:**
    ```python

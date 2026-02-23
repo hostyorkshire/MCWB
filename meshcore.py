@@ -271,7 +271,7 @@ class MeshCore:
             ValueError: If more than 7 named channels are used
         """
         if channel is None:
-            return 0  # Default/public channel
+            return 0  # Default channel (typically uses well-known PSK)
         
         # Return existing mapping or create a new one
         if channel not in self._channel_map:
@@ -298,7 +298,7 @@ class MeshCore:
             Channel name if mapped, None if channel_idx is 0 or unmapped
         """
         if channel_idx == 0:
-            return None  # Default/public channel (no specific channel name)
+            return None  # Default channel (no specific channel name)
         
         # O(1) lookup using reverse mapping dictionary
         return self._reverse_channel_map.get(channel_idx)
