@@ -1,6 +1,16 @@
 # MCWBv2 - MeshCore Weather Bot
 
-Lightweight Python3 weather bot for the MeshCore `#weather` channel.
+Lightweight Python3 weather bot for MeshCore mesh networks.
+
+## 🎯 IMPORTANT: Bot Works on ANY Channel You Create!
+
+**The bot is NOT limited to any specific channel.** It works on:
+- ✅ **ANY channel name** you create in your MeshCore app
+- ✅ **#weather**, **#wxtest**, **#forecast**, **#sensors** - whatever you want!
+- ✅ **ALL your channels simultaneously** by default
+- ✅ **Zero configuration needed** - just run it!
+
+**Note:** Examples in this documentation use channel names like `#weather` and `#wxtest`, but these are **ONLY EXAMPLES**. You should use whatever channel names make sense for YOUR mesh network!
 
 **✨ Zero Configuration Required** - The bot automatically works on any channel without needing to configure channel IDs!
 
@@ -17,12 +27,26 @@ MCWBv2 listens for weather queries and responds using the free [Open-Meteo](http
 
 ## Usage
 
-Send any of the following in the `#weather` channel:
+**Send weather commands on ANY channel you've created!** Examples:
 
+In your `#weather` channel:
 ```
 WX London
+```
+
+In your `#forecast` channel:
+```
 wx York
+```
+
+In your `#wxtest` channel:
+```
 weather Manchester
+```
+
+In YOUR custom channel (whatever name you chose):
+```
+wx [your location]
 ```
 
 The bot replies on the same channel with current conditions:
