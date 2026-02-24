@@ -132,9 +132,26 @@ python3 weather_bot.py
 
 ## Web Dashboard
 
-MCWBv2 now includes a beautiful dark-themed web interface for monitoring your bot in real-time!
+MCWBv2 includes a beautiful dark-themed web interface for monitoring your bot in real-time!
 
-### Quick Start
+### 🚀 Quick Start (Recommended for Raspberry Pi)
+
+**The easiest way to set up the dashboard:**
+
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This script will:
+- ✅ Automatically configure everything for your system
+- ✅ Configure firewall if needed
+- ✅ Start the dashboard and show you the connection URL
+- ✅ Enable auto-start on reboot
+
+The installer will display your connection URL, like: `http://192.168.1.109:5000`
+
+### Manual Start (For Testing)
 
 ```bash
 # Install Flask (already in requirements.txt)
@@ -144,15 +161,9 @@ pip install -r requirements.txt
 python3 web_dashboard.py
 ```
 
-Access the dashboard at: 
-- **Local access:** http://localhost:5000
-- **Network access:** http://[your-ip]:5000 (e.g., http://192.168.1.109:5000)
+The dashboard will display the connection URL when it starts.
 
-**Note:** By default, the dashboard binds to `0.0.0.0` (accessible on the network). To restrict access to localhost only, use:
-
-```bash
-python3 web_dashboard.py --host 127.0.0.1
-```
+**Can't connect?** See the [Troubleshooting Connection Issues](WEB_DASHBOARD.md#troubleshooting-connection-issues) section in WEB_DASHBOARD.md.
 
 ![Dark Theme Dashboard](https://github.com/user-attachments/assets/514e2c7d-0c52-4708-b0fc-ab571c9069f6)
 
@@ -164,7 +175,7 @@ python3 web_dashboard.py --host 127.0.0.1
 - 🔄 **Auto-refresh** - Updates every 10 seconds automatically
 - 📱 **Responsive** - Works on desktop, tablet, and mobile
 
-For detailed setup instructions including systemd service configuration, see [WEB_DASHBOARD.md](WEB_DASHBOARD.md).
+For detailed documentation, see [WEB_DASHBOARD.md](WEB_DASHBOARD.md).
 
 
 Or specify the port explicitly:

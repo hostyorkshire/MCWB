@@ -16,6 +16,22 @@ No `--channel` parameter needed. The bot automatically:
 
 **Important:** The bot cannot add channels for you. Use the MeshCore app to join/subscribe to channels (e.g., `#weather`, `#wxtest`) before running the bot.
 
+## Web Dashboard Setup (Optional but Recommended)
+
+Want to monitor your bot from any device on your network? Set up the web dashboard:
+
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+The installer will:
+- Configure the dashboard to start automatically on boot
+- Configure firewall if needed
+- Show you the connection URL (e.g., http://192.168.1.109:5000)
+
+**Can't connect?** See [WEB_DASHBOARD.md](WEB_DASHBOARD.md#troubleshooting-connection-issues) for help.
+
 ## Problem Solved
 
 **Before:** Bot with `--channel weather` only accepted messages from the #weather channel, causing confusion.
