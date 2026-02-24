@@ -83,7 +83,7 @@ WEATHER_CODES = {
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
-ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location."
+ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? mcwb.netlify.app"
 # Use absolute path for timestamp file to ensure it works regardless of working directory
 ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
 
