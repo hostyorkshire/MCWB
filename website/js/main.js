@@ -1,6 +1,41 @@
 // MCWB Wiki - Main JavaScript
 
+// Theme Management
+function initTheme() {
+    // Check for saved theme preference or default to 'dark'
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeButton(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeButton(newTheme);
+}
+
+function updateThemeButton(theme) {
+    const icon = document.getElementById('theme-icon');
+    const text = document.getElementById('theme-text');
+    
+    if (icon && text) {
+        if (theme === 'dark') {
+            icon.textContent = '☀️';
+            text.textContent = 'Light Mode';
+        } else {
+            icon.textContent = '🌙';
+            text.textContent = 'Dark Mode';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize theme
+    initTheme();
+    
     // Back to top button
     const backToTop = document.getElementById('backToTop');
     
