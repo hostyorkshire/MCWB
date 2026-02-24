@@ -215,7 +215,8 @@ sudo nano /etc/systemd/system/mcwb-dashboard.service
 ```ini
 [Unit]
 Description=MCWB Web Dashboard
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -235,7 +236,8 @@ WantedBy=multi-user.target
 ```ini
 [Unit]
 Description=MCWB Web Dashboard
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -301,9 +303,28 @@ sudo ufw status
 
 ### Common Issues and Fixes
 
-**Issue 1: Service Not Running**
+**Issue 1: Dashboard Not Starting After Reboot (MOST COMMON)**
 
-If `systemctl status` shows the service is not running or failed:
+If your dashboard was working before but stops working after you reboot your Pi, the service is likely starting before the network is fully online.
+
+**Symptoms:**
+- Service shows as `inactive` or `failed` after reboot
+- Dashboard was working fine before reboot
+- `curl http://localhost:5000` shows "Connection refused"
+
+**Solution:**
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This reinstalls the service with the correct network timing configuration, ensuring the dashboard waits for the network to be fully online before starting.
+
+**What changed:** The updated service uses `After=network-online.target` (waits for network to be online) instead of `After=network.target` (only waits for network subsystem initialization).
+
+**Issue 2: Service Not Running (Other Causes)**
+
+If `systemctl status` shows the service is not running or failed for reasons other than reboot:
 
 ```bash
 # Solution: Reinstall with the automated installer
@@ -313,7 +334,7 @@ cd ~/MCWB
 
 This fixes username/path mismatches automatically.
 
-**Issue 2: Firewall Blocking Port 5000**
+**Issue 3: Firewall Blocking Port 5000**
 
 If `ufw status` shows port 5000 is not allowed:
 
@@ -322,7 +343,7 @@ If `ufw status` shows port 5000 is not allowed:
 sudo ufw allow 5000/tcp
 ```
 
-**Issue 3: Wrong IP Address**
+**Issue 4: Wrong IP Address**
 
 Your IP address may have changed. Check with:
 
@@ -336,7 +357,7 @@ hostname -I | awk '{print $1}'
 
 **💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL. This is especially useful for website integration!
 
-**Issue 4: Service Running but Can't Connect**
+**Issue 5: Service Running but Can't Connect**
 
 If the service is running and `curl http://localhost:5000` works but you can't connect from another device:
 
@@ -361,7 +382,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart mcwb-dashboard
 ```
 
-**Issue 5: Still Can't Connect After All Above Steps**
+**Issue 6: Still Can't Connect After All Above Steps**
 
 Try a complete reset:
 
