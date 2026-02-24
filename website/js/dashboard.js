@@ -2,16 +2,145 @@
 
 let autoRefreshEnabled = true;
 let refreshInterval = null;
+let dashboardUrl = null;
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    updateDashboard();
+    detectDashboardUrl();
     setupAutoRefresh();
-    initializeLineChart();
 });
 
-// Update dashboard with demo data
-function updateDashboard() {
+// Detect dashboard URL
+async function detectDashboardUrl() {
+    // Try common dashboard URLs
+    const urls = [
+        'http://localhost:5000',
+        'http://127.0.0.1:5000',
+        `${window.location.protocol}//${window.location.hostname}:5000`
+    ];
+    
+    for (const url of urls) {
+        try {
+            const response = await fetch(`${url}/api/stats`, { 
+                method: 'GET',
+                mode: 'cors',
+                signal: AbortSignal.timeout(2000) // 2 second timeout
+            });
+            if (response.ok) {
+                dashboardUrl = url;
+                console.log('Dashboard found at:', url);
+                showLiveDataInfo(url);
+                await updateDashboard();
+                return;
+            }
+        } catch (error) {
+            // Try next URL
+            continue;
+        }
+    }
+    
+    // No dashboard found, show demo mode
+    console.warn('Dashboard API not found. Showing demo mode.');
+    showDemoMode();
+}
+
+// Show live data info banner
+function showLiveDataInfo(url) {
+    const demoWarning = document.getElementById('demoModeWarning');
+    const liveInfo = document.getElementById('liveDataInfo');
+    const connectedUrl = document.getElementById('connectedUrl');
+    
+    if (demoWarning) {
+        demoWarning.style.display = 'none';
+    }
+    if (liveInfo) {
+        liveInfo.style.display = 'block';
+    }
+    if (connectedUrl) {
+        connectedUrl.textContent = url;
+    }
+}
+
+// Update dashboard with real data from API
+async function updateDashboard() {
+    if (!dashboardUrl) {
+        showDemoMode();
+        return;
+    }
+    
+    try {
+        // Fetch stats data
+        const [statsRes, hourlyRes, locationsRes] = await Promise.all([
+            fetch(`${dashboardUrl}/api/stats`),
+            fetch(`${dashboardUrl}/api/stats/hourly`),
+            fetch(`${dashboardUrl}/api/stats/locations`)
+        ]);
+        
+        if (!statsRes.ok || !hourlyRes.ok || !locationsRes.ok) {
+            throw new Error('Failed to fetch dashboard data');
+        }
+        
+        const stats = await statsRes.json();
+        const hourly = await hourlyRes.json();
+        const locations = await locationsRes.json();
+        
+        // Update status indicator
+        const statusSpan = document.querySelector('#botStatus');
+        if (statusSpan) {
+            statusSpan.textContent = stats.total_requests > 0 ? 'Online' : 'Idle';
+        }
+        
+        // Calculate today's requests from hourly data
+        const today = new Date().toISOString().split('T')[0];
+        const todayRequests = hourly
+            .filter(item => item.hour.startsWith(today))
+            .reduce((sum, item) => sum + item.count, 0);
+        
+        // Update stat displays
+        document.getElementById('requestsToday').textContent = todayRequests;
+        
+        // Calculate active channels (estimate from top locations)
+        const activeChannels = Math.min(locations.length, 6); // Reasonable estimate
+        document.getElementById('activeChannels').textContent = activeChannels;
+        
+        // Calculate uptime based on last update
+        if (stats.last_updated) {
+            const lastUpdate = new Date(stats.last_updated);
+            const now = new Date();
+            const MILLISECONDS_PER_HOUR = 3600000;
+            const diffHours = Math.abs(now - lastUpdate) / MILLISECONDS_PER_HOUR;
+            document.getElementById('uptime').textContent = diffHours.toFixed(1);
+        } else {
+            document.getElementById('uptime').textContent = '--';
+        }
+        
+        // Update last update time
+        const now = new Date();
+        document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        
+        // Update charts
+        updateUsageChart(hourly);
+        updateLocationsChart(locations);
+        
+        console.log('Dashboard updated at', now);
+    } catch (error) {
+        console.error('Error updating dashboard:', error);
+        showDemoMode();
+    }
+}
+
+// Show demo mode with fake data
+function showDemoMode() {
+    // Show demo warning, hide live info
+    const demoWarning = document.getElementById('demoModeWarning');
+    const liveInfo = document.getElementById('liveDataInfo');
+    if (demoWarning) {
+        demoWarning.style.display = 'block';
+    }
+    if (liveInfo) {
+        liveInfo.style.display = 'none';
+    }
+    
     // Update stats with random demo data
     document.getElementById('requestsToday').textContent = Math.floor(Math.random() * 50) + 20;
     document.getElementById('activeChannels').textContent = Math.floor(Math.random() * 4) + 2;
@@ -21,10 +150,74 @@ function updateDashboard() {
     const now = new Date();
     document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
     
-    console.log('Dashboard updated at', now);
+    // Show demo charts
+    initializeLineChart();
+    
+    console.log('Dashboard in demo mode at', now);
 }
 
-// Initialize line chart
+// Update usage chart with real hourly data
+function updateUsageChart(hourlyData) {
+    if (!hourlyData || hourlyData.length === 0) {
+        initializeLineChart(); // Fallback to demo
+        return;
+    }
+    
+    // Take last 12 hours of data
+    const last12Hours = hourlyData.slice(-12);
+    const data = last12Hours.map(item => item.count);
+    
+    updateLineChart(data);
+}
+
+// Update locations bar chart with real data
+function updateLocationsChart(locationsData) {
+    const locationsChart = document.getElementById('locationsChart');
+    if (!locationsChart) return;
+    
+    if (!locationsData || locationsData.length === 0) {
+        return; // Keep demo bars
+    }
+    
+    // Take top 6 locations
+    const topLocations = locationsData.slice(0, 6);
+    
+    // Find max count for scaling
+    const maxCount = Math.max(...topLocations.map(loc => loc.count));
+    
+    // Clear chart safely
+    while (locationsChart.firstChild) {
+        locationsChart.removeChild(locationsChart.firstChild);
+    }
+    
+    topLocations.forEach(location => {
+        const container = document.createElement('div');
+        container.style.flex = '1';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.alignItems = 'center';
+        
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        const height = (location.count / maxCount) * 80; // Scale to 80% max
+        bar.style.height = height + '%';
+        
+        const value = document.createElement('span');
+        value.className = 'bar-value';
+        value.textContent = location.count;
+        bar.appendChild(value);
+        
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = location.location;
+        
+        container.appendChild(bar);
+        container.appendChild(label);
+        locationsChart.appendChild(container);
+    });
+}
+
+// Initialize line chart with demo data
 function initializeLineChart() {
     const svg = document.querySelector('#usageChart svg');
     if (!svg) return;
@@ -110,8 +303,11 @@ function stopAutoRefresh() {
 
 // Manual refresh
 function refreshDashboard() {
-    updateDashboard();
-    updateCharts();
+    if (dashboardUrl) {
+        updateDashboard();
+    } else {
+        detectDashboardUrl();
+    }
     
     // Visual feedback
     const btn = document.querySelector('.refresh-btn');
@@ -122,40 +318,58 @@ function refreshDashboard() {
     }, 1000);
 }
 
-// Update charts with new data
+// Update charts with new data (called from auto-refresh in demo mode)
 function updateCharts() {
-    // Generate new data
-    const newData = [];
-    for (let i = 0; i < 12; i++) {
-        newData.push(Math.floor(Math.random() * 8) + 1);
-    }
-    updateLineChart(newData);
-    
-    // Update bar chart heights randomly for demo
-    const bars = document.querySelectorAll('.bar');
-    bars.forEach((bar, index) => {
-        const newHeight = Math.floor(Math.random() * 30) + 20;
-        const newValue = Math.floor(newHeight / 5);
-        bar.style.height = newHeight + '%';
-        const valueSpan = bar.querySelector('.bar-value');
-        if (valueSpan) {
-            valueSpan.textContent = newValue;
+    if (dashboardUrl) {
+        updateDashboard(); // Fetch real data
+    } else {
+        // Generate new demo data
+        const newData = [];
+        for (let i = 0; i < 12; i++) {
+            newData.push(Math.floor(Math.random() * 8) + 1);
         }
-    });
+        updateLineChart(newData);
+        
+        // Update bar chart heights randomly for demo
+        const bars = document.querySelectorAll('.bar');
+        bars.forEach((bar, index) => {
+            const newHeight = Math.floor(Math.random() * 30) + 20;
+            const newValue = Math.floor(newHeight / 5);
+            bar.style.height = newHeight + '%';
+            const valueSpan = bar.querySelector('.bar-value');
+            if (valueSpan) {
+                valueSpan.textContent = newValue;
+            }
+        });
+    }
 }
 
-// Simulate adding log entries (in real implementation, fetch from API)
+// Simulate adding log entries (demo mode only)
 function addLogEntry(timestamp, level, message) {
     const logContainer = document.getElementById('requestLog');
     if (!logContainer) return;
     
     const entry = document.createElement('div');
     entry.className = 'log-entry';
-    entry.innerHTML = `
-        <span class="log-timestamp">[${timestamp}]</span>
-        <span class="log-level-${level}">${level}</span>
-        <span class="log-content">${message}</span>
-    `;
+    
+    // Create child elements safely
+    const timestampSpan = document.createElement('span');
+    timestampSpan.className = 'log-timestamp';
+    timestampSpan.textContent = `[${timestamp}]`;
+    
+    const levelSpan = document.createElement('span');
+    levelSpan.className = `log-level-${level}`;
+    levelSpan.textContent = level;
+    
+    const contentSpan = document.createElement('span');
+    contentSpan.className = 'log-content';
+    contentSpan.textContent = message;
+    
+    entry.appendChild(timestampSpan);
+    entry.appendChild(document.createTextNode(' '));
+    entry.appendChild(levelSpan);
+    entry.appendChild(document.createTextNode(' '));
+    entry.appendChild(contentSpan);
     
     // Add to top
     logContainer.insertBefore(entry, logContainer.firstChild);
@@ -166,15 +380,17 @@ function addLogEntry(timestamp, level, message) {
     }
 }
 
-// Demo: Simulate log updates every 30 seconds
+// Demo: Simulate log updates every 30 seconds (only in demo mode)
 setInterval(function() {
-    const now = new Date();
-    const timestamp = now.toLocaleTimeString();
-    const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
-    const city = cities[Math.floor(Math.random() * cities.length)];
-    const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
-    const user = users[Math.floor(Math.random() * users.length)];
-    
-    addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
+    if (!dashboardUrl) {  // Only in demo mode
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
+        const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
+        const user = users[Math.floor(Math.random() * users.length)];
+        
+        addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
+    }
 }, 30000);
 

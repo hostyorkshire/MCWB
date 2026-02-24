@@ -12,6 +12,7 @@ import time
 import threading
 import argparse
 import os
+from pathlib import Path
 
 from meshcore import MeshCore, MeshCoreMessage
 from logging_config import get_weather_bot_logger, log_startup_info, log_exception
@@ -83,7 +84,8 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location."
-ANNOUNCE_TIMESTAMP_FILE = "logs/.last_announce"  # File to persist last announcement timestamp
+# Use absolute path for timestamp file to ensure it works regardless of working directory
+ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
 
 
 class WeatherBot:
@@ -614,7 +616,7 @@ class WeatherBot:
     def _get_last_announce_time(self):
         """Read the last announcement timestamp from file. Returns 0 if file doesn't exist."""
         try:
-            if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
+            if ANNOUNCE_TIMESTAMP_FILE.exists():
                 with open(ANNOUNCE_TIMESTAMP_FILE, 'r') as f:
                     return float(f.read().strip())
         except (IOError, ValueError) as e:
@@ -625,9 +627,12 @@ class WeatherBot:
         """Save the last announcement timestamp to file."""
         try:
             # Ensure logs directory exists
-            os.makedirs(os.path.dirname(ANNOUNCE_TIMESTAMP_FILE), exist_ok=True)
+            ANNOUNCE_TIMESTAMP_FILE.parent.mkdir(parents=True, exist_ok=True)
             with open(ANNOUNCE_TIMESTAMP_FILE, 'w') as f:
                 f.write(str(timestamp))
+                f.flush()  # Explicitly flush to ensure data is written
+                os.fsync(f.fileno())  # Force write to disk
+            self._log(f"Saved last announcement time to {ANNOUNCE_TIMESTAMP_FILE}")
         except IOError as e:
             self._log(f"Could not save last announce time: {e}")
 
@@ -767,6 +772,13 @@ class WeatherBot:
         # Check if we should announce on startup
         last_announce = self._get_last_announce_time()
         current_time = time.time()
+        
+        if last_announce > 0:
+            hours_since = (current_time - last_announce) / 3600
+            self._log(f"Last announcement was {hours_since:.2f} hours ago (file: {ANNOUNCE_TIMESTAMP_FILE})")
+        else:
+            self._log(f"No previous announcement found (file: {ANNOUNCE_TIMESTAMP_FILE})")
+        
         # Add 1 to ensure first startup always announces (when last_announce == 0)
         time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
         
