@@ -587,7 +587,11 @@ class WeatherBot:
         cond = WEATHER_CODES.get(weather_code, f"Code {weather_code}")
         
         # Build greeting if sender is provided
-        greeting = f"hi @{sender}\n" if sender else ""
+        greeting = ""
+        if sender:
+            # Sanitize sender to prevent injection of newlines or control characters
+            safe_sender = self._sanitize_for_log(sender).replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+            greeting = f"hi @{safe_sender}\n"
         
         return (
             f"{greeting}"
