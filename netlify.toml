@@ -1,0 +1,22 @@
+# Netlify Configuration
+# This file configures automatic deployment to Netlify when changes are pushed to GitHub
+
+[build]
+  # The website directory contains all the static HTML/CSS/JS files
+  # No build command needed as this is a pure static site
+  publish = "website"
+
+# Redirect rules (optional)
+# Uncomment if you want to enable redirects
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+
+# Headers for security (optional but recommended)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

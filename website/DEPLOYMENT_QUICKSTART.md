@@ -17,12 +17,25 @@
    - URL: `https://hostyorkshire.github.io/MCWB/`
    - Updates automatically on git push!
 
-### Option 2: Netlify (Instant Deployment)
+### Option 2: Netlify (Automatic Deployment from GitHub)
 
-**Drag & Drop:**
+**Connect GitHub Repository (Recommended - Auto-deploys on commit!):**
+1. Go to: https://app.netlify.com/
+2. Click "Add new site" → "Import an existing project"
+3. Choose "Deploy with GitHub"
+4. Authorize Netlify to access your GitHub account
+5. Select the `hostyorkshire/MCWB` repository
+6. Configure build settings (should auto-detect from netlify.toml):
+   - Base directory: (leave empty)
+   - Build command: (leave empty)
+   - Publish directory: `website`
+7. Click "Deploy site"
+8. Your site is live and will automatically update on every git push!
+
+**Drag & Drop (Manual deployment - no auto-updates):**
 1. Go to: https://app.netlify.com/drop
 2. Drag the entire `website` folder
-3. Your site is live instantly!
+3. Your site is live instantly! (Note: You'll need to manually redeploy for updates)
 
 **CLI Deployment:**
 ```bash
