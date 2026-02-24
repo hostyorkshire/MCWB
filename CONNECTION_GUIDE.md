@@ -95,6 +95,8 @@ hostname -I
 
 Use the first IP address shown (e.g., `192.168.1.109`) in your browser.
 
+**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL (e.g., `http://192.168.1.109:5000`). This also makes the website integration more stable!
+
 ### Check 5: Are You on the Same Network?
 
 The device you're connecting from (laptop/phone) must be on the **same local network** as the Raspberry Pi.

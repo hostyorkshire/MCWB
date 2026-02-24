@@ -323,6 +323,8 @@ hostname -I | awk '{print $1}'
 # Example: http://192.168.1.109:5000
 ```
 
+**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL. This is especially useful for website integration!
+
 **Issue 4: Service Running but Can't Connect**
 
 If the service is running and `curl http://localhost:5000` works but you can't connect from another device:
