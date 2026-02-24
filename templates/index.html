@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCWB Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
             /* Light mode colors */
@@ -346,6 +345,111 @@
             max-height: 300px;
         }
 
+        /* CSS-based chart styles */
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-label {
+            min-width: 100px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: right;
+        }
+
+        .bar-container {
+            flex: 1;
+            background: var(--log-bg);
+            border-radius: 4px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #34d399);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .bar-value {
+            color: white;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .line-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 200px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .line-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--accent-color), #34d399);
+            border-radius: 4px 4px 0 0;
+            min-height: 2px;
+            position: relative;
+            transition: height 0.5s ease;
+        }
+
+        .line-bar:hover {
+            opacity: 0.8;
+        }
+
+        .line-bar-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .line-bar:hover .line-bar-tooltip {
+            opacity: 1;
+        }
+
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: var(--text-secondary);
+            font-size: 0.85em;
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 10px;
@@ -439,17 +543,19 @@
             <div class="charts-grid">
                 <div class="chart-card">
                     <h3 class="chart-title">📈 Requests Over Time (24 Hours)</h3>
-                    <canvas id="hourly-chart"></canvas>
+                    <div id="hourly-chart" class="line-chart"></div>
+                    <div id="hourly-labels" class="chart-labels"></div>
                 </div>
                 <div class="chart-card">
                     <h3 class="chart-title">📊 Top Locations</h3>
-                    <canvas id="locations-chart"></canvas>
+                    <div id="locations-chart" class="bar-chart"></div>
                 </div>
             </div>
 
             <div class="chart-card">
                 <h3 class="chart-title">📅 Daily Requests (7 Days)</h3>
-                <canvas id="daily-chart"></canvas>
+                <div id="daily-chart" class="line-chart"></div>
+                <div id="daily-labels" class="chart-labels"></div>
             </div>
         </div>
 
@@ -495,13 +601,7 @@
             localStorage.setItem('theme', newTheme);
             updateThemeButton(newTheme);
             
-            // Refresh charts to update colors
-            if (hourlyChart) hourlyChart.destroy();
-            if (dailyChart) dailyChart.destroy();
-            if (locationsChart) locationsChart.destroy();
-            hourlyChart = null;
-            dailyChart = null;
-            locationsChart = null;
+            // Refresh stats to update chart colors
             loadStats();
         }
 
@@ -634,33 +734,6 @@
             }, 10000); // Refresh every 10 seconds
         }
 
-        function startAutoRefresh() {
-            autoRefreshInterval = setInterval(() => {
-                loadStatus();
-                loadStats();
-                loadLog(currentLog);
-            }, 10000); // Refresh every 10 seconds
-        }
-
-        // Chart instances
-        let hourlyChart = null;
-        let dailyChart = null;
-        let locationsChart = null;
-
-        // Get chart colors based on theme
-        function getChartColors() {
-            const theme = document.documentElement.getAttribute('data-theme');
-            const isDark = theme === 'dark';
-            
-            return {
-                primary: '#60a5fa',
-                secondary: '#34d399',
-                error: '#f87171',
-                text: isDark ? '#e2e8f0' : '#1e293b',
-                grid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-            };
-        }
-
         // Load and update statistics
         async function loadStats() {
             try {
@@ -694,215 +767,108 @@
                 // Load hourly data
                 const hourlyResponse = await fetch('/api/stats/hourly');
                 const hourlyData = await hourlyResponse.json();
-                updateHourlyChart(hourlyData);
+                renderLineChart('hourly-chart', 'hourly-labels', hourlyData, 'hour');
                 
                 // Load daily data
                 const dailyResponse = await fetch('/api/stats/daily');
                 const dailyData = await dailyResponse.json();
-                updateDailyChart(dailyData);
+                renderLineChart('daily-chart', 'daily-labels', dailyData, 'date');
                 
                 // Load locations data
                 const locationsResponse = await fetch('/api/stats/locations');
                 const locationsData = await locationsResponse.json();
-                updateLocationsChart(locationsData);
+                renderBarChart('locations-chart', locationsData);
                 
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
         }
 
-        function updateHourlyChart(data) {
-            const colors = getChartColors();
-            const ctx = document.getElementById('hourly-chart').getContext('2d');
+        function renderLineChart(chartId, labelsId, data, timeKey) {
+            const chartDiv = document.getElementById(chartId);
+            const labelsDiv = document.getElementById(labelsId);
             
-            const labels = data.map(d => {
-                const date = new Date(d.hour);
-                return date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-            });
-            const values = data.map(d => d.count);
-            
-            if (hourlyChart) {
-                hourlyChart.data.labels = labels;
-                hourlyChart.data.datasets[0].data = values;
-                hourlyChart.data.datasets[0].borderColor = colors.primary;
-                hourlyChart.data.datasets[0].backgroundColor = colors.primary + '20';
-                hourlyChart.options.scales.x.ticks.color = colors.text;
-                hourlyChart.options.scales.y.ticks.color = colors.text;
-                hourlyChart.options.scales.x.grid.color = colors.grid;
-                hourlyChart.options.scales.y.grid.color = colors.grid;
-                hourlyChart.options.plugins.legend.labels.color = colors.text;
-                hourlyChart.update();
-            } else {
-                hourlyChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Requests',
-                            data: values,
-                            borderColor: colors.primary,
-                            backgroundColor: colors.primary + '20',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: colors.text
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                ticks: { color: colors.text },
-                                grid: { color: colors.grid }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                ticks: { 
-                                    color: colors.text,
-                                    stepSize: 1
-                                },
-                                grid: { color: colors.grid }
-                            }
-                        }
-                    }
-                });
+            if (!data || data.length === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No data available</div>';
+                labelsDiv.innerHTML = '';
+                return;
             }
+            
+            // Find max value for scaling
+            const maxValue = Math.max(...data.map(d => d.count), 1);
+            
+            // Create bars
+            chartDiv.innerHTML = '';
+            data.forEach((item, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'line-bar';
+                const height = (item.count / maxValue) * 100;
+                bar.style.height = height + '%';
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'line-bar-tooltip';
+                tooltip.textContent = item.count + ' requests';
+                bar.appendChild(tooltip);
+                
+                chartDiv.appendChild(bar);
+            });
+            
+            // Create labels (show every few items to avoid clutter)
+            labelsDiv.innerHTML = '';
+            const step = Math.ceil(data.length / 6); // Show ~6 labels
+            data.forEach((item, index) => {
+                if (index % step === 0 || index === data.length - 1) {
+                    const label = document.createElement('span');
+                    const date = new Date(item[timeKey]);
+                    if (timeKey === 'hour') {
+                        label.textContent = date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+                    } else {
+                        label.textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+                    labelsDiv.appendChild(label);
+                }
+            });
         }
 
-        function updateDailyChart(data) {
-            const colors = getChartColors();
-            const ctx = document.getElementById('daily-chart').getContext('2d');
+        function renderBarChart(chartId, data) {
+            const chartDiv = document.getElementById(chartId);
             
-            const labels = data.map(d => {
-                const date = new Date(d.date);
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            if (!data || data.length === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No data available</div>';
+                return;
+            }
+            
+            // Find max value for scaling
+            const maxValue = Math.max(...data.map(d => d.count), 1);
+            
+            // Create bars
+            chartDiv.innerHTML = '';
+            data.forEach(item => {
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+                
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = item.location;
+                
+                const container = document.createElement('div');
+                container.className = 'bar-container';
+                
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                const width = (item.count / maxValue) * 100;
+                fill.style.width = width + '%';
+                
+                const value = document.createElement('span');
+                value.className = 'bar-value';
+                value.textContent = item.count;
+                fill.appendChild(value);
+                
+                container.appendChild(fill);
+                barItem.appendChild(label);
+                barItem.appendChild(container);
+                chartDiv.appendChild(barItem);
             });
-            const values = data.map(d => d.count);
-            
-            if (dailyChart) {
-                dailyChart.data.labels = labels;
-                dailyChart.data.datasets[0].data = values;
-                dailyChart.data.datasets[0].backgroundColor = colors.primary;
-                dailyChart.options.scales.x.ticks.color = colors.text;
-                dailyChart.options.scales.y.ticks.color = colors.text;
-                dailyChart.options.scales.x.grid.color = colors.grid;
-                dailyChart.options.scales.y.grid.color = colors.grid;
-                dailyChart.options.plugins.legend.labels.color = colors.text;
-                dailyChart.update();
-            } else {
-                dailyChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Daily Requests',
-                            data: values,
-                            backgroundColor: colors.primary
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: colors.text
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                ticks: { color: colors.text },
-                                grid: { color: colors.grid }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                ticks: { 
-                                    color: colors.text,
-                                    stepSize: 1
-                                },
-                                grid: { color: colors.grid }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function updateLocationsChart(data) {
-            const colors = getChartColors();
-            const ctx = document.getElementById('locations-chart').getContext('2d');
-            
-            const labels = data.map(d => d.location);
-            const values = data.map(d => d.count);
-            
-            // Generate colors for each location
-            const backgroundColors = [
-                '#60a5fa',
-                '#34d399',
-                '#fbbf24',
-                '#f87171',
-                '#a78bfa',
-                '#fb923c',
-                '#22d3ee',
-                '#f472b6',
-                '#84cc16',
-                '#f97316'
-            ];
-            
-            if (locationsChart) {
-                locationsChart.data.labels = labels;
-                locationsChart.data.datasets[0].data = values;
-                locationsChart.data.datasets[0].backgroundColor = backgroundColors.slice(0, labels.length);
-                locationsChart.options.scales.x.ticks.color = colors.text;
-                locationsChart.options.scales.y.ticks.color = colors.text;
-                locationsChart.options.scales.x.grid.color = colors.grid;
-                locationsChart.options.scales.y.grid.color = colors.grid;
-                locationsChart.options.plugins.legend.labels.color = colors.text;
-                locationsChart.update();
-            } else {
-                locationsChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Requests',
-                            data: values,
-                            backgroundColor: backgroundColors.slice(0, labels.length)
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        indexAxis: 'y',
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                ticks: { 
-                                    color: colors.text,
-                                    stepSize: 1
-                                },
-                                grid: { color: colors.grid }
-                            },
-                            y: {
-                                ticks: { color: colors.text },
-                                grid: { color: colors.grid }
-                            }
-                        }
-                    }
-                });
-            }
         }
 
         function formatBytes(bytes) {
