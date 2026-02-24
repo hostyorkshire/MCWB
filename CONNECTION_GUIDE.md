@@ -2,6 +2,29 @@
 
 **Can't connect to your Web Dashboard?** This guide will get you connected in 5 minutes.
 
+## 🎛️ NEW: Unified Service Manager
+
+**The easiest way to set up everything:**
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+Choose option **2** (Install Web Dashboard) or **3** (Install BOTH services).
+
+The menu will:
+- ✅ Guide you through installation
+- ✅ Configure firewall if needed
+- ✅ Show you the connection URL
+- ✅ Start services automatically
+
+---
+
+## Alternative: Direct Installation
+
+If you prefer to use the installation script directly:
+
 ## Step 1: Install the Dashboard Service
 
 Open a terminal on your Raspberry Pi and run:

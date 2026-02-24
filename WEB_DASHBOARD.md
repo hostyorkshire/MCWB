@@ -4,7 +4,18 @@ A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time
 
 ## 🚀 Super Quick Start (3 Simple Steps)
 
-**Can't connect to your dashboard?** Follow these 3 steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
+**Can't connect to your dashboard?** Follow these steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
+
+### Method 1: Unified Service Manager (Easiest!)
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+Choose option **2** (Install Web Dashboard) or **3** (Install BOTH services). The interactive menu will guide you through the setup!
+
+### Method 2: Direct Installation Script
 
 ### Step 1: Install and Start the Dashboard
 

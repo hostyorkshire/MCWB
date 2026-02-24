@@ -198,6 +198,26 @@ cd MCWB
 pip install -r requirements.txt
 ```
 
+### 🎛️ Unified Service Manager (Raspberry Pi)
+
+**NEW: One menu for all services!** Manage weather bot and web dashboard from a single interactive menu:
+
+```bash
+./setup_mcwb.sh
+```
+
+This unified menu lets you:
+- ✅ Install weather bot and/or dashboard services
+- ✅ Check service status
+- ✅ Start/stop/restart services
+- ✅ View logs
+- ✅ Configure firewall
+- ✅ Uninstall services
+
+**Perfect for Raspberry Pi users** - No need to remember multiple scripts!
+
+> **Note:** Individual installation scripts (`install_service.sh`, `install_dashboard_service.sh`) still work if you prefer to use them directly.
+
 ## Running the bot
 
 ```bash

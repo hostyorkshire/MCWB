@@ -1,6 +1,28 @@
 # Quick Start Guide
 
-## TL;DR
+## 🎛️ NEW: One Menu for Everything!
+
+**Simplest way to set up everything on Raspberry Pi:**
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+This interactive menu lets you:
+- Install weather bot service
+- Install web dashboard service  
+- Install BOTH at once (recommended)
+- Manage services (start/stop/restart)
+- View logs
+- Configure firewall
+- And more!
+
+**No need to remember multiple scripts** - just run one command!
+
+---
+
+## TL;DR - Manual Setup
 
 **⚠️ FIRST:** Configure channels on your radio using the MeshCore app BEFORE starting the bot!
 
