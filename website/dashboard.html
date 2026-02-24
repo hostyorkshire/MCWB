@@ -240,6 +240,18 @@
                 <pre><code>python3 web_dashboard.py --host 0.0.0.0</code></pre>
                 <p style="margin-bottom: 0;">Access at: <code>http://localhost:5000</code></p>
                 <p style="margin-top: 0.5rem; font-size: 0.9em;">The dashboard will automatically detect and connect to the API if it's running on localhost:5000.</p>
+                
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h4 style="margin-top: 0; color: var(--accent-primary); font-size: 1rem;">Configure Custom API URL</h4>
+                    <p style="font-size: 0.9em; margin-bottom: 0.5rem;">If your dashboard is running on a different device (e.g., Raspberry Pi), enter its URL below:</p>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" id="customApiUrl" placeholder="http://192.168.1.109:5000" 
+                            style="flex: 1; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; font-size: 0.9rem;">
+                        <button onclick="setCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--accent-primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;">Connect</button>
+                        <button onclick="clearCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear</button>
+                    </div>
+                    <p style="font-size: 0.85em; margin-top: 0.5rem; color: var(--text-muted);">Example: <code>http://192.168.1.109:5000</code> or <code>http://raspberrypi.local:5000</code></p>
+                </div>
             </div>
             
             <div class="info-box success" id="liveDataInfo" style="display: none;">

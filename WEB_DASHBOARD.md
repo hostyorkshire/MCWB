@@ -9,6 +9,7 @@ A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time
 - 📝 **Log Viewer** - View and filter bot logs with color-coded entries
 - 🔄 **Auto-refresh** - Automatically updates every 10 seconds
 - 📱 **Responsive** - Works on desktop, tablet, and mobile devices
+- 🌐 **Remote Access** - Configure custom API URL to connect from any device
 
 ## Quick Start
 
@@ -73,6 +74,45 @@ python3 web_dashboard.py --help
   - 🟡 Yellow - WARNING messages
   - 🔵 Blue - INFO messages
   - ⚪ White - Other messages
+
+## Remote Access and Static Website Integration
+
+The MCWB project includes a static documentation website (in the `website/` folder) that includes a Live Dashboard page. This page can connect to your running Web Dashboard API to display real-time data.
+
+### Accessing Dashboard from Static Website
+
+When you deploy the static website (e.g., to Netlify, GitHub Pages, etc.), the Live Dashboard page will show demo data by default. To connect it to your real Raspberry Pi dashboard:
+
+**Option 1: Configure via UI**
+1. Navigate to the Live Dashboard page on your static website
+2. Look for the "Configure Custom API URL" section in the demo mode warning
+3. Enter your Raspberry Pi's IP address and port, e.g., `http://192.168.1.109:5000`
+4. Click "Connect"
+5. The URL is saved in your browser and will be remembered
+
+**Option 2: Share Direct Link**
+You can share a direct link with the API URL as a parameter:
+```
+https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.109:5000
+```
+
+### Network Requirements
+
+For remote access to work:
+1. The Web Dashboard must be running with network access enabled:
+   ```bash
+   python3 web_dashboard.py --host 0.0.0.0
+   ```
+2. Your browser must be able to reach the Raspberry Pi (same local network)
+3. If accessing from outside your network, you'll need to set up port forwarding on your router
+4. CORS is already enabled in the Web Dashboard to allow cross-origin requests
+
+### Security Considerations
+
+- The default setup allows network access without authentication
+- Only use on trusted networks (home/private networks)
+- For public access, consider adding authentication or using a VPN
+- See the [Security Notes](#security-notes) section for more information
 
 ## Running on Raspberry Pi
 

@@ -6,18 +6,90 @@ let dashboardUrl = null;
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', function() {
+    loadCustomApiUrlFromStorage();
     detectDashboardUrl();
     setupAutoRefresh();
 });
 
+// Load custom API URL from localStorage or URL parameter
+function loadCustomApiUrlFromStorage() {
+    // Check URL parameter first
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiUrlParam = urlParams.get('apiUrl');
+    if (apiUrlParam) {
+        localStorage.setItem('customDashboardApiUrl', apiUrlParam);
+        const input = document.getElementById('customApiUrl');
+        if (input) input.value = apiUrlParam;
+    }
+    
+    // Load from localStorage
+    const savedUrl = localStorage.getItem('customDashboardApiUrl');
+    if (savedUrl) {
+        const input = document.getElementById('customApiUrl');
+        if (input) input.value = savedUrl;
+    }
+}
+
+// Set custom API URL
+function setCustomApiUrl() {
+    const input = document.getElementById('customApiUrl');
+    if (!input) return;
+    
+    let url = input.value.trim();
+    if (!url) {
+        alert('Please enter a valid URL');
+        return;
+    }
+    
+    // Validate and normalize URL
+    // Note: Default to http:// for local network access (Raspberry Pi typically doesn't have SSL)
+    // Users can explicitly specify https:// if they have SSL configured
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'http://' + url;
+    }
+    
+    // Remove trailing slash
+    url = url.replace(/\/$/, '');
+    
+    // Save to localStorage
+    localStorage.setItem('customDashboardApiUrl', url);
+    input.value = url;
+    
+    // Try to connect
+    dashboardUrl = null; // Reset to force re-detection
+    detectDashboardUrl();
+}
+
+// Clear custom API URL
+function clearCustomApiUrl() {
+    localStorage.removeItem('customDashboardApiUrl');
+    const input = document.getElementById('customApiUrl');
+    if (input) input.value = '';
+    
+    // Reset to default detection
+    dashboardUrl = null;
+    detectDashboardUrl();
+}
+
 // Detect dashboard URL
 async function detectDashboardUrl() {
-    // Try common dashboard URLs
-    const urls = [
-        'http://localhost:5000',
-        'http://127.0.0.1:5000',
-        `${window.location.protocol}//${window.location.hostname}:5000`
-    ];
+    // Build list of URLs to try
+    const urls = [];
+    
+    // 1. Try custom URL from localStorage first
+    const customUrl = localStorage.getItem('customDashboardApiUrl');
+    if (customUrl) {
+        urls.push(customUrl);
+    }
+    
+    // 2. Try common local URLs
+    urls.push('http://localhost:5000');
+    urls.push('http://127.0.0.1:5000');
+    
+    // 3. Try current hostname (useful when accessing via network)
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        urls.push(`${window.location.protocol}//${window.location.hostname}:5000`);
+    }
     
     for (const url of urls) {
         try {
