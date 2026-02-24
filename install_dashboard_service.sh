@@ -114,7 +114,7 @@ fi
 echo ""
 read -p "Do you want to start the service now? [Y/n] " -n 1 -r
 echo ""
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     echo "🚀 Starting mcwb-dashboard service..."
     sudo systemctl start mcwb-dashboard
     

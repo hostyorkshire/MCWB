@@ -203,20 +203,20 @@ def main():
     # Get local IP for network access
     local_ip = get_local_ip()
     
-    print(f"")
+    print()
     print(f"🌐 Dashboard will be accessible at:")
     print(f"   • Local:   http://localhost:{args.port}")
     if args.host == "0.0.0.0" and local_ip:
         print(f"   • Network: http://{local_ip}:{args.port}")
-        print(f"")
+        print()
         print(f"⚠️  Dashboard is accessible on your local network")
         print(f"   Only use on trusted networks (home/private networks)")
         print(f"   To restrict to localhost only: --host 127.0.0.1")
     elif args.host == "127.0.0.1":
-        print(f"")
+        print()
         print(f"ℹ️  Dashboard restricted to localhost only")
         print(f"   For network access, use: --host 0.0.0.0")
-    print(f"")
+    print()
     print(f"Press Ctrl+C to stop")
     print(f"=" * 70)
     
