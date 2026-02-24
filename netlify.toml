@@ -5,24 +5,6 @@
   # The website directory contains all the static HTML/CSS/JS files
   # No build command needed as this is a pure static site
   publish = "website"
-  
-  # No build command needed for static HTML site
-  command = ""
-
-# Production deployment configuration
-[context.production]
-  publish = "website"
-  command = ""
-
-# Branch-specific deployment (if you use different branches)
-[context.deploy-preview]
-  publish = "website"
-  command = ""
-
-# Branch deployment
-[context.branch-deploy]
-  publish = "website"
-  command = ""
 
 # Redirect rules (optional)
 # Uncomment if you want to enable redirects
