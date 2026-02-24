@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - MCWB Wiki</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Complete feature list for the MeshCore Weather Bot">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
+            <p>MeshCore Weather Bot Documentation</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="installation.html">Installation</a></li>
+            <li><a href="features.html" class="active">Features</a></li>
+            <li><a href="commands.html">Commands</a></li>
+            <li><a href="channels.html">Channels</a></li>
+            <li><a href="dashboard.html">Live Dashboard</a></li>
+            <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            <li><a href="api.html">API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Features</h1>
+            <p>Discover all the powerful features of the MeshCore Weather Bot.</p>
+
+            <h2>Core Features</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Zero Configuration</h3>
+                    <p>Works on ANY channel you create - no setup needed. Just run the bot and start using it!</p>
+                    <span class="badge success">Default</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <h3>Multi-Channel Support</h3>
+                    <p>Listens and responds on ALL channels simultaneously. Users can query from any channel they've subscribed to.</p>
+                    <span class="badge success">Automatic</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Global Weather Coverage</h3>
+                    <p>Get weather for any location worldwide using the free Open-Meteo API. No API keys required!</p>
+                    <span class="badge primary">Free API</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>Country Specification</h3>
+                    <p>Disambiguate city names by specifying country: <code>wx York UK</code> vs <code>wx York USA</code></p>
+                    <span class="badge primary">New</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Smart Geocoding</h3>
+                    <p>Automatically finds locations with fuzzy matching. Handles various city name formats.</p>
+                    <span class="badge primary">Smart</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📢</div>
+                    <h3>Periodic Announcements</h3>
+                    <p>Optional announcements every 3 hours to remind users the bot is available.</p>
+                    <span class="badge">Optional</span>
+                </div>
+            </div>
+
+            <h2>Weather Information Provided</h2>
+            <p>Each weather response includes:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data Point</th>
+                        <th>Description</th>
+                        <th>Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Location</td>
+                        <td>City name and country code</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Weather Condition</td>
+                        <td>Description (clear, cloudy, rain, etc.)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Temperature</td>
+                        <td>Current temperature</td>
+                        <td>°C</td>
+                    </tr>
+                    <tr>
+                        <td>Feels Like</td>
+                        <td>Apparent temperature</td>
+                        <td>°C</td>
+                    </tr>
+                    <tr>
+                        <td>Humidity</td>
+                        <td>Relative humidity</td>
+                        <td>%</td>
+                    </tr>
+                    <tr>
+                        <td>Wind Speed</td>
+                        <td>Wind speed</td>
+                        <td>km/h</td>
+                    </tr>
+                    <tr>
+                        <td>Wind Direction</td>
+                        <td>Wind direction</td>
+                        <td>degrees</td>
+                    </tr>
+                    <tr>
+                        <td>Precipitation</td>
+                        <td>Current precipitation</td>
+                        <td>mm</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Advanced Features</h2>
+
+            <h3>🌙 Web Dashboard</h3>
+            <div class="info-box">
+                <p>Beautiful dark-themed web interface with:</p>
+                <ul>
+                    <li>Real-time bot status monitoring</li>
+                    <li>Log viewer with color-coded entries (errors in red, warnings in yellow)</li>
+                    <li>Auto-refresh every 10 seconds</li>
+                    <li>Responsive design for desktop, tablet, and mobile</li>
+                    <li>Glassmorphic dark theme with gradient backgrounds</li>
+                </ul>
+                <p><a href="installation.html#web-dashboard">Learn more about the Web Dashboard →</a></p>
+            </div>
+
+            <h3>🔧 Debug Mode</h3>
+            <p>Comprehensive logging for troubleshooting:</p>
+            <pre><code>python3 weather_bot.py --debug</code></pre>
+            <p>Shows:</p>
+            <ul>
+                <li>All protocol frames between bot and radio</li>
+                <li>Channel index information for received messages</li>
+                <li>Message processing flow</li>
+                <li>API requests and responses</li>
+                <li>Channel filtering decisions</li>
+            </ul>
+
+            <h3>🎯 Flexible Command Formats</h3>
+            <p>The bot recognizes multiple command formats (case-insensitive):</p>
+            <div class="command-example">
+                <div class="command">wx London</div>
+            </div>
+            <div class="command-example">
+                <div class="command">weather London</div>
+            </div>
+            <div class="command-example">
+                <div class="command">WX LONDON</div>
+            </div>
+            <div class="command-example">
+                <div class="command">wx York, UK</div>
+            </div>
+            <div class="command-example">
+                <div class="command">wx Paris FR</div>
+            </div>
+
+            <h3>🚀 Auto Port Detection</h3>
+            <p>The bot automatically detects your USB serial port:</p>
+            <pre><code>python3 weather_bot.py  # Auto-detects port</code></pre>
+            <p>Or specify manually:</p>
+            <pre><code>python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200</code></pre>
+
+            <h3>🔒 Channel Filtering (Optional)</h3>
+            <p>For advanced users who want to restrict the bot to specific channels:</p>
+            <pre><code># Only respond on channel index 1
+python3 weather_bot.py --channel-idx 1
+
+# Configure announcement channel
+python3 weather_bot.py --weather-channel-idx 2 --announce</code></pre>
+            <p><strong>Note:</strong> Most users don't need this! The bot works automatically on all channels.</p>
+
+            <h3>🌐 Default Country Filtering</h3>
+            <p>If most users are in one country, set a default to prefer local cities:</p>
+            <pre><code># Prefer UK cities
+python3 weather_bot.py --country GB
+
+# Prefer US cities
+python3 weather_bot.py --country US</code></pre>
+            <p>Users can still override by specifying country in their command: <code>wx York USA</code></p>
+
+            <h2>MeshCore Protocol Support</h2>
+            <p>The bot implements the MeshCore companion radio binary protocol:</p>
+
+            <table class="protocol-table">
+                <thead>
+                    <tr>
+                        <th>Frame</th>
+                        <th>Direction</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>CMD_APP_START</code> (0x01)</td>
+                        <td>→ radio</td>
+                        <td>Initialize session on connect</td>
+                    </tr>
+                    <tr>
+                        <td><code>CMD_GET_DEVICE_TIME</code> (0x05)</td>
+                        <td>← radio</td>
+                        <td>Radio requests time; bot responds</td>
+                    </tr>
+                    <tr>
+                        <td><code>CMD_SYNC_NEXT_MSG</code> (0x0A)</td>
+                        <td>→ radio</td>
+                        <td>Drain queued messages</td>
+                    </tr>
+                    <tr>
+                        <td><code>CMD_SEND_CHAN_MSG</code> (0x03)</td>
+                        <td>→ radio</td>
+                        <td>Send weather reply on channel</td>
+                    </tr>
+                    <tr>
+                        <td><code>RESP_CHANNEL_MSG</code> (0x08/0x11)</td>
+                        <td>← radio</td>
+                        <td>Incoming channel message</td>
+                    </tr>
+                    <tr>
+                        <td><code>PUSH_CHAN_MSG</code> (0x88)</td>
+                        <td>← radio</td>
+                        <td>Inline push of channel message</td>
+                    </tr>
+                    <tr>
+                        <td><code>PUSH_MSG_WAITING</code> (0x83)</td>
+                        <td>← radio</td>
+                        <td>New message queued</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>For complete protocol details, see the <a href="api.html">API Documentation</a>.</p>
+
+            <h2>Performance</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>💾 Memory</h3>
+                    <p>Typical usage: &lt; 50MB RAM</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>⚡ CPU</h3>
+                    <p>Minimal CPU usage when idle</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🌐 Network</h3>
+                    <p>Low bandwidth - only queries API when needed</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🔋 Power</h3>
+                    <p>Efficient - perfect for battery-powered Pi deployments</p>
+                </div>
+            </div>
+
+            <h2>Deployment Options</h2>
+
+            <h3>1. Interactive Mode</h3>
+            <p>Run in your terminal for testing:</p>
+            <pre><code>python3 weather_bot.py --interactive</code></pre>
+
+            <h3>2. Background Process</h3>
+            <p>Run in background without systemd:</p>
+            <pre><code>nohup python3 weather_bot.py > weather_bot.log 2>&1 &</code></pre>
+
+            <h3>3. Systemd Service</h3>
+            <p>Professional deployment with auto-start:</p>
+            <pre><code>./install_service.sh
+sudo systemctl start weather_bot</code></pre>
+
+            <h3>4. Docker (Community)</h3>
+            <p>Docker support is community-maintained. See GitHub issues for containerized deployments.</p>
+
+            <div class="info-box">
+                <h3>🍓 Raspberry Pi Optimization</h3>
+                <p>The bot is specifically optimized for Raspberry Pi Zero 2 and other Pi models. It's lightweight, efficient, and perfect for headless deployments in remote locations.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
