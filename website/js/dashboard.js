@@ -434,6 +434,12 @@ function convertUserMentionsToLinks(text) {
     const markdownLinks = [];
     let result = escaped.replace(/\[@([a-zA-Z0-9_.-]+)\]\(meshcore:\/\/user\/([a-zA-Z0-9_.-]+)\)/g, 
                                   (match, displayName, urlName) => {
+                                      // Security: Validate that display name matches URL username
+                                      // to prevent spoofing attacks like [@alice](meshcore://user/bob)
+                                      if (displayName !== urlName) {
+                                          // Replace @ with a placeholder to prevent it from being converted
+                                          return match.replace('@', '\u0000PROTECTED_AT\u0000');
+                                      }
                                       const link = `<a href="meshcore://user/${urlName}" class="user-mention">@${displayName}</a>`;
                                       const placeholder = `__MDLINK_${markdownLinks.length}__`;
                                       markdownLinks.push(link);
@@ -443,6 +449,9 @@ function convertUserMentionsToLinks(text) {
     // Then convert any remaining plain @username patterns to meshcore:// links
     // This maintains backward compatibility with messages that don't use markdown format
     result = result.replace(/@([a-zA-Z0-9_.-]+)/g, '<a href="meshcore://user/$1" class="user-mention">@$1</a>');
+    
+    // Restore protected @ symbols from mismatched markdown links
+    result = result.replace(/\u0000PROTECTED_AT\u0000/g, '@');
     
     // Restore converted markdown links from placeholders
     markdownLinks.forEach((link, index) => {
