@@ -578,6 +578,9 @@ class WeatherBot:
                     "timestamp": time.time()
                 }
 
+                # Add delay to allow first message to be transmitted before sending prompt
+                time.sleep(0.5)
+
                 prompt = "Thanks for that, would you like to see the outlook? (y/n)"
                 self._send_channel_msg(prompt, channel_idx)
 
