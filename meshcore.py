@@ -214,6 +214,9 @@ class MeshCore:
         self._reverse_channel_map = {}  # channel_idx -> channel_name
         self._next_channel_idx = 1  # 0 is reserved for default/no-channel
 
+        # Track active channels (channel_idx with received messages)
+        self._active_channels = set()  # Set of channel_idx that have received messages
+
         # LoRa serial connection
         self.serial_port = serial_port
         self.baud_rate = baud_rate
@@ -931,6 +934,11 @@ class MeshCore:
             text: The message text (may include "sender: " prefix)
             channel_idx: The channel index from the LoRa frame (0-7)
         """
+        # Track active channel
+        self._active_channels.add(channel_idx)
+        # Save active channels for dashboard display
+        self.save_active_channels()
+
         colon = text.find(": ")
         if colon > 0:
             sender = text[:colon]
@@ -975,6 +983,49 @@ class MeshCore:
     def is_running(self) -> bool:
         """Check if MeshCore is running"""
         return self.running
+
+    def get_active_channels(self):
+        """
+        Get list of active channels with their names.
+
+        Returns:
+            list: List of dicts with 'channel_idx' and 'channel_name' keys.
+                  Example: [{'channel_idx': 0, 'channel_name': None},
+                           {'channel_idx': 1, 'channel_name': 'weather'},
+                           {'channel_idx': 2, 'channel_name': 'alerts'}]
+        """
+        channels = []
+        for channel_idx in sorted(self._active_channels):
+            channel_name = self._get_channel_name(channel_idx)
+            channels.append({
+                'channel_idx': channel_idx,
+                'channel_name': channel_name
+            })
+        return channels
+
+    def save_active_channels(self, filename: str = "logs/channels.json"):
+        """
+        Save active channels to a JSON file for dashboard display.
+
+        Args:
+            filename: Path to save the channels data (default: logs/channels.json)
+        """
+        import json
+        import os
+        from datetime import datetime
+
+        channels = self.get_active_channels()
+        data = {
+            "channels": channels,
+            "last_updated": datetime.now().isoformat()
+        }
+
+        try:
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            with open(filename, 'w') as f:
+                json.dump(data, f, indent=2)
+        except (IOError, OSError):
+            pass  # Fail silently - not critical
 
 
 if __name__ == "__main__":

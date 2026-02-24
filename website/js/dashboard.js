@@ -155,10 +155,11 @@ async function updateDashboard() {
     
     try {
         // Fetch stats data
-        const [statsRes, hourlyRes, locationsRes] = await Promise.all([
+        const [statsRes, hourlyRes, locationsRes, channelsRes] = await Promise.all([
             fetch(`${dashboardUrl}/api/stats`),
             fetch(`${dashboardUrl}/api/stats/hourly`),
-            fetch(`${dashboardUrl}/api/stats/locations`)
+            fetch(`${dashboardUrl}/api/stats/locations`),
+            fetch(`${dashboardUrl}/api/channels`)
         ]);
         
         if (!statsRes.ok || !hourlyRes.ok || !locationsRes.ok) {
@@ -168,6 +169,7 @@ async function updateDashboard() {
         const stats = await statsRes.json();
         const hourly = await hourlyRes.json();
         const locations = await locationsRes.json();
+        const channels = channelsRes.ok ? await channelsRes.json() : { channels: [] };
         
         // Update status indicator
         const statusSpan = document.querySelector('#botStatus');
@@ -184,9 +186,13 @@ async function updateDashboard() {
         // Update stat displays
         document.getElementById('requestsToday').textContent = todayRequests;
         
-        // Calculate active channels (estimate from top locations)
-        const activeChannels = Math.min(locations.length, 6); // Reasonable estimate
-        document.getElementById('activeChannels').textContent = activeChannels;
+        // Update active channels display with real channel data
+        const activeChannelsEl = document.getElementById('activeChannels');
+        if (channels.channels && channels.channels.length > 0) {
+            activeChannelsEl.textContent = channels.channels.join(', ');
+        } else {
+            activeChannelsEl.textContent = 'No channels detected';
+        }
         
         // Calculate uptime based on last update
         if (stats.last_updated) {

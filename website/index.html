@@ -44,6 +44,12 @@
                 <a href="https://github.com/hostyorkshire/MCWB" class="btn btn-secondary">View on GitHub</a>
             </div>
 
+            <!-- Active Channels Display -->
+            <div class="info-box" id="active-channels-box" style="display: none;">
+                <h3>📡 Active Broadcasting Channels</h3>
+                <p id="channels-status" style="font-size: 1.1em; margin: 0.5rem 0;">Loading...</p>
+            </div>
+
             <div class="info-box success">
                 <h3>⌨️ How to Use the Bot</h3>
                 <p>Open your MeshCore app or client and send a weather command on any channel:</p>
@@ -231,5 +237,43 @@ MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
     <a href="#" class="back-to-top" id="backToTop">↑</a>
 
     <script src="js/main.js"></script>
+    <script>
+        // Load active channels from dashboard API
+        async function loadActiveChannels() {
+            try {
+                // Try localhost first, then custom URL
+                const customUrl = localStorage.getItem('customDashboardApiUrl');
+                const urls = customUrl ? [customUrl, 'http://localhost:5000'] : ['http://localhost:5000'];
+                
+                let channelsData = null;
+                for (const baseUrl of urls) {
+                    try {
+                        const response = await fetch(`${baseUrl}/api/channels`, { timeout: 2000 });
+                        if (response.ok) {
+                            channelsData = await response.json();
+                            break;
+                        }
+                    } catch (e) {
+                        continue; // Try next URL
+                    }
+                }
+                
+                if (channelsData && channelsData.channels && channelsData.channels.length > 0) {
+                    const box = document.getElementById('active-channels-box');
+                    const status = document.getElementById('channels-status');
+                    
+                    box.style.display = 'block';
+                    box.className = 'info-box success';
+                    status.textContent = 'Broadcasting on: ' + channelsData.channels.join(', ');
+                }
+            } catch (error) {
+                // Silently fail - channels display is optional enhancement
+                console.log('Could not load active channels:', error);
+            }
+        }
+        
+        // Load channels on page load
+        document.addEventListener('DOMContentLoaded', loadActiveChannels);
+    </script>
 </body>
 </html>

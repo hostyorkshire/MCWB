@@ -182,6 +182,36 @@
             font-size: 1em;
         }
 
+        .channels-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .channel-badge {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(52, 211, 153, 0.2));
+            color: var(--accent-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+            border: 2px solid var(--accent-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .channel-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+        }
+
+        .channel-icon {
+            font-size: 1.2em;
+        }
+
         .log-viewer {
             background: var(--card-bg);
             padding: 25px;
@@ -515,6 +545,16 @@
             </div>
         </div>
 
+        <!-- Active Channels Section -->
+        <div class="status-card">
+            <div class="status-header">
+                <h2 class="status-title">📡 Active Channels</h2>
+            </div>
+            <div id="channels-list" class="channels-display">
+                <div class="loading">Loading channels...</div>
+            </div>
+        </div>
+
         <!-- Usage Statistics Section -->
         <div class="stats-section">
             <h2 class="status-title" style="margin-bottom: 20px; padding-left: 10px;">📊 Usage Statistics</h2>
@@ -622,6 +662,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
             loadStatus();
+            loadChannels();
             loadStats();
             loadLog(currentLog);
             startAutoRefresh();
@@ -670,6 +711,39 @@
                 }
             } catch (error) {
                 console.error('Error loading status:', error);
+            }
+        }
+
+        async function loadChannels() {
+            try {
+                const response = await fetch('/api/channels');
+                const data = await response.json();
+                
+                const channelsDiv = document.getElementById('channels-list');
+                
+                if (data.channels && data.channels.length > 0) {
+                    channelsDiv.innerHTML = '';
+                    data.channels.forEach(channel => {
+                        const badge = document.createElement('div');
+                        badge.className = 'channel-badge';
+                        
+                        const icon = document.createElement('span');
+                        icon.className = 'channel-icon';
+                        icon.textContent = '📡';
+                        
+                        const text = document.createElement('span');
+                        text.textContent = channel;
+                        
+                        badge.appendChild(icon);
+                        badge.appendChild(text);
+                        channelsDiv.appendChild(badge);
+                    });
+                } else {
+                    channelsDiv.innerHTML = '<div class="loading">No active channels detected yet</div>';
+                }
+            } catch (error) {
+                console.error('Error loading channels:', error);
+                document.getElementById('channels-list').innerHTML = '<div class="loading">Error loading channels</div>';
             }
         }
 
@@ -722,6 +796,7 @@
 
         function refreshLogs() {
             loadStatus();
+            loadChannels();
             loadStats();
             loadLog(currentLog);
         }
@@ -729,6 +804,7 @@
         function startAutoRefresh() {
             autoRefreshInterval = setInterval(() => {
                 loadStatus();
+                loadChannels();
                 loadStats();
                 loadLog(currentLog);
             }, 10000); // Refresh every 10 seconds

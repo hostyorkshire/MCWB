@@ -158,6 +158,46 @@ def api_stats_locations():
     return jsonify(top_locs)
 
 
+@app.route('/api/channels')
+def api_channels():
+    """Get active channels from the LORA meshcore radio"""
+    channels_file = Path(__file__).parent / "logs" / "channels.json"
+    
+    if not channels_file.exists():
+        return jsonify({
+            "channels": [],
+            "last_updated": None
+        })
+    
+    try:
+        import json
+        with open(channels_file, 'r') as f:
+            data = json.load(f)
+            # Format channel names with # prefix for display
+            formatted_channels = []
+            for ch in data.get("channels", []):
+                channel_name = ch.get("channel_name")
+                if channel_name:
+                    # Add # prefix for display (e.g., "weather" -> "#weather")
+                    formatted_channels.append(f"#{channel_name}")
+                elif ch.get("channel_idx") == 0:
+                    # Channel 0 is the default/public channel
+                    formatted_channels.append("#public")
+                else:
+                    # Unknown named channel - show as index
+                    formatted_channels.append(f"#channel{ch.get('channel_idx')}")
+            
+            return jsonify({
+                "channels": formatted_channels,
+                "last_updated": data.get("last_updated")
+            })
+    except (json.JSONDecodeError, IOError):
+        return jsonify({
+            "channels": [],
+            "last_updated": None
+        })
+
+
 def calculate_success_rate(total, errors):
     """Calculate success rate percentage"""
     if total == 0:
