@@ -228,11 +228,34 @@
             <h1>Live Dashboard</h1>
             <p>Real-time monitoring of bot activity and usage statistics.</p>
 
+            <div class="info-box success">
+                <h3>🔗 Connect to Your Bot</h3>
+                <p>To view real-time statistics from your running bot, configure the API endpoint below:</p>
+                
+                <div id="api-config-panel" style="margin-top: 1rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" id="api-endpoint-input" 
+                            placeholder="http://your-bot-ip:5000" 
+                            style="flex: 1; min-width: 250px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-tertiary); color: var(--text-primary); font-size: 0.95rem;">
+                        <button id="test-api-endpoint" class="refresh-btn" style="margin: 0;">🔍 Test</button>
+                        <button id="save-api-endpoint" class="refresh-btn" style="margin: 0;">💾 Save</button>
+                        <button id="clear-api-endpoint" class="refresh-btn" style="margin: 0;">🗑️ Clear</button>
+                    </div>
+                    <div id="api-feedback" class="feedback-message" style="display: none; padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                    <p style="margin-top: 0.5rem; margin-bottom: 0; font-size: 0.85rem; color: var(--text-muted);">
+                        Example: <code style="font-size: 0.85rem;">http://192.168.1.100:5000</code> or <code style="font-size: 0.85rem;">http://localhost:5000</code>
+                    </p>
+                </div>
+            </div>
+
             <div class="info-box warning">
-                <h3>⚠️ Note: Demo Mode</h3>
-                <p>This is a static demo dashboard. For live monitoring, use the <strong>Web Dashboard</strong> included with the bot:</p>
-                <pre><code>python3 web_dashboard.py --host 0.0.0.0</code></pre>
-                <p style="margin-bottom: 0;">Access at: <code>http://localhost:5000</code></p>
+                <h3>⚠️ Demo Mode Active</h3>
+                <p>Without a configured API endpoint, the dashboard shows simulated data. To connect to your bot:</p>
+                <ol style="margin-bottom: 0;">
+                    <li>Start the bot dashboard: <code>python3 web_dashboard.py --host 0.0.0.0</code></li>
+                    <li>Enter the bot's IP address and port above (e.g., <code>http://192.168.1.100:5000</code>)</li>
+                    <li>Click "Test" to verify connection, then "Save" to enable live data</li>
+                </ol>
             </div>
 
             <div class="auto-refresh-toggle">

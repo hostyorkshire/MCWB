@@ -8,12 +8,16 @@ import os
 import sys
 from pathlib import Path
 from flask import Flask, render_template, jsonify, send_from_directory
+from flask_cors import CORS
 import json
 from datetime import datetime
 from stats_tracker import StatsTracker
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# Enable CORS for all routes to allow the static website to fetch stats
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Get the logs directory
 LOGS_DIR = Path(__file__).parent / "logs"
