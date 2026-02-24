@@ -42,6 +42,8 @@ function setCustomApiUrl() {
     }
     
     // Validate and normalize URL
+    // Note: Default to http:// for local network access (Raspberry Pi typically doesn't have SSL)
+    // Users can explicitly specify https:// if they have SSL configured
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = 'http://' + url;
     }
