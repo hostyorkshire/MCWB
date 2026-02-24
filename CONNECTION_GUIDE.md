@@ -70,6 +70,20 @@ Now your website will show **real-time live data** from your Raspberry Pi! 🎉
 
 ## Still Can't Connect?
 
+### Common Issue: Dashboard Not Starting After Reboot
+
+If your dashboard was working before but stopped working after rebooting your Pi, the service might be starting before the network is fully online.
+
+**Quick Fix:**
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This will reinstall the service with the correct network timing configuration.
+
+**What this fixes:** The updated service waits for the network to be fully online before starting the dashboard, ensuring it can bind to your network IP address properly.
+
 ### Check 1: Is the Service Running?
 
 ```bash
