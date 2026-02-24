@@ -17,9 +17,9 @@ def test_invalid_channel_idx_filtering():
     print("=" * 60)
     print("TEST: Invalid Channel Index Filtering")
     print("=" * 60)
-    
+
     bot = WeatherBot(debug=True)
-    
+
     # Test Case 1: Valid channel index (0-7)
     print("\n1. Testing valid channel indices (0-7):")
     import time
@@ -32,7 +32,7 @@ def test_invalid_channel_idx_filtering():
         print(f"   channel_idx={idx}: parsed as {channel_idx} ✓" if channel_idx is not None else f"   channel_idx={idx}: rejected ✗")
         assert channel_idx == idx, f"Valid channel_idx {idx} should be accepted"
         assert text == "Test message", f"Text should be parsed correctly"
-    
+
     # Test Case 2: Invalid channel indices (outside 0-7 range)
     print("\n2. Testing invalid channel indices (> 7):")
     invalid_indices = [8, 10, 49, 50, 100, 255]
@@ -46,7 +46,7 @@ def test_invalid_channel_idx_filtering():
         print(f"   channel_idx={idx}: rejected ✓" if channel_idx is None else f"   channel_idx={idx}: accepted as {channel_idx} ✗")
         assert channel_idx is None, f"Invalid channel_idx {idx} should be rejected"
         assert text is None, f"Text should be None for invalid channel_idx"
-    
+
     # Test Case 3: V3 format with valid channel index
     print("\n3. Testing V3 format with valid channel index:")
     # V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
@@ -56,7 +56,7 @@ def test_invalid_channel_idx_filtering():
     print(f"   V3 format with channel_idx=2: parsed as {channel_idx} ✓" if channel_idx == 2 else f"   V3 format: rejected ✗")
     assert channel_idx == 2, "V3 format with valid channel_idx should be accepted"
     assert text == "V3 message", "V3 text should be parsed correctly"
-    
+
     # Test Case 4: V3 format with invalid channel index
     print("\n4. Testing V3 format with invalid channel index:")
     # Even with valid SNR, invalid channel_idx should fall back to old format and be rejected
@@ -65,7 +65,7 @@ def test_invalid_channel_idx_filtering():
     # This will fall back to old format where payload[1]=45 (SNR), which is invalid
     print(f"   V3 with invalid channel_idx: rejected ✓" if channel_idx is None else f"   parsed as {channel_idx} ✗")
     assert channel_idx is None, "V3 format with invalid channel_idx should be rejected"
-    
+
     # Test Case 5: Simulated encrypted/garbled message
     print("\n5. Testing simulated encrypted/garbled message:")
     # Real-world encrypted messages have random bytes that can result in invalid channel_idx
@@ -73,7 +73,7 @@ def test_invalid_channel_idx_filtering():
     channel_idx, text = bot._parse_channel_message(garbled_payload)
     print(f"   Garbled message: rejected ✓" if channel_idx is None else f"   parsed as {channel_idx} ✗")
     assert channel_idx is None, "Garbled/encrypted message should be rejected"
-    
+
     print("\n" + "=" * 60)
     print("✅ All tests passed!")
     print("=" * 60)
@@ -89,7 +89,7 @@ def main():
     print("║" + " " * 10 + "Invalid Channel Index Test" + " " * 21 + "║")
     print("╚" + "=" * 58 + "╝")
     print()
-    
+
     try:
         test_invalid_channel_idx_filtering()
         return 0

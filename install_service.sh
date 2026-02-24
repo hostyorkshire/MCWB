@@ -48,10 +48,10 @@ else
 fi
 
 # Check if user is in dialout group
-if ! groups $CURRENT_USER | grep -q dialout; then
+if ! groups "$CURRENT_USER" | grep -q dialout; then
     echo ""
     echo "⚠️  Adding user to 'dialout' group for USB access..."
-    sudo usermod -a -G dialout $CURRENT_USER
+    sudo usermod -a -G dialout "$CURRENT_USER"
     echo "✅ User added to dialout group"
     echo "   ⚠️  You will need to log out and log back in (or reboot) for this to take effect"
     NEEDS_RELOGIN=true
@@ -61,29 +61,29 @@ fi
 echo ""
 echo "📝 Creating customized service file..."
 SERVICE_FILE=$(mktemp)
-sed "s|User=pi|User=$CURRENT_USER|g" weather_bot.service > $SERVICE_FILE
-sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" $SERVICE_FILE
+sed "s|User=pi|User=$CURRENT_USER|g" weather_bot.service > "$SERVICE_FILE"
+sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" "$SERVICE_FILE"
 
 echo "📄 Service file contents:"
 echo "----------------------------------------"
-cat $SERVICE_FILE
+cat "$SERVICE_FILE"
 echo "----------------------------------------"
 echo ""
 
 # Ask for confirmation
-read -p "Do you want to install this service? (y/n) " -n 1 -r
+read -r -p "Do you want to install this service? (y/n) " -n 1
 echo ""
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "❌ Installation cancelled"
-    rm $SERVICE_FILE
+    rm "$SERVICE_FILE"
     exit 1
 fi
 
 # Install the service
 echo ""
 echo "🔧 Installing systemd service..."
-sudo cp $SERVICE_FILE /etc/systemd/system/weather_bot.service
-rm $SERVICE_FILE
+sudo cp "$SERVICE_FILE" /etc/systemd/system/weather_bot.service
+rm "$SERVICE_FILE"
 
 # Reload systemd
 echo "🔄 Reloading systemd daemon..."
@@ -95,7 +95,7 @@ sudo systemctl enable weather_bot
 
 # Ask if user wants to start now
 echo ""
-read -p "Do you want to start the service now? (y/n) " -n 1 -r
+read -r -p "Do you want to start the service now? (y/n) " -n 1
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "🚀 Starting weather_bot service..."

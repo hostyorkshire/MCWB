@@ -18,9 +18,9 @@ def test_york_ambiguity_without_filter():
     print("=" * 70)
     print("Problem: User in UK queries 'York', but gets York, Pennsylvania USA")
     print()
-    
+
     bot = WeatherBot(debug=False, country=None)
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # Simulate API returning York, USA (first match without country filter)
         geocoding_response = MagicMock()
@@ -33,7 +33,7 @@ def test_york_ambiguity_without_filter():
                 "longitude": -76.7277
             }]
         }
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -46,11 +46,11 @@ def test_york_ambiguity_without_filter():
                 "weather_code": 0
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         result = bot._get_weather("York")
-        
+
         print("API Response:")
         print(result)
         print()
@@ -122,9 +122,9 @@ def test_explicit_location_overrides_filter():
     print("=" * 70)
     print("Users can still get other locations by being explicit in their query")
     print()
-    
+
     bot = WeatherBot(debug=False, country="GB")
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # Even with GB filter, explicit "York, USA" should work
         # (API will try to match the full query string)
@@ -138,7 +138,7 @@ def test_explicit_location_overrides_filter():
                 "longitude": -76.7277
             }]
         }
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -151,11 +151,11 @@ def test_explicit_location_overrides_filter():
                 "weather_code": 0
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         result = bot._get_weather("York, USA")
-        
+
         print("API Response:")
         print(result)
         print()
@@ -167,11 +167,11 @@ if __name__ == "__main__":
     print("\n╔════════════════════════════════════════════════════════════════════╗")
     print("║       Country Filter Integration Test - York Ambiguity            ║")
     print("╚════════════════════════════════════════════════════════════════════╝\n")
-    
+
     test_york_ambiguity_without_filter()
     test_york_with_gb_filter()
     test_explicit_location_overrides_filter()
-    
+
     print("=" * 70)
     print("SUMMARY")
     print("=" * 70)

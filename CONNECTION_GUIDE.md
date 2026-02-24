@@ -142,6 +142,101 @@ The device you're connecting from (laptop/phone) must be on the **same local net
 - ✅ Pi: 192.168.1.109, Laptop: 192.168.1.50 → Same network (192.168.1.x)
 - ❌ Pi: 192.168.1.109, Laptop: 192.168.2.50 → Different networks
 
+### Check 6: Verify Network Binding
+
+Ensure the dashboard is bound to `0.0.0.0` (network accessible) not just `127.0.0.1` (localhost only):
+
+```bash
+sudo netstat -tlnp | grep :5000
+```
+
+**Expected:** You should see something like:
+```
+tcp        0      0 0.0.0.0:5000            0.0.0.0:*               LISTEN      1234/python3
+```
+
+**If you see 127.0.0.1:5000** instead of **0.0.0.0:5000**, the service is only listening locally.
+
+**Fix:** Edit the service file to use `--host 0.0.0.0`:
+```bash
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Find the ExecStart line and ensure it has: --host 0.0.0.0
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard
+```
+
+Or reinstall:
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+### Check 7: Test Python Dependencies
+
+Verify Flask and dependencies are installed:
+
+```bash
+python3 -c "import flask, flask_cors; print('Dependencies OK')"
+```
+
+**If this fails:**
+```bash
+pip3 install --user -r requirements.txt
+sudo systemctl restart mcwb-dashboard
+```
+
+### Check 8: Port Already in Use
+
+Check if another process is using port 5000:
+
+```bash
+sudo lsof -i :5000
+```
+
+**If port is busy:** Either stop the other process or change the dashboard to use a different port.
+
+### Check 9: View Service Logs in Real-Time
+
+Watch the service logs to see what's happening:
+
+```bash
+sudo journalctl -u mcwb-dashboard -f
+```
+
+Look for error messages like:
+- "ModuleNotFoundError" → Dependencies not installed
+- "Permission denied" → User/directory mismatch
+- "Address already in use" → Port conflict
+- Any Python tracebacks or exceptions
+
+Press Ctrl+C to stop viewing logs.
+
+## Quick Reset (If All Else Fails)
+
+Complete fresh install of the dashboard service:
+
+```bash
+# Stop and remove existing service
+sudo systemctl stop mcwb-dashboard
+sudo systemctl disable mcwb-dashboard
+sudo rm /etc/systemd/system/mcwb-dashboard.service
+sudo systemctl daemon-reload
+
+# Reinstall dependencies
+cd ~/MCWB
+pip3 install --user -r requirements.txt
+
+# Reinstall service (this will configure everything correctly)
+./install_dashboard_service.sh
+```
+
+After installation, the script will show your connection URL. Wait 5 seconds after it starts, then test:
+```bash
+curl http://localhost:5000
+```
+
+You should see HTML output. If you do, try connecting from your browser again.
+
 ## Advanced: Manual Start (For Testing)
 
 If you want to test the dashboard without installing the service:

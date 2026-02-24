@@ -4,16 +4,15 @@ MCWB Web Dashboard
 Dark-themed web interface for monitoring the MeshCore Weather Bot
 """
 
-import os
 import sys
 import socket
 from pathlib import Path
 
 # Check for required dependencies before importing
 try:
-    from flask import Flask, render_template, jsonify, send_from_directory
+    from flask import Flask, render_template, jsonify
     from flask_cors import CORS
-except ImportError as e:
+except ImportError:
     print("=" * 70)
     print("ERROR: Required dependencies not installed")
     print("=" * 70)
@@ -29,7 +28,6 @@ except ImportError as e:
     print("=" * 70)
     sys.exit(1)
 
-import json
 from datetime import datetime
 from stats_tracker import StatsTracker
 
@@ -51,7 +49,7 @@ def read_log_file(filename, lines=100):
     log_path = LOGS_DIR / filename
     if not log_path.exists():
         return []
-    
+
     try:
         with open(log_path, 'r', encoding='utf-8') as f:
             all_lines = f.readlines()
@@ -65,7 +63,7 @@ def get_log_info(filename):
     log_path = LOGS_DIR / filename
     if not log_path.exists():
         return {"exists": False, "size": 0, "modified": None}
-    
+
     stat = log_path.stat()
     return {
         "exists": True,
@@ -89,7 +87,7 @@ def api_status():
         "meshcore": get_log_info("meshcore.log"),
         "meshcore_error": get_log_info("meshcore_error.log")
     }
-    
+
     return jsonify({
         "status": "running" if any(f["exists"] for f in log_files.values()) else "stopped",
         "logs": log_files,
@@ -100,7 +98,7 @@ def api_status():
 @app.route('/api/logs/<log_type>')
 def api_logs(log_type):
     """Get log content
-    
+
     Security: log_type is validated against a whitelist to prevent
     path traversal attacks. Only predefined log files can be accessed.
     """
@@ -111,10 +109,10 @@ def api_logs(log_type):
         "meshcore": "meshcore.log",
         "meshcore_error": "meshcore_error.log"
     }
-    
+
     if log_type not in log_map:
         return jsonify({"error": "Invalid log type"}), 400
-    
+
     lines = read_log_file(log_map[log_type], lines=100)
     return jsonify({
         "log_type": log_type,
@@ -127,7 +125,7 @@ def api_logs(log_type):
 def api_stats():
     """Get usage statistics"""
     stats_data = stats.get_stats()
-    
+
     return jsonify({
         "total_requests": stats_data.get("total_requests", 0),
         "total_errors": stats_data.get("total_errors", 0),
@@ -188,38 +186,38 @@ def get_local_ip():
 def main():
     """Run the web dashboard"""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="MCWB Web Dashboard")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")
     parser.add_argument("--port", type=int, default=5000, help="Port to bind to (default: 5000)")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    
+
     args = parser.parse_args()
-    
-    print(f"=" * 70)
-    print(f"MCWB Web Dashboard")
-    print(f"=" * 70)
-    
+
+    print("=" * 70)
+    print("MCWB Web Dashboard")
+    print("=" * 70)
+
     # Get local IP for network access
     local_ip = get_local_ip()
-    
+
     print()
-    print(f"🌐 Dashboard will be accessible at:")
+    print("🌐 Dashboard will be accessible at:")
     print(f"   • Local:   http://localhost:{args.port}")
     if args.host == "0.0.0.0" and local_ip:
         print(f"   • Network: http://{local_ip}:{args.port}")
         print()
-        print(f"⚠️  Dashboard is accessible on your local network")
-        print(f"   Only use on trusted networks (home/private networks)")
-        print(f"   To restrict to localhost only: --host 127.0.0.1")
+        print("⚠️  Dashboard is accessible on your local network")
+        print("   Only use on trusted networks (home/private networks)")
+        print("   To restrict to localhost only: --host 127.0.0.1")
     elif args.host == "127.0.0.1":
         print()
-        print(f"ℹ️  Dashboard restricted to localhost only")
-        print(f"   For network access, use: --host 0.0.0.0")
+        print("ℹ️  Dashboard restricted to localhost only")
+        print("   For network access, use: --host 0.0.0.0")
     print()
-    print(f"Press Ctrl+C to stop")
-    print(f"=" * 70)
-    
+    print("Press Ctrl+C to stop")
+    print("=" * 70)
+
     app.run(host=args.host, port=args.port, debug=args.debug)
 
 

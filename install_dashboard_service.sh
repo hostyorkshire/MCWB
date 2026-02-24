@@ -61,31 +61,31 @@ fi
 echo ""
 echo "📝 Creating customized service file..."
 SERVICE_FILE=$(mktemp)
-sed "s|User=pi|User=$CURRENT_USER|g" mcwb-dashboard.service > $SERVICE_FILE
-sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" $SERVICE_FILE
+sed "s|User=pi|User=$CURRENT_USER|g" mcwb-dashboard.service > "$SERVICE_FILE"
+sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" "$SERVICE_FILE"
 # Replace the USER_SITE_PACKAGES placeholder with actual path
-sed -i "s|USER_SITE_PACKAGES|$USER_SITE|g" $SERVICE_FILE
+sed -i "s|USER_SITE_PACKAGES|$USER_SITE|g" "$SERVICE_FILE"
 
 echo "📄 Service file contents:"
 echo "----------------------------------------"
-cat $SERVICE_FILE
+cat "$SERVICE_FILE"
 echo "----------------------------------------"
 echo ""
 
 # Ask for confirmation
-read -p "Do you want to install this service? [Y/n] " -n 1 -r
+read -r -p "Do you want to install this service? [Y/n] " -n 1
 echo ""
 if [[ $REPLY =~ ^[Nn]$ ]]; then
     echo "❌ Installation cancelled"
-    rm $SERVICE_FILE
+    rm "$SERVICE_FILE"
     exit 1
 fi
 
 # Install the service
 echo ""
 echo "🔧 Installing systemd service..."
-sudo cp $SERVICE_FILE /etc/systemd/system/mcwb-dashboard.service
-rm $SERVICE_FILE
+sudo cp "$SERVICE_FILE" /etc/systemd/system/mcwb-dashboard.service
+rm "$SERVICE_FILE"
 
 # Reload systemd
 echo "🔄 Reloading systemd daemon..."
@@ -106,7 +106,7 @@ if command -v ufw >/dev/null 2>&1; then
             echo "   ✅ Port 5000 already allowed"
         else
             echo "   ⚠️  Port 5000 not allowed in firewall"
-            read -p "   Allow port 5000 through firewall? [Y/n] " -n 1 -r
+            read -r -p "   Allow port 5000 through firewall? [Y/n] " -n 1
             echo ""
             if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
                 sudo ufw allow 5000/tcp
@@ -124,7 +124,7 @@ fi
 
 # Ask if user wants to start now
 echo ""
-read -p "Do you want to start the service now? [Y/n] " -n 1 -r
+read -r -p "Do you want to start the service now? [Y/n] " -n 1
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     echo "🚀 Starting mcwb-dashboard service..."

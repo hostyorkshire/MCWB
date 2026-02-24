@@ -16,11 +16,11 @@ from meshcore import MeshCore
 def create_frame(code: int, data: bytes = b'') -> bytes:
     """
     Helper function to create a MeshCore binary frame.
-    
+
     Args:
         code: Frame code byte
         data: Additional payload data (optional)
-    
+
     Returns:
         Complete binary frame with FRAME_OUT header and length
     """
@@ -34,50 +34,50 @@ def test_cmd_get_device_time():
     print("=" * 60)
     print("TEST: CMD_GET_DEVICE_TIME (0x05)")
     print("=" * 60)
-    
+
     mesh = MeshCore("test_node", debug=True)
     mesh.running = True
-    
+
     # Mock the serial connection
     mock_serial = MagicMock()
     mock_serial.is_open = True
     mesh._serial = mock_serial
-    
+
     # Simulate receiving CMD_GET_DEVICE_TIME frame (0x05)
     frame = create_frame(0x05)
-    
+
     # Extract payload from frame (skip 0x3E + 2-byte length)
     payload = frame[3:]
-    
+
     # Parse the payload directly
     mesh._parse_binary_frame(payload)
-    
+
     # Verify that _send_command was called with RESP_CURR_TIME (0x09)
     assert mock_serial.write.called, "Expected response to be sent"
-    
+
     # Get the response that was sent
     response_frame = mock_serial.write.call_args[0][0]
-    
+
     # Parse response frame: 0x3C + length(2) + payload(code + timestamp)
     # Response should be: RESP_CURR_TIME (0x09) + 4-byte timestamp
     assert response_frame[0] == 0x3C, "Response should start with FRAME_IN (0x3C)"
-    
+
     # Extract payload (skip FRAME_IN and length bytes)
     payload_length = int.from_bytes(response_frame[1:3], "little")
     payload = response_frame[3:3+payload_length]
-    
+
     assert payload[0] == 0x09, f"Response code should be RESP_CURR_TIME (0x09), got {payload[0]:#04x}"
     assert len(payload) == 5, f"Response should be 5 bytes (code + 4-byte timestamp), got {len(payload)}"
-    
+
     # Verify timestamp is reasonable (within last minute)
     timestamp = int.from_bytes(payload[1:5], "little")
     current_time = int(time.time())
     assert abs(timestamp - current_time) < 60, f"Timestamp {timestamp} should be close to current time {current_time}"
-    
+
     print(f"✓ CMD_GET_DEVICE_TIME (0x05) handled correctly")
     print(f"✓ Responded with RESP_CURR_TIME (0x09) + timestamp {timestamp}")
     print()
-    
+
     return True
 
 
@@ -204,9 +204,9 @@ def main():
         print("  • PUSH_SEND_CONFIRMED (0x82) handled gracefully")
         print("  • No more 'unhandled frame code' errors for any of these codes")
         print()
-        
+
         return 0
-        
+
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback

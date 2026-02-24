@@ -7,19 +7,17 @@ Tracks usage metrics for the dashboard
 import json
 import os
 from datetime import datetime, timedelta
-from pathlib import Path
-from collections import defaultdict
 import threading
 
 
 class StatsTracker:
     """Track and persist usage statistics for the weather bot"""
-    
+
     def __init__(self, stats_file="logs/stats.json"):
         self.stats_file = stats_file
         self.lock = threading.Lock()
         self.stats = self._load_stats()
-    
+
     def _load_stats(self):
         """Load stats from file or create default structure"""
         if os.path.exists(self.stats_file):
@@ -28,7 +26,7 @@ class StatsTracker:
                     return json.load(f)
             except (json.JSONDecodeError, IOError):
                 pass
-        
+
         return {
             "total_requests": 0,
             "total_errors": 0,
@@ -38,7 +36,7 @@ class StatsTracker:
             "error_types": {},
             "last_updated": None
         }
-    
+
     def _save_stats(self):
         """Save stats to file"""
         try:
@@ -47,57 +45,57 @@ class StatsTracker:
                 json.dump(self.stats, f, indent=2)
         except IOError:
             pass
-    
+
     def record_request(self, location=None):
         """Record a weather request"""
         with self.lock:
             self.stats["total_requests"] += 1
-            
+
             # Track location
             if location:
                 if location not in self.stats["locations"]:
                     self.stats["locations"][location] = 0
                 self.stats["locations"][location] += 1
-            
+
             # Track hourly requests
             now = datetime.now()
             hour_key = now.strftime("%Y-%m-%d %H:00")
             if hour_key not in self.stats["hourly_requests"]:
                 self.stats["hourly_requests"][hour_key] = 0
             self.stats["hourly_requests"][hour_key] += 1
-            
+
             # Track daily requests
             day_key = now.strftime("%Y-%m-%d")
             if day_key not in self.stats["daily_requests"]:
                 self.stats["daily_requests"][day_key] = 0
             self.stats["daily_requests"][day_key] += 1
-            
+
             self.stats["last_updated"] = now.isoformat()
             self._save_stats()
-    
+
     def record_error(self, error_type="unknown"):
         """Record an error"""
         with self.lock:
             self.stats["total_errors"] += 1
-            
+
             if error_type not in self.stats["error_types"]:
                 self.stats["error_types"][error_type] = 0
             self.stats["error_types"][error_type] += 1
-            
+
             self.stats["last_updated"] = datetime.now().isoformat()
             self._save_stats()
-    
+
     def get_stats(self):
         """Get current stats"""
         with self.lock:
             return self.stats.copy()
-    
+
     def get_recent_hourly(self, hours=24):
         """Get requests for the last N hours"""
         with self.lock:
             now = datetime.now()
             result = []
-            
+
             for i in range(hours):
                 hour = now - timedelta(hours=i)
                 hour_key = hour.strftime("%Y-%m-%d %H:00")
@@ -106,16 +104,16 @@ class StatsTracker:
                     "hour": hour_key,
                     "count": count
                 })
-            
+
             # Return in chronological order (oldest first)
             return list(reversed(result))
-    
+
     def get_recent_daily(self, days=7):
         """Get requests for the last N days"""
         with self.lock:
             now = datetime.now()
             result = []
-            
+
             for i in range(days):
                 day = now - timedelta(days=i)
                 day_key = day.strftime("%Y-%m-%d")
@@ -124,10 +122,10 @@ class StatsTracker:
                     "date": day_key,
                     "count": count
                 })
-            
+
             # Return in chronological order (oldest first)
             return list(reversed(result))
-    
+
     def get_top_locations(self, limit=10):
         """Get top N requested locations"""
         with self.lock:
@@ -136,5 +134,5 @@ class StatsTracker:
                 key=lambda x: x[1],
                 reverse=True
             )
-            return [{"location": loc, "count": count} 
+            return [{"location": loc, "count": count}
                     for loc, count in sorted_locs[:limit]]

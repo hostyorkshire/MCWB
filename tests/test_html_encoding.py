@@ -64,7 +64,7 @@ def test_html_encoded_json():
     # HTML-encoded messages that don't result in valid JSON will still be rejected
     print(f"✓ Processed {len(test_lines)} test inputs")
     print(f"✓ Received {len(received)} valid message(s)")
-    
+
     # We expect at least 1 message to be received (the last one)
     assert len(received) >= 1, f"Expected at least 1 valid message, got {len(received)}"
     print(f"✓ Messages with HTML entities are now properly decoded")

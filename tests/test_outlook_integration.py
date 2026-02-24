@@ -19,18 +19,18 @@ def integration_test():
     print("INTEGRATION TEST: Complete Weather Outlook Flow")
     print("=" * 70)
     print()
-    
+
     bot = WeatherBot(debug=False)
     bot._ser = MagicMock()
-    
+
     print("Simulating a complete user conversation:")
     print("-" * 70)
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # ===== Step 1: Initial weather request =====
         print("\n[User on #weather channel]: wx York UK")
         print()
-        
+
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
             "results": [{
@@ -41,7 +41,7 @@ def integration_test():
                 "longitude": -1.0873
             }]
         }
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -54,10 +54,10 @@ def integration_test():
                 "weather_code": 3,
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
         bot._handle_channel_message("UserNode123: wx York UK", 1)
-        
+
         # Extract bot responses
         calls = bot._ser.write.call_args_list
         print("[WeatherBot responses]:")
@@ -68,14 +68,14 @@ def integration_test():
                 print(f"\n{i}. {text}")
             except:
                 pass
-        
+
         print()
         print("-" * 70)
-        
+
         # ===== Step 2: User says yes =====
         print("\n[User on #weather channel]: y")
         print()
-        
+
         outlook_response = MagicMock()
         outlook_response.json.return_value = {
             "daily": {
@@ -85,11 +85,11 @@ def integration_test():
                 "weather_code": [3, 61, 2]
             }
         }
-        
+
         mock_get.side_effect = [outlook_response]
         bot._ser.write.reset_mock()
         bot._handle_channel_message("UserNode123: y", 1)
-        
+
         # Extract outlook response
         calls = bot._ser.write.call_args_list
         print("[WeatherBot response]:")
@@ -100,13 +100,13 @@ def integration_test():
                 print(f"\n{text}")
             except:
                 pass
-        
+
         print()
         print("=" * 70)
         print("✅ INTEGRATION TEST COMPLETE")
         print("=" * 70)
         print()
-        
+
         # Verify state
         state_key = ("UserNode123", 1)
         if state_key not in bot._pending_outlook:
@@ -114,7 +114,7 @@ def integration_test():
         else:
             print("❌ State not cleaned up")
             return False
-        
+
         return True
 
 
@@ -124,15 +124,15 @@ def test_character_limits():
     print("CHARACTER LIMIT VERIFICATION")
     print("=" * 70)
     print()
-    
+
     bot = WeatherBot(debug=False)
-    
+
     # Test with long city name
     location_data = {
         "name": "Birmingham",
         "country_code": "GB"
     }
-    
+
     outlook_data = {
         "daily": {
             "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
@@ -141,14 +141,14 @@ def test_character_limits():
             "weather_code": [96, 99, 95]  # Longest condition names
         }
     }
-    
+
     outlook = bot.format_outlook_response(location_data, outlook_data)
     print("Longest possible outlook message:")
     print(outlook)
     print()
     print(f"Length: {len(outlook)} characters")
     print()
-    
+
     # LoRa typically supports 200-237 bytes per message
     if len(outlook) < 150:
         print(f"✅ PASS: Message fits comfortably in MeshCore limits ({len(outlook)} < 150)")
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     success = True
     success = integration_test() and success
     success = test_character_limits() and success
-    
+
     if success:
         print("\n" + "=" * 70)
         print("✅ ALL INTEGRATION TESTS PASSED")

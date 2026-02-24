@@ -19,10 +19,10 @@ def diagnose_command(command):
     """Diagnose a command line to see if it will block channels"""
     print(f"Command: {command}")
     print()
-    
+
     has_channel_filter = "--channel" in command or "-c " in command
     has_announce = "--announce-channel" in command or "-a " in command
-    
+
     if has_channel_filter:
         # Extract channel value
         parts = command.split()
@@ -31,7 +31,7 @@ def diagnose_command(command):
             if part in ["--channel", "-c"] and i + 1 < len(parts):
                 channel_val = parts[i + 1]
                 break
-        
+
         print("⚠ WARNING: Channel filter is ENABLED")
         print(f"  Filter value: {channel_val}")
         print()
@@ -47,9 +47,9 @@ def diagnose_command(command):
         print("✓ Channel filter is NOT set")
         print("  ✓ Bot accepts queries from ALL channels")
         print("  ✓ Bot replies on the same channel where each query came from")
-    
+
     print()
-    
+
     if has_announce:
         parts = command.split()
         announce_val = None
@@ -61,7 +61,7 @@ def diagnose_command(command):
         print("  (This only affects periodic announcements, not query responses)")
     else:
         print("ℹ No announce channel parameter (defaults to 'wxtest')")
-    
+
     print()
     print("="*70)
 
@@ -72,13 +72,13 @@ print()
 scenarios = [
     ("DEFAULT (no parameters)",
      "python3 weather_bot.py --port auto --baud 115200 -d"),
-    
+
     ("WITH channel filter (BLOCKS other channels)",
      "python3 weather_bot.py --port auto --baud 115200 --channel weather -d"),
-    
+
     ("WITH empty channel filter (ALLOWS all channels)",
      "python3 weather_bot.py --port auto --baud 115200 --channel \"\" -d"),
-    
+
     ("WITH announce channel only (ALLOWS all channels)",
      "python3 weather_bot.py --port auto --baud 115200 --announce-channel wxtest -d"),
 ]

@@ -5,7 +5,6 @@ Provides easy command-line access to view logs
 """
 
 import sys
-import os
 import argparse
 from pathlib import Path
 import subprocess
@@ -27,11 +26,11 @@ def list_logs():
     print("=" * 70)
     print("Available Log Files")
     print("=" * 70)
-    
+
     if not LOGS_DIR.exists():
         print("No logs directory found!")
         return
-    
+
     for log_type, filename in LOG_FILES.items():
         log_path = LOGS_DIR / filename
         if log_path.exists():
@@ -40,7 +39,7 @@ def list_logs():
             print(f"  {log_type:20s} -> {filename:30s} ({size_str})")
         else:
             print(f"  {log_type:20s} -> {filename:30s} (not found)")
-    
+
     # List any other log files
     print("\nOther files in logs/:")
     for file in LOGS_DIR.glob("*"):
@@ -65,14 +64,14 @@ def view_log(log_type, lines=None, follow=False, errors_only=False, grep=None):
         print(f"Error: Unknown log type '{log_type}'")
         print(f"Available types: {', '.join(LOG_FILES.keys())}")
         return 1
-    
+
     log_path = LOGS_DIR / LOG_FILES[log_type]
-    
+
     if not log_path.exists():
         print(f"Error: Log file not found: {log_path}")
         print("The log file will be created when the bot runs.")
         return 1
-    
+
     try:
         if follow:
             # Use tail -f to follow the log
@@ -87,18 +86,18 @@ def view_log(log_type, lines=None, follow=False, errors_only=False, grep=None):
             # Read and display the log
             with open(log_path, 'r') as f:
                 log_lines = f.readlines()
-            
+
             # Filter if requested
             if errors_only:
                 log_lines = [line for line in log_lines if 'ERROR' in line or 'CRITICAL' in line]
-            
+
             if grep:
                 log_lines = [line for line in log_lines if grep.lower() in line.lower()]
-            
+
             # Show last N lines if specified
             if lines:
                 log_lines = log_lines[-lines:]
-            
+
             # Display
             if not log_lines:
                 print("No matching log entries found.")
@@ -107,14 +106,14 @@ def view_log(log_type, lines=None, follow=False, errors_only=False, grep=None):
                 print("-" * 70)
                 for line in log_lines:
                     print(line, end='')
-    
+
     except KeyboardInterrupt:
         print("\n\nStopped viewing log.")
         return 0
     except Exception as e:
         print(f"Error reading log: {e}")
         return 1
-    
+
     return 0
 
 
@@ -125,14 +124,14 @@ def clear_logs(confirm=False):
         if response.lower() not in ['yes', 'y']:
             print("Cancelled.")
             return
-    
+
     deleted = 0
     for log_file in LOGS_DIR.glob("*.log*"):
         if log_file.is_file():
             log_file.unlink()
             print(f"Deleted: {log_file.name}")
             deleted += 1
-    
+
     print(f"\nDeleted {deleted} log file(s).")
 
 
@@ -164,44 +163,44 @@ Examples:
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
+
     parser.add_argument(
         "command",
         choices=["list", "bot", "bot-error", "meshcore", "meshcore-error", "clear"],
         help="Command to execute"
     )
-    
+
     parser.add_argument(
         "-n", "--lines",
         type=int,
         help="Number of lines to show (from end of log)"
     )
-    
+
     parser.add_argument(
         "-f", "--follow",
         action="store_true",
         help="Follow log in real-time (like tail -f)"
     )
-    
+
     parser.add_argument(
         "--errors",
         action="store_true",
         help="Show only ERROR and CRITICAL messages"
     )
-    
+
     parser.add_argument(
         "--grep",
         help="Search for specific text in log"
     )
-    
+
     parser.add_argument(
         "-y", "--yes",
         action="store_true",
         help="Skip confirmation (for clear command)"
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.command == "list":
         list_logs()
         return 0

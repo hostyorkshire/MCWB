@@ -23,25 +23,25 @@ _RESP_CHANNEL_MSG_V3 = 0x11
 
 class MockSerial:
     """Mock serial port that simulates MeshCore receiving messages on different channels"""
-    
+
     def __init__(self):
         self.is_open = True
         self.in_waiting = 0
         self.buffer = BytesIO()
         self.sent_frames = []
-        
+
     def read(self, size):
         return self.buffer.read(size)
-        
+
     def readline(self):
         return b''
-        
+
     def write(self, data):
         self.sent_frames.append(data)
-        
+
     def close(self):
         self.is_open = False
-        
+
     def inject_channel_msg_v3(self, channel_idx, sender, text):
         """Inject a message on a specific channel (V3 format)"""
         code = bytes([_RESP_CHANNEL_MSG_V3])
@@ -50,11 +50,11 @@ class MockSerial:
         txt_type = bytes([0])
         timestamp = int(time.time()).to_bytes(4, 'little')
         message = f"{sender}: {text}".encode('utf-8')
-        
+
         payload = code + chan_idx + path_len + txt_type + timestamp + message
         length = len(payload) - 1
         frame = bytes([0xFE, 0xFE]) + bytes([length]) + payload
-        
+
         self.buffer = BytesIO(frame)
         self.in_waiting = len(frame)
         return frame
@@ -62,17 +62,17 @@ class MockSerial:
 
 def test_hashtag_channels():
     """Test that bot responds to wx commands from any hashtag channel"""
-    
+
     print("=" * 70)
     print("DEMONSTRATION: Weather Bot Works From Any Hashtag Channel")
     print("=" * 70)
     print()
-    
+
     # Create bot with NO channel restrictions (default behavior)
     mock_serial = MockSerial()
     bot = WeatherBot(node_id="TEST_BOT", port=None, debug=False)
     bot._ser = mock_serial
-    
+
     # Test scenarios: Different hashtag channels sending wx commands
     test_cases = [
         (0, "DefaultUser", "wx London", "Channel 0 (default channel)"),
@@ -81,23 +81,23 @@ def test_hashtag_channels():
         (3, "AlertUser", "wx Madrid", "Channel 3 (e.g., #alerts)"),
         (7, "RandomUser", "wx Rome", "Channel 7 (any hashtag channel)"),
     ]
-    
+
     print("Testing bot with NO channel restrictions...")
     print(f"Bot configuration: allowed_channel_idx = {bot.allowed_channel_idx}")
     print()
-    
+
     all_passed = True
-    
+
     for channel_idx, sender, command, description in test_cases:
         print(f"Test: {description}")
         print(f"  Sending: '{command}' from {sender} on channel_idx={channel_idx}")
-        
+
         # Clear previous sent frames
         mock_serial.sent_frames.clear()
-        
+
         # Inject message on this channel
         mock_serial.inject_channel_msg_v3(channel_idx, sender, command)
-        
+
         # Process the message by dispatching it
         try:
             # Build the payload (excluding the frame wrapper)
@@ -107,8 +107,8 @@ def test_hashtag_channels():
             txt_type = 0
             timestamp = int(time.time())
             message_text = f"{sender}: {command}"
-            
-            # Construct V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + 
+
+            # Construct V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) +
             #                      path_len(1) + txt_type(1) + timestamp(4) + text
             payload = bytes([
                 code,           # 0x11
@@ -118,13 +118,13 @@ def test_hashtag_channels():
                 path_len,       # path_len
                 txt_type,       # txt_type
             ]) + timestamp.to_bytes(4, 'little') + message_text.encode('utf-8')
-            
+
             bot._dispatch(payload)
-            
+
             # Check if bot sent a response
             if len(mock_serial.sent_frames) > 0:
                 print(f"  ✅ Bot responded on channel_idx={channel_idx}")
-                
+
                 # Verify the response went to the same channel
                 # Frame format: CMD_SEND_CHAN_MSG has channel_idx at byte 2
                 for frame in mock_serial.sent_frames:
@@ -138,13 +138,13 @@ def test_hashtag_channels():
             else:
                 print(f"  ❌ Bot did NOT respond")
                 all_passed = False
-                
+
         except Exception as e:
             print(f"  ❌ Error processing message: {e}")
             all_passed = False
-            
+
         print()
-    
+
     print("=" * 70)
     if all_passed:
         print("✅ SUCCESS: Bot responds to wx commands from ALL hashtag channels!")
@@ -162,7 +162,7 @@ def test_hashtag_channels():
     else:
         print("❌ FAILURE: Some tests did not pass")
     print("=" * 70)
-    
+
     return all_passed
 
 

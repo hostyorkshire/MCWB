@@ -19,7 +19,7 @@ def test_weather_channel():
     print("TEST: Bot with --channel weather")
     print("=" * 70)
     print()
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # Mock responses
         geocoding_response = MagicMock()
@@ -32,7 +32,7 @@ def test_weather_channel():
                 "longitude": -1.48333
             }]
         }
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -45,16 +45,16 @@ def test_weather_channel():
                 "weather_code": 3
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Create bot with --channel weather (from problem statement)
         bot = WeatherBot(node_id="WX_BOT", debug=True, channel="weather")
-        
+
         # Track messages
         sent_messages = []
         original_send = bot.mesh.send_message
-        
+
         def track_send(content, message_type, channel=None, channel_idx=None):
             sent_messages.append({
                 'content': content,
@@ -62,10 +62,10 @@ def test_weather_channel():
                 'channel_idx': channel_idx
             })
             return original_send(content, message_type, channel, channel_idx)
-        
+
         bot.mesh.send_message = track_send
         bot.mesh.start()
-        
+
         # Simulate exact message from problem statement logs
         msg = MeshCoreMessage(
             sender="USER1",
@@ -74,23 +74,23 @@ def test_weather_channel():
             channel=None,
             channel_idx=0
         )
-        
+
         print("Scenario from problem statement:")
         print("  Command: python3 weather_bot.py --channel weather")
         print(f"  Receives: message from {msg.sender} on channel_idx {msg.channel_idx}")
         print(f"  Content: {msg.content}")
         print()
-        
+
         sent_messages.clear()
         bot.handle_message(msg)
-        
+
         print("Checking bot reply...")
         assert len(sent_messages) == 1
-        
+
         sent = sent_messages[0]
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
-        
+
         if sent['channel_idx'] == 0:
             print("✅ SUCCESS!")
             print()
@@ -103,7 +103,7 @@ def test_weather_channel():
             print(f"  Expected: channel_idx=0")
             print(f"  Got: channel_idx={sent['channel_idx']}")
             success = False
-        
+
         bot.mesh.stop()
         return success
 
@@ -114,10 +114,10 @@ def main():
     print("╔" + "=" * 68 + "╗")
     print("║" + " " * 18 + "Weather Channel Reply Test" + " " * 24 + "║")
     print("╚" + "=" * 68 + "╝")
-    
+
     try:
         success = test_weather_channel()
-        
+
         print()
         print("=" * 70)
         if success:
@@ -132,9 +132,9 @@ def main():
             print("❌ TEST FAILED")
         print("=" * 70)
         print()
-        
+
         return 0 if success else 1
-        
+
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback

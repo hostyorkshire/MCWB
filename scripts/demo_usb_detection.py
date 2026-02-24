@@ -14,15 +14,15 @@ def main():
     print("USB Port Auto-Detection Demo")
     print("=" * 60)
     print()
-    
+
     print("Searching for available USB serial ports...")
     print()
-    
+
     ports = find_serial_ports(debug=True)
-    
+
     print()
     print("-" * 60)
-    
+
     if ports:
         print(f"✓ Found {len(ports)} port(s):")
         for i, port in enumerate(ports, 1):
@@ -43,10 +43,10 @@ def main():
         print()
         print("To check manually:")
         print("  ls -l /dev/ttyUSB* /dev/ttyACM*")
-    
+
     print("-" * 60)
     print()
-    
+
     return 0 if ports else 1
 
 if __name__ == "__main__":

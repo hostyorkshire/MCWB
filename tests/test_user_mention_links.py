@@ -21,12 +21,12 @@ import re
 
 class TestUserMentionLinks(unittest.TestCase):
     """Test user mention link conversion logic"""
-    
+
     def test_mention_pattern_detection(self):
         """Test that the regex pattern can detect @username mentions"""
         # This is the pattern used in the JavaScript: /@([a-zA-Z0-9_.-]+)/g
         pattern = r'@([a-zA-Z0-9_.-]+)'
-        
+
         # Test cases
         test_cases = [
             ('hi @john_doe', ['john_doe']),
@@ -37,18 +37,18 @@ class TestUserMentionLinks(unittest.TestCase):
             ('no mentions here', []),
             ('@', []),  # @ without username should not match
         ]
-        
+
         for text, expected_usernames in test_cases:
             matches = re.findall(pattern, text)
-            self.assertEqual(matches, expected_usernames, 
+            self.assertEqual(matches, expected_usernames,
                            f"Failed for text: {text}")
-    
+
     def test_markdown_link_pattern_detection(self):
         """Test that the regex pattern can detect markdown-style @username mention links"""
         # This is the pattern used in the JavaScript for markdown links:
         # /\[@([a-zA-Z0-9_.-]+)\]\(meshcore:\/\/user\/([a-zA-Z0-9_.-]+)\)/g
         pattern = r'\[@([a-zA-Z0-9_.-]+)\]\(meshcore://user/([a-zA-Z0-9_.-]+)\)'
-        
+
         # Test cases - should extract both the display name and the URL username
         test_cases = [
             ('hi [@john_doe](meshcore://user/john_doe)', [('john_doe', 'john_doe')]),
@@ -56,27 +56,27 @@ class TestUserMentionLinks(unittest.TestCase):
             ('no markdown links here', []),
             ('hi @user', []),  # Plain @mention should not match markdown pattern
         ]
-        
+
         for text, expected_matches in test_cases:
             matches = re.findall(pattern, text)
-            self.assertEqual(matches, expected_matches, 
+            self.assertEqual(matches, expected_matches,
                            f"Failed for text: {text}")
-    
+
     def test_url_format(self):
         """Test that the URL format is correct for meshcore app"""
         # The URL should be: meshcore://user/{username}
         username = "john_doe"
         expected_url = f"meshcore://user/{username}"
-        
+
         # Verify the format is correct
         self.assertTrue(expected_url.startswith("meshcore://user/"))
         self.assertIn(username, expected_url)
-    
+
     def test_html_escaping_required(self):
         """Test that HTML special characters need to be escaped"""
         # These characters should be escaped before converting @mentions
         dangerous_input = '<script>alert("xss")</script> @user'
-        
+
         # After HTML escaping, script tags should be neutralized
         # The escaped version should have &lt; and &gt;
         from html import escape
@@ -84,14 +84,14 @@ class TestUserMentionLinks(unittest.TestCase):
         self.assertIn('&lt;script&gt;', escaped)
         self.assertIn('&lt;/script&gt;', escaped)
         self.assertIn('@user', escaped)  # @mention should still be present
-    
+
     def test_weather_bot_sends_mentions(self):
         """Test that the weather bot no longer includes @username mentions in responses"""
         from weather_bot import WeatherBot
         from unittest.mock import MagicMock
-        
+
         bot = WeatherBot(node_id="TEST_BOT", debug=False)
-        
+
         # Mock location and weather data
         location_data = {"name": "York", "country_code": "GB"}
         weather_data = {
@@ -104,10 +104,10 @@ class TestUserMentionLinks(unittest.TestCase):
                 "weather_code": 0
             }
         }
-        
+
         # Format response - sender parameter no longer used
         response = bot.format_weather_response(location_data, weather_data)
-        
+
         # Verify @mention is NOT included
         self.assertNotIn('[@testuser](meshcore://user/testuser)', response)
         self.assertNotIn('hi @', response.lower())
@@ -118,11 +118,11 @@ class TestUserMentionLinks(unittest.TestCase):
 if __name__ == '__main__':
     print("Running User Mention Link Tests...")
     print("=" * 70)
-    
+
     # Run tests
     suite = unittest.TestLoader().loadTestsFromTestCase(TestUserMentionLinks)
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
-    
+
     # Exit with appropriate code
     sys.exit(0 if result.wasSuccessful() else 1)

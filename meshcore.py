@@ -9,8 +9,7 @@ import time
 import threading
 import html
 from typing import Dict, Any, Optional, Callable
-from datetime import datetime
-from logging_config import get_meshcore_logger, log_exception
+from logging_config import get_meshcore_logger
 
 # MeshCore companion radio binary protocol constants (USB/serial framing)
 # Reference: https://github.com/meshcore-dev/MeshCore/wiki/Companion-Radio-Protocol
@@ -205,7 +204,7 @@ class MeshCore:
         self.message_handlers = {}
         self.running = False
         self.channel_filter = None  # None means listen to all channels
-        
+
         # Set up logging
         self.logger, self.error_logger = get_meshcore_logger(debug=debug)
 

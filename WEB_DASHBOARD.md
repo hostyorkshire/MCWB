@@ -401,6 +401,39 @@ cd ~/MCWB
 curl http://localhost:5000
 ```
 
+**Issue 7: Dependencies Not Installed or Import Errors**
+
+If the service logs show `ModuleNotFoundError` or `ImportError`:
+
+```bash
+# Check if dependencies are installed
+python3 -c "import flask, flask_cors; print('✅ Dependencies OK')" 2>&1
+
+# If error, install dependencies
+pip3 install --user -r requirements.txt
+
+# Restart service
+sudo systemctl restart mcwb-dashboard
+
+# Check logs to verify it started
+sudo journalctl -u mcwb-dashboard -n 20
+```
+
+**Issue 8: Service Configuration Mismatch**
+
+View the actual service configuration to verify paths and user:
+
+```bash
+cat /etc/systemd/system/mcwb-dashboard.service
+```
+
+Verify:
+- `User=` matches your username (check with `whoami`)
+- `WorkingDirectory=` points to your MCWB installation directory
+- `ExecStart=` has correct paths and `--host 0.0.0.0 --port 5000`
+
+**If any mismatch found:** Reinstall with `./install_dashboard_service.sh` to auto-fix.
+
 ## Troubleshooting
 
 ### Systemd Service Fails to Start
