@@ -7,8 +7,27 @@ Dark-themed web interface for monitoring the MeshCore Weather Bot
 import os
 import sys
 from pathlib import Path
-from flask import Flask, render_template, jsonify, send_from_directory
-from flask_cors import CORS
+
+# Check for required dependencies before importing
+try:
+    from flask import Flask, render_template, jsonify, send_from_directory
+    from flask_cors import CORS
+except ImportError as e:
+    print("=" * 70)
+    print("ERROR: Required dependencies not installed")
+    print("=" * 70)
+    print()
+    print("The web dashboard requires Flask and flask-cors.")
+    print("Please install the required dependencies:")
+    print()
+    print("    pip install -r requirements.txt")
+    print()
+    print("Or install manually:")
+    print("    pip install flask>=2.3.2 flask-cors>=4.0.0")
+    print()
+    print("=" * 70)
+    sys.exit(1)
+
 import json
 from datetime import datetime
 from stats_tracker import StatsTracker
