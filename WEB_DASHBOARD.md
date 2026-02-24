@@ -53,6 +53,7 @@ Open a web browser on any device on your local network and go to the URL from St
 ## Features
 
 - 🌙 **Dark Theme** - Easy on the eyes with a beautiful gradient background
+- 📡 **Active Channels** - See which channels your LORA meshcore radio is broadcasting on (e.g., #weather, #alerts)
 - 📊 **Real-time Status** - Monitor bot status and log file information
 - 📝 **Log Viewer** - View and filter bot logs with color-coded entries
 - 🔄 **Auto-refresh** - Automatically updates every 10 seconds
@@ -106,7 +107,9 @@ python3 web_dashboard.py --help
 ### Dashboard Sections
 
 1. **System Status** - Shows the current status of the bot and log file information
-2. **Log Viewer** - View logs from different sources:
+2. **Active Channels** - Displays which channels the LORA meshcore radio is broadcasting on (e.g., #weather, #alerts)
+3. **Usage Statistics** - Charts and metrics showing bot usage over time
+4. **Log Viewer** - View logs from different sources:
    - Bot Log - Main weather bot logs
    - Bot Errors - Error logs from the bot
    - MeshCore - MeshCore communication logs
