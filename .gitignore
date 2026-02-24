@@ -41,6 +41,7 @@ Thumbs.db
 *.log.*
 logs/*.log
 logs/*.log.*
+logs/.last_announce
 !logs/README.md
 
 # Temporary files
