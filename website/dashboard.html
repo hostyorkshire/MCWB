@@ -9,7 +9,7 @@
     <style>
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
             gap: 1.5rem;
             margin: 2rem 0;
         }
@@ -211,6 +211,27 @@
         .toggle-switch.active .toggle-slider {
             transform: translateX(26px);
         }
+
+        .api-url-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .api-url-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .api-url-container button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -256,10 +277,10 @@
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                     <h4 style="margin-top: 0; color: var(--accent-primary); font-size: 1rem;">Configure Custom API URL</h4>
                     <p style="font-size: 0.9em; margin-bottom: 0.5rem;">If your dashboard is running on a different device (e.g., Raspberry Pi), enter its URL below:</p>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div class="api-url-container">
                         <input type="text" id="customApiUrl" placeholder="http://192.168.1.109:5000" 
                             style="flex: 1; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; font-size: 0.9rem;">
-                        <button onclick="setCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--accent-primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;">Connect</button>
+                        <button onclick="setCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--accent-primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Connect</button>
                         <button onclick="clearCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear</button>
                     </div>
                     <p style="font-size: 0.85em; margin-top: 0.5rem; color: var(--text-muted);">Example: <code>http://192.168.1.109:5000</code> or <code>http://raspberrypi.local:5000</code></p>

@@ -59,6 +59,7 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     transition: background 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -174,6 +175,8 @@ main {
     padding: 2.5rem;
     box-shadow: 0 8px 32px var(--shadow);
     transition: all 0.3s ease;
+    overflow-x: hidden;
+    word-wrap: break-word;
 }
 
 /* Typography */
@@ -198,6 +201,8 @@ a {
     color: var(--accent-primary);
     text-decoration: none;
     transition: color 0.2s ease;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 a:hover {
@@ -225,6 +230,8 @@ code {
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 0.9em;
     color: var(--accent-primary);
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 pre {
@@ -252,6 +259,8 @@ table {
     background: var(--bg-tertiary);
     border-radius: 8px;
     overflow: hidden;
+    display: block;
+    overflow-x: auto;
 }
 
 thead {
@@ -308,7 +317,7 @@ tr:hover {
 /* Feature Cards */
 .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 2rem;
     margin: 2rem 0;
 }
@@ -466,6 +475,7 @@ footer a {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
+        padding: 0 1rem;
     }
 
     .theme-toggle {
@@ -490,22 +500,48 @@ footer a {
     }
     
     .content-wrapper {
-        padding: 1.5rem;
+        padding: 1rem;
     }
     
     main {
-        padding: 2rem 1rem;
+        padding: 1.5rem 0.5rem;
     }
     
     .feature-grid {
         grid-template-columns: 1fr;
+    }
+
+    .quick-links {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+    }
+
+    .hero .btn {
+        display: block;
+        margin: 0.5rem auto;
+    }
+
+    pre {
+        font-size: 0.85rem;
+        padding: 1rem;
+    }
+
+    table {
+        font-size: 0.9rem;
     }
 }
 
 /* Quick Links Section */
 .quick-links {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
     gap: 1.5rem;
     margin: 2rem 0;
 }
