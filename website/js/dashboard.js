@@ -341,18 +341,32 @@ function updateCharts() {
     }
 }
 
-// Simulate adding log entries (in real implementation, fetch from API)
+// Simulate adding log entries (demo mode only)
 function addLogEntry(timestamp, level, message) {
     const logContainer = document.getElementById('requestLog');
     if (!logContainer) return;
     
     const entry = document.createElement('div');
     entry.className = 'log-entry';
-    entry.innerHTML = `
-        <span class="log-timestamp">[${timestamp}]</span>
-        <span class="log-level-${level}">${level}</span>
-        <span class="log-content">${message}</span>
-    `;
+    
+    // Create child elements safely
+    const timestampSpan = document.createElement('span');
+    timestampSpan.className = 'log-timestamp';
+    timestampSpan.textContent = `[${timestamp}]`;
+    
+    const levelSpan = document.createElement('span');
+    levelSpan.className = `log-level-${level}`;
+    levelSpan.textContent = level;
+    
+    const contentSpan = document.createElement('span');
+    contentSpan.className = 'log-content';
+    contentSpan.textContent = message;
+    
+    entry.appendChild(timestampSpan);
+    entry.appendChild(document.createTextNode(' '));
+    entry.appendChild(levelSpan);
+    entry.appendChild(document.createTextNode(' '));
+    entry.appendChild(contentSpan);
     
     // Add to top
     logContainer.insertBefore(entry, logContainer.firstChild);
@@ -363,15 +377,17 @@ function addLogEntry(timestamp, level, message) {
     }
 }
 
-// Demo: Simulate log updates every 30 seconds
+// Demo: Simulate log updates every 30 seconds (only in demo mode)
 setInterval(function() {
-    const now = new Date();
-    const timestamp = now.toLocaleTimeString();
-    const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
-    const city = cities[Math.floor(Math.random() * cities.length)];
-    const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
-    const user = users[Math.floor(Math.random() * users.length)];
-    
-    addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
+    if (!dashboardUrl) {  // Only in demo mode
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
+        const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
+        const user = users[Math.floor(Math.random() * users.length)];
+        
+        addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
+    }
 }, 30000);
 
