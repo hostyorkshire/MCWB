@@ -385,7 +385,8 @@ footer a {
 /* WordPress Compatibility Styles */
 /* These styles ensure the content works well when embedded in WordPress */
 .wp-compatibility {
-    /* Remove WordPress default margins on embedded content */
+    /* WordPress compatibility class - used as a marker for conditional styling */
+    /* No default styles needed as child selectors handle specific cases */
 }
 
 .wp-compatibility .container {
