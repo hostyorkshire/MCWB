@@ -182,7 +182,7 @@ python3 web_dashboard.py
 
 The dashboard will display the connection URL when it starts.
 
-**Can't connect?** See the [Troubleshooting Connection Issues](WEB_DASHBOARD.md#troubleshooting-connection-issues) section in WEB_DASHBOARD.md.
+**Can't connect?** See [DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md](DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md) for a comprehensive step-by-step guide, or the [Troubleshooting Connection Issues](WEB_DASHBOARD.md#troubleshooting-connection-issues) section in WEB_DASHBOARD.md.
 
 ![Dark Theme Dashboard](https://github.com/user-attachments/assets/514e2c7d-0c52-4708-b0fc-ab571c9069f6)
 
