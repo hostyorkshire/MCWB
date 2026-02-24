@@ -171,13 +171,12 @@ def get_local_ip():
     """Get the local IP address for network access"""
     try:
         # Create a socket to get the local IP
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.settimeout(0.1)
-        # Connect to a public DNS server (doesn't actually send data)
-        s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
-        s.close()
-        return local_ip
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.settimeout(0.1)
+            # Connect to a public DNS server (doesn't actually send data)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            return local_ip
     except Exception:
         # Fallback: try to get from hostname
         try:

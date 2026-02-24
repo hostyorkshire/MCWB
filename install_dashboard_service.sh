@@ -141,10 +141,16 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
         echo "   Network: http://${LOCAL_IP}:5000"
         echo ""
         
-        # Test connectivity
+        # Test connectivity (wait for Flask to fully initialize)
         echo "🔍 Testing connectivity..."
+        # Wait 3 seconds for Flask application to fully initialize
         sleep 3
-        if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
+        
+        # Check if curl is available
+        if ! command -v curl >/dev/null 2>&1; then
+            echo "   ℹ️  curl not available, skipping connectivity test"
+            echo "   Try connecting manually: http://${LOCAL_IP}:5000"
+        elif curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
             echo "   ✅ Dashboard is responding on http://localhost:5000"
             echo "   ✅ You should be able to connect from other devices at:"
             echo "      http://${LOCAL_IP}:5000"
