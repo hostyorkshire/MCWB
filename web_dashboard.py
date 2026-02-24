@@ -71,7 +71,12 @@ def api_status():
 
 @app.route('/api/logs/<log_type>')
 def api_logs(log_type):
-    """Get log content"""
+    """Get log content
+    
+    Security: log_type is validated against a whitelist to prevent
+    path traversal attacks. Only predefined log files can be accessed.
+    """
+    # Whitelist of allowed log files - prevents path traversal
     log_map = {
         "bot": "weather_bot.log",
         "bot_error": "weather_bot_error.log",

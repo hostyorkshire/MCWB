@@ -315,11 +315,22 @@
                     const size = info.exists ? formatBytes(info.size) : 'N/A';
                     const modified = info.modified || 'Never';
                     
-                    logItem.innerHTML = `
-                        <div class="log-name">${name}</div>
-                        <div class="log-info">Size: ${size}</div>
-                        <div class="log-info">Modified: ${modified}</div>
-                    `;
+                    // Create elements safely without innerHTML
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'log-name';
+                    nameDiv.textContent = name;
+                    
+                    const sizeDiv = document.createElement('div');
+                    sizeDiv.className = 'log-info';
+                    sizeDiv.textContent = `Size: ${size}`;
+                    
+                    const modDiv = document.createElement('div');
+                    modDiv.className = 'log-info';
+                    modDiv.textContent = `Modified: ${modified}`;
+                    
+                    logItem.appendChild(nameDiv);
+                    logItem.appendChild(sizeDiv);
+                    logItem.appendChild(modDiv);
                     
                     logFilesDiv.appendChild(logItem);
                 }
