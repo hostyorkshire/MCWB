@@ -463,7 +463,39 @@ sudo systemctl daemon-reload
 sudo systemctl restart mcwb-dashboard.service
 ```
 
-**3. Path does not exist:**
+**3. Exit Code 1/FAILURE - Python packages not found:**
+
+This error occurs when Python packages (Flask, flask-cors) are installed in the user's local directory but the systemd service can't find them.
+
+**Symptoms:**
+- Service shows `code=exited, status=1/FAILURE`
+- Running `python3 web_dashboard.py` manually works fine
+- Service logs show `ModuleNotFoundError: No module named 'flask'`
+
+**Solution:** Use the automated installer which configures the service to find user-installed packages:
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+The installer automatically sets the `PYTHONPATH` environment variable in the service file to include your user's Python packages directory.
+
+**Manual Fix (if needed):**
+```bash
+# Get your user's Python packages directory
+python3 -c "import site; print(site.USER_SITE)"
+
+# Edit the service file
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+
+# Add this line in the [Service] section (replace PATH with output from above):
+# Environment="PYTHONPATH=/home/USERNAME/.local/lib/python3.X/site-packages"
+
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard.service
+```
+
+**4. Path does not exist:**
 
 Ensure all paths in the service file are correct:
 ```bash
@@ -476,7 +508,7 @@ ls /home/weatherbot/MCWB/web_dashboard.py
 which python3
 ```
 
-**4. View detailed error logs:**
+**5. View detailed error logs:**
 
 ```bash
 # View recent service logs
@@ -494,15 +526,21 @@ sudo journalctl -u mcwb-dashboard.service | grep -i "permission\|denied\|error"
 If you get an error like `ModuleNotFoundError: No module named 'flask'`, you need to install the required dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip3 install --user -r requirements.txt
 ```
 
 Or install manually:
 ```bash
-pip install flask>=2.3.2 flask-cors>=4.0.0
+pip3 install --user flask>=2.3.2 flask-cors>=4.0.0
 ```
 
 **Note:** If you recently pulled the latest code, you may need to reinstall dependencies as new packages may have been added.
+
+**Systemd Service Note:** The automated installer (`install_dashboard_service.sh`) automatically configures the systemd service to find user-installed packages. If you manually installed the service and are getting Flask import errors, reinstall using:
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
 
 ### Port Already in Use
 

@@ -42,9 +42,19 @@ echo "🔍 Checking Python dependencies..."
 if ! python3 -c "import flask" 2>/dev/null; then
     echo "⚠️  Warning: Flask not installed"
     echo "   Installing dependencies..."
-    pip3 install -r requirements.txt
+    pip3 install --user -r requirements.txt
 else
     echo "✅ Python dependencies OK"
+fi
+
+# Get the user's Python site-packages directory
+USER_SITE=$(python3 -c "import site; print(site.USER_SITE)" 2>/dev/null)
+
+# Validate USER_SITE was detected
+if [ -z "$USER_SITE" ]; then
+    echo "❌ Error: Could not detect Python user site-packages directory"
+    echo "   Please ensure Python 3 is installed correctly"
+    exit 1
 fi
 
 # Create a customized service file
@@ -53,6 +63,8 @@ echo "📝 Creating customized service file..."
 SERVICE_FILE=$(mktemp)
 sed "s|User=pi|User=$CURRENT_USER|g" mcwb-dashboard.service > $SERVICE_FILE
 sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" $SERVICE_FILE
+# Replace the USER_SITE_PACKAGES placeholder with actual path
+sed -i "s|USER_SITE_PACKAGES|$USER_SITE|g" $SERVICE_FILE
 
 echo "📄 Service file contents:"
 echo "----------------------------------------"
