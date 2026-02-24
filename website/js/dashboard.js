@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Re-render the chart if data exists
             const lineChart = document.querySelector('.line-chart');
             if (lineChart) {
-                fetchDashboardData();
+                updateCharts();
             }
         }, 250);
     });
