@@ -9,6 +9,19 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCustomApiUrlFromStorage();
     detectDashboardUrl();
     setupAutoRefresh();
+    
+    // Handle window resize for responsive chart
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            // Re-render the chart if data exists
+            const lineChart = document.querySelector('.line-chart');
+            if (lineChart) {
+                fetchDashboardData();
+            }
+        }, 250);
+    });
 });
 
 // Load custom API URL from localStorage or URL parameter
@@ -305,7 +318,10 @@ function initializeLineChart() {
 
 // Update line chart
 function updateLineChart(data) {
-    const width = 600;
+    // Get container width for responsive sizing
+    const container = document.querySelector('.line-chart');
+    const containerWidth = container ? container.offsetWidth : 600;
+    const width = Math.min(600, containerWidth);
     const height = 200;
     const padding = 20;
     const maxValue = Math.max(...data, 10);
@@ -321,9 +337,14 @@ function updateLineChart(data) {
     const areaPoints = linePoints + ` ${width - padding},${height - padding} ${padding},${height - padding}`;
     
     // Update SVG
+    const svg = document.querySelector('.line-chart svg');
     const line = document.getElementById('usageLine');
     const area = document.getElementById('usageArea');
     
+    if (svg) {
+        svg.setAttribute('width', width);
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    }
     if (line) line.setAttribute('points', linePoints);
     if (area) area.setAttribute('points', areaPoints);
 }
