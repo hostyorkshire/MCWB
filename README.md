@@ -16,6 +16,8 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 **🍓 Raspberry Pi Zero 2 Ready** - See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) for headless auto-start on boot setup!
 
+**🌙 NEW: Dark-Themed Web Dashboard** - Monitor your bot in real-time with a beautiful dark-themed web interface! See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for details.
+
 ## Overview
 
 MCWBv2 listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
@@ -125,6 +127,35 @@ USB serial port (no extra libraries beyond `pyserial`).  It handles:
 ```bash
 python3 weather_bot.py
 ```
+
+## Web Dashboard
+
+MCWBv2 now includes a beautiful dark-themed web interface for monitoring your bot in real-time!
+
+### Quick Start
+
+```bash
+# Install Flask (already in requirements.txt)
+pip install -r requirements.txt
+
+# Start the dashboard
+python3 web_dashboard.py
+```
+
+Access the dashboard at: **http://localhost:5000**
+
+![Dark Theme Dashboard](https://github.com/user-attachments/assets/514e2c7d-0c52-4708-b0fc-ab571c9069f6)
+
+### Features
+
+- 🌙 **Dark Theme** - Beautiful gradient background easy on the eyes
+- 📊 **Real-time Status** - Monitor bot and log file status
+- 📝 **Log Viewer** - View bot logs with color-coded entries (errors in red, warnings in yellow)
+- 🔄 **Auto-refresh** - Updates every 10 seconds automatically
+- 📱 **Responsive** - Works on desktop, tablet, and mobile
+
+For detailed setup instructions including systemd service configuration, see [WEB_DASHBOARD.md](WEB_DASHBOARD.md).
+
 
 Or specify the port explicitly:
 
