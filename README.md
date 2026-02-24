@@ -144,6 +144,12 @@ python3 web_dashboard.py
 
 Access the dashboard at: **http://localhost:5000**
 
+**Note:** By default, the dashboard only binds to localhost (127.0.0.1) for security. To access it from other devices on your network, use:
+
+```bash
+python3 web_dashboard.py --host 0.0.0.0
+```
+
 ![Dark Theme Dashboard](https://github.com/user-attachments/assets/514e2c7d-0c52-4708-b0fc-ab571c9069f6)
 
 ### Features

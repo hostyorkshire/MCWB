@@ -30,7 +30,12 @@ python3 web_dashboard.py
 
 By default, the dashboard will be available at:
 - **Local access:** http://localhost:5000
-- **Network access:** http://[your-ip]:5000
+
+To allow network access from other devices:
+```bash
+python3 web_dashboard.py --host 0.0.0.0
+```
+Then access at: **http://[your-ip]:5000**
 
 ### Command-Line Options
 
@@ -111,7 +116,8 @@ sudo systemctl status mcwb-dashboard.service
 
 ## Security Notes
 
-- By default, the dashboard binds to `0.0.0.0`, making it accessible from any network interface
+- By default, the dashboard binds to `127.0.0.1` (localhost only) for security
+- To allow network access, use `--host 0.0.0.0` (only on trusted networks)
 - For production use, consider:
   - Using a reverse proxy (nginx, Apache) with SSL/TLS
   - Implementing authentication

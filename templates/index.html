@@ -311,7 +311,7 @@
                     const logItem = document.createElement('div');
                     logItem.className = 'log-item';
                     
-                    const name = key.replace('_', ' ').toUpperCase();
+                    const name = key.replace(/_/g, ' ').toUpperCase();
                     const size = info.exists ? formatBytes(info.size) : 'N/A';
                     const modified = info.modified || 'Never';
                     
