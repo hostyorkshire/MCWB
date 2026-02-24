@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-Test that @user mentions in bot replies are converted to clickable links in the dashboard.
-This test verifies the JavaScript function that converts @username patterns to meshcore:// links.
+Test that @user mentions in bot replies are converted to clickable links.
+
+This test verifies:
+1. Bot formats @mentions as markdown links: [@username](meshcore://user/username)
+2. Markdown links are clickable in MeshCore mobile/desktop app
+3. JavaScript dashboard function converts both markdown and plain @mentions to HTML links
+4. Username patterns are correctly detected and sanitized
 """
 
 import sys
