@@ -5,8 +5,10 @@ Test that @user mentions in bot replies are converted to clickable links.
 This test verifies:
 1. Bot formats @mentions as plain text: @username
 2. Plain @mentions are made clickable by MeshCore mobile/desktop app natively
-3. JavaScript dashboard function converts plain @mentions to HTML links
+3. JavaScript dashboard function converts plain @mentions to HTML links with proper href attributes
 4. Username patterns are correctly detected and sanitized
+
+Note: Plain text format is used universally throughout the system for compatibility.
 """
 
 import sys
