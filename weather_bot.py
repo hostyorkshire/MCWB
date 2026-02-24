@@ -506,7 +506,7 @@ class WeatherBot:
             msg = f"WX request for '{safe_location}'{country_str} from {safe_sender_print}"
             print(msg, flush=True)
             self.logger.info(msg)
-            response = self._get_weather(location, country)
+            response = self._get_weather(location, country, sender)
             print(f"Response:\n{response}\n", flush=True)
             self.logger.info(f"Response: {response}")
             self._send_channel_msg(response, channel_idx)
@@ -577,7 +577,7 @@ class WeatherBot:
         """Return human-readable description for a WMO weather code."""
         return WEATHER_CODES.get(code, f"Code {code}")
 
-    def format_weather_response(self, location_data: dict, weather_data: dict) -> str:
+    def format_weather_response(self, location_data: dict, weather_data: dict, sender: str = None) -> str:
         """Format a weather response from pre-fetched location and weather data."""
         name = location_data.get("name", "Unknown")
         country = location_data.get("country_code", location_data.get("country", ""))
@@ -585,7 +585,12 @@ class WeatherBot:
         c = weather_data.get("current", {})
         weather_code = c.get("weather_code", 0)
         cond = WEATHER_CODES.get(weather_code, f"Code {weather_code}")
+        
+        # Build greeting if sender is provided
+        greeting = f"hi @{sender}\n" if sender else ""
+        
         return (
+            f"{greeting}"
             f"{loc_str}\n"
             f"{cond}\n"
             f"Temp: {c.get('temperature_2m', 'N/A')}°C "
@@ -593,14 +598,15 @@ class WeatherBot:
             f"Humid: {c.get('relative_humidity_2m', 'N/A')}%\n"
             f"Wind: {c.get('wind_speed_10m', 'N/A')} km/h "
             f"at {c.get('wind_direction_10m', 'N/A')}°\n"
-            f"Precip: {c.get('precipitation', 'N/A')} mm"
+            f"Precip: {c.get('precipitation', 'N/A')} mm\n"
+            f"mcwb.netlify.app"
         )
 
     def handle_message(self, msg: MeshCoreMessage):
         """Handle a MeshCoreMessage and send a weather response via self.mesh."""
         location, country = self._parse_command(msg.content)
         if location:
-            response = self._get_weather(location, country)
+            response = self._get_weather(location, country, msg.sender)
             # Reply on the exact channel slot the query arrived on (when known),
             # or broadcast to all configured channels.  Using send_response
             # keeps the routing logic in one place.
@@ -687,12 +693,13 @@ class WeatherBot:
             timeout=10,
         ).json()
 
-    def _get_weather(self, location: str, country: str = None) -> str:
+    def _get_weather(self, location: str, country: str = None, sender: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
 
         Args:
             location: City/location name to get weather for
             country: Optional country code to filter geocoding results (e.g., "GB", "US")
+            sender: Optional sender name to include in greeting
         """
         try:
             r = self.geocode_location(location, country)
@@ -708,7 +715,7 @@ class WeatherBot:
             location_name = r.get("name", location)
             self.stats.record_request(location_name)
             
-            return self.format_weather_response(r, wx)
+            return self.format_weather_response(r, wx, sender)
         except Exception as e:
             msg = f"Weather error: {e}"
             self.logger.error(msg)
