@@ -41,9 +41,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const navMenu = document.querySelector('nav ul');
     
     if (hamburger && navMenu) {
+        // Set initial ARIA attributes
+        hamburger.setAttribute('aria-label', 'Toggle navigation menu');
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.setAttribute('aria-controls', 'nav-menu');
+        navMenu.setAttribute('id', 'nav-menu');
+        
         hamburger.addEventListener('click', function() {
-            hamburger.classList.toggle('active');
+            const isActive = hamburger.classList.toggle('active');
             navMenu.classList.toggle('active');
+            
+            // Update ARIA expanded state
+            hamburger.setAttribute('aria-expanded', isActive.toString());
         });
         
         // Close menu when a link is clicked
@@ -52,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
             link.addEventListener('click', function() {
                 hamburger.classList.remove('active');
                 navMenu.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
             });
         });
     }

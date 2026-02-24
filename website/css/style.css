@@ -534,7 +534,7 @@ footer a {
     
     /* Show menu when active */
     nav ul.active {
-        max-height: 500px;
+        max-height: 800px;
     }
     
     nav ul li a {
