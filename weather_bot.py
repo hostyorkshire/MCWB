@@ -594,17 +594,18 @@ class WeatherBot:
     def geocode_location(self, location: str, country_override: str = None):
         """Geocode *location* name via Open-Meteo.  Returns the first result
         dict (with ``latitude``, ``longitude``, ``name``, etc.) or ``None``.
-        
+
         Args:
             location: City/location name to geocode
             country_override: Optional country code to filter results (e.g., "GB", "US").
                             Takes precedence over self.country if provided.
         """
-        geo_params = {"name": location, "count": 1, "language": "en", "format": "json"}
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
-        if country:
-            geo_params["country"] = country
+        # Request multiple results so we can filter by country_code client-side.
+        # The Open-Meteo geocoding API does not support a server-side country filter.
+        count = 10 if country else 1
+        geo_params = {"name": location, "count": count, "language": "en", "format": "json"}
         geo = requests.get(
             "https://geocoding-api.open-meteo.com/v1/search",
             params=geo_params,
@@ -612,7 +613,12 @@ class WeatherBot:
         ).json()
         if "results" not in geo or not geo["results"]:
             return None
-        return geo["results"][0]
+        results = geo["results"]
+        if country:
+            filtered = [r for r in results if r.get("country_code", "").upper() == country.upper()]
+            if filtered:
+                return filtered[0]
+        return results[0]
 
     def get_weather(self, lat: float, lon: float) -> dict:
         """Fetch current weather for the given coordinates.  Returns the raw
