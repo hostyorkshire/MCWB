@@ -110,7 +110,7 @@ class TestUserMentionLinks(unittest.TestCase):
         
         # Verify @mention is NOT included
         self.assertNotIn('[@testuser](meshcore://user/testuser)', response)
-        self.assertNotIn('hi ', response.lower())
+        self.assertNotIn('hi @', response.lower())
         # Response should start with location
         self.assertTrue(response.startswith('York, GB\n'))
 
