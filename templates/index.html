@@ -284,6 +284,172 @@
             font-size: 1em;
         }
 
+        /* Stats cards styling */
+        .stats-section {
+            margin-bottom: 25px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid var(--card-border);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid var(--card-border);
+            margin-bottom: 25px;
+        }
+
+        .chart-title {
+            color: var(--text-color);
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        /* CSS-based chart styles */
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-label {
+            min-width: 100px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-align: right;
+        }
+
+        .bar-container {
+            flex: 1;
+            background: var(--log-bg);
+            border-radius: 4px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #34d399);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+        }
+
+        .bar-value {
+            color: white;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .line-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 200px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .line-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--accent-color), #34d399);
+            border-radius: 4px 4px 0 0;
+            min-height: 2px;
+            position: relative;
+            transition: height 0.5s ease;
+        }
+
+        .line-bar:hover {
+            opacity: 0.8;
+        }
+
+        .line-bar-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .line-bar:hover .line-bar-tooltip {
+            opacity: 1;
+        }
+
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: var(--text-secondary);
+            font-size: 0.85em;
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 10px;
@@ -349,6 +515,50 @@
             </div>
         </div>
 
+        <!-- Usage Statistics Section -->
+        <div class="stats-section">
+            <h2 class="status-title" style="margin-bottom: 20px; padding-left: 10px;">📊 Usage Statistics</h2>
+            
+            <!-- Stats Summary Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-requests">0</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-errors">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="success-rate">100%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="last-updated">Never</div>
+                    <div class="stat-label">Last Request</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3 class="chart-title">📈 Requests Over Time (24 Hours)</h3>
+                    <div id="hourly-chart" class="line-chart"></div>
+                    <div id="hourly-labels" class="chart-labels"></div>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title">📊 Top Locations</h3>
+                    <div id="locations-chart" class="bar-chart"></div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3 class="chart-title">📅 Daily Requests (7 Days)</h3>
+                <div id="daily-chart" class="line-chart"></div>
+                <div id="daily-labels" class="chart-labels"></div>
+            </div>
+        </div>
+
         <div class="log-viewer">
             <div class="status-header">
                 <h2 class="status-title">Log Viewer</h2>
@@ -390,6 +600,9 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeButton(newTheme);
+            
+            // Refresh stats to update chart colors
+            loadStats();
         }
 
         function updateThemeButton(theme) {
@@ -409,6 +622,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
             loadStatus();
+            loadStats();
             loadLog(currentLog);
             startAutoRefresh();
         });
@@ -508,14 +722,166 @@
 
         function refreshLogs() {
             loadStatus();
+            loadStats();
             loadLog(currentLog);
         }
 
         function startAutoRefresh() {
             autoRefreshInterval = setInterval(() => {
                 loadStatus();
+                loadStats();
                 loadLog(currentLog);
             }, 10000); // Refresh every 10 seconds
+        }
+
+        // Load and update statistics
+        async function loadStats() {
+            try {
+                // Load summary stats
+                const statsResponse = await fetch('/api/stats');
+                const statsData = await statsResponse.json();
+                
+                // Update stat cards
+                document.getElementById('total-requests').textContent = statsData.total_requests;
+                document.getElementById('total-errors').textContent = statsData.total_errors;
+                document.getElementById('success-rate').textContent = statsData.success_rate + '%';
+                
+                if (statsData.last_updated) {
+                    const lastUpdate = new Date(statsData.last_updated);
+                    const now = new Date();
+                    const diffMs = now - lastUpdate;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    
+                    if (diffMins < 1) {
+                        document.getElementById('last-updated').textContent = 'Just now';
+                    } else if (diffMins < 60) {
+                        document.getElementById('last-updated').textContent = diffMins + 'm ago';
+                    } else {
+                        const diffHours = Math.floor(diffMins / 60);
+                        document.getElementById('last-updated').textContent = diffHours + 'h ago';
+                    }
+                } else {
+                    document.getElementById('last-updated').textContent = 'Never';
+                }
+                
+                // Load hourly data
+                const hourlyResponse = await fetch('/api/stats/hourly');
+                const hourlyData = await hourlyResponse.json();
+                renderLineChart('hourly-chart', 'hourly-labels', hourlyData, 'hour');
+                
+                // Load daily data
+                const dailyResponse = await fetch('/api/stats/daily');
+                const dailyData = await dailyResponse.json();
+                renderLineChart('daily-chart', 'daily-labels', dailyData, 'date');
+                
+                // Load locations data
+                const locationsResponse = await fetch('/api/stats/locations');
+                const locationsData = await locationsResponse.json();
+                renderBarChart('locations-chart', locationsData);
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function renderLineChart(chartId, labelsId, data, timeKey) {
+            const chartDiv = document.getElementById(chartId);
+            const labelsDiv = document.getElementById(labelsId);
+            
+            if (!data || data.length === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No data available</div>';
+                labelsDiv.innerHTML = '';
+                return;
+            }
+            
+            // Find max value for scaling
+            const maxValue = Math.max(...data.map(d => d.count));
+            
+            // Handle case where all values are 0
+            if (maxValue === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No requests yet</div>';
+                labelsDiv.innerHTML = '';
+                return;
+            }
+            
+            // Create bars
+            chartDiv.innerHTML = '';
+            data.forEach((item, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'line-bar';
+                const height = (item.count / maxValue) * 100;
+                bar.style.height = height + '%';
+                
+                const tooltip = document.createElement('div');
+                tooltip.className = 'line-bar-tooltip';
+                tooltip.textContent = item.count + ' requests';
+                bar.appendChild(tooltip);
+                
+                chartDiv.appendChild(bar);
+            });
+            
+            // Create labels (show every few items to avoid clutter)
+            labelsDiv.innerHTML = '';
+            const step = Math.ceil(data.length / 6); // Show ~6 labels
+            data.forEach((item, index) => {
+                if (index % step === 0 || index === data.length - 1) {
+                    const label = document.createElement('span');
+                    const date = new Date(item[timeKey]);
+                    if (timeKey === 'hour') {
+                        label.textContent = date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+                    } else {
+                        label.textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+                    labelsDiv.appendChild(label);
+                }
+            });
+        }
+
+        function renderBarChart(chartId, data) {
+            const chartDiv = document.getElementById(chartId);
+            
+            if (!data || data.length === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No data available</div>';
+                return;
+            }
+            
+            // Find max value for scaling
+            const maxValue = Math.max(...data.map(d => d.count));
+            
+            // Handle case where all values are 0
+            if (maxValue === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No requests yet</div>';
+                return;
+            }
+            
+            // Create bars
+            chartDiv.innerHTML = '';
+            data.forEach(item => {
+                const barItem = document.createElement('div');
+                barItem.className = 'bar-item';
+                
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = item.location;
+                
+                const container = document.createElement('div');
+                container.className = 'bar-container';
+                
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                const width = (item.count / maxValue) * 100;
+                fill.style.width = width + '%';
+                
+                const value = document.createElement('span');
+                value.className = 'bar-value';
+                value.textContent = item.count;
+                fill.appendChild(value);
+                
+                container.appendChild(fill);
+                barItem.appendChild(label);
+                barItem.appendChild(container);
+                chartDiv.appendChild(barItem);
+            });
         }
 
         function formatBytes(bytes) {

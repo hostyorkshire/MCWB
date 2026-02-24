@@ -127,6 +127,54 @@ class TestWebDashboard(unittest.TestCase):
         self.assertIn(b'--text-color', response.data)  # CSS variables
         self.assertIn(b'#000000', response.data)  # Dark background color
         self.assertIn(b'#ffffff', response.data)  # White text color in dark mode
+    
+    def test_stats_api(self):
+        """Test the stats API endpoint"""
+        response = self.client.get('/api/stats')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        
+        data = response.get_json()
+        self.assertIn('total_requests', data)
+        self.assertIn('total_errors', data)
+        self.assertIn('success_rate', data)
+        self.assertIn('last_updated', data)
+    
+    def test_stats_hourly_api(self):
+        """Test the hourly stats API endpoint"""
+        response = self.client.get('/api/stats/hourly')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        
+        data = response.get_json()
+        self.assertIsInstance(data, list)
+    
+    def test_stats_daily_api(self):
+        """Test the daily stats API endpoint"""
+        response = self.client.get('/api/stats/daily')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        
+        data = response.get_json()
+        self.assertIsInstance(data, list)
+    
+    def test_stats_locations_api(self):
+        """Test the locations stats API endpoint"""
+        response = self.client.get('/api/stats/locations')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        
+        data = response.get_json()
+        self.assertIsInstance(data, list)
+    
+    def test_usage_statistics_section(self):
+        """Test that usage statistics section is present"""
+        response = self.client.get('/')
+        self.assertIn(b'Usage Statistics', response.data)
+        self.assertIn(b'Total Requests', response.data)
+        self.assertIn(b'Success Rate', response.data)
+        self.assertIn(b'Top Locations', response.data)
+        self.assertIn(b'Requests Over Time', response.data)
 
 
 if __name__ == '__main__':
