@@ -2,7 +2,8 @@
 # MCWB - Unified Service Manager
 # Interactive menu for managing all MCWB services on Raspberry Pi
 
-set -e  # Exit on error
+# Note: We don't use 'set -e' here because this is an interactive script
+# that needs to gracefully handle command failures (e.g., stopping non-existent services)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -116,7 +117,7 @@ install_both() {
     echo "  1. Weather Bot service (main bot)"
     echo "  2. Web Dashboard service (monitoring UI)"
     echo ""
-    read -p "Continue? [Y/n] " -n 1 -r
+    read -p "Continue? [Y/n] " -r
     echo ""
     if [[ $REPLY =~ ^[Nn]$ ]]; then
         echo "Installation cancelled"
@@ -368,7 +369,7 @@ configure_firewall() {
     if ! command -v ufw >/dev/null 2>&1; then
         echo -e "${YELLOW}ℹ️  UFW (firewall) is not installed${NC}"
         echo ""
-        read -p "Would you like to install UFW? [y/N] " -n 1 -r
+        read -p "Would you like to install UFW? [y/N] " -r
         echo ""
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             sudo apt-get update
@@ -415,7 +416,7 @@ configure_firewall() {
             sudo ufw status numbered
             echo ""
             echo -e "${YELLOW}Is SSH (port 22) shown above?${NC}"
-            read -p "Confirm you want to enable the firewall [y/N] " -n 1 -r
+            read -p "Confirm you want to enable the firewall [y/N] " -r
             echo ""
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 # Let UFW ask for its own confirmation (don't use --force)
