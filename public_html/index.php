@@ -1,0 +1,507 @@
+<?php
+/**
+ * Template Name: MCWB Weather Bot Wiki
+ * Description: WordPress-compatible template for MeshCore Weather Bot documentation
+ * 
+ * This file can be used as a WordPress page template or included in WordPress themes.
+ * It provides the same content as index.html but integrates with WordPress features.
+ * 
+ * Usage Options:
+ * 1. As a standalone PHP page (direct access via web browser)
+ * 2. As a WordPress page template (copy to your theme's directory)
+ * 3. As an included file in WordPress content
+ */
+
+// Check if this is being used within WordPress
+$is_wordpress = function_exists('get_header');
+
+// If WordPress is available, use WordPress header
+if ($is_wordpress) {
+    get_header();
+} else {
+    // Standalone mode - output HTML header
+    ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCWBv2 - MeshCore Weather Bot Wiki</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<?php
+}
+
+// Main content starts here
+?>
+    <div class="container <?php echo $is_wordpress ? 'wp-compatibility' : ''; ?>">
+        <?php if (!$is_wordpress): ?>
+        <header>
+            <h1>MCWBv2 - MeshCore Weather Bot</h1>
+            <p class="subtitle">Lightweight Python3 weather bot for MeshCore mesh networks</p>
+        </header>
+        <?php endif; ?>
+
+        <nav class="wiki-nav">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#usage">Usage</a></li>
+                <li><a href="#hardware">Hardware</a></li>
+                <li><a href="#commands">Commands</a></li>
+                <li><a href="#configuration">Configuration</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#api">API</a></li>
+            </ul>
+        </nav>
+
+        <main class="wiki-content">
+            <section id="overview" class="wiki-section">
+                <h2>Overview</h2>
+                <div class="info-box">
+                    <p><strong>🎯 IMPORTANT: Bot Works on ANY Channel You Create!</strong></p>
+                    <p>The bot is NOT limited to any specific channel. It works on:</p>
+                    <ul>
+                        <li>✅ <strong>ANY channel name</strong> you create in your MeshCore app</li>
+                        <li>✅ #weather, #wxtest, #forecast, #sensors - whatever you want!</li>
+                        <li>✅ <strong>ALL your channels simultaneously</strong> by default</li>
+                        <li>✅ <strong>Zero configuration needed</strong> - just run it!</li>
+                    </ul>
+                </div>
+                <p>MCWBv2 listens for weather queries and responds using the free <a href="https://open-meteo.com/" target="_blank">Open-Meteo API</a> (no API key needed).</p>
+                
+                <h3>Simple Setup</h3>
+                <ol>
+                    <li>Connect your MeshCore companion radio via USB</li>
+                    <li>Run <code>python3 weather_bot.py</code></li>
+                    <li>Done! The bot works on ANY channel where users send weather commands</li>
+                </ol>
+
+                <div class="highlight-box">
+                    <h4>✨ NEW: Country Specification</h4>
+                    <p>Users can now specify country in their commands:</p>
+                    <ul>
+                        <li><code>wx York UK</code> → York, United Kingdom</li>
+                        <li><code>wx York USA</code> → York, USA</li>
+                        <li>No more confusion with ambiguous city names!</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="features" class="wiki-section">
+                <h2>Features</h2>
+                <div class="features-grid">
+                    <div class="feature-box">
+                        <h3>🌐 Multi-Channel Support</h3>
+                        <p>Automatically works on all channels without configuration. Responds where the request came from.</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🔌 Zero Configuration</h3>
+                        <p>No channel IDs or API keys needed. Just connect your radio and run!</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🍓 Raspberry Pi Ready</h3>
+                        <p>Optimized for Raspberry Pi Zero 2 with systemd service support for headless operation.</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🌍 Global Weather Data</h3>
+                        <p>Free Open-Meteo API provides accurate weather data worldwide without API keys.</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>🎯 Country Filtering</h3>
+                        <p>Specify country codes to avoid ambiguous city names (York UK vs York USA).</p>
+                    </div>
+                    <div class="feature-box">
+                        <h3>📢 Periodic Announcements</h3>
+                        <p>Optional automatic weather announcements every 3 hours.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="installation" class="wiki-section">
+                <h2>Installation</h2>
+                <h3>Requirements</h3>
+                <ul>
+                    <li>Python 3.7+</li>
+                    <li><code>requests</code> and <code>pyserial</code> libraries</li>
+                    <li>MeshCore companion radio connected via USB</li>
+                </ul>
+
+                <h3>Quick Install</h3>
+                <div class="code-block">
+                    <pre><code>git clone https://github.com/hostyorkshire/MCWB.git
+cd MCWB
+pip install -r requirements.txt</code></pre>
+                </div>
+
+                <h3>Running the Bot</h3>
+                <div class="code-block">
+                    <pre><code># Auto-detect USB port (recommended)
+python3 weather_bot.py
+
+# Specify port and baud rate
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
+
+# Enable debug output
+python3 weather_bot.py -d
+
+# Enable periodic announcements
+python3 weather_bot.py --announce
+
+# Quick weather lookup (no radio needed)
+python3 weather_bot.py --location Leeds</code></pre>
+                </div>
+
+                <h3>Systemd Service (Production)</h3>
+                <p>For automatic startup on boot:</p>
+                <div class="code-block">
+                    <pre><code>sudo cp weather_bot.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable weather_bot
+sudo systemctl start weather_bot</code></pre>
+                </div>
+            </section>
+
+            <section id="usage" class="wiki-section">
+                <h2>Usage</h2>
+                <p>Send weather commands on <strong>ANY channel</strong> you've created! Examples:</p>
+
+                <h3>Basic Weather Commands</h3>
+                <div class="code-block">
+                    <pre><code>WX London
+wx York
+weather Manchester</code></pre>
+                </div>
+
+                <h3>Specifying Country</h3>
+                <p>When city names are ambiguous, specify the country:</p>
+                <div class="code-block">
+                    <pre><code>wx York UK        # York, United Kingdom
+wx York USA       # York, Pennsylvania USA
+wx Paris FR       # Paris, France
+wx Berlin DE      # Berlin, Germany</code></pre>
+                </div>
+
+                <h3>Supported Country Codes</h3>
+                <ul>
+                    <li><code>UK</code>, <code>GB</code>, or <code>United Kingdom</code> → United Kingdom</li>
+                    <li><code>USA</code>, <code>US</code>, or <code>United States</code> → United States</li>
+                    <li>Any ISO-3166-1 alpha-2 country code (2 letters): <code>FR</code>, <code>DE</code>, <code>CA</code>, <code>JP</code>, <code>AU</code>, etc.</li>
+                </ul>
+
+                <h3>Example Response</h3>
+                <div class="code-block">
+                    <pre><code>London, GB
+Partly cloudy
+Temp: 14.2°C (feels 12.8°C)
+Humid: 72%
+Wind: 18 km/h at 230°
+Precip: 0.0 mm</code></pre>
+                </div>
+            </section>
+
+            <section id="hardware" class="wiki-section">
+                <h2>LoRa Radio Hardware</h2>
+                <p>MCWBv2 connects to a <strong>MeshCore companion radio</strong> over USB serial. The companion radio is a LoRa-based device (e.g., T-Beam, LILYGO LoRa32, or similar ESP32/LoRa board) running the <a href="https://github.com/ripplebiz/MeshCore" target="_blank">MeshCore firmware</a>.</p>
+
+                <div class="diagram">
+                    <pre>
+Raspberry Pi / PC
+  │
+  │  USB serial (default 115200 baud)
+  │
+  ▼
+MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
+                    </pre>
+                </div>
+
+                <h3>Connecting the Radio</h3>
+                <ol>
+                    <li>Flash your ESP32/LoRa board with <a href="https://github.com/ripplebiz/MeshCore" target="_blank">MeshCore firmware</a></li>
+                    <li><strong>IMPORTANT:</strong> Configure channels on your radio BEFORE starting the bot
+                        <ul>
+                            <li>Open the MeshCore app on your phone</li>
+                            <li>Join/subscribe to the channels you want the bot to monitor (e.g., #weather, #wxtest)</li>
+                            <li>The bot cannot add channels for you - this must be done through the MeshCore app</li>
+                        </ul>
+                    </li>
+                    <li>Connect it to your Pi (or PC) via USB</li>
+                    <li>The device typically appears as <code>/dev/ttyUSB0</code> or <code>/dev/ttyACM0</code> on Linux</li>
+                    <li>Start the bot - it auto-detects the port</li>
+                </ol>
+
+                <h3>Supported Hardware</h3>
+                <ul>
+                    <li>T-Beam (various versions)</li>
+                    <li>LILYGO LoRa32</li>
+                    <li>Heltec LoRa32</li>
+                    <li>Any ESP32 + LoRa module combination</li>
+                </ul>
+            </section>
+
+            <section id="commands" class="wiki-section">
+                <h2>Command Reference</h2>
+                <h3>Command Line Options</h3>
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>-p PORT, --port PORT</code></td>
+                            <td>Serial port (e.g., /dev/ttyUSB0). Auto-detects if omitted.</td>
+                        </tr>
+                        <tr>
+                            <td><code>-b BAUD, --baud BAUD</code></td>
+                            <td>Baud rate (default: 115200)</td>
+                        </tr>
+                        <tr>
+                            <td><code>-d, --debug</code></td>
+                            <td>Enable debug output (shows all protocol frames)</td>
+                        </tr>
+                        <tr>
+                            <td><code>-a, --announce</code></td>
+                            <td>Send periodic announcements every 3 hours</td>
+                        </tr>
+                        <tr>
+                            <td><code>-c CHANNEL_IDX</code></td>
+                            <td>Only respond to messages from this channel index</td>
+                        </tr>
+                        <tr>
+                            <td><code>-w WEATHER_CHANNEL_IDX</code></td>
+                            <td>Specify which channel index to use for announcements</td>
+                        </tr>
+                        <tr>
+                            <td><code>--country COUNTRY</code></td>
+                            <td>Default country code for geocoding (e.g., GB, US, FR)</td>
+                        </tr>
+                        <tr>
+                            <td><code>-l LOCATION, --location</code></td>
+                            <td>Look up weather and exit (no radio needed)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Weather Query Commands</h3>
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Description</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>wx [location]</code></td>
+                            <td>Basic weather query</td>
+                            <td><code>wx London</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>WX [location]</code></td>
+                            <td>Case-insensitive variant</td>
+                            <td><code>WX Manchester</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>weather [location]</code></td>
+                            <td>Full command word</td>
+                            <td><code>weather Brighton</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>wx [location] [country]</code></td>
+                            <td>With country code</td>
+                            <td><code>wx York UK</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="configuration" class="wiki-section">
+                <h2>Configuration</h2>
+                <h3>Automatic Channel Adaptation</h3>
+                <p><strong>No configuration needed!</strong> The bot automatically:</p>
+                <ul>
+                    <li>✅ Listens on <strong>ALL channels</strong> for weather commands</li>
+                    <li>✅ Responds on the <strong>SAME channel</strong> where each request came from</li>
+                    <li>✅ Adapts announcements to use the <strong>channel that users are active on</strong></li>
+                </ul>
+
+                <h3>Example Scenario</h3>
+                <div class="code-block">
+                    <pre><code>User A's device: #weather → channel_idx 1
+User B's device: #weather → channel_idx 2  
+User C's device: #weather → channel_idx 3
+
+Bot behavior:
+- User A sends "wx London" on channel_idx 1 → Bot replies on channel_idx 1
+- User B sends "wx Paris" on channel_idx 2 → Bot replies on channel_idx 2
+- User C sends "wx Berlin" on channel_idx 3 → Bot replies on channel_idx 3</code></pre>
+                </div>
+
+                <h3>Advanced: Channel Filtering</h3>
+                <p>By default, the bot responds to weather queries from <strong>any channel</strong>.</p>
+                
+                <h4>When to use channel filtering:</h4>
+                <ul>
+                    <li>You want to isolate the bot to a dedicated weather channel only</li>
+                    <li>You have multiple bots running and need to prevent conflicts</li>
+                    <li>You want explicit control over which channel the bot uses</li>
+                </ul>
+
+                <div class="code-block">
+                    <pre><code># Only respond to messages on channel index 1
+python3 weather_bot.py --channel-idx 1
+
+# Configure announcements for channel index 2
+python3 weather_bot.py --weather-channel-idx 2 --announce</code></pre>
+                </div>
+            </section>
+
+            <section id="troubleshooting" class="wiki-section">
+                <h2>Troubleshooting</h2>
+                
+                <div class="trouble-item">
+                    <h3>⚠️ No serial port found</h3>
+                    <ul>
+                        <li>Check the USB cable and that the companion radio is powered</li>
+                        <li>Run <code>ls /dev/ttyUSB* /dev/ttyACM*</code> to see available ports</li>
+                        <li>Try <code>--port /dev/ttyUSB0</code> (or whichever port appears)</li>
+                    </ul>
+                </div>
+
+                <div class="trouble-item">
+                    <h3>⚠️ Bot connects but receives no messages</h3>
+                    <p><strong>Most common cause:</strong> The companion radio is NOT subscribed to the channels where users are sending messages</p>
+                    <p><strong>Solution:</strong></p>
+                    <ul>
+                        <li>Use the MeshCore app to join/subscribe to channels BEFORE starting the bot</li>
+                        <li>The bot cannot configure channels automatically</li>
+                        <li>Verify your channel subscriptions in the MeshCore app's Channel Settings</li>
+                        <li>Use <code>--debug</code> to see raw protocol frames</li>
+                    </ul>
+                </div>
+
+                <div class="trouble-item">
+                    <h3>⚠️ Location not found</h3>
+                    <ul>
+                        <li>Use the full city name, or add country/region: <code>wx York, UK</code></li>
+                        <li>Try adding a country code: <code>wx York UK</code></li>
+                    </ul>
+                </div>
+
+                <div class="trouble-item">
+                    <h3>⚠️ Wrong city returned (city in another country)</h3>
+                    <p>Some city names exist in multiple countries. Solutions:</p>
+                    <ol>
+                        <li><strong>Specify country in command (recommended):</strong>
+                            <ul>
+                                <li><code>wx York UK</code> → Returns York, United Kingdom</li>
+                                <li><code>wx York USA</code> → Returns York, Pennsylvania USA</li>
+                            </ul>
+                        </li>
+                        <li><strong>Use comma-separated format:</strong>
+                            <ul>
+                                <li><code>wx York, UK</code></li>
+                                <li><code>wx Paris, France</code></li>
+                            </ul>
+                        </li>
+                        <li><strong>Configure a default country:</strong>
+                            <div class="code-block">
+                                <pre><code>python3 weather_bot.py --country GB  # Prefers UK cities
+python3 weather_bot.py --country US  # Prefers US cities</code></pre>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </section>
+
+            <section id="api" class="wiki-section">
+                <h2>API & Protocol</h2>
+                <h3>Weather Data Source</h3>
+                <p>Weather data is from the free <a href="https://open-meteo.com/" target="_blank">Open-Meteo API</a> – no account or API key required.</p>
+
+                <h3>MeshCore Protocol</h3>
+                <p>The bot speaks the MeshCore companion radio binary protocol directly over USB serial. It handles:</p>
+                
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Frame</th>
+                            <th>Direction</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>CMD_APP_START</code> (0x01)</td>
+                            <td>→ radio</td>
+                            <td>Initialize session on connect</td>
+                        </tr>
+                        <tr>
+                            <td><code>CMD_GET_DEVICE_TIME</code> (0x05)</td>
+                            <td>← radio</td>
+                            <td>Radio requests time; bot responds immediately</td>
+                        </tr>
+                        <tr>
+                            <td><code>CMD_SYNC_NEXT_MSG</code> (0x0A)</td>
+                            <td>→ radio</td>
+                            <td>Drain queued messages</td>
+                        </tr>
+                        <tr>
+                            <td><code>CMD_SEND_CHAN_MSG</code> (0x03)</td>
+                            <td>→ radio</td>
+                            <td>Send a weather reply on a channel</td>
+                        </tr>
+                        <tr>
+                            <td><code>RESP_CHANNEL_MSG</code> (0x08/0x11)</td>
+                            <td>← radio</td>
+                            <td>Incoming channel message</td>
+                        </tr>
+                        <tr>
+                            <td><code>PUSH_CHAN_MSG</code> (0x88)</td>
+                            <td>← radio</td>
+                            <td>Inline push of a channel message</td>
+                        </tr>
+                        <tr>
+                            <td><code>PUSH_MSG_WAITING</code> (0x83)</td>
+                            <td>← radio</td>
+                            <td>New message queued; bot fetches it</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Further Documentation</h3>
+                <ul>
+                    <li><a href="https://github.com/hostyorkshire/MCWB" target="_blank">GitHub Repository</a></li>
+                    <li><a href="https://github.com/ripplebiz/MeshCore" target="_blank">MeshCore Firmware</a></li>
+                    <li><a href="https://open-meteo.com/" target="_blank">Open-Meteo API</a></li>
+                </ul>
+            </section>
+        </main>
+
+        <?php if (!$is_wordpress): ?>
+        <footer>
+            <p>MCWBv2 - MeshCore Weather Bot</p>
+            <p>Licensed under the MIT License</p>
+            <p><a href="https://github.com/hostyorkshire/MCWB" target="_blank">View on GitHub</a></p>
+        </footer>
+        <?php endif; ?>
+    </div>
+<?php
+
+// If WordPress is available, use WordPress footer
+if ($is_wordpress) {
+    get_footer();
+} else {
+    // Standalone mode - close HTML
+    ?>
+</body>
+</html>
+<?php
+}
+?>
