@@ -11,6 +11,7 @@ import re
 import time
 import threading
 import argparse
+import os
 
 from meshcore import MeshCore, MeshCoreMessage
 from logging_config import get_weather_bot_logger, log_startup_info, log_exception
@@ -81,6 +82,7 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location."
+ANNOUNCE_TIMESTAMP_FILE = "logs/.last_announce"  # File to persist last announcement timestamp
 
 
 class WeatherBot:
@@ -606,6 +608,26 @@ class WeatherBot:
             return
         self.mesh.send_message(ANNOUNCE_MESSAGE, "text", self.announce_channel)
 
+    def _get_last_announce_time(self):
+        """Read the last announcement timestamp from file. Returns 0 if file doesn't exist."""
+        try:
+            if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
+                with open(ANNOUNCE_TIMESTAMP_FILE, 'r') as f:
+                    return float(f.read().strip())
+        except (IOError, ValueError) as e:
+            self._log(f"Could not read last announce time: {e}")
+        return 0
+
+    def _save_last_announce_time(self, timestamp):
+        """Save the last announcement timestamp to file."""
+        try:
+            # Ensure logs directory exists
+            os.makedirs(os.path.dirname(ANNOUNCE_TIMESTAMP_FILE), exist_ok=True)
+            with open(ANNOUNCE_TIMESTAMP_FILE, 'w') as f:
+                f.write(str(timestamp))
+        except IOError as e:
+            self._log(f"Could not save last announce time: {e}")
+
     # ------------------------------------------------------------------
     # Weather data
     # ------------------------------------------------------------------
@@ -732,9 +754,20 @@ class WeatherBot:
 
         print("Press Ctrl+C to stop.\n", flush=True)
 
-        last_announce = time.time()
-        if self.announce:
+        # Check if we should announce on startup
+        last_announce = self._get_last_announce_time()
+        current_time = time.time()
+        time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
+        
+        if self.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
             self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
+            last_announce = current_time
+            self._save_last_announce_time(last_announce)
+        elif self.announce:
+            remaining = ANNOUNCE_INTERVAL - time_since_last_announce
+            msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
+            print(msg)
+            self.logger.info(msg)
 
         try:
             while self._running:
@@ -742,6 +775,7 @@ class WeatherBot:
                 if self.announce and (time.time() - last_announce >= ANNOUNCE_INTERVAL):
                     self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
                     last_announce = time.time()
+                    self._save_last_announce_time(last_announce)
         except KeyboardInterrupt:
             msg = "Stopping..."
             print(f"\n{msg}")
