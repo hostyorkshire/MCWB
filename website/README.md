@@ -23,6 +23,40 @@ This is a comprehensive wiki-style documentation website for the MeshCore Weathe
 8. **Troubleshooting** (`troubleshooting.html`) - Common issues and solutions
 9. **API** (`api.html`) - Technical documentation and protocol details
 
+## Connecting to Your Live Dashboard
+
+The Live Dashboard page can connect to your running MCWB Web Dashboard API to show real-time data instead of demo data.
+
+### Automatic Detection (Local Access)
+
+If you're accessing the website from the same machine where the dashboard is running, it will automatically detect the API at `http://localhost:5000`.
+
+### Custom API URL Configuration
+
+If your dashboard is running on a different device (e.g., Raspberry Pi on your local network), you can configure the API URL:
+
+**Method 1: Using the Configuration Panel**
+1. Open the Live Dashboard page
+2. In the "Demo Mode" warning box, enter your dashboard URL in the "Configure Custom API URL" field
+3. Example: `http://192.168.1.109:5000` or `http://raspberrypi.local:5000`
+4. Click "Connect"
+5. The URL is saved to your browser's localStorage and will be remembered
+
+**Method 2: Using URL Parameters**
+You can also set the API URL via URL parameter:
+```
+https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.109:5000
+```
+
+This is useful for sharing links or bookmarking.
+
+### Requirements for Live Data
+
+For the dashboard to connect successfully:
+1. The Web Dashboard must be running: `python3 web_dashboard.py --host 0.0.0.0`
+2. The API must be accessible from your browser (same network or properly configured network/firewall)
+3. CORS is enabled by default in the Web Dashboard to allow cross-origin requests
+
 ## Deployment Instructions
 
 ### Option 1: Simple File Hosting
