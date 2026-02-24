@@ -1,0 +1,13 @@
+{
+  "channels": [
+    {
+      "channel_idx": 0,
+      "channel_name": null
+    },
+    {
+      "channel_idx": 1,
+      "channel_name": "weather"
+    }
+  ],
+  "last_updated": "2026-02-24T23:48:35.490498"
+}
