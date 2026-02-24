@@ -84,6 +84,13 @@ sudo nano /etc/systemd/system/mcwb-dashboard.service
 
 2. Add the following content:
 
+> **⚠️ IMPORTANT:** Type or copy this content carefully. Do NOT copy from a web browser as HTML entities may corrupt the configuration (e.g., `>` becomes `&gt;`). Use a text editor to type it manually or copy from the raw markdown file.
+
+> **📝 NOTE:** Customize the `User` and `WorkingDirectory` to match your system:
+> - Replace `pi` with your actual username (e.g., `weatherbot`, `ubuntu`, etc.)
+> - Update the paths to match where you cloned the MCWB repository
+> - Both the `WorkingDirectory` and paths in `ExecStart` should use the same base directory
+
 ```ini
 [Unit]
 Description=MCWB Web Dashboard
@@ -101,9 +108,28 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-3. Enable and start the service:
+**Example for user 'weatherbot' with installation in /home/weatherbot/MCWB:**
+```ini
+[Unit]
+Description=MCWB Web Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=weatherbot
+WorkingDirectory=/home/weatherbot/MCWB
+ExecStart=/usr/bin/python3 /home/weatherbot/MCWB/web_dashboard.py --host 0.0.0.0 --port 8080
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Reload systemd and enable the service:
 
 ```bash
+sudo systemctl daemon-reload
 sudo systemctl enable mcwb-dashboard.service
 sudo systemctl start mcwb-dashboard.service
 ```
@@ -113,6 +139,8 @@ sudo systemctl start mcwb-dashboard.service
 ```bash
 sudo systemctl status mcwb-dashboard.service
 ```
+
+If the service fails to start, check the troubleshooting section below.
 
 ## Security Notes
 
@@ -125,6 +153,71 @@ sudo systemctl status mcwb-dashboard.service
   - Using a firewall to limit access
 
 ## Troubleshooting
+
+### Systemd Service Fails to Start
+
+If you see `Active: activating (auto-restart)` or `Active: failed`, check the following:
+
+**1. Exit Code 217/USER - User does not exist:**
+
+This error occurs when the `User=` setting in the service file doesn't match your actual username.
+
+```bash
+# Check your username
+whoami
+
+# Or list all users
+cat /etc/passwd | grep -E "home|User"
+```
+
+Update the service file to use your actual username:
+```bash
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change User=pi to User=yourname (e.g., User=weatherbot)
+# Also update WorkingDirectory and ExecStart paths to match
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard.service
+```
+
+**2. Corrupted Configuration - Port number appears as `8&gt;` or similar:**
+
+If you copied the configuration from a web browser, HTML entities may have corrupted the text. The port should be a number like `8080`, not `8&gt;`.
+
+Solution:
+```bash
+# Edit the service file and fix the port number
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change: ExecStart=/usr/bin/python3 ... --port 8&gt;
+# To:     ExecStart=/usr/bin/python3 ... --port 8080
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard.service
+```
+
+**3. Path does not exist:**
+
+Ensure all paths in the service file are correct:
+```bash
+# Verify the MCWB directory exists
+ls /home/pi/MCWB/web_dashboard.py
+# Or if installed elsewhere:
+ls /home/weatherbot/MCWB/web_dashboard.py
+
+# Check Python path
+which python3
+```
+
+**4. View detailed error logs:**
+
+```bash
+# View recent service logs
+sudo journalctl -u mcwb-dashboard.service -n 50
+
+# View live logs
+sudo journalctl -u mcwb-dashboard.service -f
+
+# Check for permission errors
+sudo journalctl -u mcwb-dashboard.service | grep -i "permission\|denied\|error"
+```
 
 ### Port Already in Use
 
