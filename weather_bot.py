@@ -83,7 +83,7 @@ WEATHER_CODES = {
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
-ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? mcwb.netlify.app"
+ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? https://mcwb.netlify.app"
 # Use absolute path for timestamp file to ensure it works regardless of working directory
 ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
 
@@ -602,8 +602,7 @@ class WeatherBot:
             f"Humid: {c.get('relative_humidity_2m', 'N/A')}%\n"
             f"Wind: {c.get('wind_speed_10m', 'N/A')} km/h "
             f"at {c.get('wind_direction_10m', 'N/A')}°\n"
-            f"Precip: {c.get('precipitation', 'N/A')} mm\n"
-            f"mcwb.netlify.app"
+            f"https://mcwb.netlify.app"
         )
 
     def handle_message(self, msg: MeshCoreMessage):

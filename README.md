@@ -82,7 +82,7 @@ Partly cloudy
 Temp: 14.2°C (feels 12.8°C)
 Humid: 72%
 Wind: 18 km/h at 230°
-Precip: 0.0 mm
+https://mcwb.netlify.app
 ```
 
 ## LoRa Radio Hardware

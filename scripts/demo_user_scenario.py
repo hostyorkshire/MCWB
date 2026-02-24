@@ -132,7 +132,7 @@ def simulate_user_scenario():
         print("    Temp: 12.5°C (feels 10.8°C)")
         print("    Humid: 68%")
         print("    Wind: 14.2 km/h at 225°")
-        print("    Precip: 0.0 mm")
+        print("    https://mcwb.netlify.app")
         print()
         
         bot.mesh.stop()
