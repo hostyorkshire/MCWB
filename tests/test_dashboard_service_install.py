@@ -32,7 +32,8 @@ class TestDashboardServiceInstall(unittest.TestCase):
         self.assertTrue(service_template.exists(), "Service template file not found")
         
         # Simulate the install script's service file generation
-        current_user = os.getenv('USER', 'testuser')
+        import getpass
+        current_user = getpass.getuser()
         install_dir = str(Path(__file__).parent.parent)
         user_site = site.USER_SITE
         

@@ -48,7 +48,14 @@ else
 fi
 
 # Get the user's Python site-packages directory
-USER_SITE=$(python3 -c "import site; print(site.USER_SITE)")
+USER_SITE=$(python3 -c "import site; print(site.USER_SITE)" 2>/dev/null)
+
+# Validate USER_SITE was detected
+if [ -z "$USER_SITE" ]; then
+    echo "❌ Error: Could not detect Python user site-packages directory"
+    echo "   Please ensure Python 3 is installed correctly"
+    exit 1
+fi
 
 # Create a customized service file
 echo ""
