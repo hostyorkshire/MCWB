@@ -3,10 +3,12 @@
 Test that @user mentions in bot replies are converted to clickable links.
 
 This test verifies:
-1. Bot formats @mentions as markdown links: [@username](meshcore://user/username)
-2. Markdown links are clickable in MeshCore mobile/desktop app
-3. JavaScript dashboard function converts both markdown and plain @mentions to HTML links
+1. Bot formats @mentions as plain text: @username
+2. Plain @mentions are made clickable by MeshCore mobile/desktop app natively
+3. JavaScript dashboard function converts plain @mentions to HTML links with proper href attributes
 4. Username patterns are correctly detected and sanitized
+
+Note: Plain text format is used universally throughout the system for compatibility.
 """
 
 import sys
@@ -84,7 +86,7 @@ class TestUserMentionLinks(unittest.TestCase):
         self.assertIn('@user', escaped)  # @mention should still be present
     
     def test_weather_bot_sends_mentions(self):
-        """Test that the weather bot formats @username mentions as markdown links in responses"""
+        """Test that the weather bot formats @username mentions as plain text in responses"""
         from weather_bot import WeatherBot
         from unittest.mock import MagicMock
         
@@ -106,9 +108,9 @@ class TestUserMentionLinks(unittest.TestCase):
         # Format response with sender
         response = bot.format_weather_response(location_data, weather_data, sender="testuser")
         
-        # Verify @mention is included as markdown link for MeshCore app
-        self.assertIn('[@testuser](meshcore://user/testuser)', response)
-        self.assertTrue(response.startswith('hi [@testuser](meshcore://user/testuser)\n'))
+        # Verify @mention is included as plain text for MeshCore app to make clickable
+        self.assertIn('@testuser', response)
+        self.assertTrue(response.startswith('hi @testuser\n'))
 
 
 if __name__ == '__main__':
