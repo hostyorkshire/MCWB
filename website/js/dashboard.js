@@ -428,9 +428,24 @@ function convertUserMentionsToLinks(text) {
     
     const escaped = escapeHtml(text);
     
-    // Convert @username patterns to meshcore:// links
-    // Username can contain alphanumeric, underscore, hyphen, and dot
-    return escaped.replace(/@([a-zA-Z0-9_.-]+)/g, '<a href="meshcore://user/$1" class="user-mention">@$1</a>');
+    // First, convert markdown-style mention links: [@username](meshcore://user/username)
+    // This handles bot responses that already include the markdown link format
+    let result = escaped.replace(/\[@([a-zA-Z0-9_.-]+)\]\(meshcore:\/\/user\/([a-zA-Z0-9_.-]+)\)/g, 
+                                  '<a href="meshcore://user/$2" class="user-mention">@$1</a>');
+    
+    // Then convert any remaining plain @username patterns to meshcore:// links
+    // Split by existing links to avoid double-converting
+    // This maintains backward compatibility with messages that don't use markdown format
+    const parts = result.split(/(<a[^>]*>.*?<\/a>)/);
+    result = parts.map((part, index) => {
+        // Only process text parts (not existing links)
+        if (!part.startsWith('<a')) {
+            return part.replace(/@([a-zA-Z0-9_.-]+)/g, '<a href="meshcore://user/$1" class="user-mention">@$1</a>');
+        }
+        return part;
+    }).join('');
+    
+    return result;
 }
 
 function addLogEntry(timestamp, level, message) {
