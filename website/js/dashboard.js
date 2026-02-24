@@ -162,6 +162,7 @@ async function updateDashboard() {
             fetch(`${dashboardUrl}/api/channels`)
         ]);
         
+        // Check core endpoints (channels is optional)
         if (!statsRes.ok || !hourlyRes.ok || !locationsRes.ok) {
             throw new Error('Failed to fetch dashboard data');
         }
@@ -169,6 +170,7 @@ async function updateDashboard() {
         const stats = await statsRes.json();
         const hourly = await hourlyRes.json();
         const locations = await locationsRes.json();
+        // Channels API is optional - gracefully handle failure
         const channels = channelsRes.ok ? await channelsRes.json() : { channels: [] };
         
         // Update status indicator

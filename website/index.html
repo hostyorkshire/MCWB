@@ -248,7 +248,7 @@ MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
                 let channelsData = null;
                 for (const baseUrl of urls) {
                     try {
-                        const response = await fetch(`${baseUrl}/api/channels`, { timeout: 2000 });
+                        const response = await fetch(`${baseUrl}/api/channels`);
                         if (response.ok) {
                             channelsData = await response.json();
                             break;
