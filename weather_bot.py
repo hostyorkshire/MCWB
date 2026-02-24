@@ -128,6 +128,10 @@ class WeatherBot:
             self.channels = []
         # Initialize stats tracker
         self.stats = StatsTracker()
+        # State tracking for outlook feature
+        # Maps (sender, channel_idx) -> (location, country, lat, lon, timestamp)
+        self._pending_outlook = {}
+        self._outlook_timeout = 300  # 5 minutes timeout for outlook requests
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
                              serial_port=self.port, baud_rate=self.baud)
@@ -467,7 +471,7 @@ class WeatherBot:
     # ------------------------------------------------------------------
 
     def _handle_channel_message(self, text: str, channel_idx: int):
-        """Parse a raw channel message and respond if it is a weather command."""
+        """Parse a raw channel message and respond if it is a weather command or outlook response."""
         # Filter by channel_idx if specified
         if self.allowed_channel_idx is not None and channel_idx != self.allowed_channel_idx:
             self._log(f"Ignoring message from channel_idx={channel_idx} (filter={self.allowed_channel_idx})")
@@ -498,6 +502,40 @@ class WeatherBot:
         if self.weather_channel_idx is None:
             self._announce_channel_idx = channel_idx
 
+        # Check if this is a yes/no response to a pending outlook request
+        state_key = (sender, channel_idx)
+        if state_key in self._pending_outlook:
+            # Clean up expired requests
+            self._cleanup_expired_outlook_requests()
+            
+            # Check if this request is still valid
+            if state_key in self._pending_outlook:
+                outlook_state = self._pending_outlook[state_key]
+                if self._is_yes_response(content):
+                    # User wants to see outlook
+                    location_name = outlook_state["location"]
+                    country = outlook_state["country"]
+                    lat = outlook_state["lat"]
+                    lon = outlook_state["lon"]
+                    location_data = outlook_state["location_data"]
+                    
+                    safe_location = self._sanitize_for_log(location_name)
+                    msg = f"Outlook request for '{safe_location}' from {safe_sender}"
+                    print(msg, flush=True)
+                    self.logger.info(msg)
+                    
+                    outlook_response = self._get_outlook(location_data, lat, lon)
+                    print(f"Outlook Response:\n{outlook_response}\n", flush=True)
+                    self.logger.info(f"Outlook Response: {outlook_response}")
+                    self._send_channel_msg(outlook_response, channel_idx)
+                    
+                    # Clear the pending state
+                    del self._pending_outlook[state_key]
+                    return
+                else:
+                    # User said no or something else, clear pending state
+                    del self._pending_outlook[state_key]
+
         location, country = self._parse_command(content)
         if location:
             # Sanitize sender for print output to prevent terminal corruption
@@ -507,10 +545,55 @@ class WeatherBot:
             msg = f"WX request for '{safe_location}'{country_str} from {safe_sender_print}"
             print(msg, flush=True)
             self.logger.info(msg)
-            response = self._get_weather(location, country)
-            print(f"Response:\n{response}\n", flush=True)
-            self.logger.info(f"Response: {response}")
-            self._send_channel_msg(response, channel_idx)
+            
+            # Get location data and weather
+            try:
+                r = self.geocode_location(location, country)
+                if r is None:
+                    response = f"Location not found: {location}"
+                    self.logger.warning(response)
+                    self.stats.record_error("location_not_found")
+                    self._send_channel_msg(response, channel_idx)
+                    return
+                
+                lat, lon = r["latitude"], r["longitude"]
+                wx = self.get_weather(lat, lon)
+                
+                # Record successful request
+                location_name = r.get("name", location)
+                self.stats.record_request(location_name)
+                
+                response = self.format_weather_response(r, wx)
+                print(f"Response:\n{response}\n", flush=True)
+                self.logger.info(f"Response: {response}")
+                self._send_channel_msg(response, channel_idx)
+                
+                # Store state for potential outlook request and send prompt
+                self._pending_outlook[state_key] = {
+                    "location": location,
+                    "country": country,
+                    "lat": lat,
+                    "lon": lon,
+                    "location_data": r,
+                    "timestamp": time.time()
+                }
+                
+                prompt = "Thanks for that, would you like to see the outlook? (y/n)"
+                self._send_channel_msg(prompt, channel_idx)
+                
+            except (ConnectionError, Timeout, RequestException) as e:
+                # Handle network-related errors with user-friendly message
+                response = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
+                self.logger.error(f"Network error: {e}")
+                self.error_logger.error(f"Network error: {e}", exc_info=True)
+                self.stats.record_error("weather_api_error")
+                self._send_channel_msg(response, channel_idx)
+            except Exception as e:
+                response = f"Weather error: {e}"
+                self.logger.error(response)
+                self.error_logger.error(response, exc_info=True)
+                self.stats.record_error("weather_api_error")
+                self._send_channel_msg(response, channel_idx)
 
     @staticmethod
     def _parse_command(text: str):
@@ -565,6 +648,40 @@ class WeatherBot:
                 return location, country
 
         return location_str, None
+
+    @staticmethod
+    def _is_yes_response(text: str) -> bool:
+        """Check if the text is a yes response (y, Y, YES, yes)."""
+        text = text.strip().lower()
+        return text in ['y', 'yes']
+
+    def _cleanup_expired_outlook_requests(self):
+        """Remove outlook requests that have exceeded the timeout."""
+        current_time = time.time()
+        expired_keys = [
+            key for key, state in self._pending_outlook.items()
+            if current_time - state["timestamp"] > self._outlook_timeout
+        ]
+        for key in expired_keys:
+            del self._pending_outlook[key]
+
+    def _get_outlook(self, location_data: dict, lat: float, lon: float) -> str:
+        """Fetch outlook for given coordinates and return a formatted string."""
+        try:
+            outlook = self.get_outlook(lat, lon)
+            return self.format_outlook_response(location_data, outlook)
+        except (ConnectionError, Timeout, RequestException) as e:
+            msg = "Sorry, I couldn't fetch the outlook due to network problems."
+            self.logger.error(f"Network error fetching outlook: {e}")
+            self.error_logger.error(f"Network error fetching outlook: {e}", exc_info=True)
+            self.stats.record_error("outlook_api_error")
+            return msg
+        except Exception as e:
+            msg = f"Outlook error: {e}"
+            self.logger.error(msg)
+            self.error_logger.error(msg, exc_info=True)
+            self.stats.record_error("outlook_api_error")
+            return msg
 
     def parse_weather_command(self, text: str):
         """Public alias for _parse_command.
@@ -688,6 +805,62 @@ class WeatherBot:
             },
             timeout=10,
         ).json()
+
+    def get_outlook(self, lat: float, lon: float) -> dict:
+        """Fetch daily weather outlook for the given coordinates.  Returns the raw
+        Open-Meteo response dict (with a ``"daily"`` key)."""
+        return requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": lat,
+                "longitude": lon,
+                "daily": (
+                    "temperature_2m_max,temperature_2m_min,"
+                    "weather_code"
+                ),
+                "timezone": "auto",
+                "forecast_days": 3,
+            },
+            timeout=10,
+        ).json()
+
+    def format_outlook_response(self, location_data: dict, outlook_data: dict) -> str:
+        """Format a concise outlook response from pre-fetched location and outlook data."""
+        name = location_data.get("name", "Unknown")
+        
+        daily = outlook_data.get("daily", {})
+        times = daily.get("time", [])
+        temp_max = daily.get("temperature_2m_max", [])
+        temp_min = daily.get("temperature_2m_min", [])
+        weather_codes = daily.get("weather_code", [])
+        
+        lines = [f"{name} 3-day:"]
+        
+        # Only show 3 days to keep message short
+        for i in range(min(3, len(times))):
+            date = times[i] if i < len(times) else "N/A"
+            # Extract just month-day (e.g., "2026-02-25" -> "02-25")
+            date_short = date[5:] if len(date) >= 10 else date
+            tmax = temp_max[i] if i < len(temp_max) else "N/A"
+            tmin = temp_min[i] if i < len(temp_min) else "N/A"
+            wcode = weather_codes[i] if i < len(weather_codes) else 0
+            
+            # Use shorter weather descriptions
+            condition_map = {
+                0: "Clear", 1: "Clear", 2: "Cloudy", 3: "Overcast",
+                45: "Fog", 48: "Fog",
+                51: "Drizzle", 53: "Drizzle", 55: "Drizzle",
+                61: "Rain", 63: "Rain", 65: "Rain",
+                71: "Snow", 73: "Snow", 75: "Snow",
+                80: "Showers", 81: "Showers", 82: "Showers",
+                95: "Storm", 96: "Storm+hail", 99: "Storm+hail",
+            }
+            # Fallback chain: short map -> full WEATHER_CODES -> "C{code}" format
+            condition = condition_map.get(wcode, WEATHER_CODES.get(wcode, f"C{wcode}"))
+            
+            lines.append(f"{date_short}: {condition} {tmin}-{tmax}°C")
+        
+        return "\n".join(lines)
 
     def _get_weather(self, location: str, country: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
