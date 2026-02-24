@@ -795,7 +795,14 @@
             }
             
             // Find max value for scaling
-            const maxValue = Math.max(...data.map(d => d.count), 1);
+            const maxValue = Math.max(...data.map(d => d.count));
+            
+            // Handle case where all values are 0
+            if (maxValue === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No requests yet</div>';
+                labelsDiv.innerHTML = '';
+                return;
+            }
             
             // Create bars
             chartDiv.innerHTML = '';
@@ -839,7 +846,13 @@
             }
             
             // Find max value for scaling
-            const maxValue = Math.max(...data.map(d => d.count), 1);
+            const maxValue = Math.max(...data.map(d => d.count));
+            
+            // Handle case where all values are 0
+            if (maxValue === 0) {
+                chartDiv.innerHTML = '<div class="no-data">No requests yet</div>';
+                return;
+            }
             
             // Create bars
             chartDiv.innerHTML = '';

@@ -1,0 +1,22 @@
+{
+  "total_requests": 12,
+  "total_errors": 1,
+  "locations": {
+    "London": 3,
+    "York": 5,
+    "Manchester": 1,
+    "Leeds": 1,
+    "Birmingham": 1,
+    "Barnsley": 1
+  },
+  "hourly_requests": {
+    "2026-02-24 13:00": 12
+  },
+  "daily_requests": {
+    "2026-02-24": 12
+  },
+  "error_types": {
+    "location_not_found": 1
+  },
+  "last_updated": "2026-02-24T13:58:19.656281"
+}

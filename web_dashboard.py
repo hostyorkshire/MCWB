@@ -139,7 +139,7 @@ def api_stats_locations():
 def calculate_success_rate(total, errors):
     """Calculate success rate percentage"""
     if total == 0:
-        return 100.0
+        return 0.0
     return round(((total - errors) / total) * 100, 1)
 
 
