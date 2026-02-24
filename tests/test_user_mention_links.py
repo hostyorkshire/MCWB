@@ -86,7 +86,7 @@ class TestUserMentionLinks(unittest.TestCase):
         self.assertIn('@user', escaped)  # @mention should still be present
     
     def test_weather_bot_sends_mentions(self):
-        """Test that the weather bot formats @username mentions as markdown-style links in responses"""
+        """Test that the weather bot no longer includes @username mentions in responses"""
         from weather_bot import WeatherBot
         from unittest.mock import MagicMock
         
@@ -105,12 +105,14 @@ class TestUserMentionLinks(unittest.TestCase):
             }
         }
         
-        # Format response with sender
-        response = bot.format_weather_response(location_data, weather_data, sender="testuser")
+        # Format response - sender parameter no longer used
+        response = bot.format_weather_response(location_data, weather_data)
         
-        # Verify @mention is included as markdown-style link for MeshCore app clickability
-        self.assertIn('[@testuser](meshcore://user/testuser)', response)
-        self.assertTrue(response.startswith('hi [@testuser](meshcore://user/testuser)\n'))
+        # Verify @mention is NOT included
+        self.assertNotIn('[@testuser](meshcore://user/testuser)', response)
+        self.assertNotIn('hi @', response.lower())
+        # Response should start with location
+        self.assertTrue(response.startswith('York, GB\n'))
 
 
 if __name__ == '__main__':

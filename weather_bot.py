@@ -506,7 +506,7 @@ class WeatherBot:
             msg = f"WX request for '{safe_location}'{country_str} from {safe_sender_print}"
             print(msg, flush=True)
             self.logger.info(msg)
-            response = self._get_weather(location, country, sender)
+            response = self._get_weather(location, country)
             print(f"Response:\n{response}\n", flush=True)
             self.logger.info(f"Response: {response}")
             self._send_channel_msg(response, channel_idx)
@@ -577,7 +577,7 @@ class WeatherBot:
         """Return human-readable description for a WMO weather code."""
         return WEATHER_CODES.get(code, f"Code {code}")
 
-    def format_weather_response(self, location_data: dict, weather_data: dict, sender: str = None) -> str:
+    def format_weather_response(self, location_data: dict, weather_data: dict) -> str:
         """Format a weather response from pre-fetched location and weather data."""
         name = location_data.get("name", "Unknown")
         country = location_data.get("country_code", location_data.get("country", ""))
@@ -586,16 +586,7 @@ class WeatherBot:
         weather_code = c.get("weather_code", 0)
         cond = WEATHER_CODES.get(weather_code, f"Code {weather_code}")
         
-        # Build greeting if sender is provided
-        greeting = ""
-        if sender:
-            # Sanitize sender to prevent injection of newlines or control characters
-            safe_sender = self._sanitize_for_log(sender).replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
-            # Format @mention as markdown-style link for MeshCore app compatibility
-            greeting = f"hi [@{safe_sender}](meshcore://user/{safe_sender})\n"
-        
         return (
-            f"{greeting}"
             f"{loc_str}\n"
             f"{cond}\n"
             f"Temp: {c.get('temperature_2m', 'N/A')}°C "
@@ -610,7 +601,7 @@ class WeatherBot:
         """Handle a MeshCoreMessage and send a weather response via self.mesh."""
         location, country = self._parse_command(msg.content)
         if location:
-            response = self._get_weather(location, country, msg.sender)
+            response = self._get_weather(location, country)
             # Reply on the exact channel slot the query arrived on (when known),
             # or broadcast to all configured channels.  Using send_response
             # keeps the routing logic in one place.
@@ -697,13 +688,12 @@ class WeatherBot:
             timeout=10,
         ).json()
 
-    def _get_weather(self, location: str, country: str = None, sender: str = None) -> str:
+    def _get_weather(self, location: str, country: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
 
         Args:
             location: City/location name to get weather for
             country: Optional country code to filter geocoding results (e.g., "GB", "US")
-            sender: Optional sender name to include in greeting
         """
         try:
             r = self.geocode_location(location, country)
@@ -719,7 +709,7 @@ class WeatherBot:
             location_name = r.get("name", location)
             self.stats.record_request(location_name)
             
-            return self.format_weather_response(r, wx, sender)
+            return self.format_weather_response(r, wx)
         except Exception as e:
             msg = f"Weather error: {e}"
             self.logger.error(msg)
