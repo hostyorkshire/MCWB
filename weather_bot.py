@@ -591,7 +591,8 @@ class WeatherBot:
         if sender:
             # Sanitize sender to prevent injection of newlines or control characters
             safe_sender = self._sanitize_for_log(sender).replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
-            greeting = f"hi @{safe_sender}\n"
+            # Format @mention as markdown link for MeshCore mobile/desktop app
+            greeting = f"hi [@{safe_sender}](meshcore://user/{safe_sender})\n"
         
         return (
             f"{greeting}"

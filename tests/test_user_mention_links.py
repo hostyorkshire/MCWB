@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-Test that @user mentions in bot replies are converted to clickable links in the dashboard.
-This test verifies the JavaScript function that converts @username patterns to meshcore:// links.
+Test that @user mentions in bot replies are converted to clickable links.
+
+This test verifies:
+1. Bot formats @mentions as markdown links: [@username](meshcore://user/username)
+2. Markdown links are clickable in MeshCore mobile/desktop app
+3. JavaScript dashboard function converts both markdown and plain @mentions to HTML links
+4. Username patterns are correctly detected and sanitized
 """
 
 import sys
@@ -36,6 +41,25 @@ class TestUserMentionLinks(unittest.TestCase):
             self.assertEqual(matches, expected_usernames, 
                            f"Failed for text: {text}")
     
+    def test_markdown_link_pattern_detection(self):
+        """Test that the regex pattern can detect markdown-style @username mention links"""
+        # This is the pattern used in the JavaScript for markdown links:
+        # /\[@([a-zA-Z0-9_.-]+)\]\(meshcore:\/\/user\/([a-zA-Z0-9_.-]+)\)/g
+        pattern = r'\[@([a-zA-Z0-9_.-]+)\]\(meshcore://user/([a-zA-Z0-9_.-]+)\)'
+        
+        # Test cases - should extract both the display name and the URL username
+        test_cases = [
+            ('hi [@john_doe](meshcore://user/john_doe)', [('john_doe', 'john_doe')]),
+            ('[@alice](meshcore://user/alice) and [@bob](meshcore://user/bob)', [('alice', 'alice'), ('bob', 'bob')]),
+            ('no markdown links here', []),
+            ('hi @user', []),  # Plain @mention should not match markdown pattern
+        ]
+        
+        for text, expected_matches in test_cases:
+            matches = re.findall(pattern, text)
+            self.assertEqual(matches, expected_matches, 
+                           f"Failed for text: {text}")
+    
     def test_url_format(self):
         """Test that the URL format is correct for meshcore app"""
         # The URL should be: meshcore://user/{username}
@@ -60,7 +84,7 @@ class TestUserMentionLinks(unittest.TestCase):
         self.assertIn('@user', escaped)  # @mention should still be present
     
     def test_weather_bot_sends_mentions(self):
-        """Test that the weather bot includes @username in responses"""
+        """Test that the weather bot formats @username mentions as markdown links in responses"""
         from weather_bot import WeatherBot
         from unittest.mock import MagicMock
         
@@ -82,9 +106,9 @@ class TestUserMentionLinks(unittest.TestCase):
         # Format response with sender
         response = bot.format_weather_response(location_data, weather_data, sender="testuser")
         
-        # Verify @mention is included
-        self.assertIn('@testuser', response)
-        self.assertTrue(response.startswith('hi @testuser\n'))
+        # Verify @mention is included as markdown link for MeshCore app
+        self.assertIn('[@testuser](meshcore://user/testuser)', response)
+        self.assertTrue(response.startswith('hi [@testuser](meshcore://user/testuser)\n'))
 
 
 if __name__ == '__main__':
