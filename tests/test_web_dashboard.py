@@ -120,11 +120,13 @@ class TestWebDashboard(unittest.TestCase):
         self.assertIsNone(info['modified'])
     
     def test_dark_theme_css(self):
-        """Test that dark theme CSS is present"""
+        """Test that theme CSS variables are present"""
         response = self.client.get('/')
-        self.assertIn(b'background: linear-gradient', response.data)
-        self.assertIn(b'#1a1a2e', response.data)  # Dark background color
-        self.assertIn(b'#60a5fa', response.data)  # Blue accent color
+        self.assertIn(b'data-theme', response.data)
+        self.assertIn(b'--bg-gradient-start', response.data)  # CSS variables
+        self.assertIn(b'--text-color', response.data)  # CSS variables
+        self.assertIn(b'#000000', response.data)  # Dark background color
+        self.assertIn(b'#ffffff', response.data)  # White text color in dark mode
 
 
 if __name__ == '__main__':
