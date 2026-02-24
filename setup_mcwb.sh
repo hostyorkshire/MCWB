@@ -77,12 +77,12 @@ install_weather_bot() {
     else
         echo -e "${RED}❌ Error: install_service.sh not found${NC}"
         echo "Please run this script from the MCWB directory"
-        read -p "Press Enter to continue..."
+        read -r -p "Press Enter to continue..."
         return 1
     fi
     
     echo ""
-    read -p "Press Enter to return to menu..."
+    read -r -p "Press Enter to return to menu..."
 }
 
 # Function to install dashboard service
@@ -98,12 +98,12 @@ install_dashboard() {
     else
         echo -e "${RED}❌ Error: install_dashboard_service.sh not found${NC}"
         echo "Please run this script from the MCWB directory"
-        read -p "Press Enter to continue..."
+        read -r -p "Press Enter to continue..."
         return 1
     fi
     
     echo ""
-    read -p "Press Enter to return to menu..."
+    read -r -p "Press Enter to return to menu..."
 }
 
 # Function to install both services
@@ -121,7 +121,7 @@ install_both() {
     echo ""
     if [[ $REPLY =~ ^[Nn]$ ]]; then
         echo "Installation cancelled"
-        read -p "Press Enter to continue..."
+        read -r -p "Press Enter to continue..."
         return
     fi
     
@@ -132,7 +132,7 @@ install_both() {
         ./install_service.sh
     else
         echo -e "${RED}❌ Error: install_service.sh not found${NC}"
-        read -p "Press Enter to continue..."
+        read -r -p "Press Enter to continue..."
         return 1
     fi
     
@@ -144,7 +144,7 @@ install_both() {
         ./install_dashboard_service.sh
     else
         echo -e "${RED}❌ Error: install_dashboard_service.sh not found${NC}"
-        read -p "Press Enter to continue..."
+        read -r -p "Press Enter to continue..."
         return 1
     fi
     
@@ -153,7 +153,7 @@ install_both() {
     echo -e "${GREEN}✅ All services installed successfully!${NC}"
     echo "================================================"
     echo ""
-    read -p "Press Enter to return to menu..."
+    read -r -p "Press Enter to return to menu..."
 }
 
 # Function to check service status
@@ -190,7 +190,7 @@ check_status() {
     fi
     
     echo ""
-    read -p "Press Enter to return to menu..."
+    read -r -p "Press Enter to return to menu..."
 }
 
 # Function to start/stop services
@@ -243,7 +243,7 @@ start_stop_services() {
     esac
     
     echo ""
-    read -p "Press Enter to continue..."
+    read -r -p "Press Enter to continue..."
 }
 
 # Function to view logs
@@ -301,7 +301,7 @@ view_logs() {
     # Those commands block until Ctrl+C, so no prompt is needed
     if [ "$choice" != "0" ] && [ "$choice" != "3" ] && [ "$choice" != "4" ]; then
         echo ""
-        read -p "Press Enter to continue..."
+        read -r -p "Press Enter to continue..."
     fi
 }
 
@@ -355,7 +355,7 @@ uninstall_services() {
     esac
     
     echo ""
-    read -p "Press Enter to continue..."
+    read -r -p "Press Enter to continue..."
 }
 
 # Function to configure firewall
@@ -377,7 +377,7 @@ configure_firewall() {
             echo -e "${GREEN}✅ UFW installed${NC}"
         else
             echo "Skipping firewall configuration"
-            read -p "Press Enter to continue..."
+            read -r -p "Press Enter to continue..."
             return
         fi
     fi
@@ -440,7 +440,7 @@ configure_firewall() {
     esac
     
     echo ""
-    read -p "Press Enter to continue..."
+    read -r -p "Press Enter to continue..."
 }
 
 # Function to show quick start guide
@@ -470,7 +470,7 @@ show_quick_start() {
     echo "  • WEB_DASHBOARD.md - Full dashboard documentation"
     echo "  • RASPBERRY_PI_SETUP.md - Complete Pi setup guide"
     echo ""
-    read -p "Press Enter to return to menu..."
+    read -r -p "Press Enter to return to menu..."
 }
 
 # Main loop
