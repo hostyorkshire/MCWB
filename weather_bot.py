@@ -34,24 +34,25 @@ except ImportError:
 _FRAME_OUT = 0x3E           # '>' radio→app frame start byte
 _FRAME_IN = 0x3C            # '<' app→radio frame start byte
 _CMD_APP_START = 0x01       # Initialise companion radio session
-_CMD_GET_DEVICE_TIME = 0x05 # Radio requests current device time; app must respond
+_CMD_GET_DEVICE_TIME = 0x05  # Radio requests current device time; app must respond
 _CMD_SYNC_NEXT_MSG = 0x0A   # Request next queued message
 _CMD_SEND_CHAN_MSG = 0x03    # Send a channel (flood) text message
 _RESP_CURR_TIME = 0x09      # Response: current time (4-byte UNIX timestamp LE)
 _RESP_CHANNEL_MSG = 0x08    # Channel message received
-_RESP_CHANNEL_MSG_V3 = 0x11 # Channel message received (V3, includes SNR)
-_RESP_CONTACT_MSG_V3 = 0x10 # Direct (contact) message received (V3, includes SNR)
+_RESP_CHANNEL_MSG_V3 = 0x11  # Channel message received (V3, includes SNR)
+_RESP_CONTACT_MSG_V3 = 0x10  # Direct (contact) message received (V3, includes SNR)
 _PUSH_BASE = 0x80           # Push: base flag for push notifications (bit 7 set)
-_PUSH_SEND_CONFIRMED = 0x82 # Push: outgoing message ACK'd by mesh
+_PUSH_SEND_CONFIRMED = 0x82  # Push: outgoing message ACK'd by mesh
 _PUSH_MSG_WAITING = 0x83    # Push: new message queued
 _PUSH_CHAN_MSG = 0x88        # Push: inline channel message (0x80 | RESP_CHANNEL_MSG)
 _PUSH_NO_MORE_MSGS = 0x8A   # Push: no more messages (0x80 | CMD_SYNC_NEXT_MSG)
-_PUSH_CONTACT_MSG_V3 = 0x90 # Push: inline contact message V3 (0x80 | RESP_CONTACT_MSG_V3)
+_PUSH_CONTACT_MSG_V3 = 0x90  # Push: inline contact message V3 (0x80 | RESP_CONTACT_MSG_V3)
 _RESP_NO_MORE_MSGS = 0x0A   # No more messages in queue (same value as CMD_SYNC_NEXT_MSG)
 
 # Channel message format constants
 _OLD_FORMAT_HEADER_SIZE = 8   # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
-_V3_FORMAT_HEADER_SIZE = 11   # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+# code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_V3_FORMAT_HEADER_SIZE = 11
 _MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
 _MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
 _MAX_VALID_CHANNEL_IDX = 7    # Maximum valid channel index (0-7)
@@ -142,17 +143,17 @@ class WeatherBot:
         """
         if not text:
             return text
-        
+
         # Remove control characters except newline, tab, carriage return
         sanitized = ''.join(
             char if (ord(char) >= 32 or char in '\n\t\r') else f'\\x{ord(char):02x}'
             for char in text
         )
-        
+
         # Limit length to prevent log spam
         if len(sanitized) > self._MAX_LOG_LENGTH:
             sanitized = sanitized[:self._MAX_LOG_LENGTH] + f"... ({len(sanitized) - self._MAX_LOG_LENGTH} more chars)"
-        
+
         return sanitized
 
     def _log(self, msg):
@@ -276,7 +277,7 @@ class WeatherBot:
         """
         Parse channel message payload and extract channel_idx and text.
         Handles both old format and V3 format (with SNR).
-        
+
         Format Detection Heuristics:
         - If payload >= 12 bytes and SNR (byte 1) is in realistic range (20-60 dB)
           and channel_idx (byte 4) is valid (0-7), use V3 format
@@ -285,15 +286,15 @@ class WeatherBot:
         - If payload >= 12 bytes and bytes 2-3 (reserved in V3) are both 0x00
           and byte 4 is a valid channel_idx, use V3 format
         - Otherwise, use old format
-        
+
         Encryption Detection:
         - After parsing, check if decoded text looks like valid readable text
         - Encrypted messages will have many non-printable/control characters
         - Uses simple printable character ratio check (Jeff ping bot approach)
-        
+
         V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
-        
+
         Returns:
             tuple: (channel_idx, text) or (None, None) if parsing fails or message is encrypted
         """
@@ -301,7 +302,7 @@ class WeatherBot:
         if len(payload) < _OLD_FORMAT_HEADER_SIZE:
             self._log(f"Message too short ({len(payload)} bytes, need >= {_OLD_FORMAT_HEADER_SIZE})")
             return (None, None)
-        
+
         # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
         if len(payload) >= _V3_FORMAT_HEADER_SIZE + 1:
             snr_value = payload[1]
@@ -309,26 +310,27 @@ class WeatherBot:
             reserved2 = payload[3]
             v3_channel_idx = payload[4]
             old_channel_idx = payload[1]
-            
+
             # Check if this looks like V3 format using multiple heuristics
             use_v3_format = False
-            
+
             # Heuristic 1: SNR in realistic range AND valid channel_idx = V3 format
             if _MIN_REALISTIC_SNR <= snr_value <= _MAX_REALISTIC_SNR and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
                 use_v3_format = True
-            
+
             # Heuristic 2: Old format would be invalid (channel_idx > 7), but V3 is valid
             # This handles cases where the old format interpretation doesn't make sense
             elif old_channel_idx > _MAX_VALID_CHANNEL_IDX and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
                 use_v3_format = True
-            
+
             # Heuristic 3: Reserved bytes are 0x00 AND valid channel_idx at position 4 = V3 format
             # This handles V3 messages with low SNR values (0-7) that could be confused with
             # old format channel_idx. The reserved bytes being 0x00 is a strong V3 indicator.
             # However, exclude SNR=0 as it's unrealistic (signals need some SNR to be received)
-            elif reserved1 == 0x00 and reserved2 == 0x00 and snr_value > 0 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX:
+            elif (reserved1 == 0x00 and reserved2 == 0x00
+                  and snr_value > 0 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX):
                 use_v3_format = True
-            
+
             # If any heuristic matched, parse as V3 format
             if use_v3_format:
                 channel_idx = v3_channel_idx
@@ -348,7 +350,7 @@ class WeatherBot:
                 if self.verify_channels and 0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX:
                     self._valid_channels.add(channel_idx)
                 return (channel_idx, text)
-        
+
         # Fall back to old format
         channel_idx = payload[1]
         # Validate channel_idx is in valid range (0-7)
@@ -412,7 +414,8 @@ class WeatherBot:
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG_V3 and len(payload) >= 12:
-            # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) = 11 bytes; text follows
+            # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) +
+            # txt_type(1) + timestamp(4) = 11 bytes; text follows
             channel_idx = payload[4]
             # Validate channel_idx is in valid range (0-7)
             if 0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX:
@@ -463,7 +466,8 @@ class WeatherBot:
             sender = _DEFAULT_SENDER
             content = text
             safe_sender_for_log = self._sanitize_for_log(sender)
-            self._log(f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{safe_sender_for_log}'")
+            self._log(
+                f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{safe_sender_for_log}'")
 
         # Sanitize content for logging to prevent terminal corruption
         safe_sender = self._sanitize_for_log(sender)
@@ -488,7 +492,7 @@ class WeatherBot:
     @staticmethod
     def _parse_command(text: str):
         """Return (location, country) tuple if text matches WX/weather command, else (None, None).
-        
+
         Supports formats:
         - "wx York" -> ("York", None)
         - "wx York UK" -> ("York", "GB")
@@ -499,9 +503,9 @@ class WeatherBot:
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text.strip(), re.IGNORECASE)
         if not m:
             return None, None
-        
+
         location_str = m.group(1).strip()
-        
+
         # Country code mappings (common variations that map to ISO codes)
         country_mappings = {
             'uk': 'GB',
@@ -511,7 +515,7 @@ class WeatherBot:
             'united kingdom': 'GB',
             'united states': 'US',
         }
-        
+
         # Try to extract country from end of location string
         # Pattern: location name followed by whitespace and country name/code
         # Only extract if there's no comma near the end (comma-separated format)
@@ -519,13 +523,13 @@ class WeatherBot:
         if len(words) >= 2:
             # Check if last word could be a country code
             potential_country = words[-1].lower()
-            
+
             # Check if there's a comma in the last few words (indicates comma-separated format)
             last_few_words = ' '.join(words[-3:]) if len(words) >= 3 else ' '.join(words)
             if ',' in last_few_words:
                 # Comma-separated format like "York, UK" - don't extract country
                 return location_str, None
-            
+
             # Map common country names to ISO codes, or use as-is if already valid
             if potential_country in country_mappings:
                 country = country_mappings[potential_country]
@@ -536,12 +540,12 @@ class WeatherBot:
                 country = potential_country.upper()
                 location = ' '.join(words[:-1])
                 return location, country
-        
+
         return location_str, None
 
     def parse_weather_command(self, text: str):
         """Public alias for _parse_command.
-        
+
         Returns:
             tuple: (location, country) where country may be None
         """
@@ -640,7 +644,7 @@ class WeatherBot:
 
     def _get_weather(self, location: str, country: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
-        
+
         Args:
             location: City/location name to get weather for
             country: Optional country code to filter geocoding results (e.g., "GB", "US")
@@ -684,17 +688,17 @@ class WeatherBot:
         if self.weather_channel_idx is not None:
             print(f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}.")
             print(f"Listening ONLY on channel_idx={self.weather_channel_idx}.")
-            print(f"Send 'WX [location]' or 'weather [location]' on that channel.")
+            print("Send 'WX [location]' or 'weather [location]' on that channel.")
         elif self.allowed_channel_idx is not None:
             print(f"MCWBv2 running. Listening ONLY on channel_idx={self.allowed_channel_idx}.")
-            print(f"Send 'WX [location]' or 'weather [location]' on that channel.")
+            print("Send 'WX [location]' or 'weather [location]' on that channel.")
         else:
             print("MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel.")
-        
+
         if self.verify_channels:
             print("\n📡 Channel Verification Mode: Monitoring channel encryption status...")
             print("   Will report which channels are properly configured with decryption keys.\n")
-        
+
         print("Press Ctrl+C to stop.\n", flush=True)
 
         last_announce = time.time()
@@ -722,17 +726,17 @@ class WeatherBot:
         print("\n" + "="*70)
         print("📡 CHANNEL VERIFICATION REPORT")
         print("="*70)
-        
+
         if self._valid_channels:
             print("\n✅ Channels with successfully decrypted messages:")
             for ch_idx in sorted(self._valid_channels):
                 print(f"   • channel_idx {ch_idx} - Radio has valid keys for this channel")
-        
+
         if self._encrypted_channels:
             print("\n⚠️  Channels with encrypted messages (could not decrypt):")
             for ch_idx in sorted(self._encrypted_channels):
                 print(f"   • channel_idx {ch_idx} - Radio does not have keys for this channel")
-            
+
             print("\n💡 WHAT THIS MEANS:")
             print("   The radio received messages on channels it's not subscribed to.")
             print("   This is normal! The bot automatically works on subscribed channels.")
@@ -745,11 +749,11 @@ class WeatherBot:
             print()
             print("   Note: The bot seamlessly works on any channels your radio is")
             print("         already subscribed to. No app configuration needed!")
-        
+
         if not self._valid_channels and not self._encrypted_channels:
             print("\n📭 No messages received during this session.")
             print("   This is just a diagnostic tool. Try sending messages to test.")
-        
+
         print("="*70 + "\n")
 
 
@@ -774,7 +778,8 @@ def main():
                         help="Only respond to messages from this channel index (e.g., 1 for #weather)")
     parser.add_argument("-w", "--weather-channel-idx", type=int,
                         help="Specify which channel index to use for announcements. "
-                             "Bot will still respond to messages from ANY channel unless --channel-idx is also specified.")
+                             "Bot will still respond to messages from ANY channel "
+                             "unless --channel-idx is also specified.")
     parser.add_argument("--country",
                         help="Default country code for geocoding (e.g., GB, US, FR). "
                              "Filters location searches to prefer cities in this country.")
