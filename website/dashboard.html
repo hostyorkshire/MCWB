@@ -234,11 +234,18 @@
             <h1>Live Dashboard</h1>
             <p>Real-time monitoring of bot activity and usage statistics.</p>
 
-            <div class="info-box warning">
+            <div class="info-box warning" id="demoModeWarning">
                 <h3>⚠️ Note: Demo Mode</h3>
-                <p>This is a static demo dashboard. For live monitoring, use the <strong>Web Dashboard</strong> included with the bot:</p>
+                <p>This dashboard is attempting to connect to the live bot dashboard API. If you see demo data, start the <strong>Web Dashboard</strong> to see real-time stats:</p>
                 <pre><code>python3 web_dashboard.py --host 0.0.0.0</code></pre>
                 <p style="margin-bottom: 0;">Access at: <code>http://localhost:5000</code></p>
+                <p style="margin-top: 0.5rem; font-size: 0.9em;">The dashboard will automatically detect and connect to the API if it's running on localhost:5000.</p>
+            </div>
+            
+            <div class="info-box success" id="liveDataInfo" style="display: none;">
+                <h3>✓ Connected to Live Dashboard</h3>
+                <p>This dashboard is now displaying real-time data from your running bot at <code id="connectedUrl">http://localhost:5000</code>.</p>
+                <p style="margin-bottom: 0; font-size: 0.9em;">Data refreshes automatically every 10 seconds.</p>
             </div>
 
             <div class="auto-refresh-toggle">
