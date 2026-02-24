@@ -6,7 +6,6 @@ Provides file-based logging with rotation and multiple log levels
 
 import logging
 import logging.handlers
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -16,34 +15,34 @@ LOGS_DIR = Path(__file__).parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 
-def setup_logger(name: str, log_file: str, level=logging.INFO, 
+def setup_logger(name: str, log_file: str, level=logging.INFO,
                  console_output: bool = True, file_output: bool = True):
     """
     Set up a logger with both file and console handlers.
-    
+
     Args:
         name: Logger name (e.g., 'weather_bot', 'meshcore')
         log_file: Log file name (e.g., 'weather_bot.log')
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         console_output: Enable console output (default: True)
         file_output: Enable file output (default: True)
-        
+
     Returns:
         Configured logger instance
     """
     logger = logging.getLogger(name)
     logger.setLevel(level)
-    
+
     # Avoid adding duplicate handlers
     if logger.handlers:
         return logger
-    
+
     # Create formatter
     formatter = logging.Formatter(
         fmt='[%(asctime)s] %(name)s [%(levelname)s]: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-    
+
     # File handler with rotation (10 MB max, keep 5 backup files)
     if file_output:
         log_path = LOGS_DIR / log_file
@@ -56,42 +55,42 @@ def setup_logger(name: str, log_file: str, level=logging.INFO,
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-    
+
     # Console handler
     if console_output:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
-    
+
     return logger
 
 
 def setup_error_logger(name: str, error_log_file: str):
     """
     Set up a separate error logger for ERROR and CRITICAL messages only.
-    
+
     Args:
         name: Logger name (e.g., 'weather_bot_errors')
         error_log_file: Error log file name (e.g., 'weather_bot_error.log')
-        
+
     Returns:
         Configured error logger instance
     """
     error_logger = logging.getLogger(name)
     error_logger.setLevel(logging.ERROR)
-    
+
     # Avoid adding duplicate handlers
     if error_logger.handlers:
         return error_logger
-    
+
     # Create formatter with detailed error information
     formatter = logging.Formatter(
         fmt='[%(asctime)s] %(name)s [%(levelname)s]: %(message)s\n'
             'Location: %(pathname)s:%(lineno)d in %(funcName)s\n',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
-    
+
     # Error file handler with rotation
     error_log_path = LOGS_DIR / error_log_file
     error_handler = logging.handlers.RotatingFileHandler(
@@ -103,22 +102,22 @@ def setup_error_logger(name: str, error_log_file: str):
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(formatter)
     error_logger.addHandler(error_handler)
-    
+
     return error_logger
 
 
 def get_weather_bot_logger(debug: bool = False):
     """
     Get configured logger for Weather Bot.
-    
+
     Args:
         debug: Enable DEBUG level logging (default: False)
-        
+
     Returns:
         Tuple of (main_logger, error_logger)
     """
     level = logging.DEBUG if debug else logging.INFO
-    
+
     main_logger = setup_logger(
         name='weather_bot',
         log_file='weather_bot.log',
@@ -126,27 +125,27 @@ def get_weather_bot_logger(debug: bool = False):
         console_output=debug,  # Only show console in debug mode
         file_output=True
     )
-    
+
     error_logger = setup_error_logger(
         name='weather_bot_errors',
         error_log_file='weather_bot_error.log'
     )
-    
+
     return main_logger, error_logger
 
 
 def get_meshcore_logger(debug: bool = False):
     """
     Get configured logger for MeshCore.
-    
+
     Args:
         debug: Enable DEBUG level logging (default: False)
-        
+
     Returns:
         Tuple of (main_logger, error_logger)
     """
     level = logging.DEBUG if debug else logging.INFO
-    
+
     main_logger = setup_logger(
         name='meshcore',
         log_file='meshcore.log',
@@ -154,12 +153,12 @@ def get_meshcore_logger(debug: bool = False):
         console_output=debug,  # Only show console in debug mode
         file_output=True
     )
-    
+
     error_logger = setup_error_logger(
         name='meshcore_errors',
         error_log_file='meshcore_error.log'
     )
-    
+
     return main_logger, error_logger
 
 
@@ -176,7 +175,7 @@ def log_startup_info(logger, app_name: str, version: str = "1.0.0"):
 def log_exception(logger, error_logger, exception: Exception, context: str = ""):
     """
     Log an exception to both main and error logs.
-    
+
     Args:
         logger: Main logger
         error_logger: Error logger
@@ -193,7 +192,7 @@ if __name__ == "__main__":
     print("Testing logging system...")
     print(f"Logs directory: {LOGS_DIR.absolute()}")
     print()
-    
+
     # Test weather bot logger
     wb_logger, wb_error_logger = get_weather_bot_logger(debug=True)
     log_startup_info(wb_logger, "Weather Bot Test", "1.0.0")
@@ -201,15 +200,15 @@ if __name__ == "__main__":
     wb_logger.info("This is an info message")
     wb_logger.warning("This is a warning message")
     wb_logger.error("This is an error message")
-    
+
     # Test exception logging
     try:
         raise ValueError("Test exception")
     except Exception as e:
         log_exception(wb_logger, wb_error_logger, e, "Test exception context")
-    
+
     print()
     print("✓ Logging test complete")
     print(f"✓ Check log files in: {LOGS_DIR.absolute()}")
-    print(f"  - weather_bot.log")
-    print(f"  - weather_bot_error.log")
+    print("  - weather_bot.log")
+    print("  - weather_bot_error.log")
