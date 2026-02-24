@@ -153,10 +153,10 @@ Verify the installation by running the test suite:
 python3 examples.py
 
 # Test LoRa serial communication
-python3 test_lora_serial.py
+python3 tests/test_lora_serial.py
 
 # Test channel functionality
-python3 test_channel_functionality.py
+python3 tests/test_channel_functionality.py
 
 # Test channel examples
 python3 example_channels.py
