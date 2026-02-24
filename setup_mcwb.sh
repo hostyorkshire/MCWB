@@ -296,6 +296,8 @@ view_logs() {
         *) echo -e "${RED}Invalid option${NC}" ;;
     esac
     
+    # Don't wait for Enter if user chose live log following (options 3 or 4)
+    # Those commands block until Ctrl+C, so no prompt is needed
     if [ "$choice" != "0" ] && [ "$choice" != "3" ] && [ "$choice" != "4" ]; then
         echo ""
         read -p "Press Enter to continue..."
@@ -366,10 +368,9 @@ configure_firewall() {
     if ! command -v ufw >/dev/null 2>&1; then
         echo -e "${YELLOW}ℹ️  UFW (firewall) is not installed${NC}"
         echo ""
-        echo "Would you like to install UFW?"
-        read -p "[Y/n] " -n 1 -r
+        read -p "Would you like to install UFW? [y/N] " -n 1 -r
         echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
             sudo apt-get update
             sudo apt-get install -y ufw
             echo -e "${GREEN}✅ UFW installed${NC}"
@@ -407,17 +408,23 @@ configure_firewall() {
             echo -e "${YELLOW}⚠️  Make sure SSH is allowed BEFORE enabling firewall!${NC}"
             ;;
         3)
-            echo -e "${YELLOW}⚠️  IMPORTANT: Make sure SSH (port 22) is allowed first!${NC}"
+            echo -e "${RED}⚠️  CRITICAL: Enabling the firewall can lock you out!${NC}"
+            echo -e "${YELLOW}   You MUST have SSH (port 22) allowed BEFORE enabling!${NC}"
+            echo ""
             echo "Current firewall rules:"
             sudo ufw status numbered
             echo ""
-            read -p "Are you sure you want to enable the firewall? [y/N] " -n 1 -r
+            echo -e "${YELLOW}Is SSH (port 22) shown above?${NC}"
+            read -p "Confirm you want to enable the firewall [y/N] " -n 1 -r
             echo ""
             if [[ $REPLY =~ ^[Yy]$ ]]; then
-                sudo ufw --force enable
+                # Let UFW ask for its own confirmation (don't use --force)
+                echo ""
+                echo "UFW will ask for final confirmation..."
+                sudo ufw enable
                 echo -e "${GREEN}✅ Firewall enabled${NC}"
             else
-                echo "Firewall not enabled"
+                echo "Firewall not enabled (safe choice)"
             fi
             ;;
         4)

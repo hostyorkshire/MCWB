@@ -214,7 +214,7 @@ This unified menu lets you:
 - ✅ Configure firewall
 - ✅ Uninstall services
 
-**Perfect for Raspberry Pi users** - No need to remember multiple scripts!
+**Perfect for Raspberry Pi users** - No need to remember multiple scripts! See [SETUP_MENU_GUIDE.md](SETUP_MENU_GUIDE.md) for details.
 
 > **Note:** Individual installation scripts (`install_service.sh`, `install_dashboard_service.sh`) still work if you prefer to use them directly.
 
