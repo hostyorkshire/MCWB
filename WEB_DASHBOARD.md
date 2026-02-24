@@ -33,12 +33,12 @@ python3 web_dashboard.py
 
 By default, the dashboard will be available at:
 - **Local access:** http://localhost:5000
+- **Network access:** http://[your-ip]:5000 (e.g., http://192.168.1.109:5000)
 
-To allow network access from other devices:
+To restrict access to localhost only:
 ```bash
-python3 web_dashboard.py --host 0.0.0.0
+python3 web_dashboard.py --host 127.0.0.1
 ```
-Then access at: **http://[your-ip]:5000**
 
 ### Command-Line Options
 
@@ -99,10 +99,7 @@ https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.109:5000
 ### Network Requirements
 
 For remote access to work:
-1. The Web Dashboard must be running with network access enabled:
-   ```bash
-   python3 web_dashboard.py --host 0.0.0.0
-   ```
+1. The Web Dashboard must be running (by default it allows network access)
 2. Your browser must be able to reach the Raspberry Pi (same local network)
 3. If accessing from outside your network, you'll need to set up port forwarding on your router
 4. CORS is already enabled in the Web Dashboard to allow cross-origin requests
@@ -224,8 +221,8 @@ If the service fails to start, check the troubleshooting section below.
 
 ## Security Notes
 
-- By default, the dashboard binds to `127.0.0.1` (localhost only) for security
-- To allow network access, use `--host 0.0.0.0` (only on trusted networks)
+- By default, the dashboard binds to `0.0.0.0` (accessible on the network) for convenience
+- To restrict access to localhost only, use `--host 127.0.0.1`
 - For production use, consider:
   - Using a reverse proxy (nginx, Apache) with SSL/TLS
   - Implementing authentication
@@ -346,9 +343,10 @@ python3 web_dashboard.py --port 8080
 ### Cannot Access from Another Device
 
 Make sure:
-1. The dashboard is running with `--host 0.0.0.0`
+1. The dashboard is running (by default it binds to `0.0.0.0` for network access)
 2. Firewall allows incoming connections on the port
 3. You're using the correct IP address of the host machine
+4. If you previously ran with `--host 127.0.0.1`, restart without that option
 
 ### Logs Not Showing
 
