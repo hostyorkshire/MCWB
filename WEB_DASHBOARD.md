@@ -280,6 +280,21 @@ sudo journalctl -u mcwb-dashboard.service -f
 sudo journalctl -u mcwb-dashboard.service | grep -i "permission\|denied\|error"
 ```
 
+### Dependencies Not Installed
+
+If you get an error like `ModuleNotFoundError: No module named 'flask'`, you need to install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Or install manually:
+```bash
+pip install flask>=2.3.2 flask-cors>=4.0.0
+```
+
+**Note:** If you recently pulled the latest code, you may need to reinstall dependencies as new packages may have been added.
+
 ### Port Already in Use
 
 If port 5000 is already in use, specify a different port:
