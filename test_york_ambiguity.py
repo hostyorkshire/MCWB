@@ -61,22 +61,31 @@ def test_york_with_gb_filter():
     print("=" * 70)
     print("Solution: Bot configured with --country GB returns York, UK")
     print()
-    
+
     bot = WeatherBot(debug=False, country="GB")
-    
+
     with patch('weather_bot.requests.get') as mock_get:
-        # Simulate API returning York, UK when country=GB filter is applied
+        # Simulate API returning multiple results; GB result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "York",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.9599,
-                "longitude": -1.0873
-            }]
+            "results": [
+                {
+                    "name": "York",
+                    "country": "United States",
+                    "country_code": "US",
+                    "latitude": 39.9626,
+                    "longitude": -76.7277,
+                },
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                },
+            ]
         }
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -86,22 +95,18 @@ def test_york_with_gb_filter():
                 "wind_speed_10m": 15.0,
                 "wind_direction_10m": 220,
                 "precipitation": 0.0,
-                "weather_code": 2
+                "weather_code": 2,
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         result = bot._get_weather("York")
-        
+
         print("API Response:")
         print(result)
         print()
-        
-        # Verify country parameter was sent
-        geocoding_call = mock_get.call_args_list[0]
-        params = geocoding_call[1]['params']
-        print(f"✅ API called with country='{params.get('country')}' parameter")
+
         print("✅ User in UK gets correct weather for York, UK")
         print()
 

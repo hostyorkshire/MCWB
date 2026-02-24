@@ -126,22 +126,31 @@ def test_weather_request_with_uk():
     print("\n" + "=" * 70)
     print("TEST: Weather Request with UK")
     print("=" * 70)
-    
+
     bot = WeatherBot(debug=False, country=None)  # No default country
-    
+
     with patch('weather_bot.requests.get') as mock_get:
-        # Mock geocoding response for York, UK
+        # API returns multiple results; GB result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "York",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.9599,
-                "longitude": -1.0873
-            }]
+            "results": [
+                {
+                    "name": "York",
+                    "country": "United States",
+                    "country_code": "US",
+                    "latitude": 39.9626,
+                    "longitude": -76.7277,
+                },
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                },
+            ]
         }
-        
+
         # Mock weather response
         weather_response = MagicMock()
         weather_response.json.return_value = {
@@ -152,31 +161,21 @@ def test_weather_request_with_uk():
                 "wind_speed_10m": 15.0,
                 "wind_direction_10m": 220,
                 "precipitation": 0.0,
-                "weather_code": 2
+                "weather_code": 2,
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Simulate user command "wx York UK"
         location, country = bot._parse_command("wx York UK")
         result = bot._get_weather(location, country)
-        
+
         print(f"User command: 'wx York UK'")
         print(f"Result:\n{result}")
         print()
-        
-        # Verify geocoding API was called with country=GB
-        geocoding_call = mock_get.call_args_list[0]
-        params = geocoding_call[1]['params']
-        
-        if 'country' in params and params['country'] == 'GB':
-            print(f"✅ PASS: Geocoding API called with country='GB'")
-        else:
-            print(f"❌ FAIL: Expected country='GB' in API params, got {params}")
-            return False
-        
-        # Verify result contains York, GB
+
+        # Verify result contains York, GB (filtered client-side)
         if "York" in result and "GB" in result:
             print("✅ PASS: Result contains York, GB")
             return True
@@ -190,22 +189,31 @@ def test_weather_request_with_usa():
     print("\n" + "=" * 70)
     print("TEST: Weather Request with USA")
     print("=" * 70)
-    
+
     bot = WeatherBot(debug=False, country="GB")  # Default country is GB
-    
+
     with patch('weather_bot.requests.get') as mock_get:
-        # Mock geocoding response for York, USA
+        # API returns multiple results; US result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "York",
-                "country": "United States",
-                "country_code": "US",
-                "latitude": 39.9626,
-                "longitude": -76.7277
-            }]
+            "results": [
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                },
+                {
+                    "name": "York",
+                    "country": "United States",
+                    "country_code": "US",
+                    "latitude": 39.9626,
+                    "longitude": -76.7277,
+                },
+            ]
         }
-        
+
         # Mock weather response
         weather_response = MagicMock()
         weather_response.json.return_value = {
@@ -216,34 +224,24 @@ def test_weather_request_with_usa():
                 "wind_speed_10m": 8.0,
                 "wind_direction_10m": 180,
                 "precipitation": 0.0,
-                "weather_code": 0
+                "weather_code": 0,
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Simulate user command "wx York USA" (should override default country GB)
         location, country = bot._parse_command("wx York USA")
         result = bot._get_weather(location, country)
-        
+
         print(f"Bot configured with default country='GB'")
         print(f"User command: 'wx York USA'")
         print(f"Result:\n{result}")
         print()
-        
-        # Verify geocoding API was called with country=US (override)
-        geocoding_call = mock_get.call_args_list[0]
-        params = geocoding_call[1]['params']
-        
-        if 'country' in params and params['country'] == 'US':
-            print(f"✅ PASS: Geocoding API called with country='US' (overrode default GB)")
-        else:
-            print(f"❌ FAIL: Expected country='US' in API params, got {params}")
-            return False
-        
-        # Verify result contains York, US
+
+        # Verify result contains York, US (overrode default GB, filtered client-side)
         if "York" in result and "US" in result:
-            print("✅ PASS: Result contains York, US")
+            print("✅ PASS: Result contains York, US (overrode default GB)")
             return True
         else:
             print("❌ FAIL: Result doesn't contain expected location")
