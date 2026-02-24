@@ -245,11 +245,8 @@ class MeshCore:
         return sanitized
 
     def log(self, message: str):
-        """Log debug messages"""
-        self.logger.debug(message)
-        if self.debug:
-            # Console output already handled by logger in debug mode
-            pass
+        """Log messages"""
+        self.logger.info(message)
 
     def set_channel_filter(self, channels):
         """

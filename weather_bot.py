@@ -160,11 +160,8 @@ class WeatherBot:
         return sanitized
 
     def _log(self, msg):
-        """Log message to file and optionally console (in debug mode)"""
+        """Log message to file"""
         self.logger.info(msg)
-        if self.debug:
-            # Console output already handled by logger in debug mode
-            pass
 
     # ------------------------------------------------------------------
     # Lifecycle helpers (mesh-level start/stop)
@@ -699,7 +696,7 @@ class WeatherBot:
         """Connect and run the bot until Ctrl-C."""
         # Log startup information
         log_startup_info(self.logger, "MCWB Weather Bot", "2.0.0")
-        
+
         if not self._connect():
             return
 
