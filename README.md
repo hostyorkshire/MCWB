@@ -16,7 +16,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 **🍓 Raspberry Pi Zero 2 Ready** - See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) for headless auto-start on boot setup!
 
-**🌙 NEW: Dark-Themed Web Dashboard** - Monitor your bot in real-time with a beautiful dark-themed web interface! See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for details.
+**🌙 NEW: Dark-Themed Web Dashboard** - Monitor your bot in real-time with a beautiful dark-themed web interface! See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for details or [CONNECTION_GUIDE.md](CONNECTION_GUIDE.md) for quick troubleshooting.
 
 **📚 Documentation Website** - Complete wiki-style documentation website available at https://mcwb.netlify.app/. See [NETLIFY_DEPLOYMENT.md](NETLIFY_DEPLOYMENT.md) for automatic deployment setup from GitHub.
 

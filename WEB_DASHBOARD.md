@@ -4,7 +4,7 @@ A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time
 
 ## 🚀 Super Quick Start (3 Simple Steps)
 
-**Can't connect to your dashboard?** Follow these 3 steps:
+**Can't connect to your dashboard?** Follow these 3 steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
 
 ### Step 1: Install and Start the Dashboard
 
