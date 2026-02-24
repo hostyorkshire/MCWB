@@ -29,6 +29,8 @@ The installer will show you the URL, for example:
 
 **That's your connection URL!** Write it down.
 
+**💡 Pro Tip:** Once connected, you can use this URL to link your static website's Live Dashboard page to show real-time data. See [Remote Access and Static Website Integration](#remote-access-and-static-website-integration) below.
+
 ### Step 3: Connect
 
 Open a web browser on any device on your local network and go to the URL from Step 2.

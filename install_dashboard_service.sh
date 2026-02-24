@@ -96,7 +96,7 @@ if command -v ufw >/dev/null 2>&1; then
             echo "   ⚠️  Port 5000 not allowed in firewall"
             read -p "   Allow port 5000 through firewall? [Y/n] " -n 1 -r
             echo ""
-            if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
                 sudo ufw allow 5000/tcp
                 echo "   ✅ Port 5000 allowed through firewall"
             else
@@ -143,7 +143,7 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
         
         # Test connectivity
         echo "🔍 Testing connectivity..."
-        sleep 1
+        sleep 3
         if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
             echo "   ✅ Dashboard is responding on http://localhost:5000"
             echo "   ✅ You should be able to connect from other devices at:"

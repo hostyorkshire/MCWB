@@ -34,6 +34,17 @@ On any device connected to the same network (laptop, phone, tablet):
 2. Type the URL from Step 1 (e.g., `http://192.168.1.109:5000`)
 3. Done! You should see the dashboard
 
+### Bonus: Connect Your Static Website
+
+If you've deployed the MCWB static website (from the `website/` folder), you can connect it to your live dashboard:
+
+1. Go to your static website's Live Dashboard page
+2. Look for "Configure Custom API URL"
+3. Enter the URL from Step 1 (e.g., `http://192.168.1.109:5000`)
+4. Click "Connect"
+
+Now your website will show **real-time live data** from your Raspberry Pi! 🎉
+
 ## Still Can't Connect?
 
 ### Check 1: Is the Service Running?

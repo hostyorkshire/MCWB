@@ -6,6 +6,7 @@ Dark-themed web interface for monitoring the MeshCore Weather Bot
 
 import os
 import sys
+import socket
 from pathlib import Path
 
 # Check for required dependencies before importing
@@ -168,7 +169,6 @@ def calculate_success_rate(total, errors):
 
 def get_local_ip():
     """Get the local IP address for network access"""
-    import socket
     try:
         # Create a socket to get the local IP
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
