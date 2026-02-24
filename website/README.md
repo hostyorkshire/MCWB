@@ -85,9 +85,23 @@ Upload the entire `website` folder to any static web hosting service:
    - Your site will be available at: `https://[username].github.io/MCWB/`
    - Custom domains are also supported
 
-### Option 3: Netlify
+### Option 3: Netlify (Automatic Deployment)
 
-1. **Deploy to Netlify:**
+**Connect GitHub Repository (Recommended):**
+1. Go to: https://app.netlify.com/
+2. Click "Add new site" → "Import an existing project"
+3. Choose "Deploy with GitHub" and authorize Netlify
+4. Select the `hostyorkshire/MCWB` repository
+5. Configure build settings (auto-detected from netlify.toml):
+   - Base directory: (leave empty)
+   - Build command: (leave empty)
+   - Publish directory: `website`
+6. Click "Deploy site"
+7. Your site will automatically update on every git push!
+
+**Manual Deployment Options:**
+
+1. **CLI Deployment:**
    ```bash
    # Install Netlify CLI (optional)
    npm install -g netlify-cli
@@ -97,7 +111,7 @@ Upload the entire `website` folder to any static web hosting service:
    netlify deploy --prod
    ```
 
-2. **Or use drag-and-drop:**
+2. **Drag-and-drop:**
    - Go to https://app.netlify.com/drop
    - Drag the `website` folder to the upload area
    - Your site is live instantly!
