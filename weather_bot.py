@@ -15,7 +15,7 @@ import os
 from pathlib import Path
 
 from meshcore import MeshCore, MeshCoreMessage
-from logging_config import get_weather_bot_logger, log_startup_info, log_exception
+from logging_config import get_weather_bot_logger, log_startup_info
 from stats_tracker import StatsTracker
 
 try:
@@ -507,7 +507,7 @@ class WeatherBot:
         if state_key in self._pending_outlook:
             # Clean up expired requests
             self._cleanup_expired_outlook_requests()
-            
+
             # Check if this request is still valid
             if state_key in self._pending_outlook:
                 outlook_state = self._pending_outlook[state_key]
@@ -518,17 +518,17 @@ class WeatherBot:
                     lat = outlook_state["lat"]
                     lon = outlook_state["lon"]
                     location_data = outlook_state["location_data"]
-                    
+
                     safe_location = self._sanitize_for_log(location_name)
                     msg = f"Outlook request for '{safe_location}' from {safe_sender}"
                     print(msg, flush=True)
                     self.logger.info(msg)
-                    
+
                     outlook_response = self._get_outlook(location_data, lat, lon)
                     print(f"Outlook Response:\n{outlook_response}\n", flush=True)
                     self.logger.info(f"Outlook Response: {outlook_response}")
                     self._send_channel_msg(outlook_response, channel_idx)
-                    
+
                     # Clear the pending state
                     del self._pending_outlook[state_key]
                     return
@@ -545,7 +545,7 @@ class WeatherBot:
             msg = f"WX request for '{safe_location}'{country_str} from {safe_sender_print}"
             print(msg, flush=True)
             self.logger.info(msg)
-            
+
             # Get location data and weather
             try:
                 r = self.geocode_location(location, country)
@@ -555,19 +555,19 @@ class WeatherBot:
                     self.stats.record_error("location_not_found")
                     self._send_channel_msg(response, channel_idx)
                     return
-                
+
                 lat, lon = r["latitude"], r["longitude"]
                 wx = self.get_weather(lat, lon)
-                
+
                 # Record successful request
                 location_name = r.get("name", location)
                 self.stats.record_request(location_name)
-                
+
                 response = self.format_weather_response(r, wx)
                 print(f"Response:\n{response}\n", flush=True)
                 self.logger.info(f"Response: {response}")
                 self._send_channel_msg(response, channel_idx)
-                
+
                 # Store state for potential outlook request and send prompt
                 self._pending_outlook[state_key] = {
                     "location": location,
@@ -577,10 +577,10 @@ class WeatherBot:
                     "location_data": r,
                     "timestamp": time.time()
                 }
-                
+
                 prompt = "Thanks for that, would you like to see the outlook? (y/n)"
                 self._send_channel_msg(prompt, channel_idx)
-                
+
             except (ConnectionError, Timeout, RequestException) as e:
                 # Handle network-related errors with user-friendly message
                 response = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
@@ -703,7 +703,7 @@ class WeatherBot:
         c = weather_data.get("current", {})
         weather_code = c.get("weather_code", 0)
         cond = WEATHER_CODES.get(weather_code, f"Code {weather_code}")
-        
+
         return (
             f"{loc_str}\n"
             f"{cond}\n"
@@ -827,15 +827,15 @@ class WeatherBot:
     def format_outlook_response(self, location_data: dict, outlook_data: dict) -> str:
         """Format a concise outlook response from pre-fetched location and outlook data."""
         name = location_data.get("name", "Unknown")
-        
+
         daily = outlook_data.get("daily", {})
         times = daily.get("time", [])
         temp_max = daily.get("temperature_2m_max", [])
         temp_min = daily.get("temperature_2m_min", [])
         weather_codes = daily.get("weather_code", [])
-        
+
         lines = [f"{name} 3-day:"]
-        
+
         # Only show 3 days to keep message short
         for i in range(min(3, len(times))):
             date = times[i] if i < len(times) else "N/A"
@@ -844,7 +844,7 @@ class WeatherBot:
             tmax = temp_max[i] if i < len(temp_max) else "N/A"
             tmin = temp_min[i] if i < len(temp_min) else "N/A"
             wcode = weather_codes[i] if i < len(weather_codes) else 0
-            
+
             # Use shorter weather descriptions
             condition_map = {
                 0: "Clear", 1: "Clear", 2: "Cloudy", 3: "Overcast",
@@ -857,9 +857,9 @@ class WeatherBot:
             }
             # Fallback chain: short map -> full WEATHER_CODES -> "C{code}" format
             condition = condition_map.get(wcode, WEATHER_CODES.get(wcode, f"C{wcode}"))
-            
+
             lines.append(f"{date_short}: {condition} {tmin}-{tmax}°C")
-        
+
         return "\n".join(lines)
 
     def _get_weather(self, location: str, country: str = None) -> str:
@@ -878,11 +878,11 @@ class WeatherBot:
                 return msg
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
-            
+
             # Record successful request
             location_name = r.get("name", location)
             self.stats.record_request(location_name)
-            
+
             return self.format_weather_response(r, wx)
         except (ConnectionError, Timeout, RequestException) as e:
             # Handle network-related errors with user-friendly message
@@ -954,16 +954,16 @@ class WeatherBot:
         # Check if we should announce on startup
         last_announce = self._get_last_announce_time()
         current_time = time.time()
-        
+
         if last_announce > 0:
             hours_since = (current_time - last_announce) / 3600
             self._log(f"Last announcement was {hours_since:.2f} hours ago (file: {ANNOUNCE_TIMESTAMP_FILE})")
         else:
             self._log(f"No previous announcement found (file: {ANNOUNCE_TIMESTAMP_FILE})")
-        
+
         # Add 1 to ensure first startup always announces (when last_announce == 0)
         time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-        
+
         if self.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
             self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
             last_announce = current_time

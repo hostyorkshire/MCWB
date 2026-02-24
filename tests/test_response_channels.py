@@ -16,12 +16,12 @@ def test_multi_channel_responses():
     print("Testing: Bot accepts queries from ALL channels")
     print("="*70)
     print()
-    
+
     # Create bot WITHOUT channel filter (should accept from all channels)
     bot = WeatherBot(node_id="test_bot", debug=True, announce_channel=None)
-    
+
     responses = []
-    
+
     # Mock send_message to capture responses
     original_send = bot.mesh.send_message
     def mock_send(content, msg_type="text", channel=None, channel_idx=None):
@@ -31,10 +31,10 @@ def test_multi_channel_responses():
             'channel_idx': channel_idx
         })
         return original_send(content, msg_type, channel, channel_idx)
-    
+
     bot.mesh.send_message = mock_send
     bot.start()
-    
+
     print("\n" + "="*70)
     print("Test 1: Query from channel_idx 0 (default)")
     print("="*70)
@@ -47,7 +47,7 @@ def test_multi_channel_responses():
         channel_idx=0
     )
     bot.handle_message(msg1)
-    
+
     if len(responses) > 0:
         print(f"✓ Bot responded on channel_idx: {responses[0]['channel_idx']}")
         if responses[0]['channel_idx'] == 0:
@@ -56,7 +56,7 @@ def test_multi_channel_responses():
             print(f"✗ Response sent to WRONG channel (expected 0, got {responses[0]['channel_idx']})")
     else:
         print("✗ Bot did NOT respond")
-    
+
     print("\n" + "="*70)
     print("Test 2: Query from channel_idx 1")
     print("="*70)
@@ -69,7 +69,7 @@ def test_multi_channel_responses():
         channel_idx=1
     )
     bot.handle_message(msg2)
-    
+
     if len(responses) > 0:
         print(f"✓ Bot responded on channel_idx: {responses[0]['channel_idx']}")
         if responses[0]['channel_idx'] == 1:
@@ -78,7 +78,7 @@ def test_multi_channel_responses():
             print(f"✗ Response sent to WRONG channel (expected 1, got {responses[0]['channel_idx']})")
     else:
         print("✗ Bot did NOT respond")
-    
+
     print("\n" + "="*70)
     print("Test 3: Query from channel_idx 2 (different channel)")
     print("="*70)
@@ -91,7 +91,7 @@ def test_multi_channel_responses():
         channel_idx=2
     )
     bot.handle_message(msg3)
-    
+
     if len(responses) > 0:
         print(f"✓ Bot responded on channel_idx: {responses[0]['channel_idx']}")
         if responses[0]['channel_idx'] == 2:
@@ -100,7 +100,7 @@ def test_multi_channel_responses():
             print(f"✗ Response sent to WRONG channel (expected 2, got {responses[0]['channel_idx']})")
     else:
         print("✗ Bot did NOT respond")
-    
+
     print("\n" + "="*70)
     print("Test 4: Check channel filter configuration")
     print("="*70)
@@ -110,15 +110,15 @@ def test_multi_channel_responses():
     else:
         print(f"✗ Channel filter is ENABLED: {bot.mesh.channel_filter}")
         print("✗ This may block queries from other channels!")
-    
+
     if bot.announce_channel:
         print(f"\nℹ Announce channel is set to: '{bot.announce_channel}'")
         print("  (This only affects periodic announcements, not query responses)")
     else:
         print("\nℹ Announce channel is disabled")
-    
+
     bot.stop()
-    
+
     print("\n" + "="*70)
     print("CONCLUSION")
     print("="*70)

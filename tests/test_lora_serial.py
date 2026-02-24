@@ -53,7 +53,7 @@ def test_send_over_lora():
     assert mock_serial.write.called, "serial.write should have been called"
     # After our fix, write is called twice: once for the message, once for CMD_SYNC_NEXT_MSG
     assert mock_serial.write.call_count == 2, "write should be called twice (message + sync)"
-    
+
     # Check the first call (the actual message)
     written_bytes = mock_serial.write.call_args_list[0][0][0]
 
@@ -73,7 +73,7 @@ def test_send_over_lora():
     print("✓ send_message writes binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port")
     print(f"  Frame (hex): {written_bytes.hex()}")
     print(f"  Channel 'weather' mapped to channel_idx=1")
-    
+
     # Check the second call (CMD_SYNC_NEXT_MSG)
     sync_bytes = mock_serial.write.call_args_list[1][0][0]
     assert sync_bytes[0:1] == b'\x3c', "Sync frame must start with '<' (0x3C)"

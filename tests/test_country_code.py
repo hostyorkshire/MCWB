@@ -15,9 +15,9 @@ def test_country_code_shortening():
     print("=" * 70)
     print("TEST: Country Code Shortening")
     print("=" * 70)
-    
+
     bot = WeatherBot(debug=False)
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # Mock geocoding response with both country and country_code
         geocoding_response = MagicMock()
@@ -30,7 +30,7 @@ def test_country_code_shortening():
                 "longitude": -0.1278
             }]
         }
-        
+
         # Mock weather response
         weather_response = MagicMock()
         weather_response.json.return_value = {
@@ -44,36 +44,36 @@ def test_country_code_shortening():
                 "weather_code": 2
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Get weather
         result = bot._get_weather("London")
-        
+
         print("\nResult:")
         print(result)
         print()
-        
+
         # Check that result uses country code (GB) not full name (United Kingdom)
         if "GB" in result:
             print("✅ PASS: Country code 'GB' found in output")
         else:
             print("❌ FAIL: Country code 'GB' not found in output")
             return False
-            
+
         if "United Kingdom" in result:
             print("❌ FAIL: Full country name 'United Kingdom' found in output (should be code)")
             return False
         else:
             print("✅ PASS: Full country name not in output")
-            
+
         # Check format
         if result.startswith("London, GB"):
             print("✅ PASS: Correct format 'London, GB'")
         else:
             print("❌ FAIL: Expected 'London, GB' at start of output")
             return False
-            
+
         return True
 
 
@@ -82,9 +82,9 @@ def test_fallback_to_full_name():
     print("\n" + "=" * 70)
     print("TEST: Fallback to Full Country Name")
     print("=" * 70)
-    
+
     bot = WeatherBot(debug=False)
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # Mock geocoding response WITHOUT country_code
         geocoding_response = MagicMock()
@@ -96,7 +96,7 @@ def test_fallback_to_full_name():
                 "longitude": 2.3522
             }]
         }
-        
+
         # Mock weather response
         weather_response = MagicMock()
         weather_response.json.return_value = {
@@ -110,23 +110,23 @@ def test_fallback_to_full_name():
                 "weather_code": 1
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Get weather
         result = bot._get_weather("Paris")
-        
+
         print("\nResult:")
         print(result)
         print()
-        
+
         # Should fallback to full country name
         if "France" in result:
             print("✅ PASS: Falls back to full country name 'France' when code not available")
         else:
             print("❌ FAIL: Should use full country name when code not available")
             return False
-            
+
         return True
 
 
@@ -134,10 +134,10 @@ if __name__ == "__main__":
     print("\n╔════════════════════════════════════════════════════════════════════╗")
     print("║          Country Code Shortening Tests                            ║")
     print("╚════════════════════════════════════════════════════════════════════╝\n")
-    
+
     test1_passed = test_country_code_shortening()
     test2_passed = test_fallback_to_full_name()
-    
+
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)

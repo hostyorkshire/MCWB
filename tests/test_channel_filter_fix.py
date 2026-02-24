@@ -120,7 +120,7 @@ def test_without_channel_filtering():
     """
     Test that the bot accepts messages from ALL channels when no
     channel filter is set.
-    
+
     When no channel filter is set, the bot should:
     1. ACCEPT messages on channel_idx 0 (default)
     2. ACCEPT messages on channel_idx 1 (weather or any other)
@@ -132,25 +132,25 @@ def test_without_channel_filtering():
     print("TEST: Without Channel Filter (accepts all channels)")
     print("=" * 70)
     print()
-    
+
     mesh = MeshCore("test_bot", debug=True)
-    
+
     received_messages = []
-    
+
     def handler(message):
         received_messages.append({
             'content': message.content,
             'channel': message.channel,
             'channel_idx': message.channel_idx
         })
-    
+
     mesh.register_handler("text", handler)
     mesh.start()
-    
+
     # DO NOT set channel filter - should accept all messages
     print("✓ No channel filter set")
     print()
-    
+
     # Test 1: Message on channel_idx 0 (default) should be ACCEPTED
     print("Test 1: Message on channel_idx 0 (default channel)")
     received_messages.clear()
@@ -162,7 +162,7 @@ def test_without_channel_filtering():
         channel_idx=0
     )
     mesh.receive_message(msg_default)
-    
+
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 0 was ACCEPTED")
     else:
@@ -170,7 +170,7 @@ def test_without_channel_filtering():
         print(f"  Received: {received_messages}")
         return False
     print()
-    
+
     # Test 2: Message on channel_idx 1 (weather) should be ACCEPTED
     print("Test 2: Message on channel_idx 1 (weather channel)")
     received_messages.clear()
@@ -182,7 +182,7 @@ def test_without_channel_filtering():
         channel_idx=1
     )
     mesh.receive_message(msg_weather)
-    
+
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 1 was ACCEPTED")
     else:
@@ -190,7 +190,7 @@ def test_without_channel_filtering():
         print(f"  Received: {received_messages}")
         return False
     print()
-    
+
     # Test 3: Message on channel_idx 2 (different channel) should be ACCEPTED
     print("Test 3: Message on channel_idx 2 (different channel)")
     received_messages.clear()
@@ -202,7 +202,7 @@ def test_without_channel_filtering():
         channel_idx=2
     )
     mesh.receive_message(msg_other)
-    
+
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 2 was ACCEPTED")
     else:
@@ -210,7 +210,7 @@ def test_without_channel_filtering():
         print(f"  Received: {received_messages}")
         return False
     print()
-    
+
     mesh.stop()
     return True
 
@@ -221,14 +221,14 @@ def main():
     print("╔" + "=" * 68 + "╗")
     print("║" + " " * 20 + "Channel Filtering Test" + " " * 24 + "║")
     print("╚" + "=" * 68 + "╝")
-    
+
     try:
         # Test 1: With channel filter
         success1 = test_with_channel_filtering()
-        
+
         # Test 2: Without channel filter
         success2 = test_without_channel_filtering()
-        
+
         print()
         print("=" * 70)
         if success1 and success2:
@@ -246,9 +246,9 @@ def main():
             print("Channel filtering is not working as expected.")
         print("=" * 70)
         print()
-        
+
         return 0 if (success1 and success2) else 1
-        
+
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback

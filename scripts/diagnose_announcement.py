@@ -19,12 +19,12 @@ def test_announcement_config():
     print("ANNOUNCEMENT DIAGNOSTIC TOOL")
     print("=" * 70)
     print()
-    
+
     print("1. Checking announcement constants...")
     print(f"   ANNOUNCE_INTERVAL: {ANNOUNCE_INTERVAL} seconds ({ANNOUNCE_INTERVAL / 3600} hours)")
     print(f"   ANNOUNCE_MESSAGE: {ANNOUNCE_MESSAGE}")
     print()
-    
+
     print("2. Creating bot with example announce behavior...")
     try:
         # Note: The bot adapts to whatever channel receives messages
@@ -37,7 +37,7 @@ def test_announcement_config():
         print(f"   ✗ Error creating bot: {e}")
         return False
     print()
-    
+
     print("3. Starting bot...")
     try:
         bot.start()
@@ -46,7 +46,7 @@ def test_announcement_config():
         print(f"   ✗ Error starting bot: {e}")
         return False
     print()
-    
+
     print("4. Testing send_announcement() method...")
     try:
         bot.send_announcement()
@@ -56,7 +56,7 @@ def test_announcement_config():
         bot.stop()
         return False
     print()
-    
+
     print("5. Verifying bot is still running...")
     if bot.mesh.is_running():
         print("   ✓ Bot is still running")
@@ -64,12 +64,12 @@ def test_announcement_config():
         print("   ✗ Bot has stopped")
         return False
     print()
-    
+
     print("6. Stopping bot...")
     bot.stop()
     print("   ✓ Bot stopped cleanly")
     print()
-    
+
     print("=" * 70)
     print("DIAGNOSIS: Announcement code is WORKING correctly")
     print("=" * 70)
@@ -80,7 +80,7 @@ def test_announcement_config():
     print("  3. Check radio configuration and channel settings")
     print("  4. Ensure channel_idx mapping is correct (log shows 'wxtest' -> idx 1)")
     print()
-    
+
     return True
 
 def test_with_hardware():
@@ -89,7 +89,7 @@ def test_with_hardware():
     print("HARDWARE DETECTION TEST")
     print("=" * 70)
     print()
-    
+
     try:
         from meshcore import find_serial_ports
         ports = find_serial_ports(debug=True)
@@ -108,5 +108,5 @@ def test_with_hardware():
 if __name__ == "__main__":
     success = test_announcement_config()
     test_with_hardware()
-    
+
     sys.exit(0 if success else 1)

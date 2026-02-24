@@ -91,9 +91,9 @@ def test_no_country_filter_when_not_configured():
     print("\n" + "=" * 70)
     print("TEST: No Country Filter When Not Configured")
     print("=" * 70)
-    
+
     bot = WeatherBot(debug=False, country=None)
-    
+
     with patch('weather_bot.requests.get') as mock_get:
         # Mock geocoding response
         geocoding_response = MagicMock()
@@ -106,7 +106,7 @@ def test_no_country_filter_when_not_configured():
                 "longitude": 2.3522
             }]
         }
-        
+
         # Mock weather response
         weather_response = MagicMock()
         weather_response.json.return_value = {
@@ -120,20 +120,20 @@ def test_no_country_filter_when_not_configured():
                 "weather_code": 2
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Get weather
         result = bot._get_weather("Paris")
-        
+
         print("\nResult:")
         print(result)
         print()
-        
+
         # Check that geocoding API was called WITHOUT country parameter
         geocoding_call = mock_get.call_args_list[0]
         params = geocoding_call[1]['params']
-        
+
         if 'country' not in params:
             print(f"✅ PASS: Country parameter not included when not configured")
             print(f"   Full params: {params}")
@@ -141,7 +141,7 @@ def test_no_country_filter_when_not_configured():
             print(f"❌ FAIL: Country parameter included when it shouldn't be")
             print(f"   Got: {params}")
             return False
-            
+
         return True
 
 
@@ -212,11 +212,11 @@ if __name__ == "__main__":
     print("\n╔════════════════════════════════════════════════════════════════════╗")
     print("║          Country Code Filtering Tests                             ║")
     print("╚════════════════════════════════════════════════════════════════════╝\n")
-    
+
     test1_passed = test_country_filter_applied()
     test2_passed = test_no_country_filter_when_not_configured()
     test3_passed = test_country_filter_with_us()
-    
+
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)

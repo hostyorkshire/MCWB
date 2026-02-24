@@ -31,7 +31,7 @@ def test_garbled_data_not_logged():
     # After HTML unescaping, this becomes:
     import html
     garbled_data_unescaped = html.unescape(garbled_data)
-    
+
     # Create a valid message for comparison
     valid_msg = MeshCoreMessage("sender", "valid content", "text")
     valid_json = valid_msg.to_json()
@@ -58,38 +58,38 @@ def test_garbled_data_not_logged():
         mesh._listen_loop()
 
     output = captured_output.getvalue()
-    
+
     # Check results
     print(f"\nCaptured output:\n{output}")
-    
+
     # The garbled data (either escaped or unescaped) should NOT appear in "LoRa RX:" logs
     garbled_in_lora_rx = False
     for line in output.split('\n'):
         if 'LoRa RX:' in line and (garbled_data in line or garbled_data_unescaped in line):
             garbled_in_lora_rx = True
             break
-    
+
     # The valid JSON should appear in "LoRa RX:" logs
     valid_in_lora_rx = False
     for line in output.split('\n'):
         if 'LoRa RX:' in line and 'valid content' in line:
             valid_in_lora_rx = True
             break
-    
+
     # The message should now be silently skipped (no "Ignoring" message)
     ignoring_message_present = 'Ignoring non-JSON LoRa data' in output
-    
+
     print("\n" + "=" * 60)
     print("RESULTS:")
     print("=" * 60)
     print(f"✓ Garbled data in 'LoRa RX:' log: {garbled_in_lora_rx} (should be False)")
     print(f"✓ Valid JSON in 'LoRa RX:' log: {valid_in_lora_rx} (should be True)")
     print(f"✓ 'Ignoring non-JSON' message present: {ignoring_message_present} (should be False - silently skipped)")
-    
+
     assert not garbled_in_lora_rx, "Garbled data should NOT be logged with 'LoRa RX:'"
     assert valid_in_lora_rx, "Valid JSON should be logged with 'LoRa RX:'"
     assert not ignoring_message_present, "Should silently skip non-JSON data (not log 'Ignoring' message)"
-    
+
     print("\n✅ Fix verified: Garbled data is silently skipped without confusing log messages")
     print()
 
@@ -104,7 +104,7 @@ def main():
 
     try:
         test_garbled_data_not_logged()
-        
+
         print("=" * 60)
         print("✅ Test passed!")
         print("=" * 60)
@@ -113,9 +113,9 @@ def main():
         print("appearing in logs entirely - it's now silently skipped")
         print("to avoid confusing users.")
         print()
-        
+
         return 0
-        
+
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
