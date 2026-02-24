@@ -228,7 +228,7 @@ This error occurs when the `User=` setting in the service file doesn't match you
 whoami
 
 # View the service file to see what user it's configured for
-sudo cat /etc/systemd/system/mcwb-dashboard.service | grep User=
+sudo grep User= /etc/systemd/system/mcwb-dashboard.service
 ```
 
 Solution: The automated installer (`install_dashboard_service.sh`) fixes this automatically, or update manually:

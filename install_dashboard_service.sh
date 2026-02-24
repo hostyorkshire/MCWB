@@ -61,9 +61,9 @@ echo "----------------------------------------"
 echo ""
 
 # Ask for confirmation
-read -p "Do you want to install this service? (y/n) " -n 1 -r
+read -p "Do you want to install this service? [Y/n] " -n 1 -r
 echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ $REPLY =~ ^[Nn]$ ]]; then
     echo "❌ Installation cancelled"
     rm $SERVICE_FILE
     exit 1
@@ -85,9 +85,9 @@ sudo systemctl enable mcwb-dashboard
 
 # Ask if user wants to start now
 echo ""
-read -p "Do you want to start the service now? (y/n) " -n 1 -r
+read -p "Do you want to start the service now? [Y/n] " -n 1 -r
 echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     echo "🚀 Starting mcwb-dashboard service..."
     sudo systemctl start mcwb-dashboard
     
