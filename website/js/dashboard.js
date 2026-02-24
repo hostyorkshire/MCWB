@@ -107,7 +107,8 @@ async function updateDashboard() {
         if (stats.last_updated) {
             const lastUpdate = new Date(stats.last_updated);
             const now = new Date();
-            const diffHours = Math.abs(now - lastUpdate) / 36e5;
+            const MILLISECONDS_PER_HOUR = 3600000;
+            const diffHours = Math.abs(now - lastUpdate) / MILLISECONDS_PER_HOUR;
             document.getElementById('uptime').textContent = diffHours.toFixed(1);
         } else {
             document.getElementById('uptime').textContent = '--';
@@ -184,8 +185,10 @@ function updateLocationsChart(locationsData) {
     // Find max count for scaling
     const maxCount = Math.max(...topLocations.map(loc => loc.count));
     
-    // Clear and rebuild chart
-    locationsChart.innerHTML = '';
+    // Clear chart safely
+    while (locationsChart.firstChild) {
+        locationsChart.removeChild(locationsChart.firstChild);
+    }
     
     topLocations.forEach(location => {
         const container = document.createElement('div');
