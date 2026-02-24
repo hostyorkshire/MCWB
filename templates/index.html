@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCWB Dashboard - Dark Theme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            color: #60a5fa;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1em;
+        }
+
+        .status-card {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-title {
+            color: #60a5fa;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .status-running {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+
+        .status-stopped {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid #f87171;
+        }
+
+        .log-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .log-item {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #60a5fa;
+        }
+
+        .log-name {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .log-info {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .log-viewer {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .log-tab {
+            padding: 12px 24px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            color: #94a3b8;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .log-tab:hover {
+            background: rgba(30, 41, 59, 0.9);
+            color: #60a5fa;
+        }
+
+        .log-tab.active {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border-color: #60a5fa;
+        }
+
+        .log-content {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            line-height: 1.5;
+            color: #e0e0e0;
+        }
+
+        .log-line:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .log-error {
+            color: #f87171;
+        }
+
+        .log-warning {
+            color: #fbbf24;
+        }
+
+        .log-info {
+            color: #60a5fa;
+        }
+
+        .loading {
+            text-align: center;
+            color: #94a3b8;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        .refresh-btn {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border: 1px solid #60a5fa;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(96, 165, 250, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            color: #64748b;
+            padding: 30px;
+            font-size: 0.9em;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(96, 165, 250, 0.4);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(96, 165, 250, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .log-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌤️ MCWB Dashboard</h1>
+            <p class="subtitle">MeshCore Weather Bot - Real-time Monitoring</p>
+        </header>
+
+        <div class="status-card">
+            <div class="status-header">
+                <h2 class="status-title">System Status</h2>
+                <span id="status-badge" class="status-badge status-stopped">Loading...</span>
+            </div>
+            <div class="log-grid" id="log-files">
+                <div class="loading">Loading status...</div>
+            </div>
+        </div>
+
+        <div class="log-viewer">
+            <div class="status-header">
+                <h2 class="status-title">Log Viewer</h2>
+                <button class="refresh-btn" onclick="refreshLogs()">🔄 Refresh</button>
+            </div>
+            <div class="log-tabs">
+                <div class="log-tab active" data-log="bot" onclick="switchLog('bot')">Bot Log</div>
+                <div class="log-tab" data-log="bot_error" onclick="switchLog('bot_error')">Bot Errors</div>
+                <div class="log-tab" data-log="meshcore" onclick="switchLog('meshcore')">MeshCore</div>
+                <div class="log-tab" data-log="meshcore_error" onclick="switchLog('meshcore_error')">MeshCore Errors</div>
+            </div>
+            <div class="log-content" id="log-content">
+                <div class="loading">Select a log to view...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>MCWB v2 - MeshCore Weather Bot | Dark Theme Dashboard</p>
+            <p>Auto-refresh every 10 seconds</p>
+        </div>
+    </div>
+
+    <script>
+        let currentLog = 'bot';
+        let autoRefreshInterval;
+
+        // Load status and logs on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStatus();
+            loadLog(currentLog);
+            startAutoRefresh();
+        });
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // Update status badge
+                const badge = document.getElementById('status-badge');
+                badge.textContent = data.status.toUpperCase();
+                badge.className = `status-badge status-${data.status}`;
+                
+                // Update log files grid
+                const logFilesDiv = document.getElementById('log-files');
+                logFilesDiv.innerHTML = '';
+                
+                for (const [key, info] of Object.entries(data.logs)) {
+                    const logItem = document.createElement('div');
+                    logItem.className = 'log-item';
+                    
+                    const name = key.replace(/_/g, ' ').toUpperCase();
+                    const size = info.exists ? formatBytes(info.size) : 'N/A';
+                    const modified = info.modified || 'Never';
+                    
+                    // Create elements safely without innerHTML
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'log-name';
+                    nameDiv.textContent = name;
+                    
+                    const sizeDiv = document.createElement('div');
+                    sizeDiv.className = 'log-info';
+                    sizeDiv.textContent = `Size: ${size}`;
+                    
+                    const modDiv = document.createElement('div');
+                    modDiv.className = 'log-info';
+                    modDiv.textContent = `Modified: ${modified}`;
+                    
+                    logItem.appendChild(nameDiv);
+                    logItem.appendChild(sizeDiv);
+                    logItem.appendChild(modDiv);
+                    
+                    logFilesDiv.appendChild(logItem);
+                }
+            } catch (error) {
+                console.error('Error loading status:', error);
+            }
+        }
+
+        async function loadLog(logType) {
+            const logContent = document.getElementById('log-content');
+            logContent.innerHTML = '<div class="loading">Loading logs...</div>';
+            
+            try {
+                const response = await fetch(`/api/logs/${logType}`);
+                const data = await response.json();
+                
+                if (data.lines && data.lines.length > 0) {
+                    logContent.innerHTML = data.lines
+                        .map(line => {
+                            let className = 'log-line';
+                            if (line.includes('ERROR') || line.includes('CRITICAL')) {
+                                className += ' log-error';
+                            } else if (line.includes('WARNING')) {
+                                className += ' log-warning';
+                            } else if (line.includes('INFO')) {
+                                className += ' log-info';
+                            }
+                            return `<div class="${className}">${escapeHtml(line)}</div>`;
+                        })
+                        .join('');
+                    
+                    // Auto-scroll to bottom
+                    logContent.scrollTop = logContent.scrollHeight;
+                } else {
+                    logContent.innerHTML = '<div class="loading">No log entries found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading log:', error);
+                logContent.innerHTML = '<div class="loading">Error loading log</div>';
+            }
+        }
+
+        function switchLog(logType) {
+            currentLog = logType;
+            
+            // Update active tab
+            document.querySelectorAll('.log-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-log="${logType}"]`).classList.add('active');
+            
+            // Load the log
+            loadLog(logType);
+        }
+
+        function refreshLogs() {
+            loadStatus();
+            loadLog(currentLog);
+        }
+
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                loadStatus();
+                loadLog(currentLog);
+            }, 10000); // Refresh every 10 seconds
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
