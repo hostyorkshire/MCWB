@@ -5,12 +5,14 @@ This addresses the "Unhandled frame code" errors seen in the logs.
 """
 
 import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import time
 from unittest.mock import MagicMock, patch
 from io import StringIO
 
 # Import the WeatherBot class
-sys.path.insert(0, '/home/runner/work/MCWB/MCWB')
 from weather_bot import WeatherBot
 
 

@@ -6,7 +6,8 @@ This script simulates receiving the problematic frame codes that were causing
 """
 
 import sys
-sys.path.insert(0, '/home/runner/work/MCWB/MCWB')
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from weather_bot import WeatherBot
 from unittest.mock import MagicMock
