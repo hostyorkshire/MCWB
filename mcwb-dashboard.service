@@ -16,7 +16,7 @@ RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
-# Optional: Uncomment to bind to localhost only (more secure)
+# Optional: Uncomment to bind to localhost only (more secure, prevents network access)
 # ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 127.0.0.1 --port 5000
 
 # Optional: Uncomment to use a different port

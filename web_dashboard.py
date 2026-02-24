@@ -171,7 +171,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="MCWB Web Dashboard")
-    parser.add_argument("--host", default="127.0.0.1", help="Host to bind to (default: 127.0.0.1 for localhost only)")
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")
     parser.add_argument("--port", type=int, default=5000, help="Port to bind to (default: 5000)")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     
