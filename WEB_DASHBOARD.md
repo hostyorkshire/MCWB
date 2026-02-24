@@ -12,6 +12,8 @@ A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time
 
 ## Quick Start
 
+> **🚀 For Raspberry Pi users:** Jump to the [Running on Raspberry Pi](#running-on-raspberry-pi) section to set up the dashboard as a systemd service that starts automatically on boot.
+
 ### Installation
 
 Install the required dependencies:
@@ -74,7 +76,43 @@ python3 web_dashboard.py --help
 
 ## Running on Raspberry Pi
 
-To run the dashboard on boot, you can create a systemd service:
+To run the dashboard on boot, use the included installation script:
+
+### Method 1: Automated Installation (Recommended)
+
+The repository includes an installation script that automatically configures the systemd service for your system:
+
+```bash
+cd /home/pi/MCWB  # Or wherever you cloned the repository
+./install_dashboard_service.sh
+```
+
+The script will:
+- ✅ Detect your username and installation directory automatically
+- ✅ Check Python dependencies and install if needed
+- ✅ Create a customized systemd service file for your system
+- ✅ Install and enable the service
+- ✅ Optionally start the service immediately
+
+**Example usage:**
+```bash
+# Navigate to the MCWB directory
+cd ~/MCWB
+
+# Run the installer (don't use sudo)
+./install_dashboard_service.sh
+
+# Follow the prompts to install and start the service
+```
+
+After installation, the dashboard will:
+- Start automatically on boot
+- Restart automatically if it crashes
+- Be accessible on your network
+
+### Method 2: Manual Installation
+
+If you prefer to install manually:
 
 1. Create a service file:
 
@@ -84,9 +122,7 @@ sudo nano /etc/systemd/system/mcwb-dashboard.service
 
 2. Add the following content:
 
-> **⚠️ IMPORTANT:** Type or copy this content carefully. Do NOT copy from a web browser as HTML entities may corrupt the configuration (e.g., `>` becomes `&gt;`). Use a text editor to type it manually or copy from the raw markdown file.
-
-> **📝 NOTE:** Customize the `User` and `WorkingDirectory` to match your system:
+> **⚠️ IMPORTANT:** Customize the `User` and `WorkingDirectory` to match your system:
 > - Replace `pi` with your actual username (e.g., `weatherbot`, `ubuntu`, etc.)
 > - Update the paths to match where you cloned the MCWB repository
 > - Both the `WorkingDirectory` and paths in `ExecStart` should use the same base directory
@@ -103,6 +139,8 @@ WorkingDirectory=/home/pi/MCWB
 ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 0.0.0.0 --port 5000
 Restart=always
 RestartSec=10
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
@@ -121,6 +159,8 @@ WorkingDirectory=/home/weatherbot/MCWB
 ExecStart=/usr/bin/python3 /home/weatherbot/MCWB/web_dashboard.py --host 0.0.0.0 --port 8080
 Restart=always
 RestartSec=10
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
@@ -158,6 +198,27 @@ If the service fails to start, check the troubleshooting section below.
 
 If you see `Active: activating (auto-restart)` or `Active: failed`, check the following:
 
+**RECOMMENDED FIX: Use the Automated Installer**
+
+The easiest way to fix service issues is to reinstall using the automated installation script:
+
+```bash
+cd ~/MCWB  # Or wherever you installed MCWB
+
+# If the service is installed, uninstall it first
+sudo systemctl stop mcwb-dashboard 2>/dev/null || true
+sudo systemctl disable mcwb-dashboard 2>/dev/null || true
+sudo rm /etc/systemd/system/mcwb-dashboard.service 2>/dev/null || true
+sudo systemctl daemon-reload
+
+# Run the installer (it automatically detects your username and paths)
+./install_dashboard_service.sh
+```
+
+**Manual Troubleshooting:**
+
+If you prefer to troubleshoot manually, check the following:
+
 **1. Exit Code 217/USER - User does not exist:**
 
 This error occurs when the `User=` setting in the service file doesn't match your actual username.
@@ -166,11 +227,11 @@ This error occurs when the `User=` setting in the service file doesn't match you
 # Check your username
 whoami
 
-# Or list all users
-cat /etc/passwd | grep -E "home|User"
+# View the service file to see what user it's configured for
+sudo grep User= /etc/systemd/system/mcwb-dashboard.service
 ```
 
-Update the service file to use your actual username:
+Solution: The automated installer (`install_dashboard_service.sh`) fixes this automatically, or update manually:
 ```bash
 sudo nano /etc/systemd/system/mcwb-dashboard.service
 # Change User=pi to User=yourname (e.g., User=weatherbot)
@@ -181,14 +242,14 @@ sudo systemctl restart mcwb-dashboard.service
 
 **2. Corrupted Configuration - Port number appears as `8&gt;` or similar:**
 
-If you copied the configuration from a web browser, HTML entities may have corrupted the text. The port should be a number like `8080`, not `8&gt;`.
+If you copied the configuration from a web browser, HTML entities may have corrupted the text. The port should be a number like `5000` or `8080`, not `8&gt;`.
 
-Solution:
+Solution: The automated installer prevents this issue, or fix manually:
 ```bash
 # Edit the service file and fix the port number
 sudo nano /etc/systemd/system/mcwb-dashboard.service
 # Change: ExecStart=/usr/bin/python3 ... --port 8&gt;
-# To:     ExecStart=/usr/bin/python3 ... --port 8080
+# To:     ExecStart=/usr/bin/python3 ... --port 5000
 sudo systemctl daemon-reload
 sudo systemctl restart mcwb-dashboard.service
 ```
