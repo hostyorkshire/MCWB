@@ -11,6 +11,24 @@ import time
 from weather_bot import WeatherBot, ANNOUNCE_INTERVAL, ANNOUNCE_TIMESTAMP_FILE
 
 
+def should_announce_on_startup(bot, last_announce_time):
+    """
+    Helper function to determine if bot should announce on startup.
+    Mirrors the logic in weather_bot.py run() method.
+    
+    Args:
+        bot: WeatherBot instance
+        last_announce_time: Timestamp of last announcement (0 if none)
+    
+    Returns:
+        bool: True if bot should announce, False otherwise
+    """
+    current_time = time.time()
+    # Add 1 to ensure first startup always announces (when last_announce_time == 0)
+    time_since_last_announce = current_time - last_announce_time if last_announce_time > 0 else ANNOUNCE_INTERVAL + 1
+    return bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL
+
+
 def test_timestamp_persistence():
     """Test that announcement timestamps are persisted and read correctly"""
     print("=" * 70)
@@ -57,19 +75,16 @@ def test_no_announcement_on_recent_restart():
     bot._save_last_announce_time(recent_time)
     print(f"  Simulated last announcement: 1 hour ago")
     
-    # Simulate the startup announcement logic
+    # Check if announcement should be skipped using helper
     last_announce = bot._get_last_announce_time()
-    current_time = time.time()
-    time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-    
-    # Check if announcement should be skipped
-    should_announce = time_since_last_announce >= ANNOUNCE_INTERVAL
+    should_announce = should_announce_on_startup(bot, last_announce)
     
     # Should NOT announce (1 hour < 3 hours)
     assert not should_announce, "Should not announce within 3 hours"
     print(f"  ✓ Announcement will be skipped (1 hour < 3 hours)")
     
     # Verify time calculation
+    time_since_last_announce = time.time() - last_announce
     hours_since = time_since_last_announce / 3600
     print(f"  ✓ Time since last announce: {hours_since:.2f} hours")
     assert time_since_last_announce < ANNOUNCE_INTERVAL, "Should be less than 3 hours"
@@ -97,19 +112,16 @@ def test_announcement_on_old_restart():
     bot._save_last_announce_time(old_time)
     print(f"  Simulated last announcement: 4 hours ago")
     
-    # Simulate the startup announcement logic
+    # Check if announcement should be made using helper
     last_announce = bot._get_last_announce_time()
-    current_time = time.time()
-    time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-    
-    # Check if announcement should be made
-    should_announce = time_since_last_announce >= ANNOUNCE_INTERVAL
+    should_announce = should_announce_on_startup(bot, last_announce)
     
     # SHOULD announce (4 hours > 3 hours)
     assert should_announce, "Should announce after 3 hours"
     print(f"  ✓ Announcement will be sent (4 hours > 3 hours)")
     
     # Verify time calculation
+    time_since_last_announce = time.time() - last_announce
     hours_since = time_since_last_announce / 3600
     print(f"  ✓ Time since last announce: {hours_since:.2f} hours")
     assert time_since_last_announce >= ANNOUNCE_INTERVAL, "Should be more than 3 hours"
@@ -134,13 +146,9 @@ def test_announcement_on_first_start():
                      weather_channel_idx=1)
     print(f"  No previous announcement file exists")
     
-    # Simulate the startup announcement logic
+    # Check if announcement should be made using helper
     last_announce = bot._get_last_announce_time()
-    current_time = time.time()
-    time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-    
-    # Check if announcement should be made
-    should_announce = time_since_last_announce >= ANNOUNCE_INTERVAL
+    should_announce = should_announce_on_startup(bot, last_announce)
     
     # SHOULD announce (first time)
     assert should_announce, "Should announce on first start"

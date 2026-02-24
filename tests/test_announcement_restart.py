@@ -14,6 +14,34 @@ from unittest.mock import MagicMock, patch
 from weather_bot import WeatherBot, ANNOUNCE_INTERVAL, ANNOUNCE_TIMESTAMP_FILE, ANNOUNCE_MESSAGE
 
 
+def simulate_startup_announcement_logic(bot):
+    """
+    Helper to simulate the startup announcement logic from run() method.
+    
+    Args:
+        bot: WeatherBot instance with mocked _send_channel_msg
+    
+    Returns:
+        bool: True if announcement was sent, False otherwise
+    """
+    last_announce = bot._get_last_announce_time()
+    current_time = time.time()
+    # Add 1 to ensure first startup always announces (when last_announce == 0)
+    time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
+    
+    if bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
+        bot._send_channel_msg(ANNOUNCE_MESSAGE, bot._announce_channel_idx)
+        last_announce = current_time
+        bot._save_last_announce_time(last_announce)
+        return True
+    elif bot.announce:
+        remaining = ANNOUNCE_INTERVAL - time_since_last_announce
+        msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
+        print(f"  {msg}")
+        return False
+    return False
+
+
 def test_startup_with_recent_announcement():
     """Test full startup sequence when announcement was made recently (< 3 hours)"""
     print("=" * 70)
@@ -45,26 +73,13 @@ def test_startup_with_recent_announcement():
          patch.object(bot, '_send_cmd'), \
          patch.object(bot, '_send_channel_msg', side_effect=mock_send_channel_msg):
         
-        # Simulate the startup code from run() method
+        # Simulate the startup code from run() method using helper
         bot._running = True
-        
-        # This is the startup announcement logic from run()
-        last_announce = bot._get_last_announce_time()
-        current_time = time.time()
-        time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-        
-        if bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
-            bot._send_channel_msg(ANNOUNCE_MESSAGE, bot._announce_channel_idx)
-            last_announce = current_time
-            bot._save_last_announce_time(last_announce)
-        elif bot.announce:
-            remaining = ANNOUNCE_INTERVAL - time_since_last_announce
-            msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
-            print(f"  {msg}")
-        
+        announced = simulate_startup_announcement_logic(bot)
         bot._running = False
     
     # Should NOT have sent announcement
+    assert not announced, "Should not announce on startup"
     assert len(sent_announcements) == 0, f"Should not announce on startup (sent {len(sent_announcements)})"
     print(f"  ✓ No announcement sent on startup (30 min < 3 hours)")
     
@@ -105,26 +120,13 @@ def test_startup_with_old_announcement():
          patch.object(bot, '_send_cmd'), \
          patch.object(bot, '_send_channel_msg', side_effect=mock_send_channel_msg):
         
-        # Simulate the startup code from run() method
+        # Simulate the startup code from run() method using helper
         bot._running = True
-        
-        # This is the startup announcement logic from run()
-        last_announce = bot._get_last_announce_time()
-        current_time = time.time()
-        time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-        
-        if bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
-            bot._send_channel_msg(ANNOUNCE_MESSAGE, bot._announce_channel_idx)
-            last_announce = current_time
-            bot._save_last_announce_time(last_announce)
-        elif bot.announce:
-            remaining = ANNOUNCE_INTERVAL - time_since_last_announce
-            msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
-            print(f"  {msg}")
-        
+        announced = simulate_startup_announcement_logic(bot)
         bot._running = False
     
     # SHOULD have sent announcement
+    assert announced, "Should announce on startup"
     assert len(sent_announcements) == 1, f"Should announce on startup (sent {len(sent_announcements)})"
     print(f"  ✓ Announcement sent on startup (5 hours > 3 hours)")
     
@@ -166,26 +168,13 @@ def test_startup_no_previous_announcement():
          patch.object(bot, '_send_cmd'), \
          patch.object(bot, '_send_channel_msg', side_effect=mock_send_channel_msg):
         
-        # Simulate the startup code from run() method
+        # Simulate the startup code from run() method using helper
         bot._running = True
-        
-        # This is the startup announcement logic from run()
-        last_announce = bot._get_last_announce_time()
-        current_time = time.time()
-        time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-        
-        if bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
-            bot._send_channel_msg(ANNOUNCE_MESSAGE, bot._announce_channel_idx)
-            last_announce = current_time
-            bot._save_last_announce_time(last_announce)
-        elif bot.announce:
-            remaining = ANNOUNCE_INTERVAL - time_since_last_announce
-            msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
-            print(f"  {msg}")
-        
+        announced = simulate_startup_announcement_logic(bot)
         bot._running = False
     
     # SHOULD have sent announcement (first time)
+    assert announced, "Should announce on first startup"
     assert len(sent_announcements) == 1, f"Should announce on first startup (sent {len(sent_announcements)})"
     print(f"  ✓ Announcement sent on first startup")
     

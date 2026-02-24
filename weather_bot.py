@@ -757,6 +757,7 @@ class WeatherBot:
         # Check if we should announce on startup
         last_announce = self._get_last_announce_time()
         current_time = time.time()
+        # Add 1 to ensure first startup always announces (when last_announce == 0)
         time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
         
         if self.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
