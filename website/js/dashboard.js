@@ -417,6 +417,22 @@ function updateCharts() {
 }
 
 // Simulate adding log entries (demo mode only)
+// Convert @username mentions to clickable links for MeshCore app
+function convertUserMentionsToLinks(text) {
+    // Escape HTML first to prevent XSS
+    const escapeHtml = (str) => {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    };
+    
+    const escaped = escapeHtml(text);
+    
+    // Convert @username patterns to meshcore:// links
+    // Username can contain alphanumeric, underscore, hyphen, and dot
+    return escaped.replace(/@([a-zA-Z0-9_.-]+)/g, '<a href="meshcore://user/$1" class="user-mention">@$1</a>');
+}
+
 function addLogEntry(timestamp, level, message) {
     const logContainer = document.getElementById('requestLog');
     if (!logContainer) return;
@@ -435,7 +451,8 @@ function addLogEntry(timestamp, level, message) {
     
     const contentSpan = document.createElement('span');
     contentSpan.className = 'log-content';
-    contentSpan.textContent = message;
+    // Convert @mentions to clickable links while maintaining security
+    contentSpan.innerHTML = convertUserMentionsToLinks(message);
     
     entry.appendChild(timestampSpan);
     entry.appendChild(document.createTextNode(' '));
