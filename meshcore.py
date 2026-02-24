@@ -10,6 +10,7 @@ import threading
 import html
 from typing import Dict, Any, Optional, Callable
 from datetime import datetime
+from logging_config import get_meshcore_logger, log_exception
 
 # MeshCore companion radio binary protocol constants (USB/serial framing)
 # Reference: https://github.com/meshcore-dev/MeshCore/wiki/Companion-Radio-Protocol
@@ -204,6 +205,9 @@ class MeshCore:
         self.message_handlers = {}
         self.running = False
         self.channel_filter = None  # None means listen to all channels
+        
+        # Set up logging
+        self.logger, self.error_logger = get_meshcore_logger(debug=debug)
 
         # Channel name to channel_idx mapping for LoRa transmission
         # Allows different named channels to use different channel indices
@@ -242,9 +246,10 @@ class MeshCore:
 
     def log(self, message: str):
         """Log debug messages"""
+        self.logger.debug(message)
         if self.debug:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[{timestamp}] MeshCore [{self.node_id}]: {message}")
+            # Console output already handled by logger in debug mode
+            pass
 
     def set_channel_filter(self, channels):
         """
@@ -395,7 +400,9 @@ class MeshCore:
                 # After sending, sync to allow the companion radio to process and respond
                 self._send_command(bytes([_CMD_SYNC_NEXT_MSG]))
             except SerialException as e:
-                self.log(f"LoRa TX error: {e}")
+                msg = f"LoRa TX error: {e}"
+                self.log(msg)
+                self.error_logger.error(msg)
         else:
             # Simulation mode - no radio hardware attached
             self.log("Simulation mode: message not transmitted over radio")
@@ -474,7 +481,9 @@ class MeshCore:
             # initialize its session before it can handle subsequent commands.
             time.sleep(0.1)
         except SerialException as e:
-            self.log(f"Failed to open serial port {port_to_use}: {e}")
+            msg = f"Failed to open serial port {port_to_use}: {e}"
+            self.log(msg)
+            self.error_logger.error(msg)
 
             # Try to auto-detect an available port
             self.log("Attempting to auto-detect available serial ports...")
@@ -501,7 +510,9 @@ class MeshCore:
                         time.sleep(0.1)
                         return  # Successfully connected
                     except SerialException as e2:
-                        self.log(f"Failed to connect to {candidate_port}: {e2}")
+                        msg = f"Failed to connect to {candidate_port}: {e2}"
+                        self.log(msg)
+                        self.error_logger.error(msg)
                         continue
 
                 # If we get here, none of the ports worked
@@ -626,9 +637,13 @@ class MeshCore:
                     message = MeshCoreMessage.from_json(line)
                     self.receive_message(message)
                 except (json.JSONDecodeError, KeyError) as e:
-                    self.log(f"Could not parse LoRa message: {e} | raw: {line}")
+                    msg = f"Could not parse LoRa message: {e} | raw: {line}"
+                    self.log(msg)
+                    self.error_logger.error(msg)
             except SerialException as e:
-                self.log(f"LoRa serial read error: {e}")
+                msg = f"LoRa serial read error: {e}"
+                self.log(msg)
+                self.error_logger.error(msg)
                 break
 
     # ------------------------------------------------------------------
@@ -647,7 +662,9 @@ class MeshCore:
                 self._serial.write(frame)
                 self.log(f"LoRa CMD: {cmd_data.hex()}")
             except SerialException as e:
-                self.log(f"LoRa CMD error: {e}")
+                msg = f"LoRa CMD error: {e}"
+                self.log(msg)
+                self.error_logger.error(msg)
 
     def _parse_channel_message(self, payload: bytes):
         """

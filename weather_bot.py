@@ -13,6 +13,7 @@ import threading
 import argparse
 
 from meshcore import MeshCore, MeshCoreMessage
+from logging_config import get_weather_bot_logger, log_startup_info, log_exception
 
 try:
     import requests
@@ -97,6 +98,8 @@ class WeatherBot:
         self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
+        # Set up logging
+        self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
         # channel_idx used for periodic announcements and weather responses
         # If weather_channel_idx is specified, use it; otherwise use first received message's channel
         self.weather_channel_idx = weather_channel_idx
@@ -157,8 +160,11 @@ class WeatherBot:
         return sanitized
 
     def _log(self, msg):
+        """Log message to file and optionally console (in debug mode)"""
+        self.logger.info(msg)
         if self.debug:
-            print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+            # Console output already handled by logger in debug mode
+            pass
 
     # ------------------------------------------------------------------
     # Lifecycle helpers (mesh-level start/stop)
@@ -205,10 +211,14 @@ class WeatherBot:
                 if any(x in p.device for x in ("ttyUSB", "ttyACM", "ttyAMA", "COM"))
             ]
             if not candidates:
-                print("No serial port found. Check USB connection and try --port.")
+                msg = "No serial port found. Check USB connection and try --port."
+                print(msg)
+                self.logger.error(msg)
                 return False
             port = candidates[0]
-            print(f"Auto-detected port: {port}")
+            msg = f"Auto-detected port: {port}"
+            print(msg)
+            self.logger.info(msg)
 
         try:
             self._ser = serial.Serial(port, self.baud, timeout=1,
@@ -218,10 +228,15 @@ class WeatherBot:
             # CMD_APP_START payload: code(1) + app_ver(1) + reserved(6 spaces) + app_name("MCWB")
             self._send_cmd(bytes([_CMD_APP_START, 0x03]) + b"      MCWB")
             time.sleep(0.1)
-            print(f"Connected to MeshCore on {port} at {self.baud} baud")
+            msg = f"Connected to MeshCore on {port} at {self.baud} baud"
+            print(msg)
+            self.logger.info(msg)
             return True
         except serial.SerialException as e:
-            print(f"Failed to connect to {port}: {e}")
+            msg = f"Failed to connect to {port}: {e}"
+            print(msg)
+            self.logger.error(msg)
+            self.error_logger.error(msg)
             return False
 
     def _send_cmd(self, data: bytes):
@@ -484,9 +499,12 @@ class WeatherBot:
             safe_sender_print = self._sanitize_for_log(sender)
             safe_location = self._sanitize_for_log(location)
             country_str = f" ({country})" if country else ""
-            print(f"WX request for '{safe_location}'{country_str} from {safe_sender_print}", flush=True)
+            msg = f"WX request for '{safe_location}'{country_str} from {safe_sender_print}"
+            print(msg, flush=True)
+            self.logger.info(msg)
             response = self._get_weather(location, country)
             print(f"Response:\n{response}\n", flush=True)
+            self.logger.info(f"Response: {response}")
             self._send_channel_msg(response, channel_idx)
 
     @staticmethod
@@ -652,12 +670,17 @@ class WeatherBot:
         try:
             r = self.geocode_location(location, country)
             if r is None:
-                return f"Location not found: {location}"
+                msg = f"Location not found: {location}"
+                self.logger.warning(msg)
+                return msg
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
             return self.format_weather_response(r, wx)
         except Exception as e:
-            return f"Weather error: {e}"
+            msg = f"Weather error: {e}"
+            self.logger.error(msg)
+            self.error_logger.error(msg, exc_info=True)
+            return msg
 
     # ------------------------------------------------------------------
     # Main run loop
@@ -674,6 +697,9 @@ class WeatherBot:
 
     def run(self):
         """Connect and run the bot until Ctrl-C."""
+        # Log startup information
+        log_startup_info(self.logger, "MCWB Weather Bot", "2.0.0")
+        
         if not self._connect():
             return
 
@@ -686,14 +712,22 @@ class WeatherBot:
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         if self.weather_channel_idx is not None:
-            print(f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}.")
-            print(f"Listening ONLY on channel_idx={self.weather_channel_idx}.")
+            msg = f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}."
+            print(msg)
+            self.logger.info(msg)
+            msg2 = f"Listening ONLY on channel_idx={self.weather_channel_idx}."
+            print(msg2)
+            self.logger.info(msg2)
             print("Send 'WX [location]' or 'weather [location]' on that channel.")
         elif self.allowed_channel_idx is not None:
-            print(f"MCWBv2 running. Listening ONLY on channel_idx={self.allowed_channel_idx}.")
+            msg = f"MCWBv2 running. Listening ONLY on channel_idx={self.allowed_channel_idx}."
+            print(msg)
+            self.logger.info(msg)
             print("Send 'WX [location]' or 'weather [location]' on that channel.")
         else:
-            print("MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel.")
+            msg = "MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel."
+            print(msg)
+            self.logger.info(msg)
 
         if self.verify_channels:
             print("\n📡 Channel Verification Mode: Monitoring channel encryption status...")
@@ -712,14 +746,18 @@ class WeatherBot:
                     self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
                     last_announce = time.time()
         except KeyboardInterrupt:
-            print("\nStopping...")
+            msg = "Stopping..."
+            print(f"\n{msg}")
+            self.logger.info(msg)
         finally:
             self._running = False
             if self.verify_channels:
                 self._print_channel_diagnostic()
             if self._ser:
                 self._ser.close()
-            print("MCWBv2 stopped.")
+            msg = "MCWBv2 stopped."
+            print(msg)
+            self.logger.info(msg)
 
     def _print_channel_diagnostic(self):
         """Print diagnostic summary of channel encryption status."""
