@@ -430,20 +430,24 @@ function convertUserMentionsToLinks(text) {
     
     // First, convert markdown-style mention links: [@username](meshcore://user/username)
     // This handles bot responses that already include the markdown link format
+    // Use placeholders to protect converted links from further processing
+    const markdownLinks = [];
     let result = escaped.replace(/\[@([a-zA-Z0-9_.-]+)\]\(meshcore:\/\/user\/([a-zA-Z0-9_.-]+)\)/g, 
-                                  '<a href="meshcore://user/$2" class="user-mention">@$1</a>');
+                                  (match, displayName, urlName) => {
+                                      const link = `<a href="meshcore://user/${urlName}" class="user-mention">@${displayName}</a>`;
+                                      const placeholder = `__MDLINK_${markdownLinks.length}__`;
+                                      markdownLinks.push(link);
+                                      return placeholder;
+                                  });
     
     // Then convert any remaining plain @username patterns to meshcore:// links
-    // Split by existing links to avoid double-converting
     // This maintains backward compatibility with messages that don't use markdown format
-    const parts = result.split(/(<a[^>]*>.*?<\/a>)/);
-    result = parts.map((part, index) => {
-        // Only process text parts (not existing links)
-        if (!part.startsWith('<a')) {
-            return part.replace(/@([a-zA-Z0-9_.-]+)/g, '<a href="meshcore://user/$1" class="user-mention">@$1</a>');
-        }
-        return part;
-    }).join('');
+    result = result.replace(/@([a-zA-Z0-9_.-]+)/g, '<a href="meshcore://user/$1" class="user-mention">@$1</a>');
+    
+    // Restore converted markdown links from placeholders
+    markdownLinks.forEach((link, index) => {
+        result = result.replace(`__MDLINK_${index}__`, link);
+    });
     
     return result;
 }

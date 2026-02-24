@@ -84,7 +84,7 @@ class TestUserMentionLinks(unittest.TestCase):
         self.assertIn('@user', escaped)  # @mention should still be present
     
     def test_weather_bot_sends_mentions(self):
-        """Test that the weather bot includes @username as clickable markdown link in responses"""
+        """Test that the weather bot formats @username mentions as markdown links in responses"""
         from weather_bot import WeatherBot
         from unittest.mock import MagicMock
         
