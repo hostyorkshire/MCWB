@@ -1,24 +1,49 @@
-/* MCWB Wiki - Dark Mode Styles */
+/* MCWB Wiki - Theme-Aware Styles */
 
 :root {
-    /* Dark Mode Color Palette */
-    --bg-primary: #0f1419;
-    --bg-secondary: #161b22;
-    --bg-tertiary: #1c2128;
-    --bg-hover: #21262d;
-    --border-color: #30363d;
-    --text-primary: #e6edf3;
-    --text-secondary: #8b949e;
-    --text-muted: #6e7681;
+    /* Light mode colors */
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: rgba(255, 255, 255, 0.9);
+    --bg-hover: rgba(226, 232, 240, 0.9);
+    --border-color: rgba(0, 0, 0, 0.1);
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a5568;
+    --text-muted: #64748b;
+    --accent-primary: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-gradient-start: #3b82f6;
+    --accent-gradient-end: #2563eb;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --code-bg: #f8fafc;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --header-gradient-start: #3b82f6;
+    --header-gradient-end: #2563eb;
+}
+
+[data-theme="dark"] {
+    /* Dark mode colors */
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: rgba(20, 20, 20, 0.9);
+    --bg-hover: rgba(45, 45, 45, 0.9);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
     --accent-primary: #60a5fa;
     --accent-hover: #3b82f6;
     --accent-gradient-start: #4f46e5;
     --accent-gradient-end: #7c3aed;
-    --success-color: #3fb950;
-    --warning-color: #d29922;
-    --error-color: #f85149;
-    --code-bg: #161b22;
-    --shadow: rgba(0, 0, 0, 0.5);
+    --success-color: #4ade80;
+    --warning-color: #fbbf24;
+    --error-color: #f87171;
+    --code-bg: #0f0f0f;
+    --shadow: rgba(0, 0, 0, 0.4);
+    --header-gradient-start: #4f46e5;
+    --header-gradient-end: #7c3aed;
 }
 
 * {
@@ -28,27 +53,36 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Header */
 header {
-    background: linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end));
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
     padding: 2rem 0;
-    box-shadow: 0 4px 6px var(--shadow);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    box-shadow: 0 8px 32px var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .header-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-title {
+    flex: 1;
 }
 
 header h1 {
@@ -64,13 +98,32 @@ header p {
     margin-bottom: 0;
 }
 
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
 /* Navigation */
 nav {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 999;
+    box-shadow: 0 4px 16px var(--shadow);
+    transition: all 0.3s ease;
 }
 
 nav ul {
@@ -115,11 +168,12 @@ main {
 }
 
 .content-wrapper {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 2.5rem;
-    box-shadow: 0 8px 16px var(--shadow);
+    box-shadow: 0 8px 32px var(--shadow);
+    transition: all 0.3s ease;
 }
 
 /* Typography */
@@ -341,12 +395,14 @@ tr:hover {
 
 /* Footer */
 footer {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border-top: 1px solid var(--border-color);
     padding: 2rem 0;
     text-align: center;
     color: var(--text-muted);
     margin-top: 4rem;
+    box-shadow: 0 -4px 16px var(--shadow);
+    transition: all 0.3s ease;
 }
 
 footer a {
@@ -404,6 +460,17 @@ footer a {
     
     header p {
         font-size: 1rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .theme-toggle {
+        align-self: stretch;
+        justify-content: center;
     }
     
     nav ul {
