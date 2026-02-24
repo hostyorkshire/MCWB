@@ -855,6 +855,7 @@ class WeatherBot:
                 80: "Showers", 81: "Showers", 82: "Showers",
                 95: "Storm", 96: "Storm+hail", 99: "Storm+hail",
             }
+            # Fallback chain: short map -> full WEATHER_CODES -> "C{code}" format
             condition = condition_map.get(wcode, WEATHER_CODES.get(wcode, f"C{wcode}"))
             
             lines.append(f"{date_short}: {condition} {tmin}-{tmax}°C")

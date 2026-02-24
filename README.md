@@ -85,6 +85,25 @@ Wind: 18 km/h at 230°
 https://mcwb.netlify.app
 ```
 
+### 🌤️ NEW: Weather Outlook Feature
+
+After sending the current weather, the bot now asks:
+
+```
+Thanks for that, would you like to see the outlook? (y/n)
+```
+
+Respond with `y` or `yes` to get a concise 3-day forecast:
+
+```
+London 3-day:
+02-25: Cloudy 8-15°C
+02-26: Rain 9-16°C
+02-27: Overcast 7-14°C
+```
+
+See [docs/WEATHER_OUTLOOK_FEATURE.md](docs/WEATHER_OUTLOOK_FEATURE.md) for complete documentation.
+
 ## LoRa Radio Hardware
 
 MCWBv2 connects to a **MeshCore companion radio** over USB serial.
