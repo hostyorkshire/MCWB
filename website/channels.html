@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel Configuration - MCWB Wiki</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Understanding and configuring channels for the MeshCore Weather Bot">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
+            <p>MeshCore Weather Bot Documentation</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="installation.html">Installation</a></li>
+            <li><a href="features.html">Features</a></li>
+            <li><a href="commands.html">Commands</a></li>
+            <li><a href="channels.html" class="active">Channels</a></li>
+            <li><a href="dashboard.html">Live Dashboard</a></li>
+            <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            <li><a href="api.html">API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Channel Configuration</h1>
+            <p>Understanding how channels work with the MeshCore Weather Bot.</p>
+
+            <div class="info-box success">
+                <h3>✨ Zero Configuration Required</h3>
+                <p>For most users: <strong>You don't need to configure anything!</strong> The bot automatically works on ALL channels simultaneously and responds on the same channel where each request came from.</p>
+            </div>
+
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">Channel Overview</a></li>
+                    <li><a href="#automatic">Automatic Channel Adaptation</a></li>
+                    <li><a href="#setup">Setting Up Channels</a></li>
+                    <li><a href="#advanced">Advanced Configuration</a></li>
+                    <li><a href="#filtering">Channel Filtering</a></li>
+                </ul>
+            </div>
+
+            <h2 id="overview">Channel Overview</h2>
+            <p>MeshCore supports channel-based broadcasting, allowing organized communication streams across your mesh network.</p>
+
+            <h3>What are Channels?</h3>
+            <p>Channels are named communication streams that help organize messages:</p>
+            <ul>
+                <li><strong>#weather</strong> - Weather updates and forecasts</li>
+                <li><strong>#wxtest</strong> - Weather testing</li>
+                <li><strong>#forecast</strong> - Forecast information</li>
+                <li><strong>#general</strong> - General communication</li>
+                <li><strong>Any name you want!</strong> - Create custom channels</li>
+            </ul>
+
+            <h3>Channel Index</h3>
+            <p>Every channel is associated with a numeric <strong>channel index</strong> (0-7):</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>Description</th>
+                        <th>Security</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0</code></td>
+                        <td>Default/public channel</td>
+                        <td>Well-known PSK (public)</td>
+                    </tr>
+                    <tr>
+                        <td><code>1-7</code></td>
+                        <td>Named channels (#weather, #wxtest, etc.)</td>
+                        <td>Unique PSK (encrypted)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="automatic">Automatic Channel Adaptation</h2>
+            <p>The bot's default behavior requires <strong>no configuration</strong>:</p>
+
+            <div class="highlight">
+                <h3>How It Works</h3>
+                <ul>
+                    <li>✅ Listens on <strong>ALL channels</strong> for weather commands</li>
+                    <li>✅ Responds on the <strong>SAME channel</strong> where each request came from</li>
+                    <li>✅ Adapts announcements to use the <strong>channel that users are active on</strong></li>
+                </ul>
+            </div>
+
+            <h3>Example Scenario</h3>
+            <div class="info-box">
+                <p>Different users have #weather mapped to different indices:</p>
+                <ul>
+                    <li>User A's device: #weather → channel_idx 1</li>
+                    <li>User B's device: #weather → channel_idx 2</li>
+                    <li>User C's device: #weather → channel_idx 3</li>
+                </ul>
+                <p><strong>Bot behavior:</strong></p>
+                <ul style="margin-bottom: 0;">
+                    <li>User A sends "wx London" on channel_idx 1 → Bot replies on channel_idx 1</li>
+                    <li>User B sends "wx Paris" on channel_idx 2 → Bot replies on channel_idx 2</li>
+                    <li>User C sends "wx Berlin" on channel_idx 3 → Bot replies on channel_idx 3</li>
+                    <li>All users get responses on their respective channels automatically!</li>
+                </ul>
+            </div>
+
+            <h2 id="setup">Setting Up Channels</h2>
+            
+            <div class="info-box warning">
+                <h3>⚠️ Critical: Configure Channels in MeshCore App</h3>
+                <p><strong>Before the bot can receive messages, you MUST configure channels on your radio using the MeshCore mobile app.</strong> The bot cannot add channels for you.</p>
+            </div>
+
+            <div class="steps">
+                <div class="step">
+                    <h3>Open MeshCore App</h3>
+                    <p>Launch the MeshCore app on your phone or tablet.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Connect to Radio</h3>
+                    <p>Connect to your companion radio via Bluetooth or USB.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Open Channel Settings</h3>
+                    <p>Navigate to Channel Settings in the app.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Add Channels</h3>
+                    <p>Join/subscribe to channels you want the bot to monitor:</p>
+                    <ul>
+                        <li><code>#weather</code></li>
+                        <li><code>#wxtest</code></li>
+                        <li><code>#forecast</code></li>
+                        <li>Or any custom channel names</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3>Save Configuration</h3>
+                    <p>Save your changes and disconnect from the radio.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Start the Bot</h3>
+                    <p>Now start the bot - it will receive messages on all configured channels!</p>
+                    <pre><code>python3 weather_bot.py</code></pre>
+                </div>
+            </div>
+
+            <h2 id="advanced">Advanced Configuration</h2>
+            <p>Most users don't need these options, but they're available for advanced scenarios.</p>
+
+            <h3>When to Use Channel Filtering</h3>
+            <div class="info-box">
+                <p><strong>Use channel filtering when you want to:</strong></p>
+                <ul>
+                    <li>Isolate the bot to a dedicated weather channel only</li>
+                    <li>Run multiple bots and prevent conflicts</li>
+                    <li>Have explicit control over which channel the bot uses</li>
+                </ul>
+                <p><strong>Don't use channel filtering if:</strong></p>
+                <ul style="margin-bottom: 0;">
+                    <li>Running a typical deployment (just use default behavior)</li>
+                    <li>Users might have #weather on different channel indices</li>
+                    <li>You want maximum flexibility</li>
+                </ul>
+            </div>
+
+            <h3>Option 1: Basic Channel Filtering</h3>
+            <pre><code># Only respond to messages on channel index 1
+python3 weather_bot.py --channel-idx 1</code></pre>
+
+            <h3>Option 2: Announcement Channel Configuration</h3>
+            <pre><code># Send announcements on channel 2, respond to all channels
+python3 weather_bot.py --weather-channel-idx 2 --announce
+
+# Both announce and respond only on channel 2
+python3 weather_bot.py --channel-idx 2 --weather-channel-idx 2 --announce</code></pre>
+
+            <h2 id="filtering">Finding Your Channel Index</h2>
+            <p><strong>Remember:</strong> You usually don't need to find this! The bot works automatically.</p>
+
+            <h3>Method 1: Check MeshCore App</h3>
+            <p>Look at Channel Settings in your MeshCore app to see which slot #weather is assigned to.</p>
+
+            <h3>Method 2: Use Debug Mode</h3>
+            <pre><code>python3 weather_bot.py --debug</code></pre>
+            <p>Send a test message on #weather and observe the <code>channel_idx</code> in output:</p>
+            <pre><code>[17:45:32] channel_idx=2 SomeUser: wx test</code></pre>
+
+            <h2>Channel Security</h2>
+            <div class="info-box">
+                <h3>🔒 Encrypted Channels</h3>
+                <p>In MeshCore, hashtag channels (channels 1-7) are <strong>encrypted</strong> using channel-specific Pre-Shared Keys (PSKs):</p>
+                <ul>
+                    <li><strong>Channel 0</strong> (default/public) - Uses well-known PSK (effectively public)</li>
+                    <li><strong>Channels 1-7</strong> (#weather, #wxtest, etc.) - Use unique PSKs for encryption</li>
+                </ul>
+                <p style="margin-bottom: 0;">Only devices with the correct PSK can send or receive messages on encrypted channels.</p>
+            </div>
+
+            <h2>Best Practices</h2>
+            <ul>
+                <li><strong>Keep it simple:</strong> For most deployments, just run <code>python3 weather_bot.py</code></li>
+                <li><strong>Use descriptive names:</strong> <code>#weather</code>, <code>#forecast</code>, <code>#wxtest</code></li>
+                <li><strong>Configure radio first:</strong> Always set up channels in MeshCore app before starting bot</li>
+                <li><strong>Reply on same channel:</strong> Bot automatically does this</li>
+                <li><strong>Don't overuse channels:</strong> Too many channels can be confusing</li>
+                <li><strong>Test thoroughly:</strong> Use <code>--debug</code> mode to verify channel operation</li>
+            </ul>
+
+            <div class="info-box">
+                <h3>📚 More Information</h3>
+                <ul style="margin-bottom: 0;">
+                    <li><a href="https://github.com/hostyorkshire/MCWB/blob/main/CHANNEL_GUIDE.md">Complete Channel Guide</a></li>
+                    <li><a href="troubleshooting.html">Troubleshooting Guide</a></li>
+                    <li><a href="api.html">API Documentation</a></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

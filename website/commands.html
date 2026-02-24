@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commands & Usage - MCWB Wiki</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Complete command reference for the MeshCore Weather Bot">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
+            <p>MeshCore Weather Bot Documentation</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="installation.html">Installation</a></li>
+            <li><a href="features.html">Features</a></li>
+            <li><a href="commands.html" class="active">Commands</a></li>
+            <li><a href="channels.html">Channels</a></li>
+            <li><a href="dashboard.html">Live Dashboard</a></li>
+            <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            <li><a href="api.html">API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Commands & Usage</h1>
+            <p>Complete reference for all weather bot commands and command-line options.</p>
+
+            <div class="info-box success">
+                <h3>⌨️ Basic Usage on MeshCore</h3>
+                <p>Open your MeshCore app and type:</p>
+                <div class="command-example">
+                    <div class="command">wx [location]</div>
+                </div>
+                <p style="margin-bottom: 0;">Example: <code>wx London</code>, <code>wx Manchester</code>, <code>wx New York</code></p>
+            </div>
+
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#user-commands">User Commands (MeshCore App)</a></li>
+                    <li><a href="#cli-options">Command-Line Options</a></li>
+                    <li><a href="#examples">Usage Examples</a></li>
+                    <li><a href="#country-codes">Country Codes</a></li>
+                </ul>
+            </div>
+
+            <h2 id="user-commands">User Commands (MeshCore App)</h2>
+            <p>These are the commands users send on the MeshCore app to query weather:</p>
+
+            <h3>Basic Weather Query</h3>
+            <div class="command-example">
+                <div class="command">wx London</div>
+                <div class="output">
+London, GB<br>
+Partly cloudy<br>
+Temp: 14.2°C (feels 12.8°C)<br>
+Humid: 72%<br>
+Wind: 18 km/h at 230°<br>
+Precip: 0.0 mm
+                </div>
+            </div>
+
+            <h3>Alternative Command Format</h3>
+            <div class="command-example">
+                <div class="command">weather Manchester</div>
+            </div>
+            <p>Both <code>wx</code> and <code>weather</code> work identically. Commands are case-insensitive.</p>
+
+            <h3>Specify Country</h3>
+            <p>For cities that exist in multiple countries, specify the country:</p>
+            
+            <div class="command-example">
+                <div class="command">wx York UK</div>
+                <div class="output">York, GB (United Kingdom)</div>
+            </div>
+
+            <div class="command-example">
+                <div class="command">wx York USA</div>
+                <div class="output">York, US (United States)</div>
+            </div>
+
+            <div class="command-example">
+                <div class="command">wx Paris FR</div>
+                <div class="output">Paris, FR (France)</div>
+            </div>
+
+            <h3>Traditional Format</h3>
+            <p>You can also use comma-separated format:</p>
+            <div class="command-example">
+                <div class="command">wx York, UK</div>
+            </div>
+            <div class="command-example">
+                <div class="command">weather Paris, France</div>
+            </div>
+
+            <h2 id="cli-options">Command-Line Options</h2>
+            <p>Options for running the weather bot script:</p>
+
+            <h3>Connection Options</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>-p PORT</code><br><code>--port PORT</code></td>
+                        <td>Serial port (auto-detects if omitted)</td>
+                        <td><code>--port /dev/ttyUSB0</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>-b BAUD</code><br><code>--baud BAUD</code></td>
+                        <td>Baud rate (default: 115200)</td>
+                        <td><code>--baud 115200</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Mode Options</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>-d</code><br><code>--debug</code></td>
+                        <td>Enable debug output</td>
+                        <td><code>python3 weather_bot.py -d</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>-i</code><br><code>--interactive</code></td>
+                        <td>Interactive mode (no radio)</td>
+                        <td><code>python3 weather_bot.py -i</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>-l LOCATION</code><br><code>--location LOCATION</code></td>
+                        <td>Quick lookup and exit (no radio)</td>
+                        <td><code>--location Leeds</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Channel Options</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>-c CHANNEL_IDX</code><br><code>--channel-idx</code></td>
+                        <td>Only respond to this channel index</td>
+                        <td><code>--channel-idx 1</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>-w WEATHER_CHANNEL_IDX</code><br><code>--weather-channel-idx</code></td>
+                        <td>Channel index for announcements</td>
+                        <td><code>--weather-channel-idx 2</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Feature Options</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>-a</code><br><code>--announce</code></td>
+                        <td>Send periodic announcements every 3 hours</td>
+                        <td><code>--announce</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--country COUNTRY</code></td>
+                        <td>Default country code for geocoding</td>
+                        <td><code>--country GB</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="examples">Usage Examples</h2>
+
+            <h3>Standard Operation</h3>
+            <pre><code># Auto-detect port, work on all channels
+python3 weather_bot.py</code></pre>
+
+            <h3>With Debug Logging</h3>
+            <pre><code># See all protocol messages and processing
+python3 weather_bot.py --debug</code></pre>
+
+            <h3>With Announcements</h3>
+            <pre><code># Send reminder announcements every 3 hours
+python3 weather_bot.py --announce</code></pre>
+
+            <h3>Specify Port</h3>
+            <pre><code># Explicitly set serial port and baud rate
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200</code></pre>
+
+            <h3>UK Deployment</h3>
+            <pre><code># Prefer UK cities by default
+python3 weather_bot.py --country GB --announce</code></pre>
+
+            <h3>US Deployment</h3>
+            <pre><code># Prefer US cities by default
+python3 weather_bot.py --country US</code></pre>
+
+            <h3>Testing Without Radio</h3>
+            <pre><code># Interactive testing
+python3 weather_bot.py --interactive
+
+# One-shot query
+python3 weather_bot.py --location "New York"
+
+# Debug mode interactive
+python3 weather_bot.py --interactive --debug</code></pre>
+
+            <h3>Advanced Channel Configuration</h3>
+            <pre><code># Only respond on channel index 1
+python3 weather_bot.py --channel-idx 1
+
+# Announce on channel 2, respond on all channels
+python3 weather_bot.py --weather-channel-idx 2 --announce
+
+# Both announce and respond only on channel 2
+python3 weather_bot.py --channel-idx 2 --weather-channel-idx 2 --announce</code></pre>
+
+            <h2 id="country-codes">Supported Country Codes</h2>
+            <p>The bot supports ISO-3166-1 alpha-2 country codes (2-letter codes) plus common aliases:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Country</th>
+                        <th>Codes Supported</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>United Kingdom</td>
+                        <td><code>UK</code>, <code>GB</code>, <code>United Kingdom</code></td>
+                        <td><code>wx York UK</code></td>
+                    </tr>
+                    <tr>
+                        <td>United States</td>
+                        <td><code>USA</code>, <code>US</code>, <code>United States</code></td>
+                        <td><code>wx York USA</code></td>
+                    </tr>
+                    <tr>
+                        <td>France</td>
+                        <td><code>FR</code></td>
+                        <td><code>wx Paris FR</code></td>
+                    </tr>
+                    <tr>
+                        <td>Germany</td>
+                        <td><code>DE</code></td>
+                        <td><code>wx Berlin DE</code></td>
+                    </tr>
+                    <tr>
+                        <td>Canada</td>
+                        <td><code>CA</code></td>
+                        <td><code>wx Toronto CA</code></td>
+                    </tr>
+                    <tr>
+                        <td>Australia</td>
+                        <td><code>AU</code></td>
+                        <td><code>wx Sydney AU</code></td>
+                    </tr>
+                    <tr>
+                        <td>Japan</td>
+                        <td><code>JP</code></td>
+                        <td><code>wx Tokyo JP</code></td>
+                    </tr>
+                    <tr>
+                        <td>Others</td>
+                        <td>Any ISO-3166-1 alpha-2 code</td>
+                        <td><code>wx Madrid ES</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Command Patterns</h2>
+            <p>The bot matches these patterns (case-insensitive):</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Matches</th>
+                        <th>Examples</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>wx &lt;location&gt;</code></td>
+                        <td>✅ Yes</td>
+                        <td><code>wx London</code>, <code>WX manchester</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>weather &lt;location&gt;</code></td>
+                        <td>✅ Yes</td>
+                        <td><code>weather York</code>, <code>WEATHER leeds</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>wx &lt;location&gt; &lt;country&gt;</code></td>
+                        <td>✅ Yes</td>
+                        <td><code>wx York UK</code>, <code>wx Paris FR</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>wx &lt;location&gt;, &lt;country&gt;</code></td>
+                        <td>✅ Yes</td>
+                        <td><code>wx York, UK</code>, <code>wx New York, USA</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>wxLondon</code> (no space)</td>
+                        <td>❌ No</td>
+                        <td>Must have space after command</td>
+                    </tr>
+                    <tr>
+                        <td><code>weather</code> (no location)</td>
+                        <td>❌ No</td>
+                        <td>Must specify a location</td>
+                    </tr>
+                    <tr>
+                        <td><code>what's the weather</code></td>
+                        <td>❌ No</td>
+                        <td>Must use <code>wx</code> or <code>weather</code> prefix</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>MeshCore Send Utility</h2>
+            <p>The repository includes <code>meshcore_send.py</code> for sending messages programmatically:</p>
+
+            <h3>Basic Send</h3>
+            <pre><code># Send message via connected radio
+python3 meshcore_send.py "wx London"</code></pre>
+
+            <h3>Specify Channel</h3>
+            <pre><code># Send on channel index 1
+python3 meshcore_send.py "wx London" --channel-idx 1
+
+# Send by channel name
+python3 meshcore_send.py "wx London" --channel weather</code></pre>
+
+            <h3>Simulation Mode</h3>
+            <pre><code># Test without radio hardware
+python3 meshcore_send.py "wx London" --node-id testnode</code></pre>
+
+            <h2>Web Dashboard Commands</h2>
+            <p>Start the web dashboard to monitor bot activity:</p>
+
+            <h3>Basic Dashboard</h3>
+            <pre><code># Start on localhost:5000
+python3 web_dashboard.py</code></pre>
+
+            <h3>Network Access</h3>
+            <pre><code># Allow access from other devices
+python3 web_dashboard.py --host 0.0.0.0 --port 5000</code></pre>
+
+            <h3>Custom Port</h3>
+            <pre><code># Run on port 8080
+python3 web_dashboard.py --port 8080</code></pre>
+
+            <h3>Debug Mode</h3>
+            <pre><code># Enable Flask debug mode
+python3 web_dashboard.py --debug</code></pre>
+
+            <h2 id="examples">Complete Examples</h2>
+
+            <h3>Example 1: Home User</h3>
+            <pre><code># UK user with announcements
+python3 weather_bot.py --country GB --announce</code></pre>
+            <p>Users send: <code>wx London</code>, <code>wx Manchester</code></p>
+
+            <h3>Example 2: US Deployment</h3>
+            <pre><code># US user with debug logging
+python3 weather_bot.py --country US --debug</code></pre>
+            <p>Users send: <code>wx Chicago</code>, <code>wx Seattle</code></p>
+
+            <h3>Example 3: International Network</h3>
+            <pre><code># No country filter (global)
+python3 weather_bot.py --announce</code></pre>
+            <p>Users specify country: <code>wx Tokyo JP</code>, <code>wx Sydney AU</code></p>
+
+            <h3>Example 4: Testing Setup</h3>
+            <pre><code># Interactive mode with debug
+python3 weather_bot.py --interactive --debug</code></pre>
+            <p>Type commands directly for testing</p>
+
+            <h3>Example 5: Production Pi Deployment</h3>
+            <pre><code># Use installation script
+./install_service.sh
+
+# Service starts automatically on boot
+sudo systemctl status weather_bot</code></pre>
+
+            <h2>Service Management Commands</h2>
+            <p>When running as a systemd service:</p>
+
+            <h3>Start/Stop/Restart</h3>
+            <pre><code># Start the service
+sudo systemctl start weather_bot
+
+# Stop the service
+sudo systemctl stop weather_bot
+
+# Restart the service
+sudo systemctl restart weather_bot</code></pre>
+
+            <h3>Enable/Disable Auto-Start</h3>
+            <pre><code># Enable auto-start on boot
+sudo systemctl enable weather_bot
+
+# Disable auto-start
+sudo systemctl disable weather_bot</code></pre>
+
+            <h3>Check Status and Logs</h3>
+            <pre><code># Check service status
+sudo systemctl status weather_bot
+
+# View recent logs
+sudo journalctl -u weather_bot -n 50
+
+# Follow logs in real-time
+sudo journalctl -u weather_bot -f</code></pre>
+
+            <h2 id="country-codes">Country Code Reference</h2>
+            <p>Common ISO-3166-1 alpha-2 country codes:</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+                <div class="info-box" style="margin: 0;">
+                    <strong>Europe</strong>
+                    <ul style="margin: 0.5rem 0 0 0;">
+                        <li>UK, GB - United Kingdom</li>
+                        <li>FR - France</li>
+                        <li>DE - Germany</li>
+                        <li>IT - Italy</li>
+                        <li>ES - Spain</li>
+                        <li>NL - Netherlands</li>
+                        <li>SE - Sweden</li>
+                        <li>NO - Norway</li>
+                    </ul>
+                </div>
+
+                <div class="info-box" style="margin: 0;">
+                    <strong>Americas</strong>
+                    <ul style="margin: 0.5rem 0 0 0;">
+                        <li>US, USA - United States</li>
+                        <li>CA - Canada</li>
+                        <li>MX - Mexico</li>
+                        <li>BR - Brazil</li>
+                        <li>AR - Argentina</li>
+                        <li>CL - Chile</li>
+                    </ul>
+                </div>
+
+                <div class="info-box" style="margin: 0;">
+                    <strong>Asia-Pacific</strong>
+                    <ul style="margin: 0.5rem 0 0 0;">
+                        <li>JP - Japan</li>
+                        <li>CN - China</li>
+                        <li>IN - India</li>
+                        <li>AU - Australia</li>
+                        <li>NZ - New Zealand</li>
+                        <li>SG - Singapore</li>
+                        <li>KR - South Korea</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>💡 Tips</h3>
+                <ul style="margin-bottom: 0;">
+                    <li>Commands are <strong>case-insensitive</strong>: <code>wx</code>, <code>WX</code>, <code>Wx</code> all work</li>
+                    <li>Location names are <strong>flexible</strong>: Handle spaces and special characters</li>
+                    <li>Country codes work in <strong>any position</strong>: <code>wx York UK</code> or <code>wx UK York</code></li>
+                    <li>Bot responds on the <strong>same channel</strong> where the command was sent</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
