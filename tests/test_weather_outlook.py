@@ -66,7 +66,7 @@ def test_outlook_prompt_after_weather():
 
             # Verify the second message contains the outlook prompt
             second_msg = calls[1][0][0]
-            if b"would you like to see the outlook" in second_msg or b"Thanks for that" in second_msg:
+            if b"Would you like to see the outlook for" in second_msg:
                 print("✅ PASS: Second message contains outlook prompt")
             else:
                 print("❌ FAIL: Second message doesn't contain outlook prompt")

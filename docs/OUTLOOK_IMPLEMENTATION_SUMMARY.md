@@ -42,7 +42,7 @@ self._outlook_timeout = 300  # 5 minutes timeout for outlook requests
 - For new weather commands:
   - Send weather response
   - Store location/coordinates in pending state
-  - Send outlook prompt: "Thanks for that, would you like to see the outlook? (y/n)"
+  - Send outlook prompt: "Would you like to see the outlook for [location]? (y/n)"
 
 ## Key Design Decisions
 
@@ -80,7 +80,7 @@ Bot sends: [current weather data]
      ↓
 Bot stores: (sender, channel) -> location/coords/timestamp
      ↓
-Bot sends: "Thanks for that, would you like to see the outlook? (y/n)"
+Bot sends: "Would you like to see the outlook for [location]? (y/n)"
      ↓
 User responds: "y"
      ↓
@@ -150,7 +150,7 @@ created:    tests/test_outlook_integration.py (178 lines)
 
 **YES!** ✅ The feature is fully implemented and working:
 - ✅ Bot prompts for outlook after initial weather response
-- ✅ Bot says "Thanks for that, would you like to see the outlook?"
+- ✅ Bot says "Would you like to see the outlook for [location]?"
 - ✅ User can reply y/Y/YES to get outlook
 - ✅ User can reply n or anything else to decline
 - ✅ Outlook data comes from Open-Meteo API

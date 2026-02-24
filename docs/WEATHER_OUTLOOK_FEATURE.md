@@ -29,7 +29,7 @@ https://mcwb.netlify.app
 
 **Message 2 - Outlook Prompt:**
 ```
-Thanks for that, would you like to see the outlook? (y/n)
+Would you like to see the outlook for [location]? (y/n)
 ```
 
 ### Step 3: User Responds
@@ -58,7 +58,7 @@ The bot does nothing and clears the pending request.
 
 All messages fit comfortably within MeshCore's 200 character limit:
 - Weather response: ~100-120 characters
-- Outlook prompt: 57 characters
+- Outlook prompt: ~50-70 characters (varies by location name length)
 - Outlook response: ~80-100 characters
 
 ### State Management
@@ -95,7 +95,7 @@ Bot:  London, GB
       Wind: 18 km/h at 230°
       https://mcwb.netlify.app
 
-Bot:  Thanks for that, would you like to see the outlook? (y/n)
+Bot:  Would you like to see the outlook for London? (y/n)
 
 User: y
 Bot:  London 3-day:
@@ -111,7 +111,7 @@ Bot:  Manchester, GB
       Slight rain
       ...
 
-Bot:  Thanks for that, would you like to see the outlook? (y/n)
+Bot:  Would you like to see the outlook for Manchester? (y/n)
 
 User: n
       (Bot does nothing)
@@ -123,7 +123,7 @@ User: wx Leeds
 Bot:  Leeds, GB
       ...
 
-Bot:  Thanks for that, would you like to see the outlook? (y/n)
+Bot:  Would you like to see the outlook for Leeds? (y/n)
 
 User: (says nothing or sends different command)
       (After 5 minutes, the pending request expires)

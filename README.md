@@ -90,7 +90,7 @@ https://mcwb.netlify.app
 After sending the current weather, the bot now asks:
 
 ```
-Thanks for that, would you like to see the outlook? (y/n)
+Would you like to see the outlook for [location]? (y/n)
 ```
 
 Respond with `y` or `yes` to get a concise 3-day forecast:

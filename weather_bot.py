@@ -581,7 +581,8 @@ class WeatherBot:
                 # Add delay to allow first message to be transmitted before sending prompt
                 time.sleep(0.5)
 
-                prompt = "Thanks for that, would you like to see the outlook? (y/n)"
+                location_name = r.get("name", location)
+                prompt = f"Would you like to see the outlook for {location_name}? (y/n)"
                 self._send_channel_msg(prompt, channel_idx)
 
             except (ConnectionError, Timeout, RequestException) as e:
