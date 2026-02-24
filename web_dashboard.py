@@ -181,6 +181,10 @@ def main():
     print(f"MCWB Web Dashboard")
     print(f"=" * 70)
     print(f"Starting web server on http://{args.host}:{args.port}")
+    if args.host == "0.0.0.0":
+        print(f"⚠️  Warning: Dashboard is accessible on the network")
+        print(f"   Only use on trusted networks (home/private networks)")
+        print(f"   To restrict to localhost only: --host 127.0.0.1")
     print(f"Press Ctrl+C to stop")
     print(f"=" * 70)
     
