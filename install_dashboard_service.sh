@@ -83,11 +83,38 @@ sudo systemctl daemon-reload
 echo "⚡ Enabling service to start on boot..."
 sudo systemctl enable mcwb-dashboard
 
+# Configure firewall if UFW is installed
+echo ""
+echo "🔥 Checking firewall configuration..."
+if command -v ufw >/dev/null 2>&1; then
+    if sudo ufw status | grep -q "Status: active"; then
+        echo "   UFW firewall is active"
+        # Check if port 5000 is already allowed
+        if sudo ufw status | grep -q "5000"; then
+            echo "   ✅ Port 5000 already allowed"
+        else
+            echo "   ⚠️  Port 5000 not allowed in firewall"
+            read -p "   Allow port 5000 through firewall? [Y/n] " -n 1 -r
+            echo ""
+            if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+                sudo ufw allow 5000/tcp
+                echo "   ✅ Port 5000 allowed through firewall"
+            else
+                echo "   ⚠️  Port 5000 NOT allowed - you may not be able to access the dashboard remotely"
+            fi
+        fi
+    else
+        echo "   ℹ️  UFW firewall is not active (no firewall config needed)"
+    fi
+else
+    echo "   ℹ️  UFW not installed (no firewall config needed)"
+fi
+
 # Ask if user wants to start now
 echo ""
 read -p "Do you want to start the service now? [Y/n] " -n 1 -r
 echo ""
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     echo "🚀 Starting mcwb-dashboard service..."
     sudo systemctl start mcwb-dashboard
     
@@ -105,9 +132,32 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     if sudo systemctl is-active --quiet mcwb-dashboard; then
         echo "✅ Service is running!"
         echo ""
+        
+        # Get the IP address
+        LOCAL_IP=$(hostname -I | awk '{print $1}')
+        
         echo "🌐 Web Dashboard Access:"
         echo "   Local:   http://localhost:5000"
-        echo "   Network: http://$(hostname -I | awk '{print $1}'):5000"
+        echo "   Network: http://${LOCAL_IP}:5000"
+        echo ""
+        
+        # Test connectivity (wait for Flask to fully initialize)
+        echo "🔍 Testing connectivity..."
+        # Wait 3 seconds for Flask application to fully initialize
+        sleep 3
+        
+        # Check if curl is available
+        if ! command -v curl >/dev/null 2>&1; then
+            echo "   ℹ️  curl not available, skipping connectivity test"
+            echo "   Try connecting manually: http://${LOCAL_IP}:5000"
+        elif curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
+            echo "   ✅ Dashboard is responding on http://localhost:5000"
+            echo "   ✅ You should be able to connect from other devices at:"
+            echo "      http://${LOCAL_IP}:5000"
+        else
+            echo "   ⚠️  Dashboard not responding yet (may still be starting up)"
+            echo "   Wait a few seconds and try: curl http://localhost:5000"
+        fi
         echo ""
     else
         echo "⚠️  Service may have failed to start. Check logs with:"

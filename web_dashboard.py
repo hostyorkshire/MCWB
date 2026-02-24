@@ -6,6 +6,7 @@ Dark-themed web interface for monitoring the MeshCore Weather Bot
 
 import os
 import sys
+import socket
 from pathlib import Path
 
 # Check for required dependencies before importing
@@ -166,6 +167,24 @@ def calculate_success_rate(total, errors):
     return round(((total - errors) / total) * 100, 1)
 
 
+def get_local_ip():
+    """Get the local IP address for network access"""
+    try:
+        # Create a socket to get the local IP
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.settimeout(0.1)
+            # Connect to a public DNS server (doesn't actually send data)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            return local_ip
+    except Exception:
+        # Fallback: try to get from hostname
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except Exception:
+            return None
+
+
 def main():
     """Run the web dashboard"""
     import argparse
@@ -180,11 +199,24 @@ def main():
     print(f"=" * 70)
     print(f"MCWB Web Dashboard")
     print(f"=" * 70)
-    print(f"Starting web server on http://{args.host}:{args.port}")
-    if args.host == "0.0.0.0":
-        print(f"⚠️  Warning: Dashboard is accessible on the network")
+    
+    # Get local IP for network access
+    local_ip = get_local_ip()
+    
+    print()
+    print(f"🌐 Dashboard will be accessible at:")
+    print(f"   • Local:   http://localhost:{args.port}")
+    if args.host == "0.0.0.0" and local_ip:
+        print(f"   • Network: http://{local_ip}:{args.port}")
+        print()
+        print(f"⚠️  Dashboard is accessible on your local network")
         print(f"   Only use on trusted networks (home/private networks)")
         print(f"   To restrict to localhost only: --host 127.0.0.1")
+    elif args.host == "127.0.0.1":
+        print()
+        print(f"ℹ️  Dashboard restricted to localhost only")
+        print(f"   For network access, use: --host 0.0.0.0")
+    print()
     print(f"Press Ctrl+C to stop")
     print(f"=" * 70)
     

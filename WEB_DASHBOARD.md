@@ -2,6 +2,54 @@
 
 A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time.
 
+## 🚀 Super Quick Start (3 Simple Steps)
+
+**Can't connect to your dashboard?** Follow these steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
+
+### Method 1: Unified Service Manager (Easiest!)
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+Choose option **2** (Install Web Dashboard) or **3** (Install BOTH services). The interactive menu will guide you through the setup!
+
+### Method 2: Direct Installation Script
+
+### Step 1: Install and Start the Dashboard
+
+```bash
+cd ~/MCWB  # Or wherever you cloned MCWB
+./install_dashboard_service.sh
+```
+
+The installer will:
+- ✅ Automatically configure the service for your username and directory
+- ✅ Configure firewall if needed
+- ✅ Start the dashboard and show you the connection URL
+- ✅ Enable auto-start on reboot
+
+### Step 2: Get Your Connection URL
+
+The installer will show you the URL, for example:
+```
+🌐 Web Dashboard Access:
+   Network: http://192.168.1.109:5000
+```
+
+**That's your connection URL!** Write it down.
+
+**💡 Pro Tip:** Once connected, you can use this URL to link your static website's Live Dashboard page to show real-time data. See [Remote Access and Static Website Integration](#remote-access-and-static-website-integration) below.
+
+### Step 3: Connect
+
+Open a web browser on any device on your local network and go to the URL from Step 2.
+
+**Still can't connect?** Jump to [Troubleshooting Connection Issues](#troubleshooting-connection-issues) below.
+
+---
+
 ## Features
 
 - 🌙 **Dark Theme** - Easy on the eyes with a beautiful gradient background
@@ -229,6 +277,109 @@ If the service fails to start, check the troubleshooting section below.
   - Restricting access to specific IP addresses
   - Using a firewall to limit access
 
+## Troubleshooting Connection Issues
+
+**Can't connect to http://192.168.1.109:5000 or similar?** Follow these steps:
+
+### Quick Checklist
+
+Run these commands on your Raspberry Pi to diagnose the issue:
+
+```bash
+# 1. Is the service running?
+sudo systemctl status mcwb-dashboard
+
+# 2. Can you connect locally?
+curl http://localhost:5000
+
+# 3. What's your actual IP address?
+hostname -I
+
+# 4. Is the firewall blocking?
+sudo ufw status
+```
+
+### Common Issues and Fixes
+
+**Issue 1: Service Not Running**
+
+If `systemctl status` shows the service is not running or failed:
+
+```bash
+# Solution: Reinstall with the automated installer
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This fixes username/path mismatches automatically.
+
+**Issue 2: Firewall Blocking Port 5000**
+
+If `ufw status` shows port 5000 is not allowed:
+
+```bash
+# Allow port 5000 through firewall
+sudo ufw allow 5000/tcp
+```
+
+**Issue 3: Wrong IP Address**
+
+Your IP address may have changed. Check with:
+
+```bash
+# Show your current IP
+hostname -I | awk '{print $1}'
+
+# Then use that IP in your browser
+# Example: http://192.168.1.109:5000
+```
+
+**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL. This is especially useful for website integration!
+
+**Issue 4: Service Running but Can't Connect**
+
+If the service is running and `curl http://localhost:5000` works but you can't connect from another device:
+
+```bash
+# Check if dashboard is listening on all interfaces
+sudo netstat -tlnp | grep 5000
+# OR
+sudo ss -tlnp | grep 5000
+
+# Should show: 0.0.0.0:5000 (means it's accessible from network)
+# If it shows: 127.0.0.1:5000 (means localhost only)
+```
+
+If it shows `127.0.0.1:5000`, the service is configured for localhost only. Fix:
+
+```bash
+# Edit the service file
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change: --host 127.0.0.1
+# To:     --host 0.0.0.0
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard
+```
+
+**Issue 5: Still Can't Connect After All Above Steps**
+
+Try a complete reset:
+
+```bash
+# Stop and disable old service
+sudo systemctl stop mcwb-dashboard
+sudo systemctl disable mcwb-dashboard
+sudo rm /etc/systemd/system/mcwb-dashboard.service
+sudo systemctl daemon-reload
+
+# Reinstall
+cd ~/MCWB
+./install_dashboard_service.sh
+
+# Test connection
+curl http://localhost:5000
+```
+
 ## Troubleshooting
 
 ### Systemd Service Fails to Start
@@ -342,11 +493,13 @@ python3 web_dashboard.py --port 8080
 
 ### Cannot Access from Another Device
 
-Make sure:
-1. The dashboard is running (by default it binds to `0.0.0.0` for network access)
-2. Firewall allows incoming connections on the port
-3. You're using the correct IP address of the host machine
-4. If you previously ran with `--host 127.0.0.1`, restart without that option
+**See the [Troubleshooting Connection Issues](#troubleshooting-connection-issues) section above for a complete step-by-step guide.**
+
+Quick summary:
+1. Verify the service is running: `sudo systemctl status mcwb-dashboard`
+2. Check firewall: `sudo ufw allow 5000/tcp`
+3. Get your IP: `hostname -I`
+4. Test locally first: `curl http://localhost:5000`
 
 ### Logs Not Showing
 

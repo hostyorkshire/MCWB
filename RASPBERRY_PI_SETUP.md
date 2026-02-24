@@ -148,7 +148,39 @@ python3 /home/pi/MCWB/weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d
 
 ## Setting Up Auto-Start on Boot
 
-### Method 1: Using systemd Service (Recommended)
+### 🎛️ Method 1: Unified Service Manager (Easiest!)
+
+**NEW: One menu for all services!**
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+This interactive menu provides:
+- ✅ **Option 3: Install BOTH services** - Weather bot + web dashboard at once
+- ✅ Automatic configuration (username, paths, firewall)
+- ✅ Service management (start/stop/restart)
+- ✅ Log viewing
+- ✅ Status checking
+
+**Recommended for first-time setup!** No need to remember multiple scripts.
+
+### Method 2: Individual Installation Scripts
+
+You can also use the individual scripts directly:
+
+**For Weather Bot:**
+```bash
+./install_service.sh
+```
+
+**For Web Dashboard:**
+```bash
+./install_dashboard_service.sh
+```
+
+### Method 3: Manual systemd Service (Advanced)
 
 This is the most reliable method for running the bot on boot.
 
