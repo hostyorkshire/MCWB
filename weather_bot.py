@@ -20,6 +20,7 @@ from stats_tracker import StatsTracker
 
 try:
     import requests
+    from requests.exceptions import ConnectionError, Timeout, RequestException
 except ImportError:
     print("Error: requests not found. Install with: pip install requests")
     sys.exit(1)
@@ -710,6 +711,13 @@ class WeatherBot:
             self.stats.record_request(location_name)
             
             return self.format_weather_response(r, wx)
+        except (ConnectionError, Timeout, RequestException) as e:
+            # Handle network-related errors with user-friendly message
+            msg = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
+            self.logger.error(f"Network error: {e}")
+            self.error_logger.error(f"Network error: {e}", exc_info=True)
+            self.stats.record_error("weather_api_error")
+            return msg
         except Exception as e:
             msg = f"Weather error: {e}"
             self.logger.error(msg)
