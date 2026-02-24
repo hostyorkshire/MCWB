@@ -15,6 +15,7 @@ import os
 
 from meshcore import MeshCore, MeshCoreMessage
 from logging_config import get_weather_bot_logger, log_startup_info, log_exception
+from stats_tracker import StatsTracker
 
 try:
     import requests
@@ -122,6 +123,8 @@ class WeatherBot:
             self.channels = [ch.strip() for ch in channel.split(",") if ch.strip()]
         else:
             self.channels = []
+        # Initialize stats tracker
+        self.stats = StatsTracker()
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
                              serial_port=self.port, baud_rate=self.baud)
@@ -691,14 +694,21 @@ class WeatherBot:
             if r is None:
                 msg = f"Location not found: {location}"
                 self.logger.warning(msg)
+                self.stats.record_error("location_not_found")
                 return msg
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
+            
+            # Record successful request
+            location_name = r.get("name", location)
+            self.stats.record_request(location_name)
+            
             return self.format_weather_response(r, wx)
         except Exception as e:
             msg = f"Weather error: {e}"
             self.logger.error(msg)
             self.error_logger.error(msg, exc_info=True)
+            self.stats.record_error("weather_api_error")
             return msg
 
     # ------------------------------------------------------------------
