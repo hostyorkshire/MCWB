@@ -96,7 +96,7 @@ Overcast
 Temp: 9.8°C (feels 6.1°C)
 Humid: 85%
 Wind: 20.7 km/h at 239°
-Precip: 0.0 mm
+https://mcwb.netlify.app
 ```
 
 No confusing "unknown:" messages appear at all!
