@@ -648,7 +648,7 @@ sudo nano /etc/systemd/system/weather_bot.service
 The service file should look like this:
 ```ini
 [Unit]
-Description=MCWBv2 - MeshCore Weather Bot
+Description=MCWB - MeshCore Weather Bot
 After=network-online.target
 Wants=network-online.target
 
@@ -705,7 +705,7 @@ sudo systemctl status weather_bot
 
 You should see output like:
 ```
-● weather_bot.service - MCWBv2 - MeshCore Weather Bot
+● weather_bot.service - MCWB - MeshCore Weather Bot
    Loaded: loaded (/etc/systemd/system/weather_bot.service; enabled; vendor preset: enabled)
    Active: active (running) since ...
 ```

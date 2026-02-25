@@ -111,7 +111,7 @@ sudo nano /etc/systemd/system/weather_bot.service
 
 # The file should start with:
 # [Unit]
-# Description=MCWBv2 - MeshCore Weather Bot
+# Description=MCWB - MeshCore Weather Bot
 # ...
 # NOT:
 # &lt;Unit&gt; or [Unit&gt; or any corrupted variant
@@ -155,7 +155,7 @@ head -5 /etc/systemd/system/weather_bot.service
 
 # Expected output:
 # [Unit]
-# Description=MCWBv2 - MeshCore Weather Bot
+# Description=MCWB - MeshCore Weather Bot
 # ...
 
 # Check for any HTML entities (should return nothing)

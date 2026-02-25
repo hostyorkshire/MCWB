@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCWBv2 - MeshCore Weather Bot
+MCWB - MeshCore Weather Bot
 Lightweight weather bot for the MeshCore #weather channel.
 Responds to: WX [location] or weather [location]
 Uses the free Open-Meteo API (no API key required).
@@ -975,7 +975,7 @@ class WeatherBot:
         time.sleep(0.5)
 
         if self.weather_channel_idx is not None:
-            msg = f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}."
+            msg = f"MCWB running. Weather channel configured as channel_idx={self.weather_channel_idx}."
             print(msg)
             self.logger.info(msg)
             msg2 = f"Listening ONLY on channel_idx={self.weather_channel_idx}."
@@ -983,12 +983,12 @@ class WeatherBot:
             self.logger.info(msg2)
             print("Send 'WX [location]' or 'weather [location]' on that channel.")
         elif self.allowed_channel_idx is not None:
-            msg = f"MCWBv2 running. Listening ONLY on channel_idx={self.allowed_channel_idx}."
+            msg = f"MCWB running. Listening ONLY on channel_idx={self.allowed_channel_idx}."
             print(msg)
             self.logger.info(msg)
             print("Send 'WX [location]' or 'weather [location]' on that channel.")
         else:
-            msg = "MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel."
+            msg = "MCWB running. Send 'WX [location]' or 'weather [location]' on any channel."
             print(msg)
             self.logger.info(msg)
 
@@ -1038,7 +1038,7 @@ class WeatherBot:
                 self._print_channel_diagnostic()
             if self._ser:
                 self._ser.close()
-            msg = "MCWBv2 stopped."
+            msg = "MCWB stopped."
             print(msg)
             self.logger.info(msg)
 
@@ -1079,7 +1079,7 @@ class WeatherBot:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MCWBv2 – MeshCore Weather Bot for the #weather channel")
+    parser = argparse.ArgumentParser(description="MCWB – MeshCore Weather Bot for the #weather channel")
     parser.add_argument("-p", "--port", help="Serial port (e.g. /dev/ttyUSB0). Auto-detects if omitted.")
     parser.add_argument("-b", "--baud", type=int, default=115200, help="Baud rate (default: 115200)")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")

@@ -1,11 +1,11 @@
 #!/bin/bash
-# Installation script for MCWBv2 systemd service on Raspberry Pi
+# Installation script for MCWB systemd service on Raspberry Pi
 # This script sets up the weather bot to run automatically on boot
 
 set -e  # Exit on error
 
 echo "================================================"
-echo "MCWBv2 - MeshCore Weather Bot Service Installer"
+echo "MCWB - MeshCore Weather Bot Service Installer"
 echo "================================================"
 echo ""
 

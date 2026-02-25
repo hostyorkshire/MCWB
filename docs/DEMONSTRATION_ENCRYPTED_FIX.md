@@ -86,7 +86,7 @@ MCWB$ python3 weather_bot.py -d
 
 ```
 MCWB$ python3 weather_bot.py
-MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel.
+MCWB running. Send 'WX [location]' or 'weather [location]' on any channel.
 Press Ctrl+C to stop.
 
 WX request for 'Leeds' from M3UXC/M
