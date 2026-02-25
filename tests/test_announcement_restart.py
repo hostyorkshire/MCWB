@@ -34,8 +34,7 @@ def simulate_startup_announcement_logic(bot):
         bot._send_channel_msg(ANNOUNCE_MESSAGE, bot._announce_channel_idx)
         last_announce = current_time
         bot._save_last_announce_time(last_announce)
-        return True
-    return False
+    return bot.announce
 
 
 def test_startup_with_recent_announcement():

@@ -1014,9 +1014,8 @@ class WeatherBot:
             self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
             last_announce = current_time
             self._save_last_announce_time(last_announce)
-            msg = "Sent startup announcement"
-            print(msg)
-            self.logger.info(msg)
+            print("Sent startup announcement")
+            self.logger.info("Sent startup announcement")
 
         try:
             while self._running:
