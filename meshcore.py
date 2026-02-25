@@ -1035,8 +1035,11 @@ class MeshCore:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             with open(filename, 'w') as f:
                 json.dump(data, f, indent=2)
-        except (IOError, OSError):
-            pass  # Fail silently - not critical
+            if self.debug:
+                self.log(f"Saved {len(channels)} active channel(s) to {filename}")
+        except (IOError, OSError) as e:
+            # Log error instead of failing silently - helps diagnose dashboard issues
+            self.error_logger.error(f"Failed to save active channels to {filename}: {e}")
 
 
 if __name__ == "__main__":
