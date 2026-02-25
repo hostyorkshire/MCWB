@@ -1,5 +1,5 @@
 [Unit]
-Description=MCWBv2 - MeshCore Weather Bot
+Description=MCWB - MeshCore Weather Bot
 # Wait for network to be fully online before starting
 After=network-online.target
 Wants=network-online.target

@@ -1,4 +1,4 @@
-# MCWBv2 - MeshCore Weather Bot
+# MCWB - MeshCore Weather Bot
 
 Lightweight Python3 weather bot for MeshCore mesh networks.
 
@@ -30,7 +30,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 ## Overview
 
-MCWBv2 listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
+MCWB listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
 
 **Simple Setup:**
 1. Connect your MeshCore companion radio via USB
@@ -114,7 +114,7 @@ See [docs/WEATHER_OUTLOOK_FEATURE.md](docs/WEATHER_OUTLOOK_FEATURE.md) for compl
 
 ## LoRa Radio Hardware
 
-MCWBv2 connects to a **MeshCore companion radio** over USB serial.
+MCWB connects to a **MeshCore companion radio** over USB serial.
 The companion radio is a LoRa-based device (e.g. a T-Beam, LILYGO LoRa32, or
 similar ESP32/LoRa board) running the
 [MeshCore firmware](https://github.com/ripplebiz/MeshCore).
@@ -159,7 +159,7 @@ python3 weather_bot.py
 
 ## Web Dashboard
 
-MCWBv2 includes a beautiful dark-themed web interface for monitoring your bot in real-time!
+MCWB includes a beautiful dark-themed web interface for monitoring your bot in real-time!
 
 **🔒 NEW: HTTPS Support** - Run your dashboard with HTTPS for secure connections from Netlify or other HTTPS sites! See [HTTPS_SETUP.md](HTTPS_SETUP.md) for setup instructions.
 
