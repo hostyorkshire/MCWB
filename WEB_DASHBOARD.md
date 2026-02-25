@@ -501,35 +501,25 @@ sudo systemctl restart mcwb-dashboard.service
 
 **3. Exit Code 1/FAILURE - Python packages not found:**
 
-This error occurs when Python packages (Flask, flask-cors) are installed in the user's local directory but the systemd service can't find them.
+This error occurs when Python packages (Flask, flask-cors) are not installed.
 
 **Symptoms:**
 - Service shows `code=exited, status=1/FAILURE`
-- Running `python3 web_dashboard.py` manually works fine
+- Running `python3 web_dashboard.py` manually shows "ERROR: Required dependencies not installed"
 - Service logs show `ModuleNotFoundError: No module named 'flask'`
 
-**Solution:** Use the automated installer which configures the service to find user-installed packages:
+**Solution:** Install the required dependencies:
 ```bash
 cd ~/MCWB
+pip3 install --user -r requirements.txt
+```
+
+If the service still doesn't start after installing dependencies, try reinstalling the service:
+```bash
 ./install_dashboard_service.sh
 ```
 
-The installer automatically sets the `PYTHONPATH` environment variable in the service file to include your user's Python packages directory.
-
-**Manual Fix (if needed):**
-```bash
-# Get your user's Python packages directory
-python3 -c "import site; print(site.USER_SITE)"
-
-# Edit the service file
-sudo nano /etc/systemd/system/mcwb-dashboard.service
-
-# Add this line in the [Service] section (replace PATH with output from above):
-# Environment="PYTHONPATH=/home/USERNAME/.local/lib/python3.X/site-packages"
-
-sudo systemctl daemon-reload
-sudo systemctl restart mcwb-dashboard.service
-```
+**Note:** Python 3 automatically includes user site-packages in its search path, so packages installed with `pip3 install --user` will be available to the service.
 
 **4. Path does not exist:**
 
@@ -572,7 +562,7 @@ pip3 install --user flask>=2.3.2 flask-cors>=4.0.0
 
 **Note:** If you recently pulled the latest code, you may need to reinstall dependencies as new packages may have been added.
 
-**Systemd Service Note:** The automated installer (`install_dashboard_service.sh`) automatically configures the systemd service to find user-installed packages. If you manually installed the service and are getting Flask import errors, reinstall using:
+**Systemd Service Note:** When you install dependencies with `pip3 install --user`, Python 3 automatically includes the user site-packages directory in its search path, so the systemd service will be able to find them. If you're still having import issues after installing dependencies, try reinstalling the service:
 ```bash
 cd ~/MCWB
 ./install_dashboard_service.sh
