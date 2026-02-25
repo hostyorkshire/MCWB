@@ -1,5 +1,7 @@
 # Quick Start Guide
 
+**❓ Have questions?** Check the [FAQ](FAQ.md) for answers including "where is the boot setup script?"
+
 ## 🎛️ NEW: One Menu for Everything!
 
 **Simplest way to set up everything on Raspberry Pi:**
