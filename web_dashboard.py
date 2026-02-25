@@ -231,6 +231,9 @@ def main():
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")
     parser.add_argument("--port", type=int, default=5000, help="Port to bind to (default: 5000)")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument("--ssl", action="store_true", help="Enable HTTPS with SSL certificate")
+    parser.add_argument("--cert", default="cert.pem", help="SSL certificate file (default: cert.pem)")
+    parser.add_argument("--key", default="key.pem", help="SSL private key file (default: key.pem)")
 
     args = parser.parse_args()
 
@@ -240,16 +243,29 @@ def main():
 
     # Get local IP for network access
     local_ip = get_local_ip()
+    
+    # Determine protocol
+    protocol = "https" if args.ssl else "http"
 
     print()
     print("🌐 Dashboard will be accessible at:")
-    print(f"   • Local:   http://localhost:{args.port}")
+    print(f"   • Local:   {protocol}://localhost:{args.port}")
     if args.host == "0.0.0.0" and local_ip:
-        print(f"   • Network: http://{local_ip}:{args.port}")
+        print(f"   • Network: {protocol}://{local_ip}:{args.port}")
         print()
-        print("⚠️  Dashboard is accessible on your local network")
-        print("   Only use on trusted networks (home/private networks)")
-        print("   To restrict to localhost only: --host 127.0.0.1")
+        if args.ssl:
+            print("🔒 HTTPS enabled with SSL certificate")
+            print(f"   Certificate: {args.cert}")
+            print(f"   Private Key: {args.key}")
+            print()
+            print("⚠️  Self-signed certificates will show browser warnings")
+            print("   This is normal - click 'Advanced' and proceed")
+        else:
+            print("⚠️  Dashboard is accessible on your local network")
+            print("   Only use on trusted networks (home/private networks)")
+            print("   To restrict to localhost only: --host 127.0.0.1")
+            print()
+            print("💡 For HTTPS support, use: --ssl")
     elif args.host == "127.0.0.1":
         print()
         print("ℹ️  Dashboard restricted to localhost only")
@@ -258,7 +274,30 @@ def main():
     print("Press Ctrl+C to stop")
     print("=" * 70)
 
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    # Check SSL certificate files if SSL is enabled
+    if args.ssl:
+        from pathlib import Path
+        cert_path = Path(args.cert)
+        key_path = Path(args.key)
+        
+        if not cert_path.exists() or not key_path.exists():
+            print()
+            print("❌ ERROR: SSL certificate files not found!")
+            print()
+            print("Generate a self-signed certificate with:")
+            print(f"   python3 generate_ssl_cert.py --hostname {local_ip or '192.168.1.109'}")
+            print()
+            print("Then start the dashboard with:")
+            print("   python3 web_dashboard.py --ssl")
+            print()
+            sys.exit(1)
+        
+        # Run with SSL
+        ssl_context = (str(cert_path), str(key_path))
+        app.run(host=args.host, port=args.port, debug=args.debug, ssl_context=ssl_context)
+    else:
+        # Run without SSL
+        app.run(host=args.host, port=args.port, debug=args.debug)
 
 
 if __name__ == "__main__":

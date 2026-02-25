@@ -1,5 +1,10 @@
 // MCWB Dashboard - Live monitoring with custom charts
 
+// Hardcoded API URL for automatic connection
+// This is the primary dashboard API that the static site will connect to
+// Using HTTPS for secure connection from Netlify (HTTPS) to Raspberry Pi (HTTPS)
+const HARDCODED_API_URL = 'https://192.168.1.109:5000';
+
 let autoRefreshEnabled = true;
 let refreshInterval = null;
 let dashboardUrl = null;
@@ -89,23 +94,35 @@ async function detectDashboardUrl() {
     // Build list of URLs to try
     const urls = [];
     
-    // 1. Try custom URL from localStorage first
+    // 1. Try hardcoded API URL FIRST (primary dashboard location)
+    urls.push(HARDCODED_API_URL);
+    
+    // 2. Try custom URL from localStorage (if user has overridden)
     const customUrl = localStorage.getItem('customDashboardApiUrl');
-    if (customUrl) {
+    if (customUrl && customUrl !== HARDCODED_API_URL) {
         urls.push(customUrl);
     }
     
-    // 2. Try common local URLs
+    // 3. Try common local URLs (for local development/testing)
     urls.push('http://localhost:5000');
     urls.push('http://127.0.0.1:5000');
     
-    // 3. Try current hostname (useful when accessing via network)
+    // 4. Try current hostname (useful when accessing via network)
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        urls.push(`${window.location.protocol}//${window.location.hostname}:5000`);
+        const hostnameUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        if (!urls.includes(hostnameUrl)) {
+            urls.push(hostnameUrl);
+        }
     }
+    
+    let lastError = null;
+    let triedCustomUrl = false;
     
     for (const url of urls) {
         try {
+            const isCustomUrl = customUrl && url === customUrl;
+            if (isCustomUrl) triedCustomUrl = true;
+            
             const response = await fetch(`${url}/api/stats`, { 
                 method: 'GET',
                 mode: 'cors',
@@ -119,14 +136,24 @@ async function detectDashboardUrl() {
                 return;
             }
         } catch (error) {
+            // Save error from custom URL for detailed feedback
+            if (customUrl && url === customUrl) {
+                lastError = error;
+            }
             // Try next URL
             continue;
         }
     }
     
-    // No dashboard found, show demo mode
+    // No dashboard found, show demo mode with error details
     console.warn('Dashboard API not found. Showing demo mode.');
-    showDemoMode();
+    
+    // Show specific error if custom URL was configured but failed
+    if (triedCustomUrl && customUrl) {
+        showDemoModeWithError(customUrl, lastError);
+    } else {
+        showDemoMode();
+    }
 }
 
 // Show live data info banner
@@ -227,11 +254,16 @@ function showDemoMode() {
     // Show demo warning, hide live info
     const demoWarning = document.getElementById('demoModeWarning');
     const liveInfo = document.getElementById('liveDataInfo');
+    const connectionError = document.getElementById('connectionError');
+    
     if (demoWarning) {
         demoWarning.style.display = 'block';
     }
     if (liveInfo) {
         liveInfo.style.display = 'none';
+    }
+    if (connectionError) {
+        connectionError.style.display = 'none';
     }
     
     // Update stats with random demo data
@@ -247,6 +279,76 @@ function showDemoMode() {
     initializeLineChart();
     
     console.log('Dashboard in demo mode at', now);
+}
+
+// Show demo mode with detailed error for custom URL failures
+function showDemoModeWithError(url, error) {
+    // First show normal demo mode
+    showDemoMode();
+    
+    // Then show additional error information
+    const connectionError = document.getElementById('connectionError');
+    const errorUrl = document.getElementById('errorUrl');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorSolution = document.getElementById('errorSolution');
+    
+    if (!connectionError) return;
+    
+    // Detect type of error
+    let message = 'Unable to connect to the dashboard API.';
+    let solution = '';
+    
+    // Check if it's a mixed content error (HTTPS -> HTTP)
+    const isHttps = window.location.protocol === 'https:';
+    const urlIsHttp = url.startsWith('http://');
+    
+    if (isHttps && urlIsHttp) {
+        message = 'Mixed Content Error: Cannot connect from HTTPS to HTTP';
+        solution = `<strong>Solution:</strong> When accessing this page via HTTPS (like Netlify), browsers block HTTP requests for security.
+        <br><br>
+        <strong>Option 1 (Recommended):</strong> Access the static site via HTTP instead:
+        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>If using Netlify, consider hosting on GitHub Pages with HTTP support</li>
+            <li>Or access your dashboard directly at <code>${url}</code></li>
+        </ul>
+        <strong>Option 2:</strong> Set up HTTPS for your Raspberry Pi dashboard (advanced):
+        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>Use a reverse proxy like ngrok or Cloudflare Tunnel</li>
+            <li>Or configure SSL certificates on your Pi</li>
+        </ul>`;
+    } else if (error && error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        message = 'Connection Failed: Unable to reach the dashboard';
+        solution = `<strong>Possible causes:</strong>
+        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>Dashboard is not running at <code>${url}</code></li>
+            <li>Firewall blocking the connection</li>
+            <li>Wrong IP address or port</li>
+            <li>Not on the same network</li>
+        </ul>
+        <strong>Verify:</strong>
+        <ol style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>Dashboard is running: <code>python3 web_dashboard.py --host 0.0.0.0</code></li>
+            <li>Check IP address on Raspberry Pi: <code>hostname -I</code></li>
+            <li>Test from command line: <code>curl ${url}/api/stats</code></li>
+        </ol>`;
+    } else if (error && error.name === 'AbortError') {
+        message = 'Connection Timeout: Dashboard took too long to respond';
+        solution = `<strong>Possible causes:</strong>
+        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>Network is slow or unreliable</li>
+            <li>Dashboard is overloaded</li>
+            <li>Device is far from router</li>
+        </ul>`;
+    }
+    
+    // Update error display
+    if (errorUrl) errorUrl.textContent = url;
+    if (errorMessage) errorMessage.textContent = message;
+    if (errorSolution) errorSolution.innerHTML = solution;
+    
+    connectionError.style.display = 'block';
+    
+    console.error('Connection error for', url, error);
 }
 
 // Update usage chart with real hourly data

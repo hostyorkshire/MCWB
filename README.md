@@ -153,6 +153,8 @@ python3 weather_bot.py
 
 MCWBv2 includes a beautiful dark-themed web interface for monitoring your bot in real-time!
 
+**🔒 NEW: HTTPS Support** - Run your dashboard with HTTPS for secure connections from Netlify or other HTTPS sites! See [HTTPS_SETUP.md](HTTPS_SETUP.md) for setup instructions.
+
 ### 🚀 Quick Start (Recommended for Raspberry Pi)
 
 **The easiest way to set up the dashboard:**
@@ -170,6 +172,8 @@ This script will:
 
 The installer will display your connection URL, like: `http://192.168.1.109:5000`
 
+**For HTTPS:** After installation, see [HTTPS_SETUP.md](HTTPS_SETUP.md) to enable SSL.
+
 ### Manual Start (For Testing)
 
 ```bash
@@ -180,9 +184,14 @@ source venv/bin/activate
 # Install Flask (already in requirements.txt)
 pip install -r requirements.txt
 
-# Start the dashboard
+# Start the dashboard (HTTP)
 python3 web_dashboard.py
+
+# OR start with HTTPS (recommended for Netlify access)
+python3 web_dashboard.py --ssl
 ```
+
+**For HTTPS setup:** See [HTTPS_SETUP.md](HTTPS_SETUP.md) for generating SSL certificates.
 
 The dashboard will display the connection URL when it starts.
 
