@@ -168,6 +168,13 @@
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid var(--accent-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .log-item-content {
+            flex: 1;
         }
 
         .log-name {
@@ -180,6 +187,69 @@
         .log-info {
             color: var(--text-secondary);
             font-size: 1em;
+        }
+
+        .size-gauge {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: var(--log-border);
+            stroke-width: 8;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .gauge-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .recent-users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .user-item {
+            background: var(--tab-bg);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-name {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .user-time {
+            color: var(--text-secondary);
+            font-size: 0.85em;
         }
 
         .channels-display {
@@ -667,6 +737,14 @@
                 <div id="daily-chart" class="line-chart"></div>
                 <div id="daily-labels" class="chart-labels"></div>
             </div>
+
+            <!-- Recent Users Section -->
+            <div class="chart-card">
+                <h3 class="chart-title">👥 Recent Users (Last 10)</h3>
+                <div id="recent-users" class="recent-users-list">
+                    <div class="loading">Loading recent users...</div>
+                </div>
+            </div>
         </div>
 
         <div class="log-viewer">
@@ -694,6 +772,9 @@
     <script>
         let currentLog = 'bot';
         let autoRefreshInterval;
+
+        // Configuration constants
+        const MAX_LOG_SIZE_BYTES = 10 * 1024 * 1024; // 10MB - maximum expected log file size
 
         // Theme management
         function initTheme() {
@@ -822,6 +903,14 @@
                     const size = info.exists ? formatBytes(info.size) : 'N/A';
                     const modified = info.modified || 'Never';
                     
+                    // Calculate percentage for gauge (based on MAX_LOG_SIZE_BYTES)
+                    const sizeBytes = info.size || 0;
+                    const percentage = Math.min((sizeBytes / MAX_LOG_SIZE_BYTES) * 100, 100);
+                    
+                    // Create content container
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'log-item-content';
+                    
                     // Create elements safely without innerHTML
                     const nameDiv = document.createElement('div');
                     nameDiv.className = 'log-name';
@@ -835,15 +924,73 @@
                     modDiv.className = 'log-info';
                     modDiv.textContent = `Modified: ${modified}`;
                     
-                    logItem.appendChild(nameDiv);
-                    logItem.appendChild(sizeDiv);
-                    logItem.appendChild(modDiv);
+                    contentDiv.appendChild(nameDiv);
+                    contentDiv.appendChild(sizeDiv);
+                    contentDiv.appendChild(modDiv);
+                    
+                    // Create gauge
+                    const gauge = createSizeGauge(percentage);
+                    
+                    logItem.appendChild(contentDiv);
+                    logItem.appendChild(gauge);
                     
                     logFilesDiv.appendChild(logItem);
                 }
             } catch (error) {
                 console.error('Error loading status:', error);
             }
+        }
+
+        function createSizeGauge(percentage) {
+            const gaugeContainer = document.createElement('div');
+            gaugeContainer.className = 'size-gauge';
+            
+            // Create SVG
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'gauge-svg');
+            svg.setAttribute('width', '80');
+            svg.setAttribute('height', '80');
+            svg.setAttribute('viewBox', '0 0 80 80');
+            
+            const radius = 32;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percentage / 100) * circumference;
+            
+            // Background circle
+            const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            bgCircle.setAttribute('class', 'gauge-bg');
+            bgCircle.setAttribute('cx', '40');
+            bgCircle.setAttribute('cy', '40');
+            bgCircle.setAttribute('r', radius);
+            
+            // Foreground circle (the gauge fill)
+            const fgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            fgCircle.setAttribute('class', 'gauge-fill');
+            fgCircle.setAttribute('cx', '40');
+            fgCircle.setAttribute('cy', '40');
+            fgCircle.setAttribute('r', radius);
+            fgCircle.setAttribute('stroke-dasharray', circumference);
+            fgCircle.setAttribute('stroke-dashoffset', offset);
+            
+            // Change color based on percentage
+            if (percentage >= 80) {
+                fgCircle.style.stroke = '#f87171'; // Red for high usage
+            } else if (percentage >= 50) {
+                fgCircle.style.stroke = '#fbbf24'; // Yellow for medium usage
+            }
+            
+            svg.appendChild(bgCircle);
+            svg.appendChild(fgCircle);
+            
+            // Percentage text
+            const text = document.createElement('div');
+            text.className = 'gauge-text';
+            text.textContent = `${Math.round(percentage)}%`;
+            
+            gaugeContainer.appendChild(svg);
+            gaugeContainer.appendChild(text);
+            
+            return gaugeContainer;
         }
 
         async function loadChannels() {
@@ -1047,8 +1194,66 @@
                 const locationsData = await locationsResponse.json();
                 renderBarChart('locations-chart', locationsData);
                 
+                // Load recent users
+                await loadRecentUsers();
+                
             } catch (error) {
                 console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadRecentUsers() {
+            try {
+                const response = await fetch('/api/stats/recent_users');
+                const data = await response.json();
+                
+                const recentUsersDiv = document.getElementById('recent-users');
+                
+                if (data.users && data.users.length > 0) {
+                    recentUsersDiv.innerHTML = '';
+                    data.users.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.className = 'user-item';
+                        
+                        const userName = document.createElement('span');
+                        userName.className = 'user-name';
+                        userName.textContent = user.user || 'Unknown';
+                        
+                        const userTime = document.createElement('span');
+                        userTime.className = 'user-time';
+                        if (user.timestamp) {
+                            const date = new Date(user.timestamp);
+                            const now = new Date();
+                            const diffMs = now - date;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            
+                            if (diffMins < 1) {
+                                userTime.textContent = 'Just now';
+                            } else if (diffMins < 60) {
+                                userTime.textContent = diffMins + 'm ago';
+                            } else {
+                                const diffHours = Math.floor(diffMins / 60);
+                                if (diffHours < 24) {
+                                    userTime.textContent = diffHours + 'h ago';
+                                } else {
+                                    const diffDays = Math.floor(diffHours / 24);
+                                    userTime.textContent = diffDays + 'd ago';
+                                }
+                            }
+                        } else {
+                            userTime.textContent = 'Unknown time';
+                        }
+                        
+                        userItem.appendChild(userName);
+                        userItem.appendChild(userTime);
+                        recentUsersDiv.appendChild(userItem);
+                    });
+                } else {
+                    recentUsersDiv.innerHTML = '<div class="loading">No recent users</div>';
+                }
+            } catch (error) {
+                console.error('Error loading recent users:', error);
+                document.getElementById('recent-users').innerHTML = '<div class="loading">Error loading recent users</div>';
             }
         }
 
