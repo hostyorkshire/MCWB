@@ -873,8 +873,12 @@ class WeatherBot:
                 data = response.json()
                 if data.get("status") == 200 and data.get("result"):
                     result = data["result"]
-                    # For outward codes, we get a general area center point
-                    location_name = result.get("admin_district", [postcode])[0] if isinstance(result.get("admin_district"), list) else result.get("admin_district", postcode)
+                    # For outward codes, admin_district can be a list or string
+                    admin_district = result.get("admin_district", postcode)
+                    if isinstance(admin_district, list):
+                        location_name = admin_district[0] if admin_district else postcode
+                    else:
+                        location_name = admin_district if admin_district else postcode
                     
                     return {
                         "latitude": result["latitude"],
