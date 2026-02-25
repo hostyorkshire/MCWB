@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -15,6 +16,7 @@ This test simulates the exact scenario from the problem statement:
 import struct
 import time
 from unittest.mock import MagicMock
+
 from weather_bot import WeatherBot
 
 
@@ -31,8 +33,8 @@ def create_channel_message(channel_idx, text, code=0x88):
     """
     path_len = 0x00
     txt_type = 0x00
-    timestamp = struct.pack('<I', int(time.time()))
-    text_bytes = text.encode('utf-8', errors='ignore')
+    timestamp = struct.pack("<I", int(time.time()))
+    text_bytes = text.encode("utf-8", errors="ignore")
 
     payload = bytes([code, channel_idx, path_len, txt_type]) + timestamp + text_bytes
     return payload
@@ -56,7 +58,7 @@ def test_hashtag_channel_messages():
     sent_responses = []
 
     def mock_send_channel_msg(text, channel_idx):
-        sent_responses.append({'text': text, 'channel_idx': channel_idx})
+        sent_responses.append({"text": text, "channel_idx": channel_idx})
         print(f"\n✅ BOT RESPONDED on channel_idx={channel_idx}:")
         print(f"   {text[:100]}{'...' if len(text) > 100 else ''}\n")
 

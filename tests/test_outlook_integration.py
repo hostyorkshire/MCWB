@@ -4,13 +4,15 @@ Integration test: Complete weather outlook conversation flow.
 This demonstrates the full user experience of the new outlook feature.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from unittest.mock import MagicMock, patch
-from weather_bot import WeatherBot
 import time
+from unittest.mock import MagicMock, patch
+
+from weather_bot import WeatherBot
 
 
 def integration_test():
@@ -26,20 +28,22 @@ def integration_test():
     print("Simulating a complete user conversation:")
     print("-" * 70)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # ===== Step 1: Initial weather request =====
         print("\n[User on #weather channel]: wx York UK")
         print()
 
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "York",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.9599,
-                "longitude": -1.0873
-            }]
+            "results": [
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                }
+            ]
         }
 
         weather_response = MagicMock()
@@ -64,9 +68,9 @@ def integration_test():
         for i, call in enumerate(calls, 1):
             msg_bytes = call[0][0]
             try:
-                text = msg_bytes[7:].decode('utf-8', 'ignore')
+                text = msg_bytes[7:].decode("utf-8", "ignore")
                 print(f"\n{i}. {text}")
-            except:
+            except Exception:
                 pass
 
         print()
@@ -82,7 +86,7 @@ def integration_test():
                 "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
                 "temperature_2m_max": [13.0, 14.5, 12.0],
                 "temperature_2m_min": [6.0, 8.5, 5.0],
-                "weather_code": [3, 61, 2]
+                "weather_code": [3, 61, 2],
             }
         }
 
@@ -96,9 +100,9 @@ def integration_test():
         if calls:
             msg_bytes = calls[0][0][0]
             try:
-                text = msg_bytes[7:].decode('utf-8', 'ignore')
+                text = msg_bytes[7:].decode("utf-8", "ignore")
                 print(f"\n{text}")
-            except:
+            except Exception:
                 pass
 
         print()
@@ -128,17 +132,14 @@ def test_character_limits():
     bot = WeatherBot(debug=False)
 
     # Test with long city name
-    location_data = {
-        "name": "Birmingham",
-        "country_code": "GB"
-    }
+    location_data = {"name": "Birmingham", "country_code": "GB"}
 
     outlook_data = {
         "daily": {
             "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
             "temperature_2m_max": [15.0, 16.5, 14.0],
             "temperature_2m_min": [8.0, 9.5, 7.0],
-            "weather_code": [96, 99, 95]  # Longest condition names
+            "weather_code": [96, 99, 95],  # Longest condition names
         }
     }
 

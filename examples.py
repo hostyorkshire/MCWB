@@ -4,9 +4,10 @@ Example usage of MeshCore Weather Bot
 This script demonstrates how to use the weather bot programmatically
 """
 
-from weather_bot import WeatherBot
-from meshcore import MeshCoreMessage
 import time
+
+from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 
 def example_1_simple_query():
@@ -19,11 +20,7 @@ def example_1_simple_query():
     bot.start()
 
     # Simulate a weather request
-    message = MeshCoreMessage(
-        sender="user_node",
-        content="wx London",
-        message_type="text"
-    )
+    message = MeshCoreMessage(sender="user_node", content="wx London", message_type="text")
 
     print("\nSending: 'wx London'")
     print("-" * 40)
@@ -45,15 +42,11 @@ def example_2_multiple_locations():
     locations = ["London", "Manchester", "Edinburgh", "Cardiff"]
 
     for location in locations:
-        message = MeshCoreMessage(
-            sender="user_node",
-            content=f"wx {location}",
-            message_type="text"
-        )
+        message = MeshCoreMessage(sender="user_node", content=f"wx {location}", message_type="text")
 
         print(f"\n{'=' * 40}")
         print(f"Query: wx {location}")
-        print('=' * 40)
+        print("=" * 40)
         bot.handle_message(message)
         time.sleep(1)  # Small delay between requests
 
@@ -78,15 +71,11 @@ def example_3_command_variations():
     ]
 
     for command in commands:
-        message = MeshCoreMessage(
-            sender="user_node",
-            content=command,
-            message_type="text"
-        )
+        message = MeshCoreMessage(sender="user_node", content=command, message_type="text")
 
         print(f"\n{'=' * 40}")
         print(f"Command: '{command}'")
-        print('=' * 40)
+        print("=" * 40)
         bot.handle_message(message)
         time.sleep(1)
 
@@ -116,9 +105,7 @@ def example_4_custom_handler():
 
     # Simulate receiving a weather response
     response = MeshCoreMessage(
-        sender="weather_bot",
-        content="London, GB\nConditions: Partly cloudy\nTemp: 12°C",
-        message_type="text"
+        sender="weather_bot", content="London, GB\nConditions: Partly cloudy\nTemp: 12°C", message_type="text"
     )
 
     mesh.receive_message(response)
@@ -139,16 +126,12 @@ def example_5_error_handling():
     # Test with invalid commands
     invalid_commands = [
         "hello",  # Not a weather command
-        "wx",     # Missing location
+        "wx",  # Missing location
         "weather",  # Missing location
     ]
 
     for command in invalid_commands:
-        message = MeshCoreMessage(
-            sender="user_node",
-            content=command,
-            message_type="text"
-        )
+        message = MeshCoreMessage(sender="user_node", content=command, message_type="text")
 
         print(f"\nTesting: '{command}'")
         print("-" * 40)
@@ -189,6 +172,7 @@ def main():
     except Exception as e:
         print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 

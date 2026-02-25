@@ -4,13 +4,15 @@ Test to verify that garbled LoRa data is NOT logged with "LoRa RX:"
 This addresses the issue where corrupted data was showing up in logs.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import io
 from contextlib import redirect_stdout
 from unittest.mock import MagicMock
+
 from meshcore import MeshCore, MeshCoreMessage
 
 
@@ -27,9 +29,10 @@ def test_garbled_data_not_logged():
     mock_serial.is_open = True
 
     # Simulate the exact problematic data from the issue
-    garbled_data = '7v7^Aȟn%\'qx/~(:+v&lt;_̼f}#DFjH.9R"c6Kc bfO39.s,[jn[rH_Zb&gt;SF)=7.d&gt;D8'
+    garbled_data = "7v7^Aȟn%'qx/~(:+v&lt;_̼f}#DFjH.9R\"c6Kc bfO39.s,[jn[rH_Zb&gt;SF)=7.d&gt;D8"
     # After HTML unescaping, this becomes:
     import html
+
     garbled_data_unescaped = html.unescape(garbled_data)
 
     # Create a valid message for comparison
@@ -37,8 +40,8 @@ def test_garbled_data_not_logged():
     valid_json = valid_msg.to_json()
 
     test_lines = [
-        (garbled_data.encode("utf-8") + b'\n'),  # Garbled data
-        (valid_json.encode("utf-8") + b'\n'),    # Valid JSON
+        (garbled_data.encode("utf-8") + b"\n"),  # Garbled data
+        (valid_json.encode("utf-8") + b"\n"),  # Valid JSON
     ]
 
     def readline_side_effect():
@@ -64,20 +67,20 @@ def test_garbled_data_not_logged():
 
     # The garbled data (either escaped or unescaped) should NOT appear in "LoRa RX:" logs
     garbled_in_lora_rx = False
-    for line in output.split('\n'):
-        if 'LoRa RX:' in line and (garbled_data in line or garbled_data_unescaped in line):
+    for line in output.split("\n"):
+        if "LoRa RX:" in line and (garbled_data in line or garbled_data_unescaped in line):
             garbled_in_lora_rx = True
             break
 
     # The valid JSON should appear in "LoRa RX:" logs
     valid_in_lora_rx = False
-    for line in output.split('\n'):
-        if 'LoRa RX:' in line and 'valid content' in line:
+    for line in output.split("\n"):
+        if "LoRa RX:" in line and "valid content" in line:
             valid_in_lora_rx = True
             break
 
     # The message should now be silently skipped (no "Ignoring" message)
-    ignoring_message_present = 'Ignoring non-JSON LoRa data' in output
+    ignoring_message_present = "Ignoring non-JSON LoRa data" in output
 
     print("\n" + "=" * 60)
     print("RESULTS:")
@@ -119,11 +122,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

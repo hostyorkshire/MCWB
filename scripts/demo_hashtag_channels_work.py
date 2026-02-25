@@ -9,12 +9,14 @@ This script proves that the bot accepts and responds to wx commands from:
 Run this to confirm: python3 demo_hashtag_channels_work.py
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
 from io import BytesIO
+
 from weather_bot import WeatherBot
 
 # Binary protocol frame codes
@@ -34,7 +36,7 @@ class MockSerial:
         return self.buffer.read(size)
 
     def readline(self):
-        return b''
+        return b""
 
     def write(self, data):
         self.sent_frames.append(data)
@@ -48,8 +50,8 @@ class MockSerial:
         chan_idx = bytes([channel_idx])
         path_len = bytes([2])
         txt_type = bytes([0])
-        timestamp = int(time.time()).to_bytes(4, 'little')
-        message = f"{sender}: {text}".encode('utf-8')
+        timestamp = int(time.time()).to_bytes(4, "little")
+        message = f"{sender}: {text}".encode("utf-8")
 
         payload = code + chan_idx + path_len + txt_type + timestamp + message
         length = len(payload) - 1
@@ -110,14 +112,21 @@ def test_hashtag_channels():
 
             # Construct V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) +
             #                      path_len(1) + txt_type(1) + timestamp(4) + text
-            payload = bytes([
-                code,           # 0x11
-                50,             # SNR (dummy value)
-                0, 0,           # reserved
-                chan_idx,       # channel_idx
-                path_len,       # path_len
-                txt_type,       # txt_type
-            ]) + timestamp.to_bytes(4, 'little') + message_text.encode('utf-8')
+            payload = (
+                bytes(
+                    [
+                        code,  # 0x11
+                        50,  # SNR (dummy value)
+                        0,
+                        0,  # reserved
+                        chan_idx,  # channel_idx
+                        path_len,  # path_len
+                        txt_type,  # txt_type
+                    ]
+                )
+                + timestamp.to_bytes(4, "little")
+                + message_text.encode("utf-8")
+            )
 
             bot._dispatch(payload)
 
@@ -133,7 +142,9 @@ def test_hashtag_channels():
                         if response_channel == channel_idx:
                             print(f"  ✅ Response sent to same channel_idx={channel_idx}")
                         else:
-                            print(f"  ❌ Response sent to wrong channel_idx={response_channel} (expected {channel_idx})")
+                            print(
+                                f"  ❌ Response sent to wrong channel_idx={response_channel} (expected {channel_idx})"
+                            )
                             all_passed = False
             else:
                 print(f"  ❌ Bot did NOT respond")
@@ -173,5 +184,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error running demonstration: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

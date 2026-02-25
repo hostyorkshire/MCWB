@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -10,6 +11,7 @@ Tests that users can specify country in their weather command:
   - wx York USA
 """
 from unittest.mock import MagicMock, patch
+
 from weather_bot import WeatherBot
 
 
@@ -133,7 +135,7 @@ def test_weather_request_with_uk():
 
     bot = WeatherBot(debug=False, country=None)  # No default country
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # API returns multiple results; GB result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
@@ -196,7 +198,7 @@ def test_weather_request_with_usa():
 
     bot = WeatherBot(debug=False, country="GB")  # Default country is GB
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # API returns multiple results; US result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
@@ -275,7 +277,9 @@ def test_case_insensitive_parsing():
         if location == expected_loc and country == expected_country:
             print(f"✅ '{input_cmd}' -> location='{location}', country='{country}'")
         else:
-            print(f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country='{expected_country}', got location='{location}', country='{country}'")
+            print(
+                f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country='{expected_country}', got location='{location}', country='{country}'"
+            )
             all_passed = False
 
     print()
@@ -309,7 +313,9 @@ def test_iso_country_codes():
         if location == expected_loc and country == expected_country:
             print(f"✅ '{input_cmd}' -> location='{location}', country='{country}'")
         else:
-            print(f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country='{expected_country}', got location='{location}', country='{country}'")
+            print(
+                f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country='{expected_country}', got location='{location}', country='{country}'"
+            )
             all_passed = False
 
     print()
@@ -345,7 +351,9 @@ def test_edge_cases():
         if location == expected_loc and country == expected_country:
             print(f"✅ '{input_cmd}' -> location='{location}', country={country}")
         else:
-            print(f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country={expected_country}, got location='{location}', country={country}")
+            print(
+                f"❌ '{input_cmd}' -> Expected location='{expected_loc}', country={expected_country}, got location='{location}', country={country}"
+            )
             all_passed = False
 
     print()

@@ -3,8 +3,9 @@
 Test that the weather bot accepts messages from ALL channels (no filtering)
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from meshcore import MeshCore, MeshCoreMessage
@@ -37,11 +38,13 @@ def test_accepts_all_channels():
     original_send = bot.send_response
 
     def track_send(content, **kwargs):
-        processed_messages.append({
-            'content': content,
-            'reply_to_channel': kwargs.get('reply_to_channel'),
-            'reply_to_channel_idx': kwargs.get('reply_to_channel_idx')
-        })
+        processed_messages.append(
+            {
+                "content": content,
+                "reply_to_channel": kwargs.get("reply_to_channel"),
+                "reply_to_channel_idx": kwargs.get("reply_to_channel_idx"),
+            }
+        )
         original_send(content, **kwargs)
 
     bot.send_response = track_send
@@ -50,19 +53,17 @@ def test_accepts_all_channels():
     print("Test 1: Message on channel_idx 0 (default channel)")
     processed_messages.clear()
     msg_default = MeshCoreMessage(
-        sender="USER1",
-        content="wx Brighton",
-        message_type="text",
-        channel=None,
-        channel_idx=0
+        sender="USER1", content="wx Brighton", message_type="text", channel=None, channel_idx=0
     )
     bot.mesh.receive_message(msg_default)
 
     if len(processed_messages) > 0:
         print("✅ PASS: Message on channel_idx 0 was ACCEPTED")
         print(f"   Reply sent to channel_idx: {processed_messages[0]['reply_to_channel_idx']}")
-        if processed_messages[0]['reply_to_channel_idx'] != 0:
-            print(f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 0, got {processed_messages[0]['reply_to_channel_idx']}")
+        if processed_messages[0]["reply_to_channel_idx"] != 0:
+            print(
+                f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 0, got {processed_messages[0]['reply_to_channel_idx']}"
+            )
     else:
         print(f"❌ FAIL: Message on channel_idx 0 was REJECTED (should be accepted)")
         bot.stop()
@@ -72,20 +73,16 @@ def test_accepts_all_channels():
     # Test 2: Message on channel_idx 1 should be ACCEPTED
     print("Test 2: Message on channel_idx 1")
     processed_messages.clear()
-    msg_ch1 = MeshCoreMessage(
-        sender="USER2",
-        content="wx London",
-        message_type="text",
-        channel=None,
-        channel_idx=1
-    )
+    msg_ch1 = MeshCoreMessage(sender="USER2", content="wx London", message_type="text", channel=None, channel_idx=1)
     bot.mesh.receive_message(msg_ch1)
 
     if len(processed_messages) > 0:
         print("✅ PASS: Message on channel_idx 1 was ACCEPTED")
         print(f"   Reply sent to channel_idx: {processed_messages[0]['reply_to_channel_idx']}")
-        if processed_messages[0]['reply_to_channel_idx'] != 1:
-            print(f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 1, got {processed_messages[0]['reply_to_channel_idx']}")
+        if processed_messages[0]["reply_to_channel_idx"] != 1:
+            print(
+                f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 1, got {processed_messages[0]['reply_to_channel_idx']}"
+            )
     else:
         print(f"❌ FAIL: Message on channel_idx 1 was REJECTED (should be accepted)")
         bot.stop()
@@ -95,20 +92,16 @@ def test_accepts_all_channels():
     # Test 3: Message on channel_idx 2 should be ACCEPTED
     print("Test 3: Message on channel_idx 2")
     processed_messages.clear()
-    msg_ch2 = MeshCoreMessage(
-        sender="USER3",
-        content="wx Manchester",
-        message_type="text",
-        channel=None,
-        channel_idx=2
-    )
+    msg_ch2 = MeshCoreMessage(sender="USER3", content="wx Manchester", message_type="text", channel=None, channel_idx=2)
     bot.mesh.receive_message(msg_ch2)
 
     if len(processed_messages) > 0:
         print("✅ PASS: Message on channel_idx 2 was ACCEPTED")
         print(f"   Reply sent to channel_idx: {processed_messages[0]['reply_to_channel_idx']}")
-        if processed_messages[0]['reply_to_channel_idx'] != 2:
-            print(f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 2, got {processed_messages[0]['reply_to_channel_idx']}")
+        if processed_messages[0]["reply_to_channel_idx"] != 2:
+            print(
+                f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 2, got {processed_messages[0]['reply_to_channel_idx']}"
+            )
     else:
         print(f"❌ FAIL: Message on channel_idx 2 was REJECTED (should be accepted)")
         bot.stop()
@@ -118,20 +111,16 @@ def test_accepts_all_channels():
     # Test 4: Message on channel_idx 5 should be ACCEPTED
     print("Test 4: Message on channel_idx 5")
     processed_messages.clear()
-    msg_ch5 = MeshCoreMessage(
-        sender="USER4",
-        content="wx Leeds",
-        message_type="text",
-        channel=None,
-        channel_idx=5
-    )
+    msg_ch5 = MeshCoreMessage(sender="USER4", content="wx Leeds", message_type="text", channel=None, channel_idx=5)
     bot.mesh.receive_message(msg_ch5)
 
     if len(processed_messages) > 0:
         print("✅ PASS: Message on channel_idx 5 was ACCEPTED")
         print(f"   Reply sent to channel_idx: {processed_messages[0]['reply_to_channel_idx']}")
-        if processed_messages[0]['reply_to_channel_idx'] != 5:
-            print(f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 5, got {processed_messages[0]['reply_to_channel_idx']}")
+        if processed_messages[0]["reply_to_channel_idx"] != 5:
+            print(
+                f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 5, got {processed_messages[0]['reply_to_channel_idx']}"
+            )
     else:
         print(f"❌ FAIL: Message on channel_idx 5 was REJECTED (should be accepted)")
         bot.stop()
@@ -176,6 +165,7 @@ def main():
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

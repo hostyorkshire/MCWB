@@ -3,12 +3,15 @@
 Test script to verify that incoming channel messages are properly received and processed
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock
+
 from meshcore import MeshCore, MeshCoreMessage
+
 
 def test_message_reception():
     """Test that channel messages trigger the message handler"""
@@ -115,6 +118,7 @@ def test_message_reception():
     print()
 
     return True
+
 
 if __name__ == "__main__":
     success = test_message_reception()

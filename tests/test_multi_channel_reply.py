@@ -10,14 +10,16 @@ This test validates that the bot:
 This addresses the issue: "It's still only replying to LoRa TX channel msg (idx=0)"
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
 from io import BytesIO
-from weather_bot import WeatherBot
+
 from meshcore import _RESP_CHANNEL_MSG, _RESP_CHANNEL_MSG_V3
+from weather_bot import WeatherBot
 
 
 class MockSerial:
@@ -33,7 +35,7 @@ class MockSerial:
         return self.buffer.read(size)
 
     def readline(self):
-        return b''
+        return b""
 
     def write(self, data):
         self.sent_frames.append(data)
@@ -47,11 +49,11 @@ class MockSerial:
         chan_idx = bytes([channel_idx])
         path_len = bytes([2])
         txt_type = bytes([0])
-        timestamp = int(time.time()).to_bytes(4, 'little')
-        message = f"{sender}: {text}".encode('utf-8')
+        timestamp = int(time.time()).to_bytes(4, "little")
+        message = f"{sender}: {text}".encode("utf-8")
 
         payload = code + chan_idx + path_len + txt_type + timestamp + message
-        frame = bytes([0x3E]) + len(payload).to_bytes(2, 'little') + payload
+        frame = bytes([0x3E]) + len(payload).to_bytes(2, "little") + payload
 
         self.buffer = BytesIO(frame)
         self.in_waiting = len(frame)
@@ -65,11 +67,11 @@ class MockSerial:
         chan_idx = bytes([channel_idx])
         path_len = bytes([2])
         txt_type = bytes([0])
-        timestamp = int(time.time()).to_bytes(4, 'little')
-        message = f"{sender}: {text}".encode('utf-8')
+        timestamp = int(time.time()).to_bytes(4, "little")
+        message = f"{sender}: {text}".encode("utf-8")
 
         payload = code + snr + reserved + chan_idx + path_len + txt_type + timestamp + message
-        frame = bytes([0x3E]) + len(payload).to_bytes(2, 'little') + payload
+        frame = bytes([0x3E]) + len(payload).to_bytes(2, "little") + payload
 
         self.buffer = BytesIO(frame)
         self.in_waiting = len(frame)
@@ -78,28 +80,23 @@ class MockSerial:
 
 def setup_bot():
     """Create a weather bot with mocked serial and API"""
-    bot = WeatherBot(node_id='WX_BOT', debug=False, serial_port='/dev/mock', baud_rate=9600)
+    bot = WeatherBot(node_id="WX_BOT", debug=False, serial_port="/dev/mock", baud_rate=9600)
 
     # Replace serial with mock
     mock_serial = MockSerial()
     bot.mesh._serial = mock_serial
 
     # Mock weather API
-    bot.geocode_location = lambda loc: {
-        'name': 'London',
-        'country': 'GB',
-        'latitude': 51.5074,
-        'longitude': -0.1278
-    }
+    bot.geocode_location = lambda loc: {"name": "London", "country": "GB", "latitude": 51.5074, "longitude": -0.1278}
     bot.get_weather = lambda lat, lon: {
-        'current': {
-            'temperature_2m': 15.5,
-            'apparent_temperature': 14.2,
-            'relative_humidity_2m': 70,
-            'wind_speed_10m': 10.5,
-            'wind_direction_10m': 180,
-            'precipitation': 0.0,
-            'weather_code': 1
+        "current": {
+            "temperature_2m": 15.5,
+            "apparent_temperature": 14.2,
+            "relative_humidity_2m": 70,
+            "wind_speed_10m": 10.5,
+            "wind_direction_10m": 180,
+            "precipitation": 0.0,
+            "weather_code": 1,
         }
     }
 
@@ -116,9 +113,9 @@ def extract_reply_channel(sent_frames):
 
 def test_channel_msg_format():
     """Test with RESP_CHANNEL_MSG (older format without SNR)"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("TEST: RESP_CHANNEL_MSG Format (older format)")
-    print("="*70)
+    print("=" * 70)
 
     bot, mock_serial = setup_bot()
     results = []
@@ -128,13 +125,13 @@ def test_channel_msg_format():
         mock_serial.sent_frames = []
 
         # Inject incoming message
-        frame = mock_serial.inject_channel_msg(channel_idx, 'USER1', 'wx London')
+        frame = mock_serial.inject_channel_msg(channel_idx, "USER1", "wx London")
         bot.mesh._parse_binary_frame(frame[3:])
 
         # Check reply
         reply_idx = extract_reply_channel(mock_serial.sent_frames)
 
-        success = (reply_idx == channel_idx)
+        success = reply_idx == channel_idx
         results.append(success)
 
         status = "✅" if success else "❌"
@@ -145,9 +142,9 @@ def test_channel_msg_format():
 
 def test_channel_msg_v3_format():
     """Test with RESP_CHANNEL_MSG_V3 (newer format with SNR)"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("TEST: RESP_CHANNEL_MSG_V3 Format (newer format with SNR)")
-    print("="*70)
+    print("=" * 70)
 
     bot, mock_serial = setup_bot()
     results = []
@@ -157,13 +154,13 @@ def test_channel_msg_v3_format():
         mock_serial.sent_frames = []
 
         # Inject incoming message
-        frame = mock_serial.inject_channel_msg_v3(channel_idx, 'USER1', 'wx London')
+        frame = mock_serial.inject_channel_msg_v3(channel_idx, "USER1", "wx London")
         bot.mesh._parse_binary_frame(frame[3:])
 
         # Check reply
         reply_idx = extract_reply_channel(mock_serial.sent_frames)
 
-        success = (reply_idx == channel_idx)
+        success = reply_idx == channel_idx
         results.append(success)
 
         status = "✅" if success else "❌"
@@ -174,18 +171,18 @@ def test_channel_msg_v3_format():
 
 def test_mixed_channels():
     """Test that the bot handles multiple messages on different channels correctly"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("TEST: Mixed Channel Messages (simulating real mesh traffic)")
-    print("="*70)
+    print("=" * 70)
 
     bot, mock_serial = setup_bot()
 
     test_cases = [
-        (0, 'USER_A', 'wx London'),
-        (2, 'USER_B', 'wx Manchester'),
-        (1, 'USER_C', 'wx York'),
-        (3, 'USER_D', 'wx Leeds'),
-        (0, 'USER_E', 'wx Birmingham'),
+        (0, "USER_A", "wx London"),
+        (2, "USER_B", "wx Manchester"),
+        (1, "USER_C", "wx York"),
+        (3, "USER_D", "wx Leeds"),
+        (0, "USER_E", "wx Birmingham"),
     ]
 
     results = []
@@ -197,7 +194,7 @@ def test_mixed_channels():
         bot.mesh._parse_binary_frame(frame[3:])
 
         reply_idx = extract_reply_channel(mock_serial.sent_frames)
-        success = (reply_idx == channel_idx)
+        success = reply_idx == channel_idx
         results.append(success)
 
         status = "✅" if success else "❌"
@@ -209,9 +206,9 @@ def test_mixed_channels():
 def main():
     """Run all tests"""
     print("\n")
-    print("╔" + "="*68 + "╗")
-    print("║" + " "*15 + "Multi-Channel Reply Validation" + " "*23 + "║")
-    print("╚" + "="*68 + "╝")
+    print("╔" + "=" * 68 + "╗")
+    print("║" + " " * 15 + "Multi-Channel Reply Validation" + " " * 23 + "║")
+    print("╚" + "=" * 68 + "╝")
     print("\nValidating: Weather bot correctly replies on all channel_idx values")
     print("Issue: 'It's still only replying to LoRa TX channel msg (idx=0)'")
 
@@ -222,9 +219,9 @@ def main():
         test3 = test_mixed_channels()
 
         # Summary
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("SUMMARY")
-        print("="*70)
+        print("=" * 70)
 
         if test1 and test2 and test3:
             print("✅ ALL TESTS PASSED")
@@ -251,6 +248,7 @@ def main():
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

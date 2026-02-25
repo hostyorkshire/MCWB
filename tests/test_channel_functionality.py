@@ -4,8 +4,9 @@ Test script for MeshCore Channel functionality
 Tests channel broadcasting and filtering
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from meshcore import MeshCore, MeshCoreMessage
@@ -118,14 +119,14 @@ def test_channel_filtering():
     #   - Named 'news' message   → REJECTED
     received_messages.clear()
     mesh.set_channel_filter("weather")
-    mesh.receive_message(msg_ch0)     # no channel name → accepted
-    mesh.receive_message(msg_ch1)     # no channel name → accepted
-    mesh.receive_message(msg_ch2)     # no channel name → accepted
-    mesh.receive_message(msg_weather) # name 'weather' in filter → accepted
-    mesh.receive_message(msg_news)    # name 'news' not in filter → rejected
-    assert len(received_messages) == 4, (
-        f"Expected 4 (3 binary + 1 named-weather), got {len(received_messages)}: {received_messages}"
-    )
+    mesh.receive_message(msg_ch0)  # no channel name → accepted
+    mesh.receive_message(msg_ch1)  # no channel name → accepted
+    mesh.receive_message(msg_ch2)  # no channel name → accepted
+    mesh.receive_message(msg_weather)  # name 'weather' in filter → accepted
+    mesh.receive_message(msg_news)  # name 'news' not in filter → rejected
+    assert (
+        len(received_messages) == 4
+    ), f"Expected 4 (3 binary + 1 named-weather), got {len(received_messages)}: {received_messages}"
     assert "News msg" not in received_messages
     print("✓ 'weather' filter: binary messages accepted, 'weather' accepted, 'news' rejected")
 
@@ -246,11 +247,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -4,19 +4,20 @@ Test handling of newly added frame codes 0x80, 0x8a, and 0x90.
 This addresses the "Unhandled frame code" errors seen in the logs.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
-from unittest.mock import MagicMock, patch
 from io import StringIO
+from unittest.mock import MagicMock, patch
 
 # Import the WeatherBot class
 from weather_bot import WeatherBot
 
 
-def create_frame(code: int, data: bytes = b'') -> bytes:
+def create_frame(code: int, data: bytes = b"") -> bytes:
     """
     Helper function to create a MeshCore binary frame.
 
@@ -50,13 +51,15 @@ def test_push_base_0x80():
     # Capture log output
     log_output = []
     original_log = bot._log
+
     def capture_log(msg):
         log_output.append(msg)
         original_log(msg)
+
     bot._log = capture_log
 
     # Simulate receiving PUSH_BASE frame (0x80)
-    frame = create_frame(0x80, b'\x00' * 4)
+    frame = create_frame(0x80, b"\x00" * 4)
 
     # Extract payload from frame (skip 0x3E + 2-byte length)
     payload = frame[3:]
@@ -92,13 +95,15 @@ def test_push_no_more_msgs_0x8a():
     # Capture log output
     log_output = []
     original_log = bot._log
+
     def capture_log(msg):
         log_output.append(msg)
         original_log(msg)
+
     bot._log = capture_log
 
     # Simulate receiving PUSH_NO_MORE_MSGS frame (0x8a)
-    frame = create_frame(0x8a, b'\x00')
+    frame = create_frame(0x8A, b"\x00")
 
     # Extract payload from frame
     payload = frame[3:]
@@ -134,14 +139,16 @@ def test_push_contact_msg_v3_0x90():
     # Capture log output
     log_output = []
     original_log = bot._log
+
     def capture_log(msg):
         log_output.append(msg)
         original_log(msg)
+
     bot._log = capture_log
 
     # Simulate receiving PUSH_CONTACT_MSG_V3 frame (0x90)
     # This represents a direct contact message with SNR info
-    frame = create_frame(0x90, b'\x00' * 12 + b'Hello from contact')
+    frame = create_frame(0x90, b"\x00" * 12 + b"Hello from contact")
 
     # Extract payload from frame
     payload = frame[3:]
@@ -180,11 +187,7 @@ def test_all_new_codes_together():
     bot._serial = mock_serial
 
     # Test all three new frame codes
-    test_codes = [
-        (0x80, "PUSH_BASE"),
-        (0x8a, "PUSH_NO_MORE_MSGS"),
-        (0x90, "PUSH_CONTACT_MSG_V3")
-    ]
+    test_codes = [(0x80, "PUSH_BASE"), (0x8A, "PUSH_NO_MORE_MSGS"), (0x90, "PUSH_CONTACT_MSG_V3")]
 
     for code, name in test_codes:
         # Provide enough bytes for any validation checks
@@ -238,11 +241,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

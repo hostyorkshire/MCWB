@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -10,6 +11,7 @@ correctly handle ambiguous cases.
 
 import struct
 import time
+
 from weather_bot import WeatherBot
 
 
@@ -17,8 +19,8 @@ def create_message(code, byte1, byte2, byte3, byte4, text):
     """Create a test payload with specific byte values."""
     path_len = 0x00
     txt_type = 0x00
-    timestamp = struct.pack('<I', int(time.time()))
-    text_bytes = text.encode('utf-8')
+    timestamp = struct.pack("<I", int(time.time()))
+    text_bytes = text.encode("utf-8")
 
     return bytes([code, byte1, byte2, byte3, byte4, path_len, txt_type]) + timestamp + text_bytes
 
@@ -44,7 +46,7 @@ def test_edge_cases():
     payload = create_message(0x88, 49, 0x00, 0x00, 1, "Bob: weather Manchester")
     # Need to add extra bytes to make it look like V3 (text starts at position 11)
     # Insert 3 more bytes before text
-    payload = payload[:7] + struct.pack('<I', int(time.time())) + b"Bob: weather Manchester"
+    payload = payload[:7] + struct.pack("<I", int(time.time())) + b"Bob: weather Manchester"
     channel_idx, text = bot._parse_channel_message(payload)
     assert channel_idx == 1, f"Expected channel_idx=1 (V3 format), got {channel_idx}"
     print(f"✅ Correctly detected V3 format: SNR=49, channel_idx={channel_idx}")
@@ -63,7 +65,7 @@ def test_edge_cases():
     print("\n[Test 4] V3 format: SNR=55, channel_idx=3")
     payload = create_message(0x88, 55, 0x00, 0x00, 3, "Dave: WX Birmingham")
     # Need proper V3 format
-    payload = payload[:7] + struct.pack('<I', int(time.time())) + b"Dave: WX Birmingham"
+    payload = payload[:7] + struct.pack("<I", int(time.time())) + b"Dave: WX Birmingham"
     channel_idx, text = bot._parse_channel_message(payload)
     assert channel_idx == 3, f"Expected channel_idx=3 (V3 format), got {channel_idx}"
     print(f"✅ Correctly detected V3 format: SNR=55, channel_idx={channel_idx}")
@@ -73,7 +75,7 @@ def test_edge_cases():
     print("\n[Test 5] V3 format: byte1=10 (>7, must be SNR), channel_idx=1")
     payload = create_message(0x88, 10, 0x00, 0x00, 1, "Eve: weather Glasgow")
     # Need proper V3 format
-    payload = payload[:7] + struct.pack('<I', int(time.time())) + b"Eve: weather Glasgow"
+    payload = payload[:7] + struct.pack("<I", int(time.time())) + b"Eve: weather Glasgow"
     channel_idx, text = bot._parse_channel_message(payload)
     assert channel_idx == 1, f"Expected channel_idx=1 (V3 format), got {channel_idx}"
     print(f"✅ Correctly detected V3 format: byte1=10 (>7), channel_idx={channel_idx}")
@@ -82,7 +84,7 @@ def test_edge_cases():
     print("\n[Test 6] V3 format: byte1=8 (>7, must be SNR), channel_idx=0")
     payload = create_message(0x88, 8, 0x00, 0x00, 0, "Frank: WX Edinburgh")
     # Need proper V3 format
-    payload = payload[:7] + struct.pack('<I', int(time.time())) + b"Frank: WX Edinburgh"
+    payload = payload[:7] + struct.pack("<I", int(time.time())) + b"Frank: WX Edinburgh"
     channel_idx, text = bot._parse_channel_message(payload)
     assert channel_idx == 0, f"Expected channel_idx=0 (V3 format), got {channel_idx}"
     print(f"✅ Correctly detected V3 format: byte1=8 (>7), channel_idx={channel_idx}")
@@ -107,5 +109,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ UNEXPECTED ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         exit(1)

@@ -8,12 +8,14 @@ Verifies that the bot:
 4. Sends outlook when user responds with y/Y/yes/YES
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call, patch
+
 from weather_bot import WeatherBot
 
 
@@ -27,17 +29,19 @@ def test_outlook_prompt_after_weather():
     bot._ser = MagicMock()
     bot._ser.write = MagicMock()
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding response
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "London",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 51.5074,
-                "longitude": -0.1278
-            }]
+            "results": [
+                {
+                    "name": "London",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 51.5074,
+                    "longitude": -0.1278,
+                }
+            ]
         }
 
         # Mock weather response
@@ -104,16 +108,11 @@ def test_yes_response_sends_outlook():
         "country": None,
         "lat": 51.5074,
         "lon": -0.1278,
-        "location_data": {
-            "name": "London",
-            "country_code": "GB",
-            "latitude": 51.5074,
-            "longitude": -0.1278
-        },
-        "timestamp": time.time()
+        "location_data": {"name": "London", "country_code": "GB", "latitude": 51.5074, "longitude": -0.1278},
+        "timestamp": time.time(),
     }
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock outlook response
         outlook_response = MagicMock()
         outlook_response.json.return_value = {
@@ -121,7 +120,7 @@ def test_yes_response_sends_outlook():
                 "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
                 "temperature_2m_max": [15.0, 16.5, 14.0],
                 "temperature_2m_min": [8.0, 9.5, 7.0],
-                "weather_code": [2, 61, 3]
+                "weather_code": [2, 61, 3],
             }
         }
 
@@ -135,13 +134,8 @@ def test_yes_response_sends_outlook():
                 "country": None,
                 "lat": 51.5074,
                 "lon": -0.1278,
-                "location_data": {
-                    "name": "London",
-                    "country_code": "GB",
-                    "latitude": 51.5074,
-                    "longitude": -0.1278
-                },
-                "timestamp": time.time()
+                "location_data": {"name": "London", "country_code": "GB", "latitude": 51.5074, "longitude": -0.1278},
+                "timestamp": time.time(),
             }
 
             bot._ser.write.reset_mock()
@@ -187,7 +181,7 @@ def test_no_response_clears_state():
         "lat": 51.5074,
         "lon": -0.1278,
         "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     # Test 'n' response
@@ -206,7 +200,7 @@ def test_no_response_clears_state():
         "lat": 51.5074,
         "lon": -0.1278,
         "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
     bot._handle_channel_message("TestUser: maybe later", 1)
@@ -237,7 +231,7 @@ def test_timeout_cleanup():
         "lat": 51.5074,
         "lon": -0.1278,
         "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time() - 3  # 3 seconds ago (expired)
+        "timestamp": time.time() - 3,  # 3 seconds ago (expired)
     }
 
     print(f"  Added expired outlook request (3 seconds old, timeout={bot._outlook_timeout}s)")
@@ -258,7 +252,7 @@ def test_timeout_cleanup():
         "lat": 51.5074,
         "lon": -0.1278,
         "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time()  # Fresh
+        "timestamp": time.time(),  # Fresh
     }
 
     print(f"  Added fresh outlook request")
@@ -283,19 +277,14 @@ def test_outlook_format():
 
     bot = WeatherBot(debug=False)
 
-    location_data = {
-        "name": "York",
-        "country_code": "GB",
-        "latitude": 53.9599,
-        "longitude": -1.0873
-    }
+    location_data = {"name": "York", "country_code": "GB", "latitude": 53.9599, "longitude": -1.0873}
 
     outlook_data = {
         "daily": {
             "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
             "temperature_2m_max": [15.0, 16.5, 14.0],
             "temperature_2m_min": [8.0, 9.5, 7.0],
-            "weather_code": [2, 61, 3]
+            "weather_code": [2, 61, 3],
         }
     }
 
@@ -356,6 +345,7 @@ def main():
         except Exception as e:
             print(f"\n❌ Exception in {test.__name__}: {e}")
             import traceback
+
             traceback.print_exc()
             failed += 1
 

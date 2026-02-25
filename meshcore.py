@@ -4,44 +4,46 @@ MeshCore - Core library for mesh radio network communication
 This module provides the core functionality for communicating via MeshCore mesh radio network.
 """
 
-import json
-import time
-import threading
 import html
-from typing import Dict, Any, Optional, Callable
+import json
+import threading
+import time
+from typing import Any, Callable, Dict, Optional
+
 from logging_config import get_meshcore_logger
 
 # MeshCore companion radio binary protocol constants (USB/serial framing)
 # Reference: https://github.com/meshcore-dev/MeshCore/wiki/Companion-Radio-Protocol
-_FRAME_OUT = 0x3E       # '>' radio→app outbound frame start byte
-_FRAME_IN = 0x3C        # '<' app→radio inbound frame start byte
-_CMD_APP_START = 1      # Initialize companion radio session
-_CMD_GET_DEVICE_TIME = 5    # Request current device time (RTC)
+_FRAME_OUT = 0x3E  # '>' radio→app outbound frame start byte
+_FRAME_IN = 0x3C  # '<' app→radio inbound frame start byte
+_CMD_APP_START = 1  # Initialize companion radio session
+_CMD_GET_DEVICE_TIME = 5  # Request current device time (RTC)
 _CMD_SYNC_NEXT_MSG = 10  # Fetch next queued message
-_CMD_SEND_CHAN_MSG = 3   # Send a channel (flood) text message
-_RESP_CURR_TIME = 9         # Response: current device time (4-byte UNIX timestamp)
+_CMD_SEND_CHAN_MSG = 3  # Send a channel (flood) text message
+_RESP_CURR_TIME = 9  # Response: current device time (4-byte UNIX timestamp)
 _PUSH_SEND_CONFIRMED = 0x82  # Push: outgoing message ACK confirmed by mesh (ack_code 4B + round_trip 4B)
-_PUSH_MSG_WAITING = 0x83    # Push: a new message has been queued
-_PUSH_CHAN_MSG = 0x88        # Push: inline channel message delivery (0x80 | RESP_CHANNEL_MSG)
-_RESP_CONTACT_MSG = 7       # Response: direct (contact) message received
-_RESP_CHANNEL_MSG = 8       # Response: channel message received
-_RESP_NO_MORE_MSGS = 10     # Response: message queue is empty
-_RESP_CONTACT_MSG_V3 = 16   # V3 variant of contact message (includes SNR)
-_RESP_CHANNEL_MSG_V3 = 17   # V3 variant of channel message (includes SNR)
-_MAX_FRAME_SIZE = 300       # Maximum valid frame payload size in bytes
+_PUSH_MSG_WAITING = 0x83  # Push: a new message has been queued
+_PUSH_CHAN_MSG = 0x88  # Push: inline channel message delivery (0x80 | RESP_CHANNEL_MSG)
+_RESP_CONTACT_MSG = 7  # Response: direct (contact) message received
+_RESP_CHANNEL_MSG = 8  # Response: channel message received
+_RESP_NO_MORE_MSGS = 10  # Response: message queue is empty
+_RESP_CONTACT_MSG_V3 = 16  # V3 variant of contact message (includes SNR)
+_RESP_CHANNEL_MSG_V3 = 17  # V3 variant of channel message (includes SNR)
+_MAX_FRAME_SIZE = 300  # Maximum valid frame payload size in bytes
 
 # Channel message format constants
-_OLD_FORMAT_HEADER_SIZE = 8   # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_OLD_FORMAT_HEADER_SIZE = 8  # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
 # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
 _V3_FORMAT_HEADER_SIZE = 11
-_MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
-_MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
-_MAX_VALID_CHANNEL_IDX = 7    # Maximum valid channel index (0-7)
+_MIN_REALISTIC_SNR = 20  # Minimum typical SNR value for radio signals (dB)
+_MAX_REALISTIC_SNR = 60  # Maximum typical SNR value for radio signals (dB)
+_MAX_VALID_CHANNEL_IDX = 7  # Maximum valid channel index (0-7)
 
 try:
     import serial
     from serial import SerialException
     from serial.tools import list_ports
+
     SERIAL_AVAILABLE = True
 except ImportError:
     SERIAL_AVAILABLE = False
@@ -54,9 +56,15 @@ except ImportError:
 class MeshCoreMessage:
     """Represents a message in the MeshCore network"""
 
-    def __init__(self, sender: str, content: str, message_type: str = "text",
-                 timestamp: Optional[float] = None, channel: Optional[str] = None,
-                 channel_idx: Optional[int] = None):
+    def __init__(
+        self,
+        sender: str,
+        content: str,
+        message_type: str = "text",
+        timestamp: Optional[float] = None,
+        channel: Optional[str] = None,
+        channel_idx: Optional[int] = None,
+    ):
         self.sender = sender
         self.content = content
         self.message_type = message_type
@@ -66,12 +74,7 @@ class MeshCoreMessage:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary"""
-        data = {
-            "sender": self.sender,
-            "content": self.content,
-            "type": self.message_type,
-            "timestamp": self.timestamp
-        }
+        data = {"sender": self.sender, "content": self.content, "type": self.message_type, "timestamp": self.timestamp}
         if self.channel:
             data["channel"] = self.channel
         if self.channel_idx is not None:
@@ -83,7 +86,7 @@ class MeshCoreMessage:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'MeshCoreMessage':
+    def from_dict(cls, data: Dict[str, Any]) -> "MeshCoreMessage":
         """Create message from dictionary"""
         return cls(
             sender=data.get("sender", "unknown"),
@@ -91,19 +94,18 @@ class MeshCoreMessage:
             message_type=data.get("type", "text"),
             timestamp=data.get("timestamp"),
             channel=data.get("channel"),
-            channel_idx=data.get("channel_idx")
+            channel_idx=data.get("channel_idx"),
         )
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'MeshCoreMessage':
+    def from_json(cls, json_str: str) -> "MeshCoreMessage":
         """Create message from JSON string"""
         data = json.loads(json_str)
         return cls.from_dict(data)
 
 
 # Standard serial baud rates accepted for preflight validation
-VALID_BAUD_RATES = {110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200,
-                    38400, 57600, 115200, 128000, 256000}
+VALID_BAUD_RATES = {110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 128000, 256000}
 
 
 def normalize_channel_name(channel: Optional[str], warn: bool = True) -> Optional[str]:
@@ -128,7 +130,7 @@ def normalize_channel_name(channel: Optional[str], warn: bool = True) -> Optiona
     if channel is None:
         return None
 
-    if channel.startswith('#'):
+    if channel.startswith("#"):
         normalized = channel[1:]  # Remove the hash
         if warn:
             print(f"⚠ Warning: Channel name '{channel}' includes hash (#) prefix.")
@@ -168,7 +170,7 @@ def find_serial_ports(debug: bool = False) -> list:
             # - ttyACM* (Arduino, some ESP32 boards)
             # - ttyAMA* (Raspberry Pi UART)
             device = port.device
-            if any(pattern in device for pattern in ['ttyUSB', 'ttyACM', 'ttyAMA']):
+            if any(pattern in device for pattern in ["ttyUSB", "ttyACM", "ttyAMA"]):
                 available.append(device)
                 if debug:
                     desc = port.description or "Unknown"
@@ -187,8 +189,7 @@ def find_serial_ports(debug: bool = False) -> list:
 class MeshCore:
     """Main MeshCore communication handler"""
 
-    def __init__(self, node_id: str, debug: bool = False,
-                 serial_port: Optional[str] = None, baud_rate: int = 9600):
+    def __init__(self, node_id: str, debug: bool = False, serial_port: Optional[str] = None, baud_rate: int = 9600):
         """
         Initialize MeshCore
 
@@ -237,14 +238,11 @@ class MeshCore:
             return text
 
         # Remove control characters except newline, tab, carriage return
-        sanitized = ''.join(
-            char if (ord(char) >= 32 or char in '\n\t\r') else f'\\x{ord(char):02x}'
-            for char in text
-        )
+        sanitized = "".join(char if (ord(char) >= 32 or char in "\n\t\r") else f"\\x{ord(char):02x}" for char in text)
 
         # Limit length to prevent log spam
         if len(sanitized) > self._MAX_LOG_LENGTH:
-            sanitized = sanitized[:self._MAX_LOG_LENGTH] + f"... ({len(sanitized) - self._MAX_LOG_LENGTH} more chars)"
+            sanitized = sanitized[: self._MAX_LOG_LENGTH] + f"... ({len(sanitized) - self._MAX_LOG_LENGTH} more chars)"
 
         return sanitized
 
@@ -351,8 +349,9 @@ class MeshCore:
         self.message_handlers[message_type] = handler
         self.log(f"Registered handler for message type: {message_type}")
 
-    def send_message(self, content: str, message_type: str = "text", channel: Optional[str] = None,
-                     channel_idx: Optional[int] = None) -> MeshCoreMessage:
+    def send_message(
+        self, content: str, message_type: str = "text", channel: Optional[str] = None, channel_idx: Optional[int] = None
+    ) -> MeshCoreMessage:
         """
         Send a message via MeshCore network
 
@@ -368,11 +367,7 @@ class MeshCore:
             MeshCoreMessage object
         """
         message = MeshCoreMessage(
-            sender=self.node_id,
-            content=content,
-            message_type=message_type,
-            channel=channel,
-            channel_idx=channel_idx
+            sender=self.node_id, content=content, message_type=message_type, channel=channel, channel_idx=channel_idx
         )
 
         # Determine which channel_idx to use:
@@ -437,8 +432,7 @@ class MeshCore:
             # For those messages (message.channel is None) we accept unconditionally
             # and rely on the radio hardware to enforce channel membership.
             if message.channel is not None and message.channel not in self.channel_filter:
-                self.log(f"Ignoring message: channel '{message.channel}' "
-                         f"not in filter {self.channel_filter}")
+                self.log(f"Ignoring message: channel '{message.channel}' " f"not in filter {self.channel_filter}")
                 return
 
         # Check if we have a handler for this message type
@@ -455,10 +449,7 @@ class MeshCore:
             return
         # Preflight: reject baud rates that are not in the known-valid set
         if self.baud_rate not in VALID_BAUD_RATES:
-            self.log(
-                f"Invalid baud rate {self.baud_rate}. "
-                f"Valid rates: {sorted(VALID_BAUD_RATES)}"
-            )
+            self.log(f"Invalid baud rate {self.baud_rate}. " f"Valid rates: {sorted(VALID_BAUD_RATES)}")
             return
 
         # Check if specified port exists, and auto-detect if not
@@ -466,8 +457,11 @@ class MeshCore:
         try:
             # Try the specified port first
             self._serial = serial.Serial(
-                port_to_use, self.baud_rate, timeout=1,
-                rtscts=False, dsrdtr=False,
+                port_to_use,
+                self.baud_rate,
+                timeout=1,
+                rtscts=False,
+                dsrdtr=False,
             )
             # Deassert RTS and DTR to prevent unintended resets on ESP32/Arduino
             # LoRa devices that use these lines as a reset trigger.
@@ -504,8 +498,11 @@ class MeshCore:
                     try:
                         self.log(f"Trying to connect to {candidate_port}...")
                         self._serial = serial.Serial(
-                            candidate_port, self.baud_rate, timeout=1,
-                            rtscts=False, dsrdtr=False,
+                            candidate_port,
+                            self.baud_rate,
+                            timeout=1,
+                            rtscts=False,
+                            dsrdtr=False,
                         )
                         self._serial.rts = False
                         self._serial.dtr = False
@@ -529,9 +526,7 @@ class MeshCore:
 
     def _start_listener(self):
         """Start background thread to listen for incoming LoRa messages"""
-        self._listener_thread = threading.Thread(
-            target=self._listen_loop, daemon=True, name="lora-listener"
-        )
+        self._listener_thread = threading.Thread(target=self._listen_loop, daemon=True, name="lora-listener")
         self._listener_thread.start()
         self.log("LoRa listener thread started")
         # Now that the listener thread is running, drain any messages that
@@ -613,7 +608,7 @@ class MeshCore:
                         if length == 0 or length > _MAX_FRAME_SIZE:
                             self.log(f"Binary frame length {length} out of range, skipping")
                             continue
-                        payload = raw[3: 3 + length]
+                        payload = raw[3 : 3 + length]
                         if not payload:
                             continue
                         self._parse_binary_frame(payload)
@@ -724,8 +719,12 @@ class MeshCore:
             # This handles V3 messages with low SNR values (0-7) that could be confused with
             # old format channel_idx. The reserved bytes being 0x00 is a strong V3 indicator.
             # However, exclude SNR=0 as it's unrealistic (signals need some SNR to be received)
-            elif (reserved1 == 0x00 and reserved2 == 0x00
-                  and snr_value > 0 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX):
+            elif (
+                reserved1 == 0x00
+                and reserved2 == 0x00
+                and snr_value > 0
+                and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX
+            ):
                 use_v3_format = True
 
             # If any heuristic matched, parse as V3 format
@@ -773,7 +772,7 @@ class MeshCore:
         # First, try to decode as UTF-8 to check for valid encoding
         # Encrypted/garbled data often has invalid UTF-8 sequences
         try:
-            decoded = data.decode('utf-8', errors='strict')
+            decoded = data.decode("utf-8", errors="strict")
         except UnicodeDecodeError:
             # If it can't be decoded as valid UTF-8, it's likely encrypted/garbled
             return False
@@ -948,7 +947,7 @@ class MeshCore:
         colon = text.find(": ")
         if colon > 0:
             sender = text[:colon]
-            content = text[colon + 2:]
+            content = text[colon + 2 :]
         else:
             sender = "channel"
             content = text
@@ -962,8 +961,9 @@ class MeshCore:
 
         channel_info = f" on channel '{channel_name}'" if channel_name else f" on channel_idx {channel_idx}"
         self.log(f"LoRa RX channel msg from {safe_sender}{channel_info}: {safe_content}")
-        msg = MeshCoreMessage(sender=sender, content=content, message_type="text",
-                              channel=channel_name, channel_idx=channel_idx)
+        msg = MeshCoreMessage(
+            sender=sender, content=content, message_type="text", channel=channel_name, channel_idx=channel_idx
+        )
 
         self.receive_message(msg)
 
@@ -995,21 +995,22 @@ class MeshCore:
     def _cleanup_expired_channels(self):
         """
         Remove channels that haven't been used in the last 72 hours.
-        
+
         This prevents the active channels list from growing indefinitely with
         stale channels that are no longer in use.
         """
         import time
+
         current_time = time.time()
         expiry_seconds = self._channel_expiry_hours * 3600
-        
+
         # Find expired channels
         expired = [
-            channel_idx 
+            channel_idx
             for channel_idx, last_used in self._active_channels.items()
             if current_time - last_used > expiry_seconds
         ]
-        
+
         # Remove expired channels
         for channel_idx in expired:
             del self._active_channels[channel_idx]
@@ -1021,7 +1022,7 @@ class MeshCore:
     def get_active_channels(self):
         """
         Get list of active channels with their names.
-        
+
         Automatically removes channels that haven't been used in 72 hours.
 
         Returns:
@@ -1031,15 +1032,17 @@ class MeshCore:
         """
         # Clean up expired channels before returning
         self._cleanup_expired_channels()
-        
+
         channels = []
         for channel_idx in sorted(self._active_channels.keys()):
             channel_name = self._get_channel_name(channel_idx)
-            channels.append({
-                'channel_idx': channel_idx,
-                'channel_name': channel_name,
-                'last_used': self._active_channels[channel_idx]
-            })
+            channels.append(
+                {
+                    "channel_idx": channel_idx,
+                    "channel_name": channel_name,
+                    "last_used": self._active_channels[channel_idx],
+                }
+            )
         return channels
 
     def save_active_channels(self, filename: str = None):
@@ -1059,14 +1062,11 @@ class MeshCore:
             filename = str(Path(__file__).parent / "logs" / "channels.json")
 
         channels = self.get_active_channels()
-        data = {
-            "channels": channels,
-            "last_updated": datetime.now().isoformat()
-        }
+        data = {"channels": channels, "last_updated": datetime.now().isoformat()}
 
         try:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 json.dump(data, f, indent=2)
             if self.debug:
                 self.log(f"Saved {len(channels)} active channel(s) to {filename}")

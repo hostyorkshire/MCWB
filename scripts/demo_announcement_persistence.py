@@ -4,11 +4,13 @@ Manual demonstration of announcement persistence feature.
 Shows that bot won't announce on restart if it announced recently.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
+
 from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_TIMESTAMP_FILE
 
 

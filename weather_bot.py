@@ -6,21 +6,21 @@ Responds to: WX [location] or weather [location]
 Uses the free Open-Meteo API (no API key required).
 """
 
-import sys
-import re
-import time
-import threading
 import argparse
 import os
+import re
+import sys
+import threading
+import time
 from pathlib import Path
 
-from meshcore import MeshCore, MeshCoreMessage
 from logging_config import get_weather_bot_logger, log_startup_info
+from meshcore import MeshCore, MeshCoreMessage
 from stats_tracker import StatsTracker
 
 try:
     import requests
-    from requests.exceptions import ConnectionError, Timeout, RequestException
+    from requests.exceptions import ConnectionError, RequestException, Timeout
 except ImportError:
     print("Error: requests not found. Install with: pip install requests")
     sys.exit(1)
@@ -36,31 +36,31 @@ except ImportError:
 # MeshCore companion radio binary protocol constants
 # Reference: https://github.com/meshcore-dev/MeshCore/wiki/Companion-Radio-Protocol
 # ---------------------------------------------------------------------------
-_FRAME_OUT = 0x3E           # '>' radio→app frame start byte
-_FRAME_IN = 0x3C            # '<' app→radio frame start byte
-_CMD_APP_START = 0x01       # Initialise companion radio session
+_FRAME_OUT = 0x3E  # '>' radio→app frame start byte
+_FRAME_IN = 0x3C  # '<' app→radio frame start byte
+_CMD_APP_START = 0x01  # Initialise companion radio session
 _CMD_GET_DEVICE_TIME = 0x05  # Radio requests current device time; app must respond
-_CMD_SYNC_NEXT_MSG = 0x0A   # Request next queued message
-_CMD_SEND_CHAN_MSG = 0x03    # Send a channel (flood) text message
-_RESP_CURR_TIME = 0x09      # Response: current time (4-byte UNIX timestamp LE)
-_RESP_CHANNEL_MSG = 0x08    # Channel message received
+_CMD_SYNC_NEXT_MSG = 0x0A  # Request next queued message
+_CMD_SEND_CHAN_MSG = 0x03  # Send a channel (flood) text message
+_RESP_CURR_TIME = 0x09  # Response: current time (4-byte UNIX timestamp LE)
+_RESP_CHANNEL_MSG = 0x08  # Channel message received
 _RESP_CHANNEL_MSG_V3 = 0x11  # Channel message received (V3, includes SNR)
 _RESP_CONTACT_MSG_V3 = 0x10  # Direct (contact) message received (V3, includes SNR)
-_PUSH_BASE = 0x80           # Push: base flag for push notifications (bit 7 set)
+_PUSH_BASE = 0x80  # Push: base flag for push notifications (bit 7 set)
 _PUSH_SEND_CONFIRMED = 0x82  # Push: outgoing message ACK'd by mesh
-_PUSH_MSG_WAITING = 0x83    # Push: new message queued
-_PUSH_CHAN_MSG = 0x88        # Push: inline channel message (0x80 | RESP_CHANNEL_MSG)
-_PUSH_NO_MORE_MSGS = 0x8A   # Push: no more messages (0x80 | CMD_SYNC_NEXT_MSG)
+_PUSH_MSG_WAITING = 0x83  # Push: new message queued
+_PUSH_CHAN_MSG = 0x88  # Push: inline channel message (0x80 | RESP_CHANNEL_MSG)
+_PUSH_NO_MORE_MSGS = 0x8A  # Push: no more messages (0x80 | CMD_SYNC_NEXT_MSG)
 _PUSH_CONTACT_MSG_V3 = 0x90  # Push: inline contact message V3 (0x80 | RESP_CONTACT_MSG_V3)
-_RESP_NO_MORE_MSGS = 0x0A   # No more messages in queue (same value as CMD_SYNC_NEXT_MSG)
+_RESP_NO_MORE_MSGS = 0x0A  # No more messages in queue (same value as CMD_SYNC_NEXT_MSG)
 
 # Channel message format constants
-_OLD_FORMAT_HEADER_SIZE = 8   # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
+_OLD_FORMAT_HEADER_SIZE = 8  # code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
 # code(1) + SNR(1) + reserved(2) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4)
 _V3_FORMAT_HEADER_SIZE = 11
-_MIN_REALISTIC_SNR = 20       # Minimum typical SNR value for radio signals (dB)
-_MAX_REALISTIC_SNR = 60       # Maximum typical SNR value for radio signals (dB)
-_MAX_VALID_CHANNEL_IDX = 7    # Maximum valid channel index (0-7)
+_MIN_REALISTIC_SNR = 20  # Minimum typical SNR value for radio signals (dB)
+_MAX_REALISTIC_SNR = 60  # Maximum typical SNR value for radio signals (dB)
+_MAX_VALID_CHANNEL_IDX = 7  # Maximum valid channel index (0-7)
 
 # Default sender name for messages without "SenderName: " prefix
 # Matches meshcore.py's behavior in _dispatch_channel_message
@@ -69,22 +69,39 @@ _DEFAULT_SENDER = "channel"
 # WMO weather interpretation codes
 WEATHER_CODES = {
     0: "Clear sky",
-    1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-    45: "Fog", 48: "Rime fog",
-    51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
-    56: "Light freezing drizzle", 57: "Dense freezing drizzle",
-    61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
-    66: "Light freezing rain", 67: "Heavy freezing rain",
-    71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    56: "Light freezing drizzle",
+    57: "Dense freezing drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    66: "Light freezing rain",
+    67: "Heavy freezing rain",
+    71: "Slight snow",
+    73: "Moderate snow",
+    75: "Heavy snow",
     77: "Snow grains",
-    80: "Slight showers", 81: "Moderate showers", 82: "Violent showers",
-    85: "Slight snow showers", 86: "Heavy snow showers",
+    80: "Slight showers",
+    81: "Moderate showers",
+    82: "Violent showers",
+    85: "Slight snow showers",
+    86: "Heavy snow showers",
     95: "Thunderstorm",
-    96: "Thunderstorm w/ slight hail", 99: "Thunderstorm w/ heavy hail",
+    96: "Thunderstorm w/ slight hail",
+    99: "Thunderstorm w/ heavy hail",
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
-ANNOUNCE_MESSAGE = "Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? https://mcwb.netlify.app"
+ANNOUNCE_MESSAGE = (
+    "Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? https://mcwb.netlify.app"
+)
 # Use absolute path for timestamp file to ensure it works regardless of working directory
 ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
 
@@ -92,10 +109,22 @@ ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
 class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
-    def __init__(self, port=None, baud=115200, debug=False, announce=False,
-                 allowed_channel_idx=None, node_id=None, announce_channel=None,
-                 weather_channel_idx=None, country=None, channel=None,
-                 serial_port=None, baud_rate=None, verify_channels=False):
+    def __init__(
+        self,
+        port=None,
+        baud=115200,
+        debug=False,
+        announce=False,
+        allowed_channel_idx=None,
+        node_id=None,
+        announce_channel=None,
+        weather_channel_idx=None,
+        country=None,
+        channel=None,
+        serial_port=None,
+        baud_rate=None,
+        verify_channels=False,
+    ):
         # serial_port and baud_rate are aliases for port and baud
         self.port = serial_port or port
         self.baud = baud_rate or baud
@@ -133,8 +162,7 @@ class WeatherBot:
         self._pending_outlook = {}
         self._outlook_timeout = 300  # 5 minutes timeout for outlook requests
         # MeshCore integration for public message-handling API
-        self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug,
-                             serial_port=self.port, baud_rate=self.baud)
+        self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug, serial_port=self.port, baud_rate=self.baud)
         # Register this bot as the text message handler so that binary-protocol
         # frames dispatched by meshcore._parse_binary_frame reach handle_message.
         self.mesh.register_handler("text", self.handle_message)
@@ -160,14 +188,11 @@ class WeatherBot:
             return text
 
         # Remove control characters except newline, tab, carriage return
-        sanitized = ''.join(
-            char if (ord(char) >= 32 or char in '\n\t\r') else f'\\x{ord(char):02x}'
-            for char in text
-        )
+        sanitized = "".join(char if (ord(char) >= 32 or char in "\n\t\r") else f"\\x{ord(char):02x}" for char in text)
 
         # Limit length to prevent log spam
         if len(sanitized) > self._MAX_LOG_LENGTH:
-            sanitized = sanitized[:self._MAX_LOG_LENGTH] + f"... ({len(sanitized) - self._MAX_LOG_LENGTH} more chars)"
+            sanitized = sanitized[: self._MAX_LOG_LENGTH] + f"... ({len(sanitized) - self._MAX_LOG_LENGTH} more chars)"
 
         return sanitized
 
@@ -187,8 +212,7 @@ class WeatherBot:
         """Stop the MeshCore listener (mesh-level only)."""
         self.mesh.stop()
 
-    def send_response(self, content: str, reply_to_channel: str = None,
-                      reply_to_channel_idx: int = None):
+    def send_response(self, content: str, reply_to_channel: str = None, reply_to_channel_idx: int = None):
         """
         Send a weather response via the MeshCore mesh.
 
@@ -199,8 +223,7 @@ class WeatherBot:
         is sent without a channel identifier.
         """
         if reply_to_channel_idx is not None:
-            self.mesh.send_message(content, "text", reply_to_channel,
-                                   reply_to_channel_idx)
+            self.mesh.send_message(content, "text", reply_to_channel, reply_to_channel_idx)
         elif self.channels:
             for ch in self.channels:
                 self.mesh.send_message(content, "text", ch)
@@ -216,7 +239,8 @@ class WeatherBot:
         port = self.port
         if not port:
             candidates = [
-                p.device for p in list_ports.comports()
+                p.device
+                for p in list_ports.comports()
                 if any(x in p.device for x in ("ttyUSB", "ttyACM", "ttyAMA", "COM"))
             ]
             if not candidates:
@@ -230,8 +254,7 @@ class WeatherBot:
             self.logger.info(msg)
 
         try:
-            self._ser = serial.Serial(port, self.baud, timeout=1,
-                                      rtscts=False, dsrdtr=False)
+            self._ser = serial.Serial(port, self.baud, timeout=1, rtscts=False, dsrdtr=False)
             self._ser.rts = False
             self._ser.dtr = False
             # CMD_APP_START payload: code(1) + app_ver(1) + reserved(6 spaces) + app_name("MCWB")
@@ -293,7 +316,7 @@ class WeatherBot:
         if not text:
             return False
         # Count printable characters (space to ~, plus common whitespace)
-        printable = sum(1 for c in text if 32 <= ord(c) <= 126 or c in '\n\t\r')
+        printable = sum(1 for c in text if 32 <= ord(c) <= 126 or c in "\n\t\r")
         # Require at least 70% printable - simpler than strict validation
         return (printable / len(text)) >= 0.70
 
@@ -351,8 +374,12 @@ class WeatherBot:
             # This handles V3 messages with low SNR values (0-7) that could be confused with
             # old format channel_idx. The reserved bytes being 0x00 is a strong V3 indicator.
             # However, exclude SNR=0 as it's unrealistic (signals need some SNR to be received)
-            elif (reserved1 == 0x00 and reserved2 == 0x00
-                  and snr_value > 0 and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX):
+            elif (
+                reserved1 == 0x00
+                and reserved2 == 0x00
+                and snr_value > 0
+                and 0 <= v3_channel_idx <= _MAX_VALID_CHANNEL_IDX
+            ):
                 use_v3_format = True
 
             # If any heuristic matched, parse as V3 format
@@ -483,7 +510,7 @@ class WeatherBot:
         colon = text.find(": ")
         if colon > 0:
             sender = text[:colon]
-            content = text[colon + 2:]
+            content = text[colon + 2 :]
         else:
             # No "SenderName: " prefix found - treat as message from channel
             # This matches meshcore.py's behavior in _dispatch_channel_message
@@ -491,7 +518,8 @@ class WeatherBot:
             content = text
             safe_sender_for_log = self._sanitize_for_log(sender)
             self._log(
-                f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{safe_sender_for_log}'")
+                f"channel_idx={channel_idx} message without SenderName: prefix, using sender='{safe_sender_for_log}'"
+            )
 
         # Sanitize content for logging to prevent terminal corruption
         safe_sender = self._sanitize_for_log(sender)
@@ -576,7 +604,7 @@ class WeatherBot:
                     "lat": lat,
                     "lon": lon,
                     "location_data": r,
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
                 }
 
                 # Add delay to allow first message to be transmitted before sending prompt
@@ -619,12 +647,12 @@ class WeatherBot:
 
         # Country code mappings (common variations that map to ISO codes)
         country_mappings = {
-            'uk': 'GB',
-            'gb': 'GB',
-            'usa': 'US',
-            'us': 'US',
-            'united kingdom': 'GB',
-            'united states': 'US',
+            "uk": "GB",
+            "gb": "GB",
+            "usa": "US",
+            "us": "US",
+            "united kingdom": "GB",
+            "united states": "US",
         }
 
         # Try to extract country from end of location string
@@ -636,20 +664,20 @@ class WeatherBot:
             potential_country = words[-1].lower()
 
             # Check if there's a comma in the last few words (indicates comma-separated format)
-            last_few_words = ' '.join(words[-3:]) if len(words) >= 3 else ' '.join(words)
-            if ',' in last_few_words:
+            last_few_words = " ".join(words[-3:]) if len(words) >= 3 else " ".join(words)
+            if "," in last_few_words:
                 # Comma-separated format like "York, UK" - don't extract country
                 return location_str, None
 
             # Map common country names to ISO codes, or use as-is if already valid
             if potential_country in country_mappings:
                 country = country_mappings[potential_country]
-                location = ' '.join(words[:-1])
+                location = " ".join(words[:-1])
                 return location, country
             elif len(potential_country) == 2:
                 # Assume it's an ISO-3166-1 alpha-2 country code (2 letters)
                 country = potential_country.upper()
-                location = ' '.join(words[:-1])
+                location = " ".join(words[:-1])
                 return location, country
 
         return location_str, None
@@ -658,13 +686,14 @@ class WeatherBot:
     def _is_yes_response(text: str) -> bool:
         """Check if the text is a yes response (y, Y, YES, yes)."""
         text = text.strip().lower()
-        return text in ['y', 'yes']
+        return text in ["y", "yes"]
 
     def _cleanup_expired_outlook_requests(self):
         """Remove outlook requests that have exceeded the timeout."""
         current_time = time.time()
         expired_keys = [
-            key for key, state in self._pending_outlook.items()
+            key
+            for key, state in self._pending_outlook.items()
             if current_time - state["timestamp"] > self._outlook_timeout
         ]
         for key in expired_keys:
@@ -728,8 +757,7 @@ class WeatherBot:
             # Reply on the exact channel slot the query arrived on (when known),
             # or broadcast to all configured channels.  Using send_response
             # keeps the routing logic in one place.
-            self.send_response(response, reply_to_channel=msg.channel,
-                               reply_to_channel_idx=msg.channel_idx)
+            self.send_response(response, reply_to_channel=msg.channel, reply_to_channel_idx=msg.channel_idx)
 
     def send_announcement(self):
         """Send the periodic announcement message to the configured announce channel."""
@@ -741,7 +769,7 @@ class WeatherBot:
         """Read the last announcement timestamp from file. Returns 0 if file doesn't exist."""
         try:
             if ANNOUNCE_TIMESTAMP_FILE.exists():
-                with open(ANNOUNCE_TIMESTAMP_FILE, 'r') as f:
+                with open(ANNOUNCE_TIMESTAMP_FILE, "r") as f:
                     return float(f.read().strip())
         except (IOError, ValueError) as e:
             self._log(f"Could not read last announce time: {e}")
@@ -752,7 +780,7 @@ class WeatherBot:
         try:
             # Ensure logs directory exists
             ANNOUNCE_TIMESTAMP_FILE.parent.mkdir(parents=True, exist_ok=True)
-            with open(ANNOUNCE_TIMESTAMP_FILE, 'w') as f:
+            with open(ANNOUNCE_TIMESTAMP_FILE, "w") as f:
                 f.write(str(timestamp))
                 f.flush()  # Explicitly flush to ensure data is written
                 os.fsync(f.fileno())  # Force write to disk
@@ -819,10 +847,7 @@ class WeatherBot:
             params={
                 "latitude": lat,
                 "longitude": lon,
-                "daily": (
-                    "temperature_2m_max,temperature_2m_min,"
-                    "weather_code"
-                ),
+                "daily": ("temperature_2m_max,temperature_2m_min," "weather_code"),
                 "timezone": "auto",
                 "forecast_days": 3,
             },
@@ -852,13 +877,27 @@ class WeatherBot:
 
             # Use shorter weather descriptions
             condition_map = {
-                0: "Clear", 1: "Clear", 2: "Cloudy", 3: "Overcast",
-                45: "Fog", 48: "Fog",
-                51: "Drizzle", 53: "Drizzle", 55: "Drizzle",
-                61: "Rain", 63: "Rain", 65: "Rain",
-                71: "Snow", 73: "Snow", 75: "Snow",
-                80: "Showers", 81: "Showers", 82: "Showers",
-                95: "Storm", 96: "Storm+hail", 99: "Storm+hail",
+                0: "Clear",
+                1: "Clear",
+                2: "Cloudy",
+                3: "Overcast",
+                45: "Fog",
+                48: "Fog",
+                51: "Drizzle",
+                53: "Drizzle",
+                55: "Drizzle",
+                61: "Rain",
+                63: "Rain",
+                65: "Rain",
+                71: "Snow",
+                73: "Snow",
+                75: "Snow",
+                80: "Showers",
+                81: "Showers",
+                82: "Showers",
+                95: "Storm",
+                96: "Storm+hail",
+                99: "Storm+hail",
             }
             # Fallback chain: short map -> full WEATHER_CODES -> "C{code}" format
             condition = condition_map.get(wcode, WEATHER_CODES.get(wcode, f"C{wcode}"))
@@ -925,8 +964,7 @@ class WeatherBot:
             return
 
         self._running = True
-        listener = threading.Thread(target=self._listen_loop, daemon=True,
-                                    name="mcwb-listener")
+        listener = threading.Thread(target=self._listen_loop, daemon=True, name="mcwb-listener")
         listener.start()
 
         # Drain any messages queued while the bot was offline
@@ -1006,9 +1044,9 @@ class WeatherBot:
 
     def _print_channel_diagnostic(self):
         """Print diagnostic summary of channel encryption status."""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("📡 CHANNEL VERIFICATION REPORT")
-        print("="*70)
+        print("=" * 70)
 
         if self._valid_channels:
             print("\n✅ Channels with successfully decrypted messages:")
@@ -1037,41 +1075,46 @@ class WeatherBot:
             print("\n📭 No messages received during this session.")
             print("   This is just a diagnostic tool. Try sending messages to test.")
 
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="MCWBv2 – MeshCore Weather Bot for the #weather channel"
+    parser = argparse.ArgumentParser(description="MCWBv2 – MeshCore Weather Bot for the #weather channel")
+    parser.add_argument("-p", "--port", help="Serial port (e.g. /dev/ttyUSB0). Auto-detects if omitted.")
+    parser.add_argument("-b", "--baud", type=int, default=115200, help="Baud rate (default: 115200)")
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
+    parser.add_argument("-a", "--announce", action="store_true", help="Send periodic announcements every 3 hours")
+    parser.add_argument(
+        "--channel",
+        help="Comma-separated list of MeshCore hashtag channel names to listen "
+        "and respond on (e.g. 'weather' or 'weather,alerts'). "
+        "Binary-protocol frames without a channel name are always accepted. "
+        "When omitted the bot responds on any channel.",
     )
-    parser.add_argument("-p", "--port",
-                        help="Serial port (e.g. /dev/ttyUSB0). Auto-detects if omitted.")
-    parser.add_argument("-b", "--baud", type=int, default=115200,
-                        help="Baud rate (default: 115200)")
-    parser.add_argument("-d", "--debug", action="store_true",
-                        help="Enable debug output")
-    parser.add_argument("-a", "--announce", action="store_true",
-                        help="Send periodic announcements every 3 hours")
-    parser.add_argument("--channel",
-                        help="Comma-separated list of MeshCore hashtag channel names to listen "
-                             "and respond on (e.g. 'weather' or 'weather,alerts'). "
-                             "Binary-protocol frames without a channel name are always accepted. "
-                             "When omitted the bot responds on any channel.")
-    parser.add_argument("-c", "--channel-idx", type=int,
-                        help="Only respond to messages from this channel index (e.g., 1 for #weather)")
-    parser.add_argument("-w", "--weather-channel-idx", type=int,
-                        help="Specify which channel index to use for announcements. "
-                             "Bot will still respond to messages from ANY channel "
-                             "unless --channel-idx is also specified.")
-    parser.add_argument("--country",
-                        help="Default country code for geocoding (e.g., GB, US, FR). "
-                             "Filters location searches to prefer cities in this country.")
-    parser.add_argument("--verify-channels", action="store_true",
-                        help="Enable channel verification mode. Shows diagnostic info about which "
-                             "channels are properly configured with decryption keys. Useful for "
-                             "troubleshooting when the radio receives encrypted messages it cannot decrypt.")
-    parser.add_argument("-l", "--location",
-                        help="Look up weather for LOCATION and exit (no radio needed)")
+    parser.add_argument(
+        "-c", "--channel-idx", type=int, help="Only respond to messages from this channel index (e.g., 1 for #weather)"
+    )
+    parser.add_argument(
+        "-w",
+        "--weather-channel-idx",
+        type=int,
+        help="Specify which channel index to use for announcements. "
+        "Bot will still respond to messages from ANY channel "
+        "unless --channel-idx is also specified.",
+    )
+    parser.add_argument(
+        "--country",
+        help="Default country code for geocoding (e.g., GB, US, FR). "
+        "Filters location searches to prefer cities in this country.",
+    )
+    parser.add_argument(
+        "--verify-channels",
+        action="store_true",
+        help="Enable channel verification mode. Shows diagnostic info about which "
+        "channels are properly configured with decryption keys. Useful for "
+        "troubleshooting when the radio receives encrypted messages it cannot decrypt.",
+    )
+    parser.add_argument("-l", "--location", help="Look up weather for LOCATION and exit (no radio needed)")
     args = parser.parse_args()
 
     # --weather-channel-idx controls announcement channel only
@@ -1080,13 +1123,17 @@ def main():
     weather_idx = args.weather_channel_idx
     allowed_idx = args.channel_idx  # Only filter if explicitly set via --channel-idx
 
-    bot = WeatherBot(port=args.port, baud=args.baud,
-                     debug=args.debug, announce=args.announce,
-                     allowed_channel_idx=allowed_idx,
-                     weather_channel_idx=weather_idx,
-                     country=args.country,
-                     channel=args.channel,
-                     verify_channels=args.verify_channels)
+    bot = WeatherBot(
+        port=args.port,
+        baud=args.baud,
+        debug=args.debug,
+        announce=args.announce,
+        allowed_channel_idx=allowed_idx,
+        weather_channel_idx=weather_idx,
+        country=args.country,
+        channel=args.channel,
+        verify_channels=args.verify_channels,
+    )
 
     if args.location:
         print(bot._get_weather(args.location))

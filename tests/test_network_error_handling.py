@@ -4,12 +4,15 @@ Test network error handling in weather bot.
 Verifies that network errors return user-friendly messages.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import requests
+
 from weather_bot import WeatherBot
 
 
@@ -22,7 +25,7 @@ def test_connection_error_handling():
     bot = WeatherBot(debug=False)
 
     # Test ConnectionError in geocode_location
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.ConnectionError(
             "HTTPSConnectionPool(host='api.open-meteo.com', port=443): Max retries exceeded"
         )
@@ -34,7 +37,7 @@ def test_connection_error_handling():
         print(f"✓ ConnectionError returns user-friendly message")
 
     # Test Timeout in geocode_location
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.Timeout("Request timed out")
 
         result = bot._get_weather("Manchester")
@@ -43,7 +46,7 @@ def test_connection_error_handling():
         print(f"✓ Timeout returns user-friendly message")
 
     # Test RequestException (general network error)
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.RequestException("Network error")
 
         result = bot._get_weather("Birmingham")
@@ -52,7 +55,7 @@ def test_connection_error_handling():
         print(f"✓ RequestException returns user-friendly message")
 
     # Test that other exceptions still get logged properly
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = ValueError("Some other error")
 
         result = bot._get_weather("Leeds")
@@ -74,7 +77,7 @@ def test_network_error_after_geocoding():
     bot = WeatherBot(debug=False)
 
     # Mock successful geocoding but failed weather fetch
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # First call (geocoding) succeeds
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
@@ -82,10 +85,7 @@ def test_network_error_after_geocoding():
         }
 
         # Second call (weather) fails
-        mock_get.side_effect = [
-            geocoding_response,
-            requests.exceptions.ConnectionError("Network error")
-        ]
+        mock_get.side_effect = [geocoding_response, requests.exceptions.ConnectionError("Network error")]
 
         result = bot._get_weather("York")
         expected_msg = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
@@ -118,6 +118,7 @@ def main():
     except Exception as e:
         print(f"Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

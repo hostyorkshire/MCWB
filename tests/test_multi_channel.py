@@ -6,13 +6,15 @@ Tests the feature requested in the problem statement:
 but would like it to run on weather channel in meshcore"
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock
-from weather_bot import WeatherBot
+
 from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 
 def test_single_channel():
@@ -92,7 +94,11 @@ def test_multiple_channels_with_spaces():
     bot = WeatherBot(node_id="test_bot", debug=False, channel="weather, alerts, emergency")
 
     # Verify channels are parsed correctly (spaces should be stripped)
-    assert bot.channels == ["weather", "alerts", "emergency"], f"Expected ['weather', 'alerts', 'emergency'], got {bot.channels}"
+    assert bot.channels == [
+        "weather",
+        "alerts",
+        "emergency",
+    ], f"Expected ['weather', 'alerts', 'emergency'], got {bot.channels}"
     print("✓ Bot correctly parses channels with spaces: 'weather, alerts, emergency'")
 
     # Mock the mesh send_message to capture calls
@@ -193,19 +199,10 @@ def test_problem_statement_scenario():
     bot.mesh.send_message = mock_send
 
     # Simulate a weather request
-    msg = MeshCoreMessage(
-        sender="user",
-        content="wx London",
-        message_type="text"
-    )
+    msg = MeshCoreMessage(sender="user", content="wx London", message_type="text")
 
     # Mock the weather API calls
-    bot.geocode_location = lambda loc: {
-        "name": "London",
-        "country": "GB",
-        "latitude": 51.5074,
-        "longitude": -0.1278
-    }
+    bot.geocode_location = lambda loc: {"name": "London", "country": "GB", "latitude": 51.5074, "longitude": -0.1278}
 
     bot.get_weather = lambda lat, lon: {
         "current": {
@@ -215,7 +212,7 @@ def test_problem_statement_scenario():
             "wind_speed_10m": 10.5,
             "wind_direction_10m": 180,
             "precipitation": 0.0,
-            "weather_code": 1
+            "weather_code": 1,
         }
     }
 
@@ -278,11 +275,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

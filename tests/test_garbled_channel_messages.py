@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -13,6 +14,7 @@ were showing corrupted terminal output.
 import struct
 import time
 from unittest.mock import MagicMock
+
 from weather_bot import WeatherBot
 
 
@@ -23,7 +25,7 @@ def create_channel_message(channel_idx, text_bytes, code=0x88):
     """
     path_len = 0x00
     txt_type = 0x00
-    timestamp = struct.pack('<I', int(time.time()))
+    timestamp = struct.pack("<I", int(time.time()))
 
     payload = bytes([code, channel_idx, path_len, txt_type]) + timestamp + text_bytes
     return payload
@@ -42,14 +44,14 @@ def test_garbled_messages_filtered():
     sent_responses = []
 
     def mock_send_channel_msg(text, channel_idx):
-        sent_responses.append({'text': text, 'channel_idx': channel_idx})
+        sent_responses.append({"text": text, "channel_idx": channel_idx})
 
     bot._send_channel_msg = mock_send_channel_msg
 
     print("\n--- Test 1: Garbled message from channel_idx=0 (like in user's log) ---")
     # Simulate encrypted/garbled data that might come from channel 0
     # This represents encrypted data with invalid UTF-8 to ensure it's rejected
-    garbled_bytes_1 = b'\x67\x46\x3a\x44\x25\x3f\x3b\xff\xfe\x63\x4d\x43'  # Invalid UTF-8
+    garbled_bytes_1 = b"\x67\x46\x3a\x44\x25\x3f\x3b\xff\xfe\x63\x4d\x43"  # Invalid UTF-8
     payload1 = create_channel_message(0, garbled_bytes_1)
 
     sent_responses.clear()
@@ -60,7 +62,7 @@ def test_garbled_messages_filtered():
 
     print("\n--- Test 2: Garbled message from channel_idx=1 ---")
     # Another garbled message
-    garbled_bytes_2 = b'\x00\x01\x02\x03\x7c\x79\xff\xfe\xfd'  # Mix of invalid UTF-8
+    garbled_bytes_2 = b"\x00\x01\x02\x03\x7c\x79\xff\xfe\xfd"  # Mix of invalid UTF-8
     payload2 = create_channel_message(1, garbled_bytes_2)
 
     sent_responses.clear()
@@ -170,5 +172,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         exit(1)

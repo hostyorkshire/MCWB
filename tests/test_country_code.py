@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
 Simple test to verify country code shortening works correctly
 """
 from unittest.mock import MagicMock, patch
+
 from weather_bot import WeatherBot
 
 
@@ -18,17 +20,19 @@ def test_country_code_shortening():
 
     bot = WeatherBot(debug=False)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding response with both country and country_code
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "London",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 51.5074,
-                "longitude": -0.1278
-            }]
+            "results": [
+                {
+                    "name": "London",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 51.5074,
+                    "longitude": -0.1278,
+                }
+            ]
         }
 
         # Mock weather response
@@ -41,7 +45,7 @@ def test_country_code_shortening():
                 "wind_speed_10m": 18.0,
                 "wind_direction_10m": 230,
                 "precipitation": 0.0,
-                "weather_code": 2
+                "weather_code": 2,
             }
         }
 
@@ -85,16 +89,11 @@ def test_fallback_to_full_name():
 
     bot = WeatherBot(debug=False)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding response WITHOUT country_code
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Paris",
-                "country": "France",
-                "latitude": 48.8566,
-                "longitude": 2.3522
-            }]
+            "results": [{"name": "Paris", "country": "France", "latitude": 48.8566, "longitude": 2.3522}]
         }
 
         # Mock weather response
@@ -107,7 +106,7 @@ def test_fallback_to_full_name():
                 "wind_speed_10m": 12.0,
                 "wind_direction_10m": 180,
                 "precipitation": 0.0,
-                "weather_code": 1
+                "weather_code": 1,
             }
         }
 

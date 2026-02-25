@@ -3,12 +3,14 @@
 Test announcement persistence to prevent duplicate announcements on restart
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
-from weather_bot import WeatherBot, ANNOUNCE_INTERVAL, ANNOUNCE_TIMESTAMP_FILE
+
+from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_TIMESTAMP_FILE, WeatherBot
 
 
 def should_announce_on_startup(bot, last_announce_time):
@@ -70,8 +72,7 @@ def test_no_announcement_on_recent_restart():
 
     # Simulate a recent announcement (1 hour ago)
     recent_time = time.time() - (1 * 60 * 60)  # 1 hour ago
-    bot = WeatherBot(node_id="test_bot", debug=False, announce=True,
-                     weather_channel_idx=1)
+    bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(recent_time)
     print(f"  Simulated last announcement: 1 hour ago")
 
@@ -107,8 +108,7 @@ def test_announcement_on_old_restart():
 
     # Simulate an old announcement (4 hours ago)
     old_time = time.time() - (4 * 60 * 60)  # 4 hours ago
-    bot = WeatherBot(node_id="test_bot", debug=False, announce=True,
-                     weather_channel_idx=1)
+    bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(old_time)
     print(f"  Simulated last announcement: 4 hours ago")
 
@@ -142,8 +142,7 @@ def test_announcement_on_first_start():
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
 
-    bot = WeatherBot(node_id="test_bot", debug=False, announce=True,
-                     weather_channel_idx=1)
+    bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     print(f"  No previous announcement file exists")
 
     # Check if announcement should be made using helper
@@ -185,5 +184,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n✗ Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

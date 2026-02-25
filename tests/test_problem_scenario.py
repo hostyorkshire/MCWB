@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -16,6 +17,7 @@ This test verifies that the fix resolves the issue where:
 import struct
 import time
 from unittest.mock import MagicMock
+
 from weather_bot import WeatherBot
 
 
@@ -25,11 +27,11 @@ def create_realistic_v3_message(channel_idx, snr, sender, message):
     the real MeshCore firmware sends.
     """
     code = 0x88  # PUSH_CHAN_MSG
-    reserved = b'\x00\x00'
+    reserved = b"\x00\x00"
     path_len = 0x00
     txt_type = 0x00
-    timestamp = struct.pack('<I', int(time.time()))
-    text = f"{sender}: {message}".encode('utf-8')
+    timestamp = struct.pack("<I", int(time.time()))
+    text = f"{sender}: {message}".encode("utf-8")
 
     # V3 format: code + SNR + reserved(2) + channel_idx + path_len + txt_type + timestamp + text
     payload = bytes([code, snr]) + reserved + bytes([channel_idx, path_len, txt_type]) + timestamp + text
@@ -61,7 +63,7 @@ def test_problem_statement_scenario():
     sent_responses = []
 
     def mock_send_channel_msg(text, channel_idx):
-        sent_responses.append({'text': text, 'channel_idx': channel_idx})
+        sent_responses.append({"text": text, "channel_idx": channel_idx})
         print(f"[BOT RESPONSE] Sent on channel_idx={channel_idx}: {text[:50]}...")
 
     bot._send_channel_msg = mock_send_channel_msg
@@ -75,12 +77,7 @@ def test_problem_statement_scenario():
 
     # This simulates what was happening in the problem statement
     # SNR=51, actual channel_idx=1
-    payload1 = create_realistic_v3_message(
-        channel_idx=1,
-        snr=51,
-        sender="Alice",
-        message="WX Leeds"
-    )
+    payload1 = create_realistic_v3_message(channel_idx=1, snr=51, sender="Alice", message="WX Leeds")
 
     print(f"\nPayload bytes: {payload1[:12].hex()}")
     print(f"  Byte [1] (SNR): {payload1[1]} (was being read as channel_idx BEFORE fix)")
@@ -91,7 +88,9 @@ def test_problem_statement_scenario():
 
     # Verify the bot responded
     assert len(sent_responses) == 1, f"Expected bot to send 1 response, got {len(sent_responses)}"
-    assert sent_responses[0]['channel_idx'] == 1, f"Bot should respond on channel_idx=1, got {sent_responses[0]['channel_idx']}"
+    assert (
+        sent_responses[0]["channel_idx"] == 1
+    ), f"Bot should respond on channel_idx=1, got {sent_responses[0]['channel_idx']}"
     print(f"\n✅ SUCCESS: Bot correctly parsed channel_idx=1 (not 51)")
     print(f"✅ SUCCESS: Bot recognized 'WX Leeds' command and responded")
     print(f"✅ SUCCESS: Response sent on correct channel_idx=1")
@@ -103,12 +102,7 @@ def test_problem_statement_scenario():
     print("            Radio firmware sends V3 format with SNR=49")
 
     # SNR=49, actual channel_idx=2
-    payload2 = create_realistic_v3_message(
-        channel_idx=2,
-        snr=49,
-        sender="Bob",
-        message="weather Manchester"
-    )
+    payload2 = create_realistic_v3_message(channel_idx=2, snr=49, sender="Bob", message="weather Manchester")
 
     print(f"\nPayload bytes: {payload2[:12].hex()}")
     print(f"  Byte [1] (SNR): {payload2[1]} (was being read as channel_idx BEFORE fix)")
@@ -119,7 +113,9 @@ def test_problem_statement_scenario():
 
     # Verify the bot responded
     assert len(sent_responses) == 1, f"Expected bot to send 1 response, got {len(sent_responses)}"
-    assert sent_responses[0]['channel_idx'] == 2, f"Bot should respond on channel_idx=2, got {sent_responses[0]['channel_idx']}"
+    assert (
+        sent_responses[0]["channel_idx"] == 2
+    ), f"Bot should respond on channel_idx=2, got {sent_responses[0]['channel_idx']}"
     print(f"\n✅ SUCCESS: Bot correctly parsed channel_idx=2 (not 49)")
     print(f"✅ SUCCESS: Bot recognized 'weather Manchester' command and responded")
     print(f"✅ SUCCESS: Response sent on correct channel_idx=2")
@@ -151,7 +147,7 @@ def test_all_valid_channels():
     sent_responses = []
 
     def mock_send_channel_msg(text, channel_idx):
-        sent_responses.append({'channel_idx': channel_idx})
+        sent_responses.append({"channel_idx": channel_idx})
 
     bot._send_channel_msg = mock_send_channel_msg
 
@@ -173,7 +169,7 @@ def test_all_valid_channels():
         payload = create_realistic_v3_message(channel_idx, snr, sender, message)
         bot._dispatch(payload)
 
-        if len(sent_responses) == 1 and sent_responses[0]['channel_idx'] == channel_idx:
+        if len(sent_responses) == 1 and sent_responses[0]["channel_idx"] == channel_idx:
             success_count += 1
             print(f"✅ channel_idx={channel_idx}, SNR={snr}: PASSED")
         else:
