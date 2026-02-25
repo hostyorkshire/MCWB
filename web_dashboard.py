@@ -26,7 +26,7 @@ except ImportError:
     print("    pip install flask>=2.3.2 flask-cors>=4.0.0")
     print()
     print("=" * 70)
-    sys.exit(1)
+    sys.exit(78)  # EX_CONFIG (78) - Configuration error, don't retry
 
 from datetime import datetime
 from stats_tracker import StatsTracker
