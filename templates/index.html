@@ -773,6 +773,9 @@
         let currentLog = 'bot';
         let autoRefreshInterval;
 
+        // Configuration constants
+        const MAX_LOG_SIZE_BYTES = 10 * 1024 * 1024; // 10MB - maximum expected log file size
+
         // Theme management
         function initTheme() {
             // Check for saved theme preference or default to 'dark'
@@ -900,10 +903,9 @@
                     const size = info.exists ? formatBytes(info.size) : 'N/A';
                     const modified = info.modified || 'Never';
                     
-                    // Calculate percentage for gauge (max size: 10MB for logs)
-                    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+                    // Calculate percentage for gauge (based on MAX_LOG_SIZE_BYTES)
                     const sizeBytes = info.size || 0;
-                    const percentage = Math.min((sizeBytes / maxSize) * 100, 100);
+                    const percentage = Math.min((sizeBytes / MAX_LOG_SIZE_BYTES) * 100, 100);
                     
                     // Create content container
                     const contentDiv = document.createElement('div');

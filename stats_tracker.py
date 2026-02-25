@@ -13,6 +13,9 @@ from datetime import datetime, timedelta
 class StatsTracker:
     """Track and persist usage statistics for the weather bot"""
 
+    # Maximum number of recent users to track
+    MAX_RECENT_USERS = 50
+
     def __init__(self, stats_file="logs/stats.json"):
         self.stats_file = stats_file
         self.lock = threading.Lock()
@@ -86,8 +89,8 @@ class StatsTracker:
                 # Add to beginning of list
                 self.stats["recent_users"].insert(0, user_entry)
                 
-                # Keep only last 50 users (we'll return top 10)
-                self.stats["recent_users"] = self.stats["recent_users"][:50]
+                # Keep only last MAX_RECENT_USERS users
+                self.stats["recent_users"] = self.stats["recent_users"][:self.MAX_RECENT_USERS]
 
             self.stats["last_updated"] = now.isoformat()
             self._save_stats()
