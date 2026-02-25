@@ -8,6 +8,7 @@ Uses the free Open-Meteo API (no API key required).
 
 import argparse
 import os
+import random
 import re
 import sys
 import threading
@@ -104,6 +105,12 @@ ANNOUNCE_MESSAGE = (
 )
 # Use absolute path for timestamp file to ensure it works regardless of working directory
 ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
+
+WEATHER_EMOJIS = [
+    "☀️", "🌤️", "⛅", "🌥️", "☁️", "🌦️", "🌧️", "⛈️", "🌩️", "🌨️",
+    "❄️", "🌪️", "🌫️", "🌈", "💨", "🌬️", "🌡️", "💧", "⛄", "☔",
+    "🌊", "🌙", "⭐", "🌟", "🌂",
+]
 
 
 class WeatherBot:
@@ -561,8 +568,11 @@ class WeatherBot:
                     del self._pending_outlook[state_key]
                     return
                 else:
-                    # User said no or something else, clear pending state
+                    # User said no or something else, clear pending state and acknowledge
                     del self._pending_outlook[state_key]
+                    emoji = random.choice(WEATHER_EMOJIS)
+                    ok_msg = f"OK. Find out more about me and my commands at https://mcwb.netlify.app {emoji}"
+                    self._send_channel_msg(ok_msg, channel_idx)
                     return
 
         location, country = self._parse_command(content)
