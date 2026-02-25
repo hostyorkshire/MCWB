@@ -2,7 +2,8 @@
 
 // Hardcoded API URL for automatic connection
 // This is the primary dashboard API that the static site will connect to
-const HARDCODED_API_URL = 'http://192.168.1.109:5000';
+// Using HTTPS for secure connection from Netlify (HTTPS) to Raspberry Pi (HTTPS)
+const HARDCODED_API_URL = 'https://192.168.1.109:5000';
 
 let autoRefreshEnabled = true;
 let refreshInterval = null;
