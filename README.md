@@ -42,6 +42,12 @@ MCWB listens for weather queries and responds using the free [Open-Meteo](https:
 - `wx York USA` → York, USA
 - No more confusion with ambiguous city names!
 
+**✨ NEW: UK Postcode Support** - Get weather by entering a UK postcode:
+- `wx S1 2HH` → Sheffield city centre
+- `weather S71` → Barnsley area
+- `wx SW1A 1AA` → London (Buckingham Palace area)
+- Works with both full and partial postcodes!
+
 ## Usage
 
 **Send weather commands on ANY channel you've created!** Examples:
@@ -65,6 +71,23 @@ In YOUR custom channel (whatever name you chose):
 ```
 wx [your location]
 ```
+
+### Using UK Postcodes
+
+You can now get weather by entering a UK postcode instead of a city name:
+
+```
+wx S1 2HH        # Full postcode - Sheffield city centre
+weather S71      # Partial postcode (outward code) - Barnsley area
+wx SW1A 1AA      # London (Buckingham Palace area)
+WX M1 1AE        # Manchester city centre
+```
+
+**Supported postcode formats:**
+- **Full postcodes**: `S1 2HH`, `SW1A 1AA`, `M1 1AE` (with or without space)
+- **Partial postcodes** (outward code): `S71`, `S1`, `SW1A`, `LS1`
+
+The bot automatically detects UK postcodes and uses the free [Postcodes.io](https://postcodes.io) API to geocode them.
 
 ### Specifying Country in Your Query
 
@@ -495,6 +518,7 @@ sudo systemctl start weather_bot
 
 ### Location not found
 - Use the full city name, or add country/region: `wx York, UK`.
+- **For UK locations**: Try using a postcode instead: `wx S1 2HH` or `wx S71`
 
 ### Wrong city returned (city in another country)
 Some city names exist in multiple countries (e.g., "York" in UK, USA; "Paris" in France, USA).
@@ -521,9 +545,14 @@ By default, the bot returns the first match from the geocoding API.
    This filters location searches to prefer cities in the specified country while still
    allowing users to override by specifying a different country in their query (e.g., `wx York USA`).
 
+**For UK users:** You can now use postcodes directly! See the [Using UK Postcodes](#using-uk-postcodes) section above.
+
 ## API
 
 Weather data is from the free [Open-Meteo API](https://open-meteo.com/) –
+no account or API key required.
+
+UK postcode geocoding is provided by the free [Postcodes.io API](https://postcodes.io) –
 no account or API key required.
 
 ## License
