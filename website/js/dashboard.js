@@ -218,7 +218,14 @@ async function updateDashboard() {
         // Update active channels display with real channel data
         const activeChannelsEl = document.getElementById('activeChannels');
         if (channels.channels && channels.channels.length > 0) {
-            activeChannelsEl.textContent = channels.channels.join(', ');
+            // Format channels with timestamps if available
+            const channelText = channels.channels.map(ch => {
+                if (typeof ch === 'object' && ch.name) {
+                    return ch.last_used ? `${ch.name} (${ch.last_used})` : ch.name;
+                }
+                return ch; // Backward compatibility with string format
+            }).join(', ');
+            activeChannelsEl.textContent = channelText;
         } else {
             activeChannelsEl.textContent = 'No channels detected';
         }

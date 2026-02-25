@@ -189,21 +189,40 @@ def api_channels():
     
     try:
         import json
+        from datetime import datetime
         with open(channels_file, 'r') as f:
             data = json.load(f)
             # Format channel names with # prefix for display
             formatted_channels = []
             for ch in data.get("channels", []):
                 channel_name = ch.get("channel_name")
+                last_used = ch.get("last_used")
+                
+                # Format display name
                 if channel_name:
                     # Add # prefix for display (e.g., "weather" -> "#weather")
-                    formatted_channels.append(f"#{channel_name}")
+                    display_name = f"#{channel_name}"
                 elif ch.get("channel_idx") == 0:
                     # Channel 0 is the default/public channel
-                    formatted_channels.append("#public")
+                    display_name = "#public"
                 else:
                     # Unknown named channel - show as index
-                    formatted_channels.append(f"#channel{ch.get('channel_idx')}")
+                    display_name = f"#channel{ch.get('channel_idx')}"
+                
+                # Format timestamp for display
+                last_used_str = None
+                if last_used:
+                    try:
+                        dt = datetime.fromtimestamp(last_used)
+                        last_used_str = dt.strftime('%Y-%m-%d %H:%M:%S')
+                    except (ValueError, OSError):
+                        last_used_str = "Unknown"
+                
+                formatted_channels.append({
+                    "name": display_name,
+                    "last_used": last_used_str,
+                    "last_used_timestamp": last_used
+                })
             
             return jsonify({
                 "channels": formatted_channels,

@@ -264,7 +264,16 @@ MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
                     
                     box.style.display = 'block';
                     box.className = 'info-box success';
-                    status.textContent = 'Broadcasting on: ' + channelsData.channels.join(', ');
+                    
+                    // Format channels with timestamps if available
+                    const channelText = channelsData.channels.map(ch => {
+                        if (typeof ch === 'object' && ch.name) {
+                            return ch.last_used ? `${ch.name} (last used: ${ch.last_used})` : ch.name;
+                        }
+                        return ch; // Backward compatibility
+                    }).join(', ');
+                    
+                    status.textContent = 'Broadcasting on: ' + channelText;
                 }
             } catch (error) {
                 // Silently fail - channels display is optional enhancement

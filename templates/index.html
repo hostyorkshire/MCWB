@@ -863,11 +863,29 @@
                         icon.className = 'channel-icon';
                         icon.textContent = '📡';
                         
-                        const text = document.createElement('span');
-                        text.textContent = channel;
+                        const content = document.createElement('div');
+                        content.style.display = 'flex';
+                        content.style.flexDirection = 'column';
+                        content.style.gap = '2px';
+                        
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = channel.name || channel;
+                        nameSpan.style.fontWeight = '500';
+                        
+                        const timeSpan = document.createElement('span');
+                        if (channel.last_used) {
+                            timeSpan.textContent = `Last used: ${channel.last_used}`;
+                            timeSpan.style.fontSize = '0.75em';
+                            timeSpan.style.opacity = '0.7';
+                        }
+                        
+                        content.appendChild(nameSpan);
+                        if (channel.last_used) {
+                            content.appendChild(timeSpan);
+                        }
                         
                         badge.appendChild(icon);
-                        badge.appendChild(text);
+                        badge.appendChild(content);
                         channelsDiv.appendChild(badge);
                     });
                 } else {
