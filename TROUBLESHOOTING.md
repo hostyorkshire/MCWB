@@ -2,6 +2,51 @@
 
 This guide helps you troubleshoot common issues with the MeshCore Weather Bot.
 
+## Issue: "externally-managed-environment" Error During Installation
+
+### Symptoms
+
+When running `pip install -r requirements.txt`, you get:
+```
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+```
+
+### Diagnosis
+
+This error occurs on newer Linux distributions (Debian 12+, Ubuntu 23.04+) due to PEP 668. These systems prevent direct pip installation to protect the system Python environment.
+
+### Solution
+
+**Use a virtual environment (recommended):**
+
+```bash
+cd MCWB
+
+# Create virtual environment
+python3 -m venv venv
+
+# Activate it
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the bot
+python3 weather_bot.py
+```
+
+**Important**: If you're setting up a systemd service with a virtual environment, update the service file to use the venv Python:
+```ini
+ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
+```
+
+The installation scripts (`install_service.sh`, `install_dashboard_service.sh`) automatically handle virtual environments for you.
+
 ## Issue: "No messages are showing and bot is not answering back"
 
 ### Understanding the Log Output
