@@ -25,10 +25,8 @@ def should_announce_on_startup(bot, last_announce_time):
     Returns:
         bool: True if bot should announce, False otherwise
     """
-    current_time = time.time()
-    # Add 1 to ensure first startup always announces (when last_announce_time == 0)
-    time_since_last_announce = current_time - last_announce_time if last_announce_time > 0 else ANNOUNCE_INTERVAL + 1
-    return bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL
+    # Always announce on startup to let users know the bot is operational
+    return bot.announce
 
 
 def test_timestamp_persistence():
@@ -60,10 +58,10 @@ def test_timestamp_persistence():
     print()
 
 
-def test_no_announcement_on_recent_restart():
-    """Test that bot skips announcement on startup if recently announced"""
+def test_announcement_on_recent_restart():
+    """Test that bot announces on startup even if recently announced"""
     print("=" * 70)
-    print("TEST 2: Skip Announcement on Recent Restart")
+    print("TEST 2: Announce on Recent Restart (Always Announce)")
     print("=" * 70)
 
     # Clean up any existing timestamp file
@@ -76,19 +74,19 @@ def test_no_announcement_on_recent_restart():
     bot._save_last_announce_time(recent_time)
     print(f"  Simulated last announcement: 1 hour ago")
 
-    # Check if announcement should be skipped using helper
+    # Check if announcement should be made using helper
     last_announce = bot._get_last_announce_time()
     should_announce = should_announce_on_startup(bot, last_announce)
 
-    # Should NOT announce (1 hour < 3 hours)
-    assert not should_announce, "Should not announce within 3 hours"
-    print(f"  ✓ Announcement will be skipped (1 hour < 3 hours)")
+    # SHOULD announce (always announce on startup)
+    assert should_announce, "Should always announce on startup"
+    print(f"  ✓ Announcement will be sent (always announces on reboot)")
 
     # Verify time calculation
     time_since_last_announce = time.time() - last_announce
     hours_since = time_since_last_announce / 3600
     print(f"  ✓ Time since last announce: {hours_since:.2f} hours")
-    assert time_since_last_announce < ANNOUNCE_INTERVAL, "Should be less than 3 hours"
+    print(f"  ✓ Bot announces on startup regardless of interval")
 
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
@@ -170,7 +168,7 @@ if __name__ == "__main__":
 
     try:
         test_timestamp_persistence()
-        test_no_announcement_on_recent_restart()
+        test_announcement_on_recent_restart()
         test_announcement_on_old_restart()
         test_announcement_on_first_start()
 

@@ -999,7 +999,7 @@ class WeatherBot:
 
         print("Press Ctrl+C to stop.\n", flush=True)
 
-        # Check if we should announce on startup
+        # Announce on startup (always announce when bot starts with --announce flag)
         last_announce = self._get_last_announce_time()
         current_time = time.time()
 
@@ -1009,18 +1009,13 @@ class WeatherBot:
         else:
             self._log(f"No previous announcement found (file: {ANNOUNCE_TIMESTAMP_FILE})")
 
-        # Add 1 to ensure first startup always announces (when last_announce == 0)
-        time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
-
-        if self.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
+        # Always announce on startup to let users know the bot is operational
+        if self.announce:
             self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
             last_announce = current_time
             self._save_last_announce_time(last_announce)
-        elif self.announce:
-            remaining = ANNOUNCE_INTERVAL - time_since_last_announce
-            msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
-            print(msg)
-            self.logger.info(msg)
+            print("Sent startup announcement")
+            self.logger.info("Sent startup announcement")
 
         try:
             while self._running:
