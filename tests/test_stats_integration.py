@@ -114,6 +114,49 @@ class TestStatsIntegration(unittest.TestCase):
         self.assertIn("date", daily[0])
         self.assertIn("count", daily[0])
 
+    def test_record_request_with_user(self):
+        """Test recording a request with user information"""
+        self.tracker.record_request("London", user="Alice")
+        self.tracker.record_request("York", user="Bob")
+        self.tracker.record_request("Manchester", user="Alice")
+
+        stats = self.tracker.get_stats()
+        self.assertEqual(stats["total_requests"], 3)
+        self.assertIn("recent_users", stats)
+        self.assertTrue(len(stats["recent_users"]) > 0)
+
+    def test_get_recent_users(self):
+        """Test getting recent users"""
+        self.tracker.record_request("London", user="Alice")
+        self.tracker.record_request("York", user="Bob")
+        self.tracker.record_request("Manchester", user="Charlie")
+
+        recent = self.tracker.get_recent_users(limit=2)
+        self.assertEqual(len(recent), 2)
+        # Most recent should be first
+        self.assertEqual(recent[0]["user"], "Charlie")
+        self.assertEqual(recent[1]["user"], "Bob")
+        self.assertIn("timestamp", recent[0])
+
+    def test_recent_users_limit(self):
+        """Test that recent users list is limited"""
+        # Record many users
+        for i in range(60):
+            self.tracker.record_request("London", user=f"User{i}")
+
+        stats = self.tracker.get_stats()
+        # Should keep only last 50
+        self.assertLessEqual(len(stats["recent_users"]), 50)
+
+    def test_backward_compatibility_no_user(self):
+        """Test that record_request works without user parameter"""
+        self.tracker.record_request("London")
+        stats = self.tracker.get_stats()
+        self.assertEqual(stats["total_requests"], 1)
+        # recent_users should be initialized even if no user is passed
+        recent = self.tracker.get_recent_users()
+        self.assertIsInstance(recent, list)
+
 
 if __name__ == "__main__":
     print("Running Stats Integration Tests...")

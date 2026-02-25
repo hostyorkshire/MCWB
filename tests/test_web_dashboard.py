@@ -177,6 +177,29 @@ class TestWebDashboard(unittest.TestCase):
         self.assertIn(b"Top Locations", response.data)
         self.assertIn(b"Requests Over Time", response.data)
 
+    def test_stats_recent_users_api(self):
+        """Test the recent users stats API endpoint"""
+        response = self.client.get("/api/stats/recent_users")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, "application/json")
+
+        data = response.get_json()
+        self.assertIn("users", data)
+        self.assertIsInstance(data["users"], list)
+
+    def test_recent_users_section(self):
+        """Test that recent users section is present"""
+        response = self.client.get("/")
+        self.assertIn(b"Recent Users", response.data)
+        self.assertIn(b"recent-users", response.data)
+
+    def test_gauge_visualization(self):
+        """Test that gauge visualization is present"""
+        response = self.client.get("/")
+        self.assertIn(b"size-gauge", response.data)
+        self.assertIn(b"createSizeGauge", response.data)
+        self.assertIn(b"gauge-svg", response.data)
+
 
 if __name__ == "__main__":
     print("Running Web Dashboard Tests...")
