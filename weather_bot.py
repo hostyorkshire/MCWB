@@ -590,7 +590,7 @@ class WeatherBot:
 
                 # Record successful request
                 location_name = r.get("name", location)
-                self.stats.record_request(location_name)
+                self.stats.record_request(location_name, user=sender)
 
                 response = self.format_weather_response(r, wx)
                 print(f"Response:\n{response}\n", flush=True)
@@ -906,12 +906,13 @@ class WeatherBot:
 
         return "\n".join(lines)
 
-    def _get_weather(self, location: str, country: str = None) -> str:
+    def _get_weather(self, location: str, country: str = None, user: str = None) -> str:
         """Fetch weather for *location* and return a formatted string.
 
         Args:
             location: City/location name to get weather for
             country: Optional country code to filter geocoding results (e.g., "GB", "US")
+            user: Optional user/sender name for statistics tracking
         """
         try:
             r = self.geocode_location(location, country)
@@ -925,7 +926,7 @@ class WeatherBot:
 
             # Record successful request
             location_name = r.get("name", location)
-            self.stats.record_request(location_name)
+            self.stats.record_request(location_name, user=user)
 
             return self.format_weather_response(r, wx)
         except (ConnectionError, Timeout, RequestException) as e:

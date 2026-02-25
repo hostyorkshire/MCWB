@@ -176,6 +176,13 @@ def api_stats_locations():
     return jsonify(top_locs)
 
 
+@app.route("/api/stats/recent_users")
+def api_stats_recent_users():
+    """Get recent users who invoked the bot"""
+    recent_users = stats.get_recent_users(limit=10)
+    return jsonify({"users": recent_users})
+
+
 @app.route("/api/channels")
 def api_channels():
     """Get active channels from the LORA meshcore radio"""

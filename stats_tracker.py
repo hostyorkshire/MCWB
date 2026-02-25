@@ -35,6 +35,7 @@ class StatsTracker:
             "daily_requests": {},
             "error_types": {},
             "last_updated": None,
+            "recent_users": [],
         }
 
     def _save_stats(self):
@@ -46,7 +47,7 @@ class StatsTracker:
         except IOError:
             pass
 
-    def record_request(self, location=None):
+    def record_request(self, location=None, user=None):
         """Record a weather request"""
         with self.lock:
             self.stats["total_requests"] += 1
@@ -69,6 +70,24 @@ class StatsTracker:
             if day_key not in self.stats["daily_requests"]:
                 self.stats["daily_requests"][day_key] = 0
             self.stats["daily_requests"][day_key] += 1
+
+            # Track recent users
+            if user:
+                # Initialize recent_users list if it doesn't exist (for backward compatibility)
+                if "recent_users" not in self.stats:
+                    self.stats["recent_users"] = []
+                
+                # Add user with timestamp
+                user_entry = {
+                    "user": user,
+                    "timestamp": now.isoformat(),
+                }
+                
+                # Add to beginning of list
+                self.stats["recent_users"].insert(0, user_entry)
+                
+                # Keep only last 50 users (we'll return top 10)
+                self.stats["recent_users"] = self.stats["recent_users"][:50]
 
             self.stats["last_updated"] = now.isoformat()
             self._save_stats()
@@ -125,3 +144,12 @@ class StatsTracker:
         with self.lock:
             sorted_locs = sorted(self.stats["locations"].items(), key=lambda x: x[1], reverse=True)
             return [{"location": loc, "count": count} for loc, count in sorted_locs[:limit]]
+
+    def get_recent_users(self, limit=10):
+        """Get last N recent users"""
+        with self.lock:
+            # Initialize recent_users if it doesn't exist (for backward compatibility)
+            if "recent_users" not in self.stats:
+                self.stats["recent_users"] = []
+            
+            return self.stats["recent_users"][:limit]
