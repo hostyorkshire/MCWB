@@ -167,7 +167,7 @@ See [docs/FAQ_CHANNEL_DETECTION.md](docs/FAQ_CHANNEL_DETECTION.md) for details.
 
 ### How do I enable periodic weather announcements?
 
-Edit the service file to add the `--announce` parameter:
+Edit the service file to add the `--announce` and `--weather-channel-idx` parameters:
 
 ```bash
 sudo nano /etc/systemd/system/weather_bot.service
@@ -175,7 +175,7 @@ sudo nano /etc/systemd/system/weather_bot.service
 
 Change the ExecStart line to:
 ```
-ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --announce
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --announce --weather-channel-idx 1
 ```
 
 Then restart:
@@ -183,6 +183,15 @@ Then restart:
 sudo systemctl daemon-reload
 sudo systemctl restart weather_bot
 ```
+
+**How announcements work:**
+- The bot sends periodic announcements every 3 hours
+- On reboot, it will announce ONLY if the last announcement was more than 3 hours ago
+- This prevents duplicate announcements when the bot restarts frequently
+- The `--weather-channel-idx 1` ensures announcements go to channel_idx 1 (typically the #weather channel)
+- Change the channel index if your #weather channel uses a different channel_idx
+
+**Note:** The service file in the repository now includes these flags by default.
 
 See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md#enabling-weather-announcements) for more details.
 

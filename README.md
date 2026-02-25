@@ -322,6 +322,52 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
                           Look up weather and exit (no radio needed)
 ```
 
+## Periodic Announcements
+
+The bot can send periodic announcements to let users know it's online and how to use it.
+
+### How Announcements Work
+
+When you enable announcements with the `--announce` flag:
+
+- The bot announces every **3 hours** during normal operation
+- On **reboot**, the bot will announce **ONLY if** the last announcement was more than 3 hours ago
+- This prevents duplicate announcements when the bot restarts frequently (e.g., during testing or power cycles)
+- Announcement timestamps are persisted to disk (`logs/.last_announce`) to survive reboots
+
+### Configuring Announcement Channel
+
+**IMPORTANT:** Use `--weather-channel-idx` to specify which channel receives announcements:
+
+```bash
+# Announcements go to channel_idx 1 (typically #weather)
+python3 weather_bot.py --announce --weather-channel-idx 1
+
+# Announcements go to channel_idx 2
+python3 weather_bot.py --announce --weather-channel-idx 2
+```
+
+Without `--weather-channel-idx`, announcements default to channel_idx 0 (the default channel), which may not be your #weather channel.
+
+**Note:** The bot still **responds** to weather queries from **all channels** unless you also specify `--channel-idx` to restrict incoming messages.
+
+### Announcement Message
+
+The announcement message is:
+```
+Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? https://mcwb.netlify.app
+```
+
+### Example: Raspberry Pi Service Setup
+
+The included `weather_bot.service` file is pre-configured with announcements enabled:
+
+```ini
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --weather-channel-idx 1
+```
+
+This ensures announcements go to channel_idx 1 (typically #weather) while still responding to messages from all channels.
+
 ## How It Works
 
 ### Automatic Channel Adaptation
