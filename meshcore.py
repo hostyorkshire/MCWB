@@ -373,6 +373,18 @@ class MeshCore:
             channel_idx=channel_idx
         )
 
+        # Determine which channel_idx to use:
+        # 1. If channel_idx is explicitly provided, use it directly (for replies)
+        # 2. Otherwise, map the channel name to a channel_idx
+        if channel_idx is not None:
+            actual_channel_idx = channel_idx
+        else:
+            actual_channel_idx = self._get_channel_idx(channel)
+
+        # Track active channel when sending messages (works in both real and simulation mode)
+        self._active_channels.add(actual_channel_idx)
+        self.save_active_channels()
+
         channel_info = f" on channel '{channel}'" if channel else ""
         if channel_idx is not None:
             channel_info += f" (idx={channel_idx})"
@@ -382,14 +394,6 @@ class MeshCore:
             # Transmit over LoRa using the MeshCore companion radio binary protocol.
             # CMD_SEND_CHANNEL_TXT_MSG: code(1) + txt_type(1) + channel_idx(1)
             #                           + timestamp uint32_LE(4) + text
-            # Determine which channel_idx to use:
-            # 1. If channel_idx is explicitly provided, use it directly (for replies)
-            # 2. Otherwise, map the channel name to a channel_idx
-            if channel_idx is not None:
-                actual_channel_idx = channel_idx
-            else:
-                actual_channel_idx = self._get_channel_idx(channel)
-
             try:
                 ts_bytes = int(time.time()).to_bytes(4, "little")
                 cmd_data = bytes([_CMD_SEND_CHAN_MSG, 0, actual_channel_idx]) + ts_bytes + content.encode("utf-8")
