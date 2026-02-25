@@ -173,6 +173,10 @@ The installer will display your connection URL, like: `http://192.168.1.109:5000
 ### Manual Start (For Testing)
 
 ```bash
+# Create and activate virtual environment if not already done
+python3 -m venv venv
+source venv/bin/activate
+
 # Install Flask (already in requirements.txt)
 pip install -r requirements.txt
 
@@ -214,8 +218,16 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 ```bash
 git clone https://github.com/hostyorkshire/MCWB.git
 cd MCWB
+
+# Create and activate a virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), direct `pip install` may fail with "externally-managed-environment" error due to PEP 668. Using a virtual environment is the recommended solution.
 
 ### 🎛️ Unified Service Manager (Raspberry Pi)
 

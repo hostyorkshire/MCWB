@@ -92,14 +92,25 @@ cd MCWB
 
 ### 2. Install Python Dependencies
 
-```bash
-# Install directly (simpler)
-pip3 install -r requirements.txt
+**Recommended: Use a virtual environment** (prevents PEP 668 errors on newer Raspberry Pi OS):
 
-# OR use a virtual environment (recommended)
+```bash
+# Create virtual environment
 python3 -m venv venv
+
+# Activate it
 source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+```
+
+**Note:** If you're using a virtual environment, you'll need to update the service file in the next section to use the virtual environment's Python interpreter (e.g., `/home/pi/MCWB/venv/bin/python3` instead of `/usr/bin/python3`).
+
+**Alternative: Install to user directory** (may fail on newer systems):
+```bash
+pip3 install --user -r requirements.txt
+# If this fails with "externally-managed-environment", use the virtual environment method above
 ```
 
 ### 3. Connect Your MeshCore Radio
@@ -192,7 +203,7 @@ The repository includes a systemd service file. You may need to customize it:
 # Copy the service file
 sudo cp /home/pi/MCWB/weather_bot.service /etc/systemd/system/
 
-# Edit if needed (e.g., if your username is not 'pi')
+# Edit if needed (e.g., if your username is not 'pi' or if using a virtual environment)
 sudo nano /etc/systemd/system/weather_bot.service
 ```
 
@@ -215,6 +226,11 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
+```
+
+**If using a virtual environment**, change the `ExecStart` line to use the venv Python:
+```ini
+ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
 ```
 
 **Key settings explained:**
