@@ -47,6 +47,126 @@ ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115
 
 The installation scripts (`install_service.sh`, `install_dashboard_service.sh`) automatically handle virtual environments for you.
 
+## Issue: systemd Service Error - "Unknown section '&gt;'" or HTML Entities
+
+### Symptoms
+
+When checking the weather_bot service status or logs, you see errors like:
+```
+systemd[1]: /etc/systemd/system/weather_bot.service:1: Unknown section '&gt;
+```
+
+Or the service fails to start with configuration errors related to HTML entities (`&gt;`, `&lt;`, `&amp;`).
+
+### Diagnosis
+
+This error occurs when the systemd service file contains **corrupted HTML entities** instead of proper characters. This typically happens when users copy the service file content from a web browser (e.g., GitHub's rendered web view) instead of using the actual file from the repository.
+
+**How it happens:**
+- Viewing markdown files on GitHub or other web platforms renders them as HTML
+- When you copy text from the browser, HTML entities may be copied instead of actual characters
+- `>` becomes `&gt;`, `<` becomes `&lt;`, `&` becomes `&amp;`
+- systemd cannot parse these corrupted characters and rejects the service file
+
+### Solution
+
+**Option 1 - Use the repository file (Recommended):**
+
+This is the safest and fastest solution:
+
+```bash
+# Remove the corrupted service file
+sudo rm /etc/systemd/system/weather_bot.service
+
+# Navigate to your MCWB directory
+cd /home/pi/MCWB  # Or wherever you cloned the repository
+
+# Copy the correct file from the repository
+sudo cp weather_bot.service /etc/systemd/system/
+
+# If you need to customize it (username, paths, etc.)
+sudo nano /etc/systemd/system/weather_bot.service
+
+# Reload systemd and restart the service
+sudo systemctl daemon-reload
+sudo systemctl restart weather_bot
+
+# Verify it's working
+sudo systemctl status weather_bot
+```
+
+**Option 2 - Fix manually:**
+
+If you prefer to fix the corrupted file in place:
+
+```bash
+# Edit the service file
+sudo nano /etc/systemd/system/weather_bot.service
+
+# Look for and fix any HTML entities:
+# - Change &gt; to >
+# - Change &lt; to <
+# - Change &amp; to &
+# - Ensure [Unit], [Service], and [Install] section headers are EXACTLY as shown
+
+# The file should start with:
+# [Unit]
+# Description=MCWBv2 - MeshCore Weather Bot
+# ...
+# NOT:
+# &lt;Unit&gt; or [Unit&gt; or any corrupted variant
+
+# After fixing, reload and restart
+sudo systemctl daemon-reload
+sudo systemctl restart weather_bot
+sudo systemctl status weather_bot
+```
+
+**Option 3 - Use the automated installer:**
+
+The automated installation script prevents this issue entirely:
+
+```bash
+cd ~/MCWB
+./install_service.sh
+```
+
+### Prevention
+
+To avoid this issue in the future:
+
+✅ **DO:**
+- Use `sudo cp weather_bot.service /etc/systemd/system/` to copy the file directly
+- Clone the repository and use the actual files
+- Use the automated `install_service.sh` script
+
+❌ **DON'T:**
+- Copy service file content from web browsers
+- Copy from GitHub's rendered markdown view
+- Manually type out the service file (high risk of typos)
+
+### Verification
+
+After applying the fix, verify the service file is correct:
+
+```bash
+# Check the first few lines - should show [Unit] with proper brackets
+head -5 /etc/systemd/system/weather_bot.service
+
+# Expected output:
+# [Unit]
+# Description=MCWBv2 - MeshCore Weather Bot
+# ...
+
+# Check for any HTML entities (should return nothing)
+grep -E '&gt;|&lt;|&amp;' /etc/systemd/system/weather_bot.service
+
+# Check service status
+sudo systemctl status weather_bot
+```
+
+If you still see HTML entities or the service fails to start, repeat Option 1 above.
+
 ## Issue: "No messages are showing and bot is not answering back"
 
 ### Understanding the Log Output

@@ -235,6 +235,8 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
+> **⚠️ IMPORTANT:** When creating the service file, do not copy from a web browser's rendered view. HTML entities (like `&gt;`, `&lt;`, `&amp;`) may corrupt the file. The section headers must be exactly `[Unit]`, `[Service]`, and `[Install]` with proper square brackets. If you see "Unknown section" errors, see the [Troubleshooting](#troubleshooting) section below.
+
 **Example for user 'weatherbot' with installation in /home/weatherbot/MCWB:**
 ```ini
 [Unit]

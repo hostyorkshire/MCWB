@@ -437,6 +437,8 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
+> **⚠️ NOTE:** When creating the service file, ensure you type or paste the content correctly. Do not copy from a web browser's rendered view, as HTML entities (like `&gt;` or `&lt;`) may corrupt the file. The section headers must be exactly `[Unit]`, `[Service]`, and `[Install]` with proper square brackets.
+
 ```bash
 # Enable and start the service
 sudo systemctl enable reverse-tunnel

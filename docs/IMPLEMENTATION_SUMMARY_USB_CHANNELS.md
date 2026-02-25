@@ -189,6 +189,8 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
+> **Note:** When using this template, ensure section headers `[Unit]`, `[Service]`, and `[Install]` are not corrupted by HTML entities.
+
 ## Security Summary
 
 ### CodeQL Analysis

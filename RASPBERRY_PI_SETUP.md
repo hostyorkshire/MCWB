@@ -666,6 +666,14 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
+> **⚠️ IMPORTANT: Avoid HTML Encoding Issues**
+> 
+> When copying the service file content above:
+> - **DO NOT copy from GitHub's rendered web view** - the browser may corrupt text with HTML entities
+> - **Instead:** Use the command above to copy the actual file from your repository: `sudo cp /home/pi/MCWB/weather_bot.service /etc/systemd/system/`
+> - **If you must manually type/paste the content**, ensure `[Unit]`, `[Service]`, and `[Install]` appear EXACTLY as shown - no HTML entities like `&gt;`, `&lt;`, or `&amp;`
+> - **If you see errors like "Unknown section '&gt;"**, your service file has corrupted HTML entities - see the troubleshooting section below
+
 **If using a virtual environment**, change the `ExecStart` line to use the venv Python:
 ```ini
 ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
@@ -851,6 +859,51 @@ sudo journalctl -u weather_bot -n 100
 4. **Network not ready:**
    - The service waits for network, but if your network is slow to start, increase the restart delay
    - Edit the service file and change `RestartSec=10` to `RestartSec=30`
+
+5. **"Unknown section" error with HTML entities (e.g., `Unknown section '&gt;'`):**
+   
+   This error occurs when the service file contains corrupted HTML entities instead of proper characters.
+   
+   **Symptoms:**
+   ```bash
+   systemd[1]: /etc/systemd/system/weather_bot.service:1: Unknown section '&gt;
+   ```
+   
+   **Cause:** Copying the service file content from a web browser (e.g., GitHub's web view) can corrupt the text with HTML entities like `&gt;` (instead of `>`), `&lt;` (instead of `<`), or `&amp;` (instead of `&`).
+   
+   **Solution:**
+   
+   **Option 1 - Use the repository file (Recommended):**
+   ```bash
+   # Remove the corrupted service file
+   sudo rm /etc/systemd/system/weather_bot.service
+   
+   # Copy the correct file from the repository
+   cd /home/pi/MCWB
+   sudo cp weather_bot.service /etc/systemd/system/
+   
+   # Reload and restart
+   sudo systemctl daemon-reload
+   sudo systemctl restart weather_bot
+   ```
+   
+   **Option 2 - Fix manually:**
+   ```bash
+   # Edit the service file
+   sudo nano /etc/systemd/system/weather_bot.service
+   
+   # Fix any HTML entities:
+   # - Change &gt; to >
+   # - Change &lt; to <
+   # - Change &amp; to &
+   # - Ensure [Unit], [Service], and [Install] sections are correct
+   
+   # Reload and restart
+   sudo systemctl daemon-reload
+   sudo systemctl restart weather_bot
+   ```
+   
+   **Prevention:** Always copy the service file directly from the repository using `sudo cp weather_bot.service /etc/systemd/system/` rather than copying text from web browsers.
 
 ### Bot Running But Not Responding
 
