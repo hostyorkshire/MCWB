@@ -35,7 +35,6 @@ class TestDashboardServiceInstall(unittest.TestCase):
         import getpass
         current_user = getpass.getuser()
         install_dir = str(Path(__file__).parent.parent)
-        user_site = site.USER_SITE
 
         # Create a temporary service file
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.service') as tmp:
@@ -55,12 +54,6 @@ class TestDashboardServiceInstall(unittest.TestCase):
                 tmp_path
             ], check=True)
 
-            subprocess.run([
-                'sed', '-i',
-                f's|USER_SITE_PACKAGES|{user_site}|g',
-                tmp_path
-            ], check=True)
-
             # Read generated file
             with open(tmp_path, 'r') as f:
                 content = f.read()
@@ -68,14 +61,14 @@ class TestDashboardServiceInstall(unittest.TestCase):
             # Verify replacements
             self.assertIn(f'User={current_user}', content, "User not replaced correctly")
             self.assertIn(f'WorkingDirectory={install_dir}', content, "WorkingDirectory not replaced")
-            self.assertIn(f'PYTHONPATH={user_site}', content, "PYTHONPATH not set correctly")
-            self.assertNotIn('USER_SITE_PACKAGES', content, "USER_SITE_PACKAGES placeholder not replaced")
             self.assertNotIn('/home/pi/MCWB', content, "Path placeholder not replaced")
+            # Python automatically includes user site-packages, so PYTHONPATH is not needed
+            self.assertNotIn('PYTHONPATH', content, "PYTHONPATH should not be set (Python includes user site-packages automatically)")
 
             print(f"✓ Service file generation successful")
             print(f"  User: {current_user}")
             print(f"  Install dir: {install_dir}")
-            print(f"  PYTHONPATH: {user_site}")
+            print(f"  Python will automatically use user site-packages")
 
         finally:
             # Clean up
@@ -83,20 +76,19 @@ class TestDashboardServiceInstall(unittest.TestCase):
                 os.unlink(tmp_path)
 
     def test_pythonpath_environment(self):
-        """Test that PYTHONPATH allows Flask import"""
+        """Test that Flask can be imported from user site-packages"""
         user_site = site.USER_SITE
 
-        # Test that Flask can be imported with PYTHONPATH set
+        # Test that Flask can be imported (Python includes user site-packages automatically)
         result = subprocess.run(
             ['python3', '-c', 'import flask; print("Flask OK")'],
-            env={**os.environ, 'PYTHONPATH': user_site},
             capture_output=True,
             text=True
         )
 
-        self.assertEqual(result.returncode, 0, "Flask import failed with PYTHONPATH")
+        self.assertEqual(result.returncode, 0, "Flask import failed")
         self.assertIn('Flask OK', result.stdout)
-        print(f"✓ Flask imports successfully with PYTHONPATH={user_site}")
+        print(f"✓ Flask imports successfully from user site-packages: {user_site}")
 
 
 if __name__ == '__main__':
