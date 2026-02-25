@@ -227,7 +227,12 @@ async function updateDashboard() {
             }).join(', ');
             activeChannelsEl.textContent = channelText;
         } else {
-            activeChannelsEl.textContent = 'No channels detected';
+            // Show contextual message based on whether bot has activity
+            if (stats.total_requests === 0 && (!channels.last_updated || channels.last_updated === null)) {
+                activeChannelsEl.textContent = 'Waiting for activity...';
+            } else {
+                activeChannelsEl.textContent = 'No active channels';
+            }
         }
         
         // Calculate uptime based on last update
