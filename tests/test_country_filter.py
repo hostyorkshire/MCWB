@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -8,7 +9,8 @@ Test to verify country code filtering works correctly for geocoding.
 Tests that the bot can filter location searches by country to avoid
 returning cities from the wrong country.
 """
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call, patch
+
 from weather_bot import WeatherBot
 
 
@@ -20,7 +22,7 @@ def test_country_filter_applied():
 
     bot = WeatherBot(debug=False, country="GB")
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # API returns multiple results; GB result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
@@ -67,9 +69,9 @@ def test_country_filter_applied():
 
         # Check that geocoding API was called with count=10 (for client-side filtering)
         geocoding_call = mock_get.call_args_list[0]
-        params = geocoding_call[1]['params']
+        params = geocoding_call[1]["params"]
 
-        if params.get('count') == 10:
+        if params.get("count") == 10:
             print(f"✅ PASS: Geocoding API called with count=10 for client-side filtering")
         else:
             print(f"❌ FAIL: Expected count=10 in params for client-side filtering")
@@ -94,17 +96,13 @@ def test_no_country_filter_when_not_configured():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding response
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Paris",
-                "country": "France",
-                "country_code": "FR",
-                "latitude": 48.8566,
-                "longitude": 2.3522
-            }]
+            "results": [
+                {"name": "Paris", "country": "France", "country_code": "FR", "latitude": 48.8566, "longitude": 2.3522}
+            ]
         }
 
         # Mock weather response
@@ -117,7 +115,7 @@ def test_no_country_filter_when_not_configured():
                 "wind_speed_10m": 12.0,
                 "wind_direction_10m": 180,
                 "precipitation": 0.0,
-                "weather_code": 2
+                "weather_code": 2,
             }
         }
 
@@ -132,9 +130,9 @@ def test_no_country_filter_when_not_configured():
 
         # Check that geocoding API was called WITHOUT country parameter
         geocoding_call = mock_get.call_args_list[0]
-        params = geocoding_call[1]['params']
+        params = geocoding_call[1]["params"]
 
-        if 'country' not in params:
+        if "country" not in params:
             print(f"✅ PASS: Country parameter not included when not configured")
             print(f"   Full params: {params}")
         else:
@@ -153,7 +151,7 @@ def test_country_filter_with_us():
 
     bot = WeatherBot(debug=False, country="US")
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # API returns multiple results; US result is second
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {

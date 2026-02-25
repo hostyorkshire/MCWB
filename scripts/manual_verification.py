@@ -11,13 +11,14 @@ Before fix: Bot would process message from channel_idx 0
 After fix: Bot correctly ignores message from channel_idx 0
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
-from weather_bot import WeatherBot
 from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 print("=" * 80)
 print("MANUAL VERIFICATION TEST - Channel Filter Fix")
@@ -41,10 +42,12 @@ bot = WeatherBot(node_id="WX_BOT", debug=True, channel="weather")
 messages_processed = []
 original_handler = bot.mesh.message_handlers.get("text")
 
+
 def tracking_handler(msg):
     messages_processed.append(msg)
     if original_handler:
         original_handler(msg)
+
 
 bot.mesh.message_handlers["text"] = tracking_handler
 
@@ -55,13 +58,7 @@ print("    LoRa RX channel msg from USER1 on channel_idx 0: Wx leeds")
 print()
 
 messages_processed.clear()
-msg_from_default = MeshCoreMessage(
-    sender="USER1",
-    content="Wx leeds",
-    message_type="text",
-    channel=None,
-    channel_idx=0
-)
+msg_from_default = MeshCoreMessage(sender="USER1", content="Wx leeds", message_type="text", channel=None, channel_idx=0)
 
 bot.mesh.receive_message(msg_from_default)
 
@@ -81,13 +78,7 @@ print("    LoRa RX channel msg from USER1 on channel_idx 1: Wx leeds")
 print()
 
 messages_processed.clear()
-msg_from_weather = MeshCoreMessage(
-    sender="USER1",
-    content="Wx leeds",
-    message_type="text",
-    channel=None,
-    channel_idx=1
-)
+msg_from_weather = MeshCoreMessage(sender="USER1", content="Wx leeds", message_type="text", channel=None, channel_idx=1)
 
 bot.mesh.receive_message(msg_from_weather)
 

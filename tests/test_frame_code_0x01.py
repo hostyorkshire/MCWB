@@ -5,12 +5,14 @@ This addresses the issue: "MeshCore [WX_BOT]: MeshCore: unhandled frame code 0x0
 """
 
 import io
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from contextlib import redirect_stdout
 from unittest.mock import MagicMock
+
 from meshcore import MeshCore
 
 # Sample CMD_APP_START payload that the companion radio might echo
@@ -18,10 +20,10 @@ from meshcore import MeshCore
 #   byte 0:   0x03 = app_ver (request V3 message format with SNR field)
 #   bytes 1-6: 6 ASCII spaces (reserved field)
 #   bytes 7+: "MCWB" (app_name that identifies this bot)
-SAMPLE_APP_START_DATA = b'\x03      MCWB'
+SAMPLE_APP_START_DATA = b"\x03      MCWB"
 
 
-def create_frame(code: int, data: bytes = b'') -> bytes:
+def create_frame(code: int, data: bytes = b"") -> bytes:
     """
     Helper function to create a MeshCore binary frame.
 
@@ -60,7 +62,8 @@ def test_frame_code_0x01():
 
     # Parse the frame - should not raise any exception
     try:
-        payload = frame[3:]; mesh._parse_binary_frame(payload)
+        payload = frame[3:]
+        mesh._parse_binary_frame(payload)
         print("✓ Frame code 0x01 handled without errors")
     except Exception as e:
         print(f"✗ Frame code 0x01 raised exception: {e}")
@@ -90,14 +93,15 @@ def test_frame_code_0x01_in_sequence():
     mesh._serial = mock_serial
 
     # Test sequence: 0x01 (CMD_APP_START), 0x00 (NOP), 0x0a (RESP_NO_MORE_MSGS)
-    test_codes = [0x01, 0x00, 0x0a]
+    test_codes = [0x01, 0x00, 0x0A]
 
     print(f"Testing sequence: {[f'{c:#04x}' for c in test_codes]}")
 
     for code in test_codes:
         frame = create_frame(code)
         try:
-            payload = frame[3:]; mesh._parse_binary_frame(payload)
+            payload = frame[3:]
+            mesh._parse_binary_frame(payload)
             print(f"✓ Frame code {code:#04x} handled successfully")
         except Exception as e:
             print(f"✗ Frame code {code:#04x} raised exception: {e}")
@@ -129,7 +133,8 @@ def test_no_unhandled_error_logged():
     frame = create_frame(0x01)
 
     with redirect_stdout(captured_output):
-        payload = frame[3:]; mesh._parse_binary_frame(payload)
+        payload = frame[3:]
+        mesh._parse_binary_frame(payload)
 
     output = captured_output.getvalue()
 
@@ -167,7 +172,8 @@ def test_app_start_during_init():
     captured_output = io.StringIO()
 
     with redirect_stdout(captured_output):
-        payload = frame[3:]; mesh._parse_binary_frame(payload)
+        payload = frame[3:]
+        mesh._parse_binary_frame(payload)
 
     output = captured_output.getvalue()
 
@@ -227,6 +233,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

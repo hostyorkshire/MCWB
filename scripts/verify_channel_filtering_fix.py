@@ -4,11 +4,12 @@ Manual verification script for weather bot channel filtering
 This script simulates messages from different channels to verify filtering works correctly.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from meshcore import MeshCore, MeshCoreMessage
+from meshcore import MeshCoreMessage
 from weather_bot import WeatherBot
 
 
@@ -29,26 +30,14 @@ def test_scenario_1_no_filter():
 
     # Simulate message from channel_idx 0 (wxtest/default)
     print("\n--- Test 1: Message from channel_idx 0 (wxtest/default) ---")
-    msg1 = MeshCoreMessage(
-        sender="M3UXC",
-        content="wx leeds",
-        message_type="text",
-        channel=None,
-        channel_idx=0
-    )
+    msg1 = MeshCoreMessage(sender="M3UXC", content="wx leeds", message_type="text", channel=None, channel_idx=0)
     print(f"Sending: '{msg1.content}' from {msg1.sender} on channel_idx {msg1.channel_idx}")
     bot.handle_message(msg1)
     print("✓ Message processed (bot accepts from channel_idx 0)")
 
     # Simulate message from channel_idx 1 (weather)
     print("\n--- Test 2: Message from channel_idx 1 (weather) ---")
-    msg2 = MeshCoreMessage(
-        sender="M3UXC",
-        content="wx london",
-        message_type="text",
-        channel=None,
-        channel_idx=1
-    )
+    msg2 = MeshCoreMessage(sender="M3UXC", content="wx london", message_type="text", channel=None, channel_idx=1)
     print(f"Sending: '{msg2.content}' from {msg2.sender} on channel_idx {msg2.channel_idx}")
     bot.handle_message(msg2)
     print("✓ Message processed (bot accepts from channel_idx 1)")
@@ -80,21 +69,17 @@ def test_scenario_2_with_filter():
 
     # Simulate message from channel_idx 0 (wxtest/default)
     print("\n--- Test 1: Message from channel_idx 0 (wxtest/default) ---")
-    msg1 = MeshCoreMessage(
-        sender="M3UXC",
-        content="wx leeds",
-        message_type="text",
-        channel=None,
-        channel_idx=0
-    )
+    msg1 = MeshCoreMessage(sender="M3UXC", content="wx leeds", message_type="text", channel=None, channel_idx=0)
     print(f"Sending: '{msg1.content}' from {msg1.sender} on channel_idx {msg1.channel_idx}")
 
     # Track if handler was called
     handler_called = [False]
     original_handle = bot.handle_message
+
     def tracking_handler(msg):
         handler_called[0] = True
         original_handle(msg)
+
     bot.handle_message = tracking_handler
 
     bot.mesh.receive_message(msg1)
@@ -106,13 +91,7 @@ def test_scenario_2_with_filter():
 
     # Simulate message from channel_idx 1 (weather)
     print("\n--- Test 2: Message from channel_idx 1 (weather) ---")
-    msg2 = MeshCoreMessage(
-        sender="M3UXC",
-        content="wx london",
-        message_type="text",
-        channel=None,
-        channel_idx=1
-    )
+    msg2 = MeshCoreMessage(sender="M3UXC", content="wx london", message_type="text", channel=None, channel_idx=1)
     print(f"Sending: '{msg2.content}' from {msg2.sender} on channel_idx {msg2.channel_idx}")
 
     handler_called[0] = False
@@ -125,13 +104,7 @@ def test_scenario_2_with_filter():
 
     # Simulate message from channel_idx 2 (some other channel)
     print("\n--- Test 3: Message from channel_idx 2 (other channel) ---")
-    msg3 = MeshCoreMessage(
-        sender="M3UXC",
-        content="wx manchester",
-        message_type="text",
-        channel=None,
-        channel_idx=2
-    )
+    msg3 = MeshCoreMessage(sender="M3UXC", content="wx manchester", message_type="text", channel=None, channel_idx=2)
     print(f"Sending: '{msg3.content}' from {msg3.sender} on channel_idx {msg3.channel_idx}")
 
     handler_called[0] = False
@@ -188,6 +161,7 @@ def main():
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

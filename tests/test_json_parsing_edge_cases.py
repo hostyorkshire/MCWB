@@ -4,11 +4,13 @@ Test script to verify that edge cases in LoRa message parsing are handled correc
 This specifically tests the fix for "Expecting value: line 1 column 1 (char 0)" errors.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock
+
 from meshcore import MeshCore, MeshCoreMessage
 
 
@@ -35,15 +37,15 @@ def test_malformed_json_lines():
 
     # Test various edge cases that should be ignored
     test_lines = [
-        b'>\n',  # Single character starting with >
-        b'>j1M[MfO4(6?\n',  # The problematic line from the logs
-        b'{\n',  # Just opening brace
-        b'{invalid json}\n',  # Invalid JSON structure (starts and ends with braces)
-        b'{ \x00\x01 \n',  # Opening brace with control chars, no closing brace
-        b'\x00\x01\x02\n',  # Only control characters
-        b'   \n',  # Only whitespace
-        b'{test\n',  # Starts with { but doesn't end with }
-        b'test}\n',  # Ends with } but doesn't start with {
+        b">\n",  # Single character starting with >
+        b">j1M[MfO4(6?\n",  # The problematic line from the logs
+        b"{\n",  # Just opening brace
+        b"{invalid json}\n",  # Invalid JSON structure (starts and ends with braces)
+        b"{ \x00\x01 \n",  # Opening brace with control chars, no closing brace
+        b"\x00\x01\x02\n",  # Only control characters
+        b"   \n",  # Only whitespace
+        b"{test\n",  # Starts with { but doesn't end with }
+        b"test}\n",  # Ends with } but doesn't start with {
         (valid_msg.to_json() + "\n").encode("utf-8"),  # Valid message at the end
     ]
 
@@ -95,8 +97,8 @@ def test_json_with_control_characters_before_brace():
 
     # After filtering control characters, this should become valid JSON starting with {
     test_lines = [
-        (b'\x00\x01' + valid_json.encode("utf-8") + b'\n'),
-        (valid_json.encode("utf-8") + b'\n'),
+        (b"\x00\x01" + valid_json.encode("utf-8") + b"\n"),
+        (valid_json.encode("utf-8") + b"\n"),
     ]
 
     def readline_side_effect():
@@ -132,8 +134,8 @@ def test_empty_json_object():
 
     # Empty JSON object should pass validation but fail parsing
     test_lines = [
-        b'{}\n',
-        b'{  }\n',
+        b"{}\n",
+        b"{  }\n",
     ]
 
     def readline_side_effect():
@@ -182,11 +184,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -4,16 +4,18 @@ Test handling of frame codes 0x05 (CMD_GET_DEVICE_TIME) and 0x88 (PUSH_MSG_ACK)
 This addresses the issue where these codes were showing as "unhandled" in debug logs.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
 from unittest.mock import MagicMock
+
 from meshcore import MeshCore
 
 
-def create_frame(code: int, data: bytes = b'') -> bytes:
+def create_frame(code: int, data: bytes = b"") -> bytes:
     """
     Helper function to create a MeshCore binary frame.
 
@@ -64,7 +66,7 @@ def test_cmd_get_device_time():
 
     # Extract payload (skip FRAME_IN and length bytes)
     payload_length = int.from_bytes(response_frame[1:3], "little")
-    payload = response_frame[3:3+payload_length]
+    payload = response_frame[3 : 3 + payload_length]
 
     assert payload[0] == 0x09, f"Response code should be RESP_CURR_TIME (0x09), got {payload[0]:#04x}"
     assert len(payload) == 5, f"Response should be 5 bytes (code + 4-byte timestamp), got {len(payload)}"
@@ -129,9 +131,8 @@ def test_push_chan_msg():
     cmd_frame = mock_serial.write.call_args[0][0]
     assert cmd_frame[0] == 0x3C, "Command should start with FRAME_IN (0x3C)"
     payload_length = int.from_bytes(cmd_frame[1:3], "little")
-    cmd_payload = cmd_frame[3:3 + payload_length]
-    assert cmd_payload[0] == 0x0a, \
-        f"Command should be CMD_SYNC_NEXT_MSG (0x0a), got {cmd_payload[0]:#04x}"
+    cmd_payload = cmd_frame[3 : 3 + payload_length]
+    assert cmd_payload[0] == 0x0A, f"Command should be CMD_SYNC_NEXT_MSG (0x0a), got {cmd_payload[0]:#04x}"
 
     print(f"✓ PUSH_CHAN_MSG (0x88) dispatched message correctly")
     print(f"  sender='{msg.sender}', content='{msg.content}', channel_idx={msg.channel_idx}")
@@ -210,11 +211,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

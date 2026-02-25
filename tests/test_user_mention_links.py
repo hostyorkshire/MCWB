@@ -11,12 +11,13 @@ This test verifies:
 Note: Markdown-style link format is used for mentions in bot responses for universal compatibility.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import unittest
 import re
+import unittest
 
 
 class TestUserMentionLinks(unittest.TestCase):
@@ -25,42 +26,40 @@ class TestUserMentionLinks(unittest.TestCase):
     def test_mention_pattern_detection(self):
         """Test that the regex pattern can detect @username mentions"""
         # This is the pattern used in the JavaScript: /@([a-zA-Z0-9_.-]+)/g
-        pattern = r'@([a-zA-Z0-9_.-]+)'
+        pattern = r"@([a-zA-Z0-9_.-]+)"
 
         # Test cases
         test_cases = [
-            ('hi @john_doe', ['john_doe']),
-            ('hi @alice and @bob', ['alice', 'bob']),
-            ('@user_node-123', ['user_node-123']),
-            ('hello @test.user', ['test.user']),
-            ('hi @user_node-123.test', ['user_node-123.test']),
-            ('no mentions here', []),
-            ('@', []),  # @ without username should not match
+            ("hi @john_doe", ["john_doe"]),
+            ("hi @alice and @bob", ["alice", "bob"]),
+            ("@user_node-123", ["user_node-123"]),
+            ("hello @test.user", ["test.user"]),
+            ("hi @user_node-123.test", ["user_node-123.test"]),
+            ("no mentions here", []),
+            ("@", []),  # @ without username should not match
         ]
 
         for text, expected_usernames in test_cases:
             matches = re.findall(pattern, text)
-            self.assertEqual(matches, expected_usernames,
-                           f"Failed for text: {text}")
+            self.assertEqual(matches, expected_usernames, f"Failed for text: {text}")
 
     def test_markdown_link_pattern_detection(self):
         """Test that the regex pattern can detect markdown-style @username mention links"""
         # This is the pattern used in the JavaScript for markdown links:
         # /\[@([a-zA-Z0-9_.-]+)\]\(meshcore:\/\/user\/([a-zA-Z0-9_.-]+)\)/g
-        pattern = r'\[@([a-zA-Z0-9_.-]+)\]\(meshcore://user/([a-zA-Z0-9_.-]+)\)'
+        pattern = r"\[@([a-zA-Z0-9_.-]+)\]\(meshcore://user/([a-zA-Z0-9_.-]+)\)"
 
         # Test cases - should extract both the display name and the URL username
         test_cases = [
-            ('hi [@john_doe](meshcore://user/john_doe)', [('john_doe', 'john_doe')]),
-            ('[@alice](meshcore://user/alice) and [@bob](meshcore://user/bob)', [('alice', 'alice'), ('bob', 'bob')]),
-            ('no markdown links here', []),
-            ('hi @user', []),  # Plain @mention should not match markdown pattern
+            ("hi [@john_doe](meshcore://user/john_doe)", [("john_doe", "john_doe")]),
+            ("[@alice](meshcore://user/alice) and [@bob](meshcore://user/bob)", [("alice", "alice"), ("bob", "bob")]),
+            ("no markdown links here", []),
+            ("hi @user", []),  # Plain @mention should not match markdown pattern
         ]
 
         for text, expected_matches in test_cases:
             matches = re.findall(pattern, text)
-            self.assertEqual(matches, expected_matches,
-                           f"Failed for text: {text}")
+            self.assertEqual(matches, expected_matches, f"Failed for text: {text}")
 
     def test_url_format(self):
         """Test that the URL format is correct for meshcore app"""
@@ -80,15 +79,17 @@ class TestUserMentionLinks(unittest.TestCase):
         # After HTML escaping, script tags should be neutralized
         # The escaped version should have &lt; and &gt;
         from html import escape
+
         escaped = escape(dangerous_input)
-        self.assertIn('&lt;script&gt;', escaped)
-        self.assertIn('&lt;/script&gt;', escaped)
-        self.assertIn('@user', escaped)  # @mention should still be present
+        self.assertIn("&lt;script&gt;", escaped)
+        self.assertIn("&lt;/script&gt;", escaped)
+        self.assertIn("@user", escaped)  # @mention should still be present
 
     def test_weather_bot_sends_mentions(self):
         """Test that the weather bot no longer includes @username mentions in responses"""
-        from weather_bot import WeatherBot
         from unittest.mock import MagicMock
+
+        from weather_bot import WeatherBot
 
         bot = WeatherBot(node_id="TEST_BOT", debug=False)
 
@@ -101,7 +102,7 @@ class TestUserMentionLinks(unittest.TestCase):
                 "relative_humidity_2m": 75,
                 "wind_speed_10m": 15.0,
                 "wind_direction_10m": 180,
-                "weather_code": 0
+                "weather_code": 0,
             }
         }
 
@@ -109,13 +110,13 @@ class TestUserMentionLinks(unittest.TestCase):
         response = bot.format_weather_response(location_data, weather_data)
 
         # Verify @mention is NOT included
-        self.assertNotIn('[@testuser](meshcore://user/testuser)', response)
-        self.assertNotIn('hi @', response.lower())
+        self.assertNotIn("[@testuser](meshcore://user/testuser)", response)
+        self.assertNotIn("hi @", response.lower())
         # Response should start with location
-        self.assertTrue(response.startswith('York, GB\n'))
+        self.assertTrue(response.startswith("York, GB\n"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Running User Mention Link Tests...")
     print("=" * 70)
 

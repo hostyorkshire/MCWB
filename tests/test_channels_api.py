@@ -3,9 +3,9 @@
 Test the web dashboard channels API endpoint
 """
 
-import sys
-import os
 import json
+import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -22,23 +22,23 @@ def test_channels_api():
     import web_dashboard
 
     # Create a test Flask client
-    web_dashboard.app.config['TESTING'] = True
+    web_dashboard.app.config["TESTING"] = True
     client = web_dashboard.app.test_client()
 
     # Test the API endpoint
     print("\n1. Testing channels API endpoint...")
-    response = client.get('/api/channels')
+    response = client.get("/api/channels")
     assert response.status_code == 200
     data = json.loads(response.data)
     print(f"   Response data: {data}")
-    assert 'channels' in data
-    assert 'last_updated' in data
-    assert isinstance(data['channels'], list)
+    assert "channels" in data
+    assert "last_updated" in data
+    assert isinstance(data["channels"], list)
     print("✓ API returns correct structure")
-    
+
     # Verify channel formatting with # prefix
-    for channel in data['channels']:
-        assert channel.startswith('#'), f"Channel '{channel}' should start with #"
+    for channel in data["channels"]:
+        assert channel.startswith("#"), f"Channel '{channel}' should start with #"
     print("✓ All channels have # prefix")
     print(f"  Channels: {', '.join(data['channels']) if data['channels'] else 'none'}")
 
@@ -49,30 +49,30 @@ def test_channels_api():
         logs_dir = Path(tmpdir) / "logs"
         logs_dir.mkdir()
         channels_file = logs_dir / "channels.json"
-        
+
         # Write test data
         test_data = {
             "channels": [
                 {"channel_idx": 0, "channel_name": None},
                 {"channel_idx": 1, "channel_name": "weather"},
-                {"channel_idx": 2, "channel_name": "alerts"}
+                {"channel_idx": 2, "channel_name": "alerts"},
             ],
-            "last_updated": "2026-02-24T23:00:00"
+            "last_updated": "2026-02-24T23:00:00",
         }
-        
-        with open(channels_file, 'w') as f:
+
+        with open(channels_file, "w") as f:
             json.dump(test_data, f)
-        
+
         # Temporarily patch the Path in web_dashboard to use our temp directory
         original_file = web_dashboard.Path(__file__).parent / "logs" / "channels.json"
-        
+
         # Monkey patch the api_channels function for this test
         def test_api_channels():
             if not channels_file.exists():
                 return web_dashboard.jsonify({"channels": [], "last_updated": None})
-            
+
             try:
-                with open(channels_file, 'r') as f:
+                with open(channels_file, "r") as f:
                     data = json.load(f)
                     formatted_channels = []
                     for ch in data.get("channels", []):
@@ -83,26 +83,25 @@ def test_channels_api():
                             formatted_channels.append("#public")
                         else:
                             formatted_channels.append(f"#channel{ch.get('channel_idx')}")
-                    
-                    return web_dashboard.jsonify({
-                        "channels": formatted_channels,
-                        "last_updated": data.get("last_updated")
-                    })
+
+                    return web_dashboard.jsonify(
+                        {"channels": formatted_channels, "last_updated": data.get("last_updated")}
+                    )
             except (json.JSONDecodeError, IOError):
                 return web_dashboard.jsonify({"channels": [], "last_updated": None})
-        
+
         # Replace the route temporarily
-        web_dashboard.app.view_functions['api_channels'] = test_api_channels
-        
-        response = client.get('/api/channels')
+        web_dashboard.app.view_functions["api_channels"] = test_api_channels
+
+        response = client.get("/api/channels")
         assert response.status_code == 200
         data = json.loads(response.data)
-        
-        assert len(data['channels']) == 3
-        assert '#public' in data['channels']
-        assert '#weather' in data['channels']
-        assert '#alerts' in data['channels']
-        assert data['last_updated'] == "2026-02-24T23:00:00"
+
+        assert len(data["channels"]) == 3
+        assert "#public" in data["channels"]
+        assert "#weather" in data["channels"]
+        assert "#alerts" in data["channels"]
+        assert data["last_updated"] == "2026-02-24T23:00:00"
         print("✓ Returns formatted channel list with # prefix")
         print(f"  Channels: {', '.join(data['channels'])}")
 
@@ -113,7 +112,7 @@ def main():
     """Run all tests"""
     try:
         test_channels_api()
-        
+
         print("=" * 60)
         print("✓ ALL TESTS PASSED")
         print("=" * 60)
@@ -121,11 +120,13 @@ def main():
     except AssertionError as e:
         print(f"\n✗ TEST FAILED: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n✗ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

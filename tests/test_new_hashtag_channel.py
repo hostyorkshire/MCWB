@@ -3,8 +3,9 @@
 Test to verify that the bot responds to messages on new hashtag channels
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from weather_bot import WeatherBot
@@ -103,7 +104,9 @@ def test_with_channel_filtering():
         if will_be_accepted == should_accept:
             print(f"  ✅ CORRECT: {'ACCEPTED' if will_be_accepted else 'REJECTED'}")
         else:
-            print(f"  ❌ WRONG: {'ACCEPTED' if will_be_accepted else 'REJECTED'} (expected {'ACCEPTED' if should_accept else 'REJECTED'})")
+            print(
+                f"  ❌ WRONG: {'ACCEPTED' if will_be_accepted else 'REJECTED'} (expected {'ACCEPTED' if should_accept else 'REJECTED'})"
+            )
             all_correct = False
 
     print("\n" + "=" * 70)
@@ -142,6 +145,7 @@ def main():
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

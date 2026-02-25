@@ -4,12 +4,14 @@ Test script demonstrating automatic channel adaptation
 Shows that the bot works WITHOUT needing manual channel configuration
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WeatherBot
 from unittest.mock import MagicMock, patch
+
+from weather_bot import WeatherBot
 
 
 def test_zero_config_multiple_channels():
@@ -30,12 +32,17 @@ def test_zero_config_multiple_channels():
     weather_response = MagicMock()
     weather_response.json.return_value = {
         "current": {
-            "temperature_2m": 15, "apparent_temperature": 13, "relative_humidity_2m": 70,
-            "wind_speed_10m": 12, "wind_direction_10m": 180, "precipitation": 0, "weather_code": 1
+            "temperature_2m": 15,
+            "apparent_temperature": 13,
+            "relative_humidity_2m": 70,
+            "wind_speed_10m": 12,
+            "wind_direction_10m": 180,
+            "precipitation": 0,
+            "weather_code": 1,
         }
     }
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = [geocoding_response, weather_response]
 
         # Create bot with NO channel configuration - this is the recommended way!
@@ -178,11 +185,13 @@ def main():
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n✗ Error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

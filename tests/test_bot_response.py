@@ -9,12 +9,14 @@ This simulates the complete flow:
 3. Bot receives weather command and processes it
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
 from unittest.mock import MagicMock, patch
+
 from meshcore import MeshCore, MeshCoreMessage
 from weather_bot import WeatherBot
 
@@ -41,7 +43,8 @@ def simulate_frame_handling():
     # Simulate receiving CMD_GET_DEVICE_TIME frame
     frame_payload = bytes([0x05])  # CMD_GET_DEVICE_TIME
     frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
-    payload = frame[3:]; mesh._parse_binary_frame(payload)
+    payload = frame[3:]
+    mesh._parse_binary_frame(payload)
 
     print()
     print("Step 2: Bot receives PUSH_MSG_ACK (0x88)")
@@ -50,7 +53,8 @@ def simulate_frame_handling():
     # Simulate receiving PUSH_MSG_ACK frame
     frame_payload = bytes([0x88, 0x01, 0x02, 0x03, 0x04])  # PUSH_MSG_ACK with ack data
     frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
-    payload = frame[3:]; mesh._parse_binary_frame(payload)
+    payload = frame[3:]
+    mesh._parse_binary_frame(payload)
 
     print()
     print("Step 3: Bot receives PUSH_MSG_WAITING (0x83)")
@@ -59,7 +63,8 @@ def simulate_frame_handling():
     # Simulate receiving PUSH_MSG_WAITING frame
     frame_payload = bytes([0x83])  # PUSH_MSG_WAITING
     frame = bytes([0x3E]) + len(frame_payload).to_bytes(2, "little") + frame_payload
-    payload = frame[3:]; mesh._parse_binary_frame(payload)
+    payload = frame[3:]
+    mesh._parse_binary_frame(payload)
 
     print()
     print("✅ All frame codes handled successfully!")
@@ -75,16 +80,11 @@ def simulate_weather_request():
     print()
 
     # Create weather bot with mock
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding response
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Barnsley",
-                "country": "GB",
-                "latitude": 53.5526,
-                "longitude": -1.4797
-            }]
+            "results": [{"name": "Barnsley", "country": "GB", "latitude": 53.5526, "longitude": -1.4797}]
         }
 
         # Mock weather response
@@ -97,7 +97,7 @@ def simulate_weather_request():
                 "wind_speed_10m": 18.5,
                 "wind_direction_10m": 270,
                 "precipitation": 0.2,
-                "weather_code": 61
+                "weather_code": 61,
             }
         }
 
@@ -113,11 +113,7 @@ def simulate_weather_request():
         print()
 
         # Simulate receiving weather command
-        msg = MeshCoreMessage(
-            sender="user_node",
-            content="wx barnsley",
-            message_type="text"
-        )
+        msg = MeshCoreMessage(sender="user_node", content="wx barnsley", message_type="text")
 
         print(f"Incoming message: '{msg.content}' from {msg.sender}")
         print()
@@ -174,6 +170,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Error during simulation: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

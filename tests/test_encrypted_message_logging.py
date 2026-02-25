@@ -9,22 +9,22 @@ Expected behavior:
 - Valid WX commands without prefix SHOULD be responded to
 """
 
-import struct
-import time
-from unittest.mock import MagicMock
-from io import StringIO
-import sys
 import os
+import struct
+import sys
+import time
+from io import StringIO
+from unittest.mock import MagicMock
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from weather_bot import WeatherBot
-
 
 # Test case constants
 EXPECTED_MESSAGES_WITHOUT_PREFIX = 3  # Tests 1, 2, 3
 EXPECTED_WX_RESPONSES = 2  # Tests 3, 4
 EXPECTED_MESSAGES_WITH_SENDER = 5  # All 5 tests log message (with or without prefix)
-EXPECTED_SENDERS = ['M3UXC/M', 'Alice', 'channel:']  # Known senders from test cases
+EXPECTED_SENDERS = ["M3UXC/M", "Alice", "channel:"]  # Known senders from test cases
 
 
 def create_channel_message(channel_idx, text, code=0x88):
@@ -34,8 +34,8 @@ def create_channel_message(channel_idx, text, code=0x88):
     """
     path_len = 0x00
     txt_type = 0x00
-    timestamp = struct.pack('<I', int(time.time()))
-    text_bytes = text.encode('utf-8', errors='ignore')
+    timestamp = struct.pack("<I", int(time.time()))
+    text_bytes = text.encode("utf-8", errors="ignore")
 
     payload = bytes([code, channel_idx, path_len, txt_type]) + timestamp + text_bytes
     return payload
@@ -54,7 +54,7 @@ def test_encrypted_message_not_logged():
     sent_responses = []
 
     def mock_send_channel_msg(text, channel_idx):
-        sent_responses.append({'text': text, 'channel_idx': channel_idx})
+        sent_responses.append({"text": text, "channel_idx": channel_idx})
 
     bot._send_channel_msg = mock_send_channel_msg
 
@@ -128,7 +128,7 @@ def test_encrypted_message_not_logged():
     print("=" * 80)
 
     # Check what was logged
-    lines = output.split('\n')
+    lines = output.split("\n")
 
     # Helper function to classify log lines
     def is_message_without_prefix_log(line):
@@ -137,14 +137,14 @@ def test_encrypted_message_not_logged():
 
     def is_message_with_sender_log(line):
         """Check if line contains a properly logged message with sender info"""
-        if 'channel_idx=' not in line or ': ' not in line:
+        if "channel_idx=" not in line or ": " not in line:
             return False
         # Look for known senders from our test cases
         return any(sender in line for sender in EXPECTED_SENDERS)
 
     def is_wx_response_log(line):
         """Check if line indicates a WX weather request was processed"""
-        return 'WX request' in line
+        return "WX request" in line
 
     # Count different types of messages
     messages_without_prefix_count = 0
@@ -161,7 +161,9 @@ def test_encrypted_message_not_logged():
         if is_wx_response_log(line):
             wx_responses += 1
 
-    print(f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be {EXPECTED_MESSAGES_WITHOUT_PREFIX})")
+    print(
+        f"\nMessages without prefix (debug logged): {messages_without_prefix_count} (should be {EXPECTED_MESSAGES_WITHOUT_PREFIX})"
+    )
     print(f"Messages with sender logged: {messages_with_sender_count} (should be {EXPECTED_MESSAGES_WITH_SENDER})")
     print(f"WX responses sent: {wx_responses} (should be {EXPECTED_WX_RESPONSES} - one with prefix, one without)")
 
@@ -169,12 +171,15 @@ def test_encrypted_message_not_logged():
     # 1. Messages without prefix are logged (with debug message about the prefix)
     # 2. Garbled content doesn't trigger WX responses
     # 3. Valid WX commands work with or without sender prefix
-    assert messages_without_prefix_count == EXPECTED_MESSAGES_WITHOUT_PREFIX, \
-        f"Should log {EXPECTED_MESSAGES_WITHOUT_PREFIX} messages without prefix, logged {messages_without_prefix_count}"
-    assert messages_with_sender_count == EXPECTED_MESSAGES_WITH_SENDER, \
-        f"Should log {EXPECTED_MESSAGES_WITH_SENDER} messages with sender info, logged {messages_with_sender_count}"
-    assert wx_responses == EXPECTED_WX_RESPONSES, \
-        f"Should respond to {EXPECTED_WX_RESPONSES} WX commands (with and without prefix), responded to {wx_responses}"
+    assert (
+        messages_without_prefix_count == EXPECTED_MESSAGES_WITHOUT_PREFIX
+    ), f"Should log {EXPECTED_MESSAGES_WITHOUT_PREFIX} messages without prefix, logged {messages_without_prefix_count}"
+    assert (
+        messages_with_sender_count == EXPECTED_MESSAGES_WITH_SENDER
+    ), f"Should log {EXPECTED_MESSAGES_WITH_SENDER} messages with sender info, logged {messages_with_sender_count}"
+    assert (
+        wx_responses == EXPECTED_WX_RESPONSES
+    ), f"Should respond to {EXPECTED_WX_RESPONSES} WX commands (with and without prefix), responded to {wx_responses}"
 
     print("\n✅ New behavior verified:")
     print("  - Messages without SenderName: prefix are processed (sender='channel')")
@@ -201,6 +206,7 @@ def main():
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

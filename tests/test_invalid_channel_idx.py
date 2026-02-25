@@ -5,8 +5,10 @@ This addresses the issue where encrypted/garbled messages with channel_idx > 7
 were being logged and causing confusion.
 """
 
-import sys
 import os
+import sys
+import time
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from weather_bot import WeatherBot
@@ -22,14 +24,18 @@ def test_invalid_channel_idx_filtering():
 
     # Test Case 1: Valid channel index (0-7)
     print("\n1. Testing valid channel indices (0-7):")
-    import time
+
     for idx in range(8):
         # Old format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         # Use a realistic timestamp to avoid V3 format detection issues
         ts = int(time.time()).to_bytes(4, "little")
         payload = bytes([0x88, idx, 0x00, 0x00]) + ts + b"Test message"
         channel_idx, text = bot._parse_channel_message(payload)
-        print(f"   channel_idx={idx}: parsed as {channel_idx} ✓" if channel_idx is not None else f"   channel_idx={idx}: rejected ✗")
+        print(
+            f"   channel_idx={idx}: parsed as {channel_idx} ✓"
+            if channel_idx is not None
+            else f"   channel_idx={idx}: rejected ✗"
+        )
         assert channel_idx == idx, f"Valid channel_idx {idx} should be accepted"
         assert text == "Test message", f"Text should be parsed correctly"
 
@@ -39,11 +45,14 @@ def test_invalid_channel_idx_filtering():
     for idx in invalid_indices:
         # Old format with invalid channel_idx and realistic header bytes
         # Format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
-        import time
         ts = int(time.time()).to_bytes(4, "little")
         payload = bytes([0x88, idx, 0x05, 0x00]) + ts + b"Garbled data"
         channel_idx, text = bot._parse_channel_message(payload)
-        print(f"   channel_idx={idx}: rejected ✓" if channel_idx is None else f"   channel_idx={idx}: accepted as {channel_idx} ✗")
+        print(
+            f"   channel_idx={idx}: rejected ✓"
+            if channel_idx is None
+            else f"   channel_idx={idx}: accepted as {channel_idx} ✗"
+        )
         assert channel_idx is None, f"Invalid channel_idx {idx} should be rejected"
         assert text is None, f"Text should be None for invalid channel_idx"
 
@@ -53,7 +62,11 @@ def test_invalid_channel_idx_filtering():
     snr = 45  # Valid SNR value
     v3_payload = bytes([0x88, snr, 0x00, 0x00, 2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]) + b"V3 message"
     channel_idx, text = bot._parse_channel_message(v3_payload)
-    print(f"   V3 format with channel_idx=2: parsed as {channel_idx} ✓" if channel_idx == 2 else f"   V3 format: rejected ✗")
+    print(
+        f"   V3 format with channel_idx=2: parsed as {channel_idx} ✓"
+        if channel_idx == 2
+        else f"   V3 format: rejected ✗"
+    )
     assert channel_idx == 2, "V3 format with valid channel_idx should be accepted"
     assert text == "V3 message", "V3 text should be parsed correctly"
 
@@ -96,11 +109,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

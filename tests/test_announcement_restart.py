@@ -4,14 +4,16 @@ Integration test for announcement persistence during bot restart
 Tests the full startup sequence with and without recent announcements
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import time
 import threading
+import time
 from unittest.mock import MagicMock, patch
-from weather_bot import WeatherBot, ANNOUNCE_INTERVAL, ANNOUNCE_TIMESTAMP_FILE, ANNOUNCE_MESSAGE
+
+from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE, ANNOUNCE_TIMESTAMP_FILE, WeatherBot
 
 
 def simulate_startup_announcement_logic(bot):
@@ -55,8 +57,7 @@ def test_startup_with_recent_announcement():
     # Simulate recent announcement (30 minutes ago)
     recent_time = time.time() - (30 * 60)  # 30 minutes ago
 
-    bot = WeatherBot(node_id="test_bot", debug=False, announce=True,
-                     weather_channel_idx=1)
+    bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(recent_time)
 
     print(f"  Simulated last announcement: 30 minutes ago")
@@ -69,9 +70,9 @@ def test_startup_with_recent_announcement():
         if msg == ANNOUNCE_MESSAGE:
             sent_announcements.append({"msg": msg, "channel_idx": channel_idx, "time": time.time()})
 
-    with patch.object(bot, '_connect', return_value=True), \
-         patch.object(bot, '_send_cmd'), \
-         patch.object(bot, '_send_channel_msg', side_effect=mock_send_channel_msg):
+    with patch.object(bot, "_connect", return_value=True), patch.object(bot, "_send_cmd"), patch.object(
+        bot, "_send_channel_msg", side_effect=mock_send_channel_msg
+    ):
 
         # Simulate the startup code from run() method using helper
         bot._running = True
@@ -102,8 +103,7 @@ def test_startup_with_old_announcement():
     # Simulate old announcement (5 hours ago)
     old_time = time.time() - (5 * 60 * 60)  # 5 hours ago
 
-    bot = WeatherBot(node_id="test_bot", debug=False, announce=True,
-                     weather_channel_idx=1)
+    bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(old_time)
 
     print(f"  Simulated last announcement: 5 hours ago")
@@ -116,9 +116,9 @@ def test_startup_with_old_announcement():
         if msg == ANNOUNCE_MESSAGE:
             sent_announcements.append({"msg": msg, "channel_idx": channel_idx, "time": time.time()})
 
-    with patch.object(bot, '_connect', return_value=True), \
-         patch.object(bot, '_send_cmd'), \
-         patch.object(bot, '_send_channel_msg', side_effect=mock_send_channel_msg):
+    with patch.object(bot, "_connect", return_value=True), patch.object(bot, "_send_cmd"), patch.object(
+        bot, "_send_channel_msg", side_effect=mock_send_channel_msg
+    ):
 
         # Simulate the startup code from run() method using helper
         bot._running = True
@@ -151,8 +151,7 @@ def test_startup_no_previous_announcement():
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
 
-    bot = WeatherBot(node_id="test_bot", debug=False, announce=True,
-                     weather_channel_idx=1)
+    bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
 
     print(f"  No previous announcement file")
     print(f"  Starting bot with announcements enabled...")
@@ -164,9 +163,9 @@ def test_startup_no_previous_announcement():
         if msg == ANNOUNCE_MESSAGE:
             sent_announcements.append({"msg": msg, "channel_idx": channel_idx, "time": time.time()})
 
-    with patch.object(bot, '_connect', return_value=True), \
-         patch.object(bot, '_send_cmd'), \
-         patch.object(bot, '_send_channel_msg', side_effect=mock_send_channel_msg):
+    with patch.object(bot, "_connect", return_value=True), patch.object(bot, "_send_cmd"), patch.object(
+        bot, "_send_channel_msg", side_effect=mock_send_channel_msg
+    ):
 
         # Simulate the startup code from run() method using helper
         bot._running = True
@@ -206,10 +205,12 @@ if __name__ == "__main__":
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
     except Exception as e:
         print(f"\n✗ Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

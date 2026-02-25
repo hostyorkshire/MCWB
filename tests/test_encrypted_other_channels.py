@@ -3,12 +3,15 @@
 Test to verify bot behavior with encrypted messages on different channels
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WeatherBot
 import struct
+
+from weather_bot import WeatherBot
+
 
 def test_encrypted_vs_plaintext():
     """
@@ -30,8 +33,8 @@ def test_encrypted_vs_plaintext():
     channel_idx = 0
     path_len = 0
     txt_type = 0
-    timestamp = struct.pack('<I', 1234567890)
-    text = b'M3UXC: wx Leeds'
+    timestamp = struct.pack("<I", 1234567890)
+    text = b"M3UXC: wx Leeds"
     payload = bytes([code, channel_idx, path_len, txt_type]) + timestamp + text
 
     result = bot._parse_channel_message(payload)
@@ -46,7 +49,7 @@ def test_encrypted_vs_plaintext():
     print("Test 2: Encrypted message on channel 1")
     channel_idx = 1
     # Encrypted messages have random-looking bytes instead of readable text
-    encrypted_text = bytes([0x7f, 0x3a, 0x9b, 0x12, 0xef, 0x44, 0x88, 0x91, 0x23, 0xcd, 0xfe, 0xaa])
+    encrypted_text = bytes([0x7F, 0x3A, 0x9B, 0x12, 0xEF, 0x44, 0x88, 0x91, 0x23, 0xCD, 0xFE, 0xAA])
     payload = bytes([code, channel_idx, path_len, txt_type]) + timestamp + encrypted_text
 
     result = bot._parse_channel_message(payload)
@@ -93,6 +96,7 @@ def test_encrypted_vs_plaintext():
     print("the bot will only respond on unencrypted channels.")
     print("=" * 70)
     print()
+
 
 if __name__ == "__main__":
     test_encrypted_vs_plaintext()

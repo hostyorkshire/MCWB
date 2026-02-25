@@ -4,21 +4,23 @@ Test channel index filtering functionality.
 Verifies that the bot only responds to messages from the specified channel_idx.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import io
 from contextlib import redirect_stdout
 from unittest.mock import Mock
+
 from weather_bot import WeatherBot
 
 
 def test_no_filter():
     """Test that bot accepts messages from all channels when no filter is set."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("TEST 1: No channel filter (accepts all channels)")
-    print("="*70)
+    print("=" * 70)
 
     bot = WeatherBot(debug=True, allowed_channel_idx=None)
     # Mock serial connection
@@ -52,9 +54,9 @@ def test_no_filter():
 
 def test_with_filter():
     """Test that bot only accepts messages from the specified channel_idx."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("TEST 2: Channel filter set to channel_idx=1 (weather channel)")
-    print("="*70)
+    print("=" * 70)
 
     bot = WeatherBot(debug=True, allowed_channel_idx=1)
     # Mock serial connection
@@ -63,9 +65,9 @@ def test_with_filter():
 
     # Simulate messages from different channels
     test_cases = [
-        (0, "User1: wx London", False),      # Should be ignored
-        (1, "User2: wx Manchester", True),   # Should be processed
-        (2, "User3: wx York", False),        # Should be ignored
+        (0, "User1: wx London", False),  # Should be ignored
+        (1, "User2: wx Manchester", True),  # Should be processed
+        (2, "User3: wx York", False),  # Should be ignored
     ]
 
     for channel_idx, text, should_process in test_cases:
@@ -88,9 +90,9 @@ def test_with_filter():
 
 def test_filter_logs_rejection():
     """Test that rejected messages are logged in debug mode."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("TEST 3: Verify rejected messages are logged")
-    print("="*70)
+    print("=" * 70)
 
     bot = WeatherBot(debug=True, allowed_channel_idx=1)
     # Mock serial connection
@@ -102,6 +104,7 @@ def test_filter_logs_rejection():
     original_log = bot._log
 
     logged_messages = []
+
     def capture_log(msg):
         logged_messages.append(msg)
         original_log(msg)
@@ -124,16 +127,16 @@ def test_filter_logs_rejection():
 
 def main():
     """Run all tests."""
-    print("\n╔" + "="*68 + "╗")
-    print("║" + " "*18 + "Channel Index Filter Tests" + " "*24 + "║")
-    print("╚" + "="*68 + "╝")
+    print("\n╔" + "=" * 68 + "╗")
+    print("║" + " " * 18 + "Channel Index Filter Tests" + " " * 24 + "║")
+    print("╚" + "=" * 68 + "╝")
 
     try:
         test1 = test_no_filter()
         test2 = test_with_filter()
         test3 = test_filter_logs_rejection()
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         if test1 and test2 and test3:
             print("✅ ALL TESTS PASSED")
             print("\nChannel index filtering is working correctly:")
@@ -142,13 +145,14 @@ def main():
             print("- Rejected messages are logged in debug mode")
         else:
             print("❌ SOME TESTS FAILED")
-        print("="*70 + "\n")
+        print("=" * 70 + "\n")
 
         return 0 if (test1 and test2 and test3) else 1
 
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

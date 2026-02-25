@@ -4,12 +4,14 @@ Test script for weather channel index configuration
 Tests the new --weather-channel-idx option
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WeatherBot
 from unittest.mock import MagicMock, patch
+
+from weather_bot import WeatherBot
 
 
 def test_weather_channel_idx_filtering():
@@ -40,7 +42,7 @@ def test_weather_channel_idx_announcements():
     print("=" * 60)
 
     # Mock serial to avoid needing hardware
-    with patch('weather_bot.serial'):
+    with patch("weather_bot.serial"):
         # Create bot with weather_channel_idx=3
         bot = WeatherBot(debug=False, weather_channel_idx=3, announce=True)
 
@@ -167,11 +169,13 @@ def main():
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n✗ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
