@@ -4,6 +4,56 @@
 
 If you're unable to connect to your web dashboard, follow these diagnostic steps **in order**:
 
+## 🚨 SSL/HTTPS Error in Browser
+
+### Error: "SSL received a record that exceeded the maximum permissible length"
+
+**This error means you're trying to use HTTPS to connect to an HTTP server!**
+
+**Quick Fix:** Change your URL from `https://` to `http://`
+
+❌ **Wrong:**  `https://192.168.1.109:5000`  
+✅ **Correct:** `http://192.168.1.109:5000`
+
+**Why this happens:**
+- The dashboard runs in **HTTP mode** by default (not HTTPS/SSL)
+- Some browsers may auto-complete or remember `https://` for an address
+- If you previously visited the URL with HTTPS, the browser might cache it
+
+**Solutions:**
+1. **Use HTTP** - Type `http://192.168.1.109:5000` explicitly in the address bar
+2. **Clear browser cache** - Clear cache/cookies for the IP address
+3. **Try incognito/private mode** - This bypasses cached HTTPS redirects
+4. **Enable HTTPS on server** - If you need HTTPS, see below
+
+### To Enable HTTPS/SSL on the Dashboard
+
+If you need HTTPS (for example, to connect from a Netlify-hosted website), follow these steps:
+
+```bash
+# 1. Generate SSL certificate (replace IP with yours)
+cd ~/MCWB
+python3 generate_ssl_cert.py --hostname 192.168.1.109
+
+# 2. Update the service to use SSL
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+
+# 3. Change the ExecStart line to add --ssl:
+# From: ExecStart=... web_dashboard.py --host 0.0.0.0 --port 5000
+# To:   ExecStart=... web_dashboard.py --host 0.0.0.0 --port 5000 --ssl
+
+# 4. Reload and restart service
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard
+
+# 5. Now connect with HTTPS
+# https://192.168.1.109:5000
+```
+
+**Note:** Self-signed certificates will show a browser warning. Click "Advanced" → "Proceed" to continue.
+
+---
+
 ## Quick Diagnostics (Run on Your Raspberry Pi)
 
 ```bash
@@ -240,3 +290,44 @@ If you're still stuck, open an issue at https://github.com/hostyorkshire/MCWB/is
 3. Output of `hostname -I`
 4. Output of `python3 -c "import flask, flask_cors; print('OK')"`
 5. Your Raspberry Pi model and OS version
+
+---
+
+## Frequently Asked Questions
+
+### Q: Do I need to activate the virtual environment after each reboot?
+
+**A: No!** If you installed the dashboard as a service (using `install_dashboard_service.sh`), the service is configured to use the virtual environment's Python interpreter automatically. 
+
+The service runs on boot without any manual intervention. You never need to:
+- Activate the venv manually
+- Run `source venv/bin/activate`
+- Restart the dashboard manually
+
+**How it works:**
+- The install script detects or creates a virtual environment
+- It configures the systemd service to use the absolute path to the venv's Python (e.g., `/home/pi/MCWB/venv/bin/python3`)
+- The service uses this path directly, so it always uses the venv's packages
+- On every reboot, systemd starts the service automatically using the venv
+
+**To verify your service is using the venv:**
+```bash
+# Check the service configuration
+sudo systemctl cat mcwb-dashboard | grep ExecStart
+
+# You should see something like:
+# ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/web_dashboard.py ...
+# (Not /usr/bin/python3)
+```
+
+### Q: What if I'm running manually (not as a service)?
+
+If you start the dashboard manually with `python3 web_dashboard.py`, then yes, you need to activate the venv first:
+
+```bash
+cd ~/MCWB
+source venv/bin/activate
+python3 web_dashboard.py
+```
+
+**But for production use, install as a service instead** - it handles everything automatically.

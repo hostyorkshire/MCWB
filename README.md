@@ -166,15 +166,21 @@ cd ~/MCWB
 
 This script will:
 - ✅ Automatically configure everything for your system
+- ✅ Create a virtual environment and install dependencies
+- ✅ Configure the service to use the venv (no manual activation needed)
 - ✅ Configure firewall if needed
 - ✅ Start the dashboard and show you the connection URL
 - ✅ Enable auto-start on reboot
 
 The installer will display your connection URL, like: `http://192.168.1.109:5000`
 
+**✨ Important:** Once installed as a service, the dashboard starts automatically on every reboot. You **don't need to activate the virtual environment manually** - the service handles this automatically using the venv's Python interpreter.
+
 **For HTTPS:** After installation, see [HTTPS_SETUP.md](HTTPS_SETUP.md) to enable SSL.
 
-### Manual Start (For Testing)
+### Manual Start (For Testing Only)
+
+**Note:** Only use this for testing. For production use, install as a service (above) which handles everything automatically.
 
 ```bash
 # Create and activate virtual environment if not already done
