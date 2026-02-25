@@ -4,6 +4,7 @@ MCWB Web Dashboard
 Dark-themed web interface for monitoring the MeshCore Weather Bot
 """
 
+import json
 import socket
 import sys
 from pathlib import Path
@@ -68,8 +69,6 @@ def initialize_channels_file():
     channels_file = LOGS_DIR / "channels.json"
     
     if not channels_file.exists():
-        import json
-        
         # Create the logs directory if it doesn't exist
         LOGS_DIR.mkdir(parents=True, exist_ok=True)
         

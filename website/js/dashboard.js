@@ -228,7 +228,7 @@ async function updateDashboard() {
             activeChannelsEl.textContent = channelText;
         } else {
             // Show contextual message based on whether bot has activity
-            if (stats.total_requests === 0 && (!channels.last_updated || channels.last_updated === null)) {
+            if (stats.total_requests === 0 && !channels.last_updated) {
                 activeChannelsEl.textContent = 'Waiting for activity...';
             } else {
                 activeChannelsEl.textContent = 'No active channels';
