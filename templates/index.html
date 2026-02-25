@@ -687,7 +687,7 @@
 
         <div class="footer">
             <p>MCWB v2 - MeshCore Weather Bot | Theme-Aware Dashboard</p>
-            <p>Auto-refresh every 10 seconds</p>
+            <p>Logs auto-refresh every 5 seconds | Stats refresh every 60 seconds</p>
         </div>
     </div>
 
@@ -881,7 +881,12 @@
 
         async function loadLog(logType) {
             const logContent = document.getElementById('log-content');
-            logContent.innerHTML = '<div class="loading">Loading logs...</div>';
+            
+            // Only show "Loading..." if the log content is currently empty or has a message
+            const currentContent = logContent.innerHTML;
+            if (!currentContent || currentContent.includes('loading') || currentContent.includes('No log')) {
+                logContent.innerHTML = '<div class="loading">Loading logs...</div>';
+            }
             
             try {
                 const response = await fetch(`/api/logs/${logType}`);
@@ -905,7 +910,14 @@
                     // Auto-scroll to bottom
                     logContent.scrollTop = logContent.scrollHeight;
                 } else {
-                    logContent.innerHTML = '<div class="loading">No log entries found</div>';
+                    // Provide helpful message based on log type
+                    let message = 'No log entries found';
+                    if (logType.includes('error')) {
+                        message = '✓ No errors logged yet (this is good!)';
+                    } else {
+                        message = 'No log entries yet. Waiting for activity...';
+                    }
+                    logContent.innerHTML = `<div class="loading">${message}</div>`;
                 }
             } catch (error) {
                 console.error('Error loading log:', error);
@@ -934,12 +946,21 @@
         }
 
         function startAutoRefresh() {
+            // Refresh logs and status frequently (every 5 seconds)
             autoRefreshInterval = setInterval(() => {
-                loadStatus();
-                loadChannels();
-                loadStats();
                 loadLog(currentLog);
-            }, 10000); // Refresh every 10 seconds
+                loadStatus();
+            }, 5000);
+            
+            // Refresh channels less frequently (every 30 seconds)
+            setInterval(() => {
+                loadChannels();
+            }, 30000);
+            
+            // Refresh stats even less frequently (every 60 seconds)
+            setInterval(() => {
+                loadStats();
+            }, 60000);
         }
 
         // Load and update statistics
@@ -949,10 +970,22 @@
                 const statsResponse = await fetch('/api/stats');
                 const statsData = await statsResponse.json();
                 
-                // Update stat cards
-                document.getElementById('total-requests').textContent = statsData.total_requests;
-                document.getElementById('total-errors').textContent = statsData.total_errors;
-                document.getElementById('success-rate').textContent = statsData.success_rate + '%';
+                // Update stat cards only if values changed
+                const totalRequestsEl = document.getElementById('total-requests');
+                if (totalRequestsEl.textContent !== String(statsData.total_requests)) {
+                    totalRequestsEl.textContent = statsData.total_requests;
+                }
+                
+                const totalErrorsEl = document.getElementById('total-errors');
+                if (totalErrorsEl.textContent !== String(statsData.total_errors)) {
+                    totalErrorsEl.textContent = statsData.total_errors;
+                }
+                
+                const successRateEl = document.getElementById('success-rate');
+                const successRateText = statsData.success_rate + '%';
+                if (successRateEl.textContent !== successRateText) {
+                    successRateEl.textContent = successRateText;
+                }
                 
                 if (statsData.last_updated) {
                     const lastUpdate = new Date(statsData.last_updated);
@@ -960,16 +993,25 @@
                     const diffMs = now - lastUpdate;
                     const diffMins = Math.floor(diffMs / 60000);
                     
+                    let lastUpdatedText;
                     if (diffMins < 1) {
-                        document.getElementById('last-updated').textContent = 'Just now';
+                        lastUpdatedText = 'Just now';
                     } else if (diffMins < 60) {
-                        document.getElementById('last-updated').textContent = diffMins + 'm ago';
+                        lastUpdatedText = diffMins + 'm ago';
                     } else {
                         const diffHours = Math.floor(diffMins / 60);
-                        document.getElementById('last-updated').textContent = diffHours + 'h ago';
+                        lastUpdatedText = diffHours + 'h ago';
+                    }
+                    
+                    const lastUpdatedEl = document.getElementById('last-updated');
+                    if (lastUpdatedEl.textContent !== lastUpdatedText) {
+                        lastUpdatedEl.textContent = lastUpdatedText;
                     }
                 } else {
-                    document.getElementById('last-updated').textContent = 'Never';
+                    const lastUpdatedEl = document.getElementById('last-updated');
+                    if (lastUpdatedEl.textContent !== 'Never') {
+                        lastUpdatedEl.textContent = 'Never';
+                    }
                 }
                 
                 // Load hourly data
