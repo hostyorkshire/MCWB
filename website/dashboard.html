@@ -284,6 +284,9 @@
                         <button onclick="clearCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear</button>
                     </div>
                     <p style="font-size: 0.85em; margin-top: 0.5rem; color: var(--text-muted);">Example: <code>http://192.168.1.109:5000</code> or <code>http://raspberrypi.local:5000</code></p>
+                    <p style="font-size: 0.85em; margin-top: 0.5rem; padding: 0.5rem; background: rgba(96, 165, 250, 0.1); border-left: 3px solid var(--accent-primary); border-radius: 4px;">
+                        <strong>⚡ HTTPS Note:</strong> If accessing this page via HTTPS (e.g., Netlify), you cannot connect to HTTP URLs due to browser security. Either access this page via HTTP or set up HTTPS for your dashboard.
+                    </p>
                 </div>
             </div>
             
@@ -291,6 +294,16 @@
                 <h3>✓ Connected to Live Dashboard</h3>
                 <p>This dashboard is now displaying real-time data from your running bot at <code id="connectedUrl">http://localhost:5000</code>.</p>
                 <p style="margin-bottom: 0; font-size: 0.9em;">Data refreshes automatically every 10 seconds.</p>
+            </div>
+
+            <div class="info-box warning" id="connectionError" style="display: none;">
+                <h3>⚠️ Connection Error</h3>
+                <p><strong>Failed to connect to:</strong> <code id="errorUrl"></code></p>
+                <p id="errorMessage" style="font-weight: 600; margin-top: 1rem;"></p>
+                <div id="errorSolution" style="margin-top: 1rem; font-size: 0.9em; line-height: 1.6;"></div>
+                <p style="margin-top: 1rem; margin-bottom: 0; font-size: 0.9em;">
+                    Showing demo data in the meantime. <button onclick="clearCustomApiUrl(); location.reload();" style="padding: 0.3rem 0.6rem; background: var(--accent-primary); border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-left: 0.5rem;">Reset Connection</button>
+                </p>
             </div>
 
             <div class="auto-refresh-toggle">
