@@ -968,6 +968,8 @@ class MeshCore:
             self._connect_serial()
             if self._serial and self._serial.is_open:
                 self._start_listener()
+        # Initialize channels.json for dashboard (even if empty initially)
+        self.save_active_channels()
         self.log("MeshCore started")
 
     def stop(self):

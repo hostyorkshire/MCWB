@@ -535,6 +535,7 @@ class WeatherBot:
                 else:
                     # User said no or something else, clear pending state
                     del self._pending_outlook[state_key]
+                    return
 
         location, country = self._parse_command(content)
         if location:
