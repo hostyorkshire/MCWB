@@ -10,6 +10,7 @@ import time
 
 # List of test files to run
 TEST_FILES = [
+    'tests/test_service_files.py',  # Validate service files are clean
     'tests/test_usb_port_detection.py',
     'tests/test_lora_serial.py',
     'tests/test_listener_startup.py',
