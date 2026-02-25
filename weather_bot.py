@@ -932,6 +932,10 @@ class WeatherBot:
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
+        # Give listener thread time to initialize and process sync response
+        # This prevents race condition where announcement is sent before radio is ready
+        time.sleep(0.5)
+
         if self.weather_channel_idx is not None:
             msg = f"MCWBv2 running. Weather channel configured as channel_idx={self.weather_channel_idx}."
             print(msg)
