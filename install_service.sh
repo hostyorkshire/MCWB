@@ -43,7 +43,7 @@ echo "🔍 Checking Python dependencies..."
 # Check if we're in a virtual environment
 if [ -z "$VIRTUAL_ENV" ]; then
     # Not in a venv, check if one exists
-    if [ -d "venv" ]; then
+    if [ -d "venv" ] && [ -f "venv/bin/python3" ]; then
         echo "📦 Virtual environment found at ./venv"
         echo "   Checking if dependencies are installed in venv..."
         if ./venv/bin/python3 -c "import serial" 2>/dev/null; then
