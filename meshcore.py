@@ -1005,16 +1005,21 @@ class MeshCore:
             })
         return channels
 
-    def save_active_channels(self, filename: str = "logs/channels.json"):
+    def save_active_channels(self, filename: str = None):
         """
         Save active channels to a JSON file for dashboard display.
 
         Args:
-            filename: Path to save the channels data (default: logs/channels.json)
+            filename: Path to save the channels data (default: <script_dir>/logs/channels.json)
         """
         import json
         import os
         from datetime import datetime
+        from pathlib import Path
+
+        # Use absolute path based on script location to avoid working directory issues
+        if filename is None:
+            filename = str(Path(__file__).parent / "logs" / "channels.json")
 
         channels = self.get_active_channels()
         data = {

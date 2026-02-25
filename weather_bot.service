@@ -10,7 +10,7 @@ Type=simple
 User=pi
 # Change paths if you installed to a different location
 WorkingDirectory=/home/pi/MCWB
-ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
 # Automatically restart if the bot crashes
 Restart=on-failure
 RestartSec=10
@@ -18,20 +18,20 @@ RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
-# Optional: Uncomment to enable announcements every 3 hours
-# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
+# Note: Announcements are enabled by default (--announce flag above)
+# To disable announcements, remove the --announce flag from ExecStart
 
 # Optional: Uncomment to enable debug logging
-# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 -d
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce -d
 
 # Optional: Uncomment to restrict to a specific channel index
-# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --channel-idx 1
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --channel-idx 1
 
 # Optional: Uncomment to filter location searches to prefer UK cities (useful for UK deployments)
-# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --country GB
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --country GB
 
 # Optional: For US deployments, use --country US
-# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --country US
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --country US
 
 [Install]
 # Start automatically on boot

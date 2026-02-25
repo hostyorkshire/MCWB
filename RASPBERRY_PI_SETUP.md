@@ -218,7 +218,7 @@ Wants=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/MCWB
-ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -230,7 +230,7 @@ WantedBy=multi-user.target
 
 **If using a virtual environment**, change the `ExecStart` line to use the venv Python:
 ```ini
-ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
+ExecStart=/home/pi/MCWB/venv/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
 ```
 
 **Key settings explained:**
@@ -494,16 +494,32 @@ If the service randomly stops:
 
 ## Advanced Configuration
 
-### Running with Announcements
+### Running with Announcements (Enabled by Default)
 
-To enable periodic weather announcements every 3 hours:
+**Note:** As of the latest version, periodic weather announcements every 3 hours are **enabled by default** when using the installer scripts.
+
+If you installed manually and want to enable announcements:
 
 ```bash
 # Edit the service file
 sudo nano /etc/systemd/system/weather_bot.service
 
-# Change ExecStart line to:
+# Change ExecStart line to include --announce:
 ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
+
+# Reload and restart
+sudo systemctl daemon-reload
+sudo systemctl restart weather_bot
+```
+
+To **disable** announcements if you don't want them:
+
+```bash
+# Edit the service file
+sudo nano /etc/systemd/system/weather_bot.service
+
+# Remove --announce from the ExecStart line:
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200
 
 # Reload and restart
 sudo systemctl daemon-reload
