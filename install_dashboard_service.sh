@@ -42,7 +42,7 @@ echo "🔍 Checking Python dependencies..."
 if ! python3 -c "import flask" 2>/dev/null; then
     echo "⚠️  Warning: Flask not installed"
     echo "   Installing dependencies..."
-    pip3 install --user -r requirements.txt
+    pip3 install -r requirements.txt
 else
     echo "✅ Python dependencies OK"
 fi
