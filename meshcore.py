@@ -214,8 +214,10 @@ class MeshCore:
         self._reverse_channel_map = {}  # channel_idx -> channel_name
         self._next_channel_idx = 1  # 0 is reserved for default/no-channel
 
-        # Track active channels (channel_idx with received messages)
-        self._active_channels = set()  # Set of channel_idx that have received messages
+        # Track active channels with timestamps for expiration (72 hours)
+        # Format: {channel_idx: last_used_timestamp}
+        self._active_channels = {}  # Dict mapping channel_idx to last used timestamp
+        self._channel_expiry_hours = 72  # Channels expire after 72 hours of inactivity
 
         # LoRa serial connection
         self.serial_port = serial_port
@@ -382,7 +384,7 @@ class MeshCore:
             actual_channel_idx = self._get_channel_idx(channel)
 
         # Track active channel when sending messages (works in both real and simulation mode)
-        self._active_channels.add(actual_channel_idx)
+        self._active_channels[actual_channel_idx] = time.time()
         self.save_active_channels()
 
         channel_info = f" on channel '{channel}'" if channel else ""
@@ -938,8 +940,8 @@ class MeshCore:
             text: The message text (may include "sender: " prefix)
             channel_idx: The channel index from the LoRa frame (0-7)
         """
-        # Track active channel
-        self._active_channels.add(channel_idx)
+        # Track active channel with timestamp
+        self._active_channels[channel_idx] = time.time()
         # Save active channels for dashboard display
         self.save_active_channels()
 
@@ -990,22 +992,53 @@ class MeshCore:
         """Check if MeshCore is running"""
         return self.running
 
+    def _cleanup_expired_channels(self):
+        """
+        Remove channels that haven't been used in the last 72 hours.
+        
+        This prevents the active channels list from growing indefinitely with
+        stale channels that are no longer in use.
+        """
+        import time
+        current_time = time.time()
+        expiry_seconds = self._channel_expiry_hours * 3600
+        
+        # Find expired channels
+        expired = [
+            channel_idx 
+            for channel_idx, last_used in self._active_channels.items()
+            if current_time - last_used > expiry_seconds
+        ]
+        
+        # Remove expired channels
+        for channel_idx in expired:
+            del self._active_channels[channel_idx]
+            if self.debug and expired:
+                channel_name = self._get_channel_name(channel_idx)
+                channel_info = f"'{channel_name}'" if channel_name else f"idx={channel_idx}"
+                self.log(f"Expired channel {channel_info} (inactive for {self._channel_expiry_hours}+ hours)")
+
     def get_active_channels(self):
         """
         Get list of active channels with their names.
+        
+        Automatically removes channels that haven't been used in 72 hours.
 
         Returns:
-            list: List of dicts with 'channel_idx' and 'channel_name' keys.
-                  Example: [{'channel_idx': 0, 'channel_name': None},
-                           {'channel_idx': 1, 'channel_name': 'weather'},
-                           {'channel_idx': 2, 'channel_name': 'alerts'}]
+            list: List of dicts with 'channel_idx', 'channel_name', and 'last_used' keys.
+                  Example: [{'channel_idx': 0, 'channel_name': None, 'last_used': 1234567890.0},
+                           {'channel_idx': 1, 'channel_name': 'weather', 'last_used': 1234567891.0}]
         """
+        # Clean up expired channels before returning
+        self._cleanup_expired_channels()
+        
         channels = []
-        for channel_idx in sorted(self._active_channels):
+        for channel_idx in sorted(self._active_channels.keys()):
             channel_name = self._get_channel_name(channel_idx)
             channels.append({
                 'channel_idx': channel_idx,
-                'channel_name': channel_name
+                'channel_name': channel_name,
+                'last_used': self._active_channels[channel_idx]
             })
         return channels
 
