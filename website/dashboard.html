@@ -268,51 +268,41 @@
             <p>Real-time monitoring of bot activity and usage statistics.</p>
 
             <div class="info-box warning" id="demoModeWarning">
-                <h3>⚠️ Note: Demo Mode</h3>
-                <p>This dashboard is attempting to connect to the live bot dashboard API. The dashboard is pre-configured to connect to <code>https://192.168.1.109:5000</code>.</p>
-                <p style="margin-top: 0.5rem;"><strong>To enable live data:</strong></p>
-                <ol style="margin-left: 1.5rem; line-height: 1.8;">
-                    <li>On your Raspberry Pi, generate SSL certificate:
-                        <pre style="margin: 0.5rem 0;"><code>python3 generate_ssl_cert.py --hostname 192.168.1.109</code></pre>
+                <h3>📊 Demo Dashboard</h3>
+                <p>This is a static demo dashboard showing example data. No live connection is made to any bot instance.</p>
+                <p style="margin-top: 1rem;"><strong>🚀 Want to see live data from your bot?</strong></p>
+                <p style="margin-left: 1rem;">Access the Web Dashboard directly on your Raspberry Pi:</p>
+                <ol style="margin-left: 2.5rem; line-height: 1.8;">
+                    <li>Start the dashboard on your Pi:
+                        <pre style="margin: 0.5rem 0;"><code>python3 web_dashboard.py --host 0.0.0.0</code></pre>
                     </li>
-                    <li>Start the dashboard with HTTPS:
-                        <pre style="margin: 0.5rem 0;"><code>python3 web_dashboard.py --host 0.0.0.0 --ssl</code></pre>
+                    <li>Access from any device on your <strong>local network</strong>:
+                        <pre style="margin: 0.5rem 0;"><code>http://[your-pi-ip]:5000</code></pre>
                     </li>
-                    <li>In your browser, accept the security warning (normal for self-signed certificates)</li>
                 </ol>
-                <p style="margin-top: 1rem; font-size: 0.9em; padding: 0.5rem; background: rgba(96, 165, 250, 0.1); border-left: 3px solid var(--accent-primary); border-radius: 4px;">
-                    <strong>🔒 HTTPS Required:</strong> This site uses HTTPS, so your dashboard must also use HTTPS. See <a href="https://github.com/hostyorkshire/MCWB/blob/main/HTTPS_SETUP.md" target="_blank" style="color: var(--accent-primary);">HTTPS_SETUP.md</a> for detailed instructions.
-                </p>
                 
-                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                    <h4 style="margin-top: 0; color: var(--accent-primary); font-size: 1rem;">Advanced: Override API URL</h4>
-                    <p style="font-size: 0.9em; margin-bottom: 0.5rem;">If your Raspberry Pi has a different IP address, enter it below:</p>
-                    <div class="api-url-container">
-                        <input type="text" id="customApiUrl" placeholder="https://192.168.1.109:5000" 
-                            style="flex: 1; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; font-size: 0.9rem;">
-                        <button onclick="setCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--accent-primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Connect</button>
-                        <button onclick="clearCustomApiUrl()" style="padding: 0.5rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Clear</button>
-                    </div>
-                    <p style="font-size: 0.85em; margin-top: 0.5rem; color: var(--text-muted);">Example: <code>https://192.168.1.50:5000</code> or <code>https://raspberrypi.local:5000</code></p>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h4 style="margin-top: 0; color: var(--accent-primary); font-size: 1.1rem;">🌍 Remote Access via DDNS / No-IP</h4>
+                    <p style="font-size: 0.95em; margin-bottom: 0.5rem;">To access your dashboard from anywhere (outside your local network):</p>
+                    <ol style="margin-left: 1.5rem; line-height: 1.8; font-size: 0.95em;">
+                        <li><strong>Set up DDNS service:</strong>
+                            <ul style="margin: 0.3rem 0 0.3rem 1.5rem;">
+                                <li><a href="https://www.noip.com/" target="_blank" rel="noopener" style="color: var(--accent-primary);">No-IP</a> (Free Dynamic DNS)</li>
+                                <li><a href="https://www.duckdns.org/" target="_blank" rel="noopener" style="color: var(--accent-primary);">DuckDNS</a> (Free & Simple)</li>
+                                <li><a href="https://www.dynu.com/" target="_blank" rel="noopener" style="color: var(--accent-primary);">Dynu</a> (Free DDNS)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Configure port forwarding</strong> on your router (port 5000 → your Pi's IP)</li>
+                        <li><strong>Access your dashboard</strong> from anywhere:
+                            <pre style="margin: 0.5rem 0;"><code>http://your-hostname.ddns.net:5000</code></pre>
+                        </li>
+                    </ol>
+                    <p style="margin-top: 1rem; padding: 0.75rem; background: rgba(96, 165, 250, 0.1); border-left: 3px solid var(--accent-primary); border-radius: 4px; font-size: 0.9em;">
+                        <strong>📚 Learn More:</strong> See <a href="https://github.com/hostyorkshire/MCWB/blob/main/WEB_DASHBOARD.md" target="_blank" rel="noopener" style="color: var(--accent-primary);">WEB_DASHBOARD.md</a> for complete setup instructions.
+                    </p>
                 </div>
             </div>
             
-            <div class="info-box success" id="liveDataInfo" style="display: none;">
-                <h3>✓ Connected to Live Dashboard</h3>
-                <p>This dashboard is now displaying real-time data from your running bot at <code id="connectedUrl">http://localhost:5000</code>.</p>
-                <p style="margin-bottom: 0; font-size: 0.9em;">Data refreshes automatically every 10 seconds.</p>
-            </div>
-
-            <div class="info-box warning" id="connectionError" style="display: none;">
-                <h3>⚠️ Connection Error</h3>
-                <p><strong>Failed to connect to:</strong> <code id="errorUrl"></code></p>
-                <p id="errorMessage" style="font-weight: 600; margin-top: 1rem;"></p>
-                <div id="errorSolution" style="margin-top: 1rem; font-size: 0.9em; line-height: 1.6;"></div>
-                <p style="margin-top: 1rem; margin-bottom: 0; font-size: 0.9em;">
-                    Showing demo data in the meantime. <button onclick="clearCustomApiUrl(); location.reload();" style="padding: 0.3rem 0.6rem; background: var(--accent-primary); border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-left: 0.5rem;">Reset Connection</button>
-                </p>
-            </div>
-
             <div class="auto-refresh-toggle">
                 <label for="autoRefresh" style="color: var(--text-secondary);">Auto-refresh:</label>
                 <div class="toggle-switch active" id="autoRefreshToggle">
@@ -487,24 +477,65 @@
                 </ul>
             </div>
 
-            <h2>Connecting to Real Dashboard</h2>
-            <p>To view live data from your running bot:</p>
+            <h2>Access Live Dashboard on Your Raspberry Pi</h2>
+            <p>To view real-time data from your running bot, access the web dashboard directly on your Raspberry Pi:</p>
 
             <div class="steps">
                 <div class="step">
-                    <h3>Start the Bot</h3>
+                    <h3>Step 1: Start the Bot</h3>
                     <pre><code>python3 weather_bot.py</code></pre>
                 </div>
 
                 <div class="step">
-                    <h3>Start the Dashboard</h3>
+                    <h3>Step 2: Start the Web Dashboard</h3>
                     <pre><code>python3 web_dashboard.py --host 0.0.0.0</code></pre>
                 </div>
 
                 <div class="step">
-                    <h3>Open in Browser</h3>
-                    <p>Navigate to: <code>http://localhost:5000</code></p>
-                    <p>Or from another device: <code>http://[your-pi-ip]:5000</code></p>
+                    <h3>Step 3: Access Locally</h3>
+                    <p><strong>On the same device:</strong> <code>http://localhost:5000</code></p>
+                    <p><strong>From another device on your network:</strong> <code>http://[your-pi-ip]:5000</code></p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9em; color: var(--text-muted);">💡 Find your Pi's IP: <code>hostname -I</code></p>
+                </div>
+            </div>
+
+            <h2>Remote Access Setup (DDNS / No-IP)</h2>
+            <p>Want to access your dashboard from anywhere, not just your local network? Set up Dynamic DNS:</p>
+
+            <div class="steps">
+                <div class="step">
+                    <h3>Step 1: Choose a DDNS Provider</h3>
+                    <ul style="margin-left: 1.5rem; line-height: 1.8;">
+                        <li><strong><a href="https://www.noip.com/" target="_blank" rel="noopener">No-IP</a></strong> - Popular free option with easy setup</li>
+                        <li><strong><a href="https://www.duckdns.org/" target="_blank" rel="noopener">DuckDNS</a></strong> - Simple and free, no registration needed</li>
+                        <li><strong><a href="https://www.dynu.com/" target="_blank" rel="noopener">Dynu</a></strong> - Free with multiple hostname options</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3>Step 2: Install DDNS Client on Your Pi</h3>
+                    <p>Follow your provider's instructions to install their update client. For No-IP:</p>
+                    <pre><code>cd ~
+wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz
+tar xzf noip-duc-linux.tar.gz
+cd noip-2.1.9-1/
+sudo make install
+sudo noip2</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Step 3: Configure Port Forwarding</h3>
+                    <p>Log into your router's admin panel and forward port 5000 to your Raspberry Pi's local IP address.</p>
+                    <p style="font-size: 0.9em; margin-top: 0.5rem;">Example: Port 5000 → 192.168.1.109:5000</p>
+                </div>
+
+                <div class="step">
+                    <h3>Step 4: Access Your Dashboard Remotely</h3>
+                    <p>You can now access your dashboard from anywhere:</p>
+                    <pre><code>http://your-hostname.ddns.net:5000</code></pre>
+                    <p style="margin-top: 1rem; padding: 0.75rem; background: rgba(96, 165, 250, 0.1); border-left: 3px solid var(--accent-primary); border-radius: 4px; font-size: 0.9em;">
+                        <strong>🔒 Security Note:</strong> Consider setting up HTTPS with SSL certificates for secure remote access. See <a href="https://github.com/hostyorkshire/MCWB/blob/main/HTTPS_SETUP.md" target="_blank" rel="noopener" style="color: var(--accent-primary);">HTTPS_SETUP.md</a> for instructions.
+                    </p>
                 </div>
             </div>
         </div>

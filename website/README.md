@@ -6,7 +6,7 @@ This is a comprehensive wiki-style documentation website for the MeshCore Weathe
 
 - 🌙 **Dark Mode Design** - Professional dark theme optimized for readability
 - 📱 **Fully Responsive** - Works perfectly on desktop, tablet, and mobile devices
-- 📊 **Live Dashboard** - Real-time monitoring with charts and logs (demo)
+- 📊 **Demo Dashboard** - Static demo showing dashboard capabilities
 - 🎨 **Modern UI** - Clean, professional design with smooth animations
 - 🔍 **Easy Navigation** - Clear menu structure and search-friendly content
 - ⚡ **Fast & Lightweight** - Pure HTML/CSS/JavaScript, no build process needed
@@ -19,43 +19,25 @@ This is a comprehensive wiki-style documentation website for the MeshCore Weathe
 4. **Features** (`features.html`) - Complete feature list
 5. **Commands** (`commands.html`) - Command reference and usage
 6. **Channels** (`channels.html`) - Channel configuration guide
-7. **Live Dashboard** (`dashboard.html`) - Real-time monitoring (demo with charts)
+7. **Live Dashboard** (`dashboard.html`) - Demo dashboard with DDNS/remote access information
 8. **Troubleshooting** (`troubleshooting.html`) - Common issues and solutions
 9. **API** (`api.html`) - Technical documentation and protocol details
 
-## Connecting to Your Live Dashboard
+## About the Dashboard
 
-The Live Dashboard page can connect to your running MCWB Web Dashboard API to show real-time data instead of demo data.
+The Live Dashboard page (`dashboard.html`) displays **demo data only**. This is intentional to keep the static website lightweight and avoid resource costs from live data connections.
 
-### Automatic Detection (Local Access)
+**For live, real-time monitoring:**
+- Access the web dashboard directly on your Raspberry Pi
+- Run: `python3 web_dashboard.py --host 0.0.0.0`
+- Access locally at: `http://[your-pi-ip]:5000`
+- For remote access, see the DDNS/No-IP setup instructions on the dashboard page
 
-If you're accessing the website from the same machine where the dashboard is running, it will automatically detect the API at `http://localhost:5000`.
-
-### Custom API URL Configuration
-
-If your dashboard is running on a different device (e.g., Raspberry Pi on your local network), you can configure the API URL:
-
-**Method 1: Using the Configuration Panel**
-1. Open the Live Dashboard page
-2. In the "Demo Mode" warning box, enter your dashboard URL in the "Configure Custom API URL" field
-3. Example: `http://192.168.1.109:5000` or `http://raspberrypi.local:5000`
-4. Click "Connect"
-5. The URL is saved to your browser's localStorage and will be remembered
-
-**Method 2: Using URL Parameters**
-You can also set the API URL via URL parameter:
-```
-https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.109:5000
-```
-
-This is useful for sharing links or bookmarking.
-
-### Requirements for Live Data
-
-For the dashboard to connect successfully:
-1. The Web Dashboard must be running: `python3 web_dashboard.py --host 0.0.0.0`
-2. The API must be accessible from your browser (same network or properly configured network/firewall)
-3. CORS is enabled by default in the Web Dashboard to allow cross-origin requests
+This approach:
+- ✅ Keeps Netlify hosting free and lightweight
+- ✅ Eliminates CORS and connectivity issues
+- ✅ Provides direct, fast access to live data on your local network
+- ✅ Enables remote access via DDNS when needed
 
 ## Deployment Instructions
 
@@ -273,20 +255,20 @@ The website includes:
 
 ## Live Dashboard Notes
 
-The Live Dashboard page (`dashboard.html`) currently shows demo data with:
-- Simulated statistics
-- Sample charts using Chart.js
-- Demo log entries
+The Live Dashboard page (`dashboard.html`) shows **demo data only**. This keeps the static website lightweight and resource-efficient.
 
-To connect it to real bot data, you would need to:
-1. Set up an API endpoint that serves bot logs and statistics
-2. Update `dashboard.js` to fetch from your API
-3. Consider using WebSockets for real-time updates
+**For real-time bot monitoring:**
+1. Run the Python web dashboard on your Raspberry Pi:
+   ```bash
+   python3 web_dashboard.py --host 0.0.0.0
+   ```
+2. Access it locally at `http://[your-pi-ip]:5000`
+3. For remote access outside your network, set up DDNS (Dynamic DNS) with services like:
+   - [No-IP](https://www.noip.com/) - Free DDNS service
+   - [DuckDNS](https://www.duckdns.org/) - Simple and free
+   - [Dynu](https://www.dynu.com/) - Free with multiple hostnames
 
-Alternatively, users can run the included Python web dashboard for actual real-time monitoring:
-```bash
-python3 web_dashboard.py --host 0.0.0.0
-```
+The dashboard page includes complete setup instructions for DDNS/No-IP remote access.
 
 ## Maintenance
 
