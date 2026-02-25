@@ -46,7 +46,7 @@ if [ -z "$VIRTUAL_ENV" ]; then
     if [ -d "venv" ] && [ -f "venv/bin/python3" ]; then
         echo "📦 Virtual environment found at ./venv"
         echo "   Checking if dependencies are installed in venv..."
-        if ./venv/bin/python3 -c "import flask" 2>/dev/null; then
+        if ./venv/bin/python3 -c "import flask; import flask_cors" 2>/dev/null; then
             echo "✅ Python dependencies OK in virtual environment"
             USE_VENV=true
             PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
@@ -59,7 +59,7 @@ if [ -z "$VIRTUAL_ENV" ]; then
         fi
     else
         # No venv, try system python
-        if python3 -c "import flask" 2>/dev/null; then
+        if python3 -c "import flask; import flask_cors" 2>/dev/null; then
             echo "✅ Python dependencies OK (system-wide)"
             USE_VENV=false
             PYTHON_PATH="/usr/bin/python3"
@@ -78,7 +78,7 @@ if [ -z "$VIRTUAL_ENV" ]; then
 else
     # Already in a venv
     echo "✅ Running in virtual environment: $VIRTUAL_ENV"
-    if python3 -c "import flask" 2>/dev/null; then
+    if python3 -c "import flask; import flask_cors" 2>/dev/null; then
         echo "✅ Python dependencies OK"
         USE_VENV=true
         PYTHON_PATH="$VIRTUAL_ENV/bin/python3"
