@@ -1,5 +1,9 @@
 // MCWB Dashboard - Live monitoring with custom charts
 
+// Hardcoded API URL for automatic connection
+// This is the primary dashboard API that the static site will connect to
+const HARDCODED_API_URL = 'http://192.168.1.109:5000';
+
 let autoRefreshEnabled = true;
 let refreshInterval = null;
 let dashboardUrl = null;
@@ -89,19 +93,25 @@ async function detectDashboardUrl() {
     // Build list of URLs to try
     const urls = [];
     
-    // 1. Try custom URL from localStorage first
+    // 1. Try hardcoded API URL FIRST (primary dashboard location)
+    urls.push(HARDCODED_API_URL);
+    
+    // 2. Try custom URL from localStorage (if user has overridden)
     const customUrl = localStorage.getItem('customDashboardApiUrl');
-    if (customUrl) {
+    if (customUrl && customUrl !== HARDCODED_API_URL) {
         urls.push(customUrl);
     }
     
-    // 2. Try common local URLs
+    // 3. Try common local URLs (for local development/testing)
     urls.push('http://localhost:5000');
     urls.push('http://127.0.0.1:5000');
     
-    // 3. Try current hostname (useful when accessing via network)
+    // 4. Try current hostname (useful when accessing via network)
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        urls.push(`${window.location.protocol}//${window.location.hostname}:5000`);
+        const hostnameUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        if (!urls.includes(hostnameUrl)) {
+            urls.push(hostnameUrl);
+        }
     }
     
     let lastError = null;
