@@ -134,7 +134,7 @@ function stopAutoRefresh() {
     }
 }
 
-// Manual refresh
+// Manual refresh of demo data
 function refreshDashboard() {
     updateCharts();
     
