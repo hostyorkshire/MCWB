@@ -44,6 +44,7 @@
                 <h3>Table of Contents</h3>
                 <ul>
                     <li><a href="#weather-api">Weather API (Open-Meteo)</a></li>
+                    <li><a href="#postcode-api">UK Postcode API (Postcodes.io)</a></li>
                     <li><a href="#protocol">MeshCore Protocol</a></li>
                     <li><a href="#python-api">Python API</a></li>
                     <li><a href="#message-format">Message Format</a></li>
@@ -109,6 +110,69 @@ GET https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&cu
                     <tr>
                         <td><code>hourly</code></td>
                         <td>Hourly parameters (apparent_temperature, humidity, wind, etc.)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="postcode-api">UK Postcode API (Postcodes.io)</h2>
+            <p>The bot uses the free <a href="https://postcodes.io/">Postcodes.io API</a> for UK postcode geocoding.</p>
+
+            <div class="info-box success">
+                <h3>✅ No API Key Required</h3>
+                <p>Postcodes.io is completely free and doesn't require registration or API keys. It provides accurate UK postcode data maintained from official sources.</p>
+            </div>
+
+            <h3>API Endpoints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>https://api.postcodes.io/postcodes/{postcode}</code></td>
+                        <td>Lookup full postcode (e.g., S1 2HH)</td>
+                    </tr>
+                    <tr>
+                        <td><code>https://api.postcodes.io/outcodes/{outcode}</code></td>
+                        <td>Lookup partial postcode/outward code (e.g., S71)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Example Requests</h3>
+            <pre><code># Full postcode lookup
+GET https://api.postcodes.io/postcodes/S12HH
+
+# Partial postcode/outward code lookup
+GET https://api.postcodes.io/outcodes/S71</code></pre>
+
+            <h3>Response Data</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>latitude</code></td>
+                        <td>Latitude in decimal degrees</td>
+                    </tr>
+                    <tr>
+                        <td><code>longitude</code></td>
+                        <td>Longitude in decimal degrees</td>
+                    </tr>
+                    <tr>
+                        <td><code>admin_district</code></td>
+                        <td>Administrative district (e.g., Sheffield, Barnsley)</td>
+                    </tr>
+                    <tr>
+                        <td><code>postcode</code> / <code>outcode</code></td>
+                        <td>The formatted postcode or outward code</td>
                     </tr>
                 </tbody>
             </table>
