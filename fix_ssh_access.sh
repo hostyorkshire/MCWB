@@ -22,13 +22,91 @@ echo ""
 
 # Check if UFW is installed
 if ! command -v ufw >/dev/null 2>&1; then
-    echo -e "${GREEN}✅ UFW is not installed${NC}"
-    echo "   SSH access issue is not firewall-related."
+    echo -e "${YELLOW}⚠️  UFW (Uncomplicated Firewall) is not installed${NC}"
     echo ""
-    echo "Other possible causes:"
+    echo "UFW is the recommended firewall tool for Ubuntu/Debian systems."
+    echo ""
+    echo "Would you like to install UFW now? (y/n)"
+    read -p "> " -n 1 -r
+    echo ""
+    echo ""
+    
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "📦 Installing UFW..."
+        if sudo apt-get update && sudo apt-get install -y ufw; then
+            echo ""
+            echo -e "${GREEN}✅ UFW installed successfully${NC}"
+            echo ""
+            echo "🔧 Configuring UFW to allow SSH..."
+            # Allow SSH before enabling to prevent lockout
+            sudo ufw allow 22/tcp
+            echo ""
+            echo "Would you like to enable UFW now? (y/n)"
+            read -p "> " -n 1 -r
+            echo ""
+            echo ""
+            
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                sudo ufw --force enable
+                echo ""
+                echo -e "${GREEN}✅ UFW enabled with SSH allowed${NC}"
+                echo ""
+                echo "📊 Firewall Status:"
+                echo "----------------------------------------"
+                sudo ufw status verbose
+                echo "----------------------------------------"
+                echo ""
+            else
+                echo "UFW installed but not enabled."
+                echo "To enable later, run: sudo ufw enable"
+                echo ""
+            fi
+            exit 0
+        else
+            echo ""
+            echo -e "${RED}❌ Failed to install UFW${NC}"
+            echo ""
+            echo "You can try installing manually with:"
+            echo "   sudo apt-get update"
+            echo "   sudo apt-get install ufw"
+            echo ""
+        fi
+    fi
+    
+    # Check for alternative firewall solutions
+    echo "Checking for other firewall solutions..."
+    echo ""
+    
+    if command -v iptables >/dev/null 2>&1; then
+        echo -e "${BLUE}ℹ️  iptables is available${NC}"
+        echo ""
+        echo "Checking if SSH (port 22) is allowed in iptables..."
+        if sudo iptables -L INPUT -n | grep -q "dpt:22"; then
+            echo -e "${GREEN}✅ SSH appears to be allowed in iptables${NC}"
+        else
+            echo -e "${YELLOW}⚠️  SSH may not be explicitly allowed in iptables${NC}"
+            echo ""
+            echo "To allow SSH in iptables, run:"
+            echo "   sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT"
+            echo "   sudo iptables-save | sudo tee /etc/iptables/rules.v4"
+        fi
+        echo ""
+    fi
+    
+    if command -v firewall-cmd >/dev/null 2>&1; then
+        echo -e "${BLUE}ℹ️  firewalld is available${NC}"
+        echo ""
+        echo "To allow SSH in firewalld, run:"
+        echo "   sudo firewall-cmd --permanent --add-service=ssh"
+        echo "   sudo firewall-cmd --reload"
+        echo ""
+    fi
+    
+    echo "Other possible causes of SSH issues:"
     echo "  - SSH service not running (check with: sudo systemctl status ssh)"
     echo "  - Network configuration issue"
     echo "  - Wrong IP address"
+    echo "  - Router port forwarding not configured"
     echo ""
     exit 0
 fi
