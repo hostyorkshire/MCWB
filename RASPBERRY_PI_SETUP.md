@@ -1119,10 +1119,26 @@ Quick security improvement:
 
 ### Enable Firewall (Optional)
 
+⚠️ **CRITICAL: Always allow SSH BEFORE enabling the firewall or you will be locked out!**
+
 ```bash
 sudo apt-get install ufw
+
+# IMPORTANT: Allow SSH FIRST, before enabling firewall
+sudo ufw allow 22/tcp
 sudo ufw allow ssh
+
+# Now it's safe to enable the firewall
 sudo ufw enable
+```
+
+**If you get locked out:** See [SSH_TROUBLESHOOTING.md](SSH_TROUBLESHOOTING.md) for recovery instructions.
+
+**Incorrect Order (will lock you out):**
+```bash
+# ❌ DON'T DO THIS:
+sudo ufw enable          # Enables firewall first - locks you out!
+sudo ufw allow 22/tcp    # Too late, you're already locked out
 ```
 
 ### Keep System Updated

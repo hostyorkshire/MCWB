@@ -2,6 +2,35 @@
 
 This guide helps you troubleshoot common issues with the MeshCore Weather Bot.
 
+## 🚨 Critical Issue: Can't SSH into Raspberry Pi (But Ping Works)
+
+### Symptoms
+
+- ✅ Ping works: `ping 192.168.1.109` succeeds
+- ❌ SSH fails: `ssh user@192.168.1.109` connection refused or times out
+
+### Cause
+
+**Firewall is blocking SSH port 22.** This is the #1 most common issue when you can ping but can't SSH.
+
+### Quick Fix
+
+**If you have physical access (keyboard/monitor):**
+
+```bash
+# Option 1: Run the fix script
+cd ~/MCWB
+./fix_ssh_access.sh
+
+# Option 2: Manual fix
+sudo ufw allow 22/tcp
+sudo ufw reload
+```
+
+**Complete guide:** See **[SSH_TROUBLESHOOTING.md](SSH_TROUBLESHOOTING.md)** for detailed recovery instructions.
+
+---
+
 ## Issue: "externally-managed-environment" Error During Installation
 
 ### Symptoms

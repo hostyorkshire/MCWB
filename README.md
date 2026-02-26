@@ -9,6 +9,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 - **🍓 [Raspberry Pi Setup](RASPBERRY_PI_SETUP.md)** - Auto-start on boot guide
 - **🌐 [Web Dashboard](WEB_DASHBOARD.md)** - Monitor your bot with a web interface
 - **🐛 [Troubleshooting](TROUBLESHOOTING.md)** - Problem-solving guide
+- **🔧 [SSH Troubleshooting](SSH_TROUBLESHOOTING.md)** - Can't SSH? Start here! (ping works but SSH doesn't)
 
 ## 🎯 IMPORTANT: Bot Works on ANY Channel You Create!
 
