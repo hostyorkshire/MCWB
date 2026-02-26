@@ -968,6 +968,19 @@ class WeatherBot:
         
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
+        
+        # Call Open-Meteo geocoding API
+        url = "https://geocoding-api.open-meteo.com/v1/search"
+        params = {"name": location, "count": 10, "language": "en", "format": "json"}
+        
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            geo = response.json()
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"Geocoding API error for '{location}': {e}")
+            raise
+        
         if "results" not in geo or not geo["results"]:
             return None
         results = geo["results"]
