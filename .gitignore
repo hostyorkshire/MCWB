@@ -41,6 +41,10 @@ Thumbs.db
 *.log.*
 logs/*.log
 logs/*.log.*
+logs/.last_announce
+logs/stats.json
+logs/stats.json.bak
+logs/channels.json
 !logs/README.md
 
 # Temporary files

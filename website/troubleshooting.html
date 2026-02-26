@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting - Meshcore Weather Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Troubleshooting guide for the MeshCore Weather Bot">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="installation.html">Installation</a></li>
+            <li><a href="features.html">Features</a></li>
+            <li><a href="commands.html">Commands</a></li>
+            <li><a href="channels.html">Channels</a></li>
+            <li><a href="dashboard.html">Live Dashboard</a></li>
+            <li><a href="troubleshooting.html" class="active">Troubleshooting</a></li>
+            <li><a href="api.html">API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Troubleshooting Guide</h1>
+            <p>Solutions to common problems and issues.</p>
+
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#no-messages">Bot Not Receiving Messages</a></li>
+                    <li><a href="#no-serial">No Serial Port Found</a></li>
+                    <li><a href="#location-issues">Location Not Found</a></li>
+                    <li><a href="#wrong-city">Wrong City Returned</a></li>
+                    <li><a href="#service-issues">Service Won't Start</a></li>
+                    <li><a href="#debug-mode">Using Debug Mode</a></li>
+                </ul>
+            </div>
+
+            <h2 id="no-messages">Bot Not Receiving Messages</h2>
+            <p>This is the most common issue. Here's how to diagnose and fix it:</p>
+
+            <div class="info-box error">
+                <h3><img src="img/emoji/1f534.svg" alt="🔴" class="emoji-icon"> Most Common Cause</h3>
+                <p><strong>The companion radio is NOT subscribed to the channels where users are sending messages.</strong></p>
+            </div>
+
+            <h3>Solution</h3>
+            <div class="steps">
+                <div class="step">
+                    <h3>Open MeshCore App</h3>
+                    <p>Use the MeshCore mobile app to configure your companion radio.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Join Channels</h3>
+                    <p>Go to Channel Settings and join/subscribe to channels (e.g., <code>#weather</code>, <code>#wxtest</code>).</p>
+                </div>
+
+                <div class="step">
+                    <h3>Restart the Bot</h3>
+                    <pre><code># If running as service
+sudo systemctl restart weather_bot
+
+# If running manually
+# Press Ctrl+C and restart with:
+python3 weather_bot.py</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Test</h3>
+                    <p>Send <code>wx London</code> from the MeshCore app and watch for the response.</p>
+                </div>
+            </div>
+
+            <h3>Other Checks</h3>
+            <ul>
+                <li><strong>Range:</strong> Is the sending radio within LoRa range?</li>
+                <li><strong>Power:</strong> Is the sending radio powered on?</li>
+                <li><strong>Frequency:</strong> Are both radios on the same frequency/band?</li>
+                <li><strong>PSK:</strong> Do both radios have matching encryption keys for the channel?</li>
+            </ul>
+
+            <h2 id="no-serial">No Serial Port Found</h2>
+            
+            <div class="command-example">
+                <div class="command">Error: No serial port found</div>
+            </div>
+
+            <h3>Solutions</h3>
+            
+            <h4>1. Check USB Connection</h4>
+            <ul>
+                <li>Verify the USB cable is securely connected</li>
+                <li>Try a different USB cable (some are power-only)</li>
+                <li>Try a different USB port</li>
+                <li>Ensure the radio is powered on</li>
+            </ul>
+
+            <h4>2. List Available Ports</h4>
+            <pre><code># Linux
+ls /dev/ttyUSB* /dev/ttyACM*
+
+# Windows
+# Check Device Manager
+
+# macOS
+ls /dev/cu.usbserial-*</code></pre>
+
+            <h4>3. Specify Port Manually</h4>
+            <pre><code>python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200</code></pre>
+
+            <h4>4. Check Permissions (Linux)</h4>
+            <pre><code># Add user to dialout group
+sudo usermod -a -G dialout $USER
+
+# Then logout and login again
+
+# Or temporarily:
+sudo chmod 666 /dev/ttyUSB0</code></pre>
+
+            <h2 id="location-issues">Location Not Found</h2>
+            
+            <div class="command-example">
+                <div class="command">Error: Location 'Lndn' not found</div>
+            </div>
+
+            <h3>Solutions</h3>
+            <ul>
+                <li><strong>Check spelling:</strong> Use correct city name</li>
+                <li><strong>Use full name:</strong> "Manchester" instead of "Manc"</li>
+                <li><strong>Add country/region:</strong> <code>wx York, UK</code></li>
+                <li><strong>Try alternate names:</strong> Some cities have multiple names</li>
+            </ul>
+
+            <h3>Examples</h3>
+            <div class="command-example">
+                <div class="command"><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> wx Lndn</div>
+                <div class="output" style="color: var(--error-color);">Location not found</div>
+            </div>
+            <div class="command-example">
+                <div class="command"><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> wx London</div>
+                <div class="output">London, GB (Weather data...)</div>
+            </div>
+
+            <h2 id="wrong-city">Wrong City Returned</h2>
+            <p>Some city names exist in multiple countries (e.g., York in UK and USA).</p>
+
+            <h3>Problem Example</h3>
+            <div class="command-example">
+                <div class="command">wx York</div>
+                <div class="output">York, US (Pennsylvania, USA)</div>
+            </div>
+            <p>But you wanted York, UK!</p>
+
+            <h3>Solution 1: Specify Country in Command (Recommended)</h3>
+            <div class="command-example">
+                <div class="command">wx York UK</div>
+                <div class="output">York, GB (United Kingdom)</div>
+            </div>
+
+            <h3>Solution 2: Use Comma Format</h3>
+            <div class="command-example">
+                <div class="command">wx York, UK</div>
+            </div>
+
+            <h3>Solution 3: Set Default Country</h3>
+            <p>If most users are in one country:</p>
+            <pre><code># Prefer UK cities by default
+python3 weather_bot.py --country GB
+
+# Prefer US cities by default
+python3 weather_bot.py --country US</code></pre>
+
+            <h2 id="service-issues">Service Won't Start</h2>
+            
+            <div class="command-example">
+                <div class="command">sudo systemctl status weather_bot</div>
+                <div class="output" style="color: var(--error-color);">Active: failed</div>
+            </div>
+
+            <h3>Common Causes and Fixes</h3>
+
+            <h4>1. User Does Not Exist (Exit Code 217)</h4>
+            <pre><code># Check current user
+whoami
+
+# Edit service file to match your username
+sudo nano /etc/systemd/system/weather_bot.service
+# Change User=pi to User=yourusername
+
+sudo systemctl daemon-reload
+sudo systemctl restart weather_bot</code></pre>
+
+            <h4>2. Path Does Not Exist</h4>
+            <pre><code># Verify paths in service file
+ls /home/pi/MCWB/weather_bot.py
+
+# Update WorkingDirectory and ExecStart paths
+sudo nano /etc/systemd/system/weather_bot.service
+
+sudo systemctl daemon-reload
+sudo systemctl restart weather_bot</code></pre>
+
+            <h4>3. Python Not Found</h4>
+            <pre><code># Check Python path
+which python3
+
+# Update ExecStart in service file if needed
+sudo nano /etc/systemd/system/weather_bot.service</code></pre>
+
+            <h4>4. View Detailed Logs</h4>
+            <pre><code># View service logs
+sudo journalctl -u weather_bot -n 50
+
+# Follow logs in real-time
+sudo journalctl -u weather_bot -f</code></pre>
+
+            <h3>Automated Fix</h3>
+            <p>Use the installation script to automatically configure everything:</p>
+            <pre><code># Remove old service
+sudo systemctl stop weather_bot 2>/dev/null || true
+sudo systemctl disable weather_bot 2>/dev/null || true
+sudo rm /etc/systemd/system/weather_bot.service 2>/dev/null || true
+sudo systemctl daemon-reload
+
+# Reinstall
+cd ~/MCWB
+./install_service.sh</code></pre>
+
+            <h2 id="debug-mode">Using Debug Mode</h2>
+            <p>Debug mode shows detailed information about bot operation:</p>
+
+            <pre><code>python3 weather_bot.py --debug</code></pre>
+
+            <h3>What You'll See</h3>
+            
+            <h4>Startup Messages</h4>
+            <pre><code>[2026-02-24 13:28:49] MeshCore [WX_BOT]: LoRa connected on /dev/ttyUSB0 at 115200 baud
+[2026-02-24 13:28:49] MeshCore [WX_BOT]: MeshCore started
+Weather Bot started. Send 'wx [location]' to get weather.</code></pre>
+
+            <h4>Message Received</h4>
+            <pre><code>[2026-02-24 13:30:15] MeshCore [WX_BOT]: Binary frame: CHANNEL_MSG_V3 on channel_idx 2
+[2026-02-24 13:30:15] MeshCore [WX_BOT]: LoRa RX channel msg from USER1 on channel_idx 2: wx London
+[2026-02-24 13:30:15] WeatherBot: Processing message from USER1: wx London
+[2026-02-24 13:30:15] WeatherBot: Weather request for location: London</code></pre>
+
+            <h4>Weather Response</h4>
+            <pre><code>[2026-02-24 13:30:16] WeatherBot: Replying on channel_idx 2: Weather for London, GB...</code></pre>
+
+            <h3>Debugging Tips</h3>
+            <ul>
+                <li>Look for "Binary frame: CHANNEL_MSG" to confirm messages are arriving</li>
+                <li>Check "channel_idx" values to understand channel routing</li>
+                <li>Search for "Error" or "Warning" keywords in logs</li>
+                <li>Verify "Weather request for location" appears for valid commands</li>
+            </ul>
+
+            <h2>Internet Connection Issues</h2>
+            
+            <h3>Test API Access</h3>
+            <pre><code># Test without radio
+python3 weather_bot.py --location London
+
+# Test API directly
+curl "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true"</code></pre>
+
+            <h3>Symptoms</h3>
+            <ul>
+                <li>Bot receives commands but doesn't respond</li>
+                <li>Timeout errors in logs</li>
+                <li>Connection refused errors</li>
+            </ul>
+
+            <h3>Solutions</h3>
+            <ul>
+                <li>Check internet connectivity: <code>ping 8.8.8.8</code></li>
+                <li>Check DNS resolution: <code>ping api.open-meteo.com</code></li>
+                <li>Verify firewall isn't blocking outbound HTTPS</li>
+                <li>Check proxy settings if behind a proxy</li>
+            </ul>
+
+            <h2>Performance Issues</h2>
+
+            <h3>High CPU Usage</h3>
+            <p>The bot should use minimal CPU. If you see high usage:</p>
+            <ul>
+                <li>Check for rapid message loops (bot responding to itself)</li>
+                <li>Verify no conflicting bot instances are running</li>
+                <li>Check system resources: <code>top</code> or <code>htop</code></li>
+            </ul>
+
+            <h3>High Memory Usage</h3>
+            <p>Normal usage is &lt; 50MB. If higher:</p>
+            <ul>
+                <li>Restart the bot</li>
+                <li>Check for log file size (rotate logs if needed)</li>
+                <li>Monitor with: <code>ps aux | grep weather_bot</code></li>
+            </ul>
+
+            <h2>Common Error Messages</h2>
+
+            <h3>"Module not found" Errors</h3>
+            <pre><code>Error: requests not found. Install with: pip install requests</code></pre>
+            <p><strong>Fix:</strong></p>
+            <pre><code>pip install -r requirements.txt</code></pre>
+
+            <h3>"Permission denied" on Serial Port</h3>
+            <pre><code>PermissionError: [Errno 13] Permission denied: '/dev/ttyUSB0'</code></pre>
+            <p><strong>Fix:</strong></p>
+            <pre><code># Add user to dialout group
+sudo usermod -a -G dialout $USER
+# Logout and login for changes to take effect
+
+# Or temporarily:
+sudo chmod 666 /dev/ttyUSB0</code></pre>
+
+            <h3>"Connection refused" to Weather API</h3>
+            <pre><code>ConnectionError: Connection refused to api.open-meteo.com</code></pre>
+            <p><strong>Fix:</strong></p>
+            <ul>
+                <li>Check internet connection</li>
+                <li>Verify DNS is working</li>
+                <li>Check firewall settings</li>
+            </ul>
+
+            <h2>Web Dashboard Issues</h2>
+
+            <h3>Dashboard Not Loading</h3>
+            <p><strong>Check if Flask is installed:</strong></p>
+            <pre><code>pip install Flask</code></pre>
+
+            <h3>Port Already in Use</h3>
+            <pre><code>OSError: [Errno 48] Address already in use</code></pre>
+            <p><strong>Fix:</strong></p>
+            <pre><code># Use a different port
+python3 web_dashboard.py --port 8080
+
+# Or find and kill the process using port 5000
+lsof -ti:5000 | xargs kill</code></pre>
+
+            <h3>Cannot Access from Another Device</h3>
+            <p><strong>Ensure you're using the network host option:</strong></p>
+            <pre><code>python3 web_dashboard.py --host 0.0.0.0</code></pre>
+            <p><strong>Check firewall:</strong></p>
+            <pre><code># Allow port 5000 through firewall
+sudo ufw allow 5000</code></pre>
+
+            <h2>Getting Help</h2>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f4da.svg" alt="📚" class="emoji-icon"> Additional Resources</h3>
+                <ul>
+                    <li><a href="https://github.com/hostyorkshire/MCWB/blob/main/TROUBLESHOOTING.md">Full Troubleshooting Guide</a></li>
+                    <li><a href="https://github.com/hostyorkshire/MCWB/issues">GitHub Issues</a></li>
+                    <li><a href="https://github.com/ripplebiz/MeshCore">MeshCore Firmware</a></li>
+                </ul>
+            </div>
+
+            <h3>When Opening an Issue</h3>
+            <p>Include the following information:</p>
+            <ol>
+                <li><strong>Debug logs:</strong> Run with <code>--debug</code> and save output</li>
+                <li><strong>Command used:</strong> Exact command that triggered the issue</li>
+                <li><strong>Platform:</strong> OS, Python version, hardware</li>
+                <li><strong>Radio info:</strong> MeshCore firmware version, radio model</li>
+                <li><strong>Steps to reproduce:</strong> Clear steps to recreate the issue</li>
+            </ol>
+
+            <h3>Capture Debug Logs</h3>
+            <pre><code># Save debug output to file
+python3 weather_bot.py --debug 2>&1 | tee debug.log
+
+# For service:
+sudo journalctl -u weather_bot -n 200 > service_debug.log</code></pre>
+
+            <h2>Quick Reference Table</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Issue</th>
+                        <th>Quick Fix</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>No messages received</td>
+                        <td>Configure channels in MeshCore app</td>
+                    </tr>
+                    <tr>
+                        <td>No serial port</td>
+                        <td>Check USB, try <code>ls /dev/ttyUSB*</code></td>
+                    </tr>
+                    <tr>
+                        <td>Permission denied</td>
+                        <td><code>sudo usermod -a -G dialout $USER</code></td>
+                    </tr>
+                    <tr>
+                        <td>Location not found</td>
+                        <td>Check spelling, use full name</td>
+                    </tr>
+                    <tr>
+                        <td>Wrong city</td>
+                        <td>Specify country: <code>wx York UK</code></td>
+                    </tr>
+                    <tr>
+                        <td>Service won't start</td>
+                        <td>Use <code>./install_service.sh</code></td>
+                    </tr>
+                    <tr>
+                        <td>Module not found</td>
+                        <td><code>pip install -r requirements.txt</code></td>
+                    </tr>
+                    <tr>
+                        <td>API connection error</td>
+                        <td>Check internet connection</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Still Having Issues?</h2>
+            <div class="info-box">
+                <h3>We're Here to Help!</h3>
+                <p>If you've tried the solutions above and still have problems:</p>
+                <ol style="margin-bottom: 0;">
+                    <li>Enable debug mode: <code>python3 weather_bot.py --debug</code></li>
+                    <li>Capture the logs</li>
+                    <li>Open an issue on <a href="https://github.com/hostyorkshire/MCWB/issues">GitHub</a></li>
+                    <li>Include your debug logs and the steps to reproduce</li>
+                </ol>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

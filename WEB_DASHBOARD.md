@@ -1,0 +1,610 @@
+# MCWB Web Dashboard
+
+A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time.
+
+## 🚀 Super Quick Start (3 Simple Steps)
+
+**Can't connect to your dashboard?** Follow these steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
+
+### Method 1: Unified Service Manager (Easiest!)
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+Choose option **2** (Install Web Dashboard) or **3** (Install BOTH services). The interactive menu will guide you through the setup!
+
+### Method 2: Direct Installation Script
+
+### Step 1: Install and Start the Dashboard
+
+```bash
+cd ~/MCWB  # Or wherever you cloned MCWB
+./install_dashboard_service.sh
+```
+
+The installer will:
+- ✅ Automatically configure the service for your username and directory
+- ✅ Configure firewall if needed
+- ✅ Start the dashboard and show you the connection URL
+- ✅ Enable auto-start on reboot
+
+### Step 2: Get Your Connection URL
+
+The installer will show you the URL, for example:
+```
+🌐 Web Dashboard Access:
+   Network: http://192.168.1.109:5000
+```
+
+**That's your connection URL!** Write it down.
+
+**💡 Pro Tip:** Once connected, you can use this URL to link your static website's Live Dashboard page to show real-time data. See [Remote Access and Static Website Integration](#remote-access-and-static-website-integration) below.
+
+### Step 3: Connect
+
+Open a web browser on any device on your local network and go to the URL from Step 2.
+
+**Still can't connect?** Jump to [Troubleshooting Connection Issues](#troubleshooting-connection-issues) below.
+
+---
+
+## Features
+
+- 🌙 **Dark Theme** - Easy on the eyes with a beautiful gradient background
+- 📡 **Active Channels** - See which channels your LORA meshcore radio is broadcasting on (e.g., #weather, #alerts)
+- 📊 **Real-time Status** - Monitor bot status and log file information
+- 📝 **Log Viewer** - View and filter bot logs with color-coded entries
+- 🔄 **Auto-refresh** - Automatically updates every 10 seconds
+- 📱 **Responsive** - Works on desktop, tablet, and mobile devices
+- 🌐 **Remote Access** - Configure custom API URL to connect from any device
+
+## Quick Start
+
+> **🚀 For Raspberry Pi users:** Jump to the [Running on Raspberry Pi](#running-on-raspberry-pi) section to set up the dashboard as a systemd service that starts automatically on boot.
+
+### Installation
+
+Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Running the Dashboard
+
+Start the web dashboard:
+
+```bash
+python3 web_dashboard.py
+```
+
+By default, the dashboard will be available at:
+- **Local access:** http://localhost:5000
+- **Network access:** http://[your-ip]:5000 (e.g., http://192.168.1.109:5000)
+
+To restrict access to localhost only:
+```bash
+python3 web_dashboard.py --host 127.0.0.1
+```
+
+### Command-Line Options
+
+```bash
+# Run on a specific host and port
+python3 web_dashboard.py --host 0.0.0.0 --port 8080
+
+# Run in debug mode
+python3 web_dashboard.py --debug
+
+# View help
+python3 web_dashboard.py --help
+```
+
+## Usage
+
+### Dashboard Sections
+
+1. **System Status** - Shows the current status of the bot and log file information
+2. **Active Channels** - Displays which channels the LORA meshcore radio is broadcasting on (e.g., #weather, #alerts)
+3. **Usage Statistics** - Charts and metrics showing bot usage over time
+4. **Log Viewer** - View logs from different sources:
+   - Bot Log - Main weather bot logs
+   - Bot Errors - Error logs from the bot
+   - MeshCore - MeshCore communication logs
+   - MeshCore Errors - MeshCore error logs
+
+### Features
+
+- Click on different log tabs to switch between log sources
+- Logs auto-refresh every 10 seconds
+- Click the "🔄 Refresh" button to manually refresh
+- Log entries are color-coded:
+  - 🔴 Red - ERROR and CRITICAL messages
+  - 🟡 Yellow - WARNING messages
+  - 🔵 Blue - INFO messages
+  - ⚪ White - Other messages
+
+## Remote Access and Static Website Integration
+
+The MCWB project includes a static documentation website (in the `website/` folder) that includes a Live Dashboard page. This page can connect to your running Web Dashboard API to display real-time data.
+
+### Accessing Dashboard from Static Website
+
+When you deploy the static website (e.g., to Netlify, GitHub Pages, etc.), the Live Dashboard page will show demo data by default. To connect it to your real Raspberry Pi dashboard:
+
+**Option 1: Configure via UI**
+1. Navigate to the Live Dashboard page on your static website
+2. Look for the "Configure Custom API URL" section in the demo mode warning
+3. Enter your Raspberry Pi's IP address and port, e.g., `http://192.168.1.109:5000`
+4. Click "Connect"
+5. The URL is saved in your browser and will be remembered
+
+**Option 2: Share Direct Link**
+You can share a direct link with the API URL as a parameter:
+```
+https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.109:5000
+```
+
+### Network Requirements
+
+For remote access to work:
+1. The Web Dashboard must be running (by default it allows network access)
+2. Your browser must be able to reach the Raspberry Pi (same local network)
+3. If accessing from outside your network, you'll need to set up port forwarding on your router
+4. CORS is already enabled in the Web Dashboard to allow cross-origin requests
+
+### Security Considerations
+
+- The default setup allows network access without authentication
+- Only use on trusted networks (home/private networks)
+- For public access, consider adding authentication or using a VPN
+- See the [Security Notes](#security-notes) section for more information
+
+## Running on Raspberry Pi
+
+To run the dashboard on boot, use the included installation script:
+
+### Method 1: Automated Installation (Recommended)
+
+The repository includes an installation script that automatically configures the systemd service for your system:
+
+```bash
+cd /home/pi/MCWB  # Or wherever you cloned the repository
+./install_dashboard_service.sh
+```
+
+The script will:
+- ✅ Detect your username and installation directory automatically
+- ✅ Check Python dependencies and install if needed
+- ✅ Create a customized systemd service file for your system
+- ✅ Install and enable the service
+- ✅ Optionally start the service immediately
+
+**Example usage:**
+```bash
+# Navigate to the MCWB directory
+cd ~/MCWB
+
+# Run the installer (don't use sudo)
+./install_dashboard_service.sh
+
+# Follow the prompts to install and start the service
+```
+
+After installation, the dashboard will:
+- Start automatically on boot
+- Restart automatically if it crashes
+- Be accessible on your network
+
+### Method 2: Manual Installation
+
+If you prefer to install manually:
+
+1. Create a service file:
+
+```bash
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+```
+
+2. Add the following content:
+
+> **⚠️ IMPORTANT:** Customize the `User` and `WorkingDirectory` to match your system:
+> - Replace `pi` with your actual username (e.g., `weatherbot`, `ubuntu`, etc.)
+> - Update the paths to match where you cloned the MCWB repository
+> - Both the `WorkingDirectory` and paths in `ExecStart` should use the same base directory
+
+```ini
+[Unit]
+Description=MCWB Web Dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/MCWB
+ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 0.0.0.0 --port 5000
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+> **⚠️ IMPORTANT:** When creating the service file, do not copy from a web browser's rendered view. HTML entities (like `&gt;`, `&lt;`, `&amp;`) may corrupt the file. The section headers must be exactly `[Unit]`, `[Service]`, and `[Install]` with proper square brackets. If you see "Unknown section" errors, see the [Troubleshooting](#troubleshooting) section below.
+
+**Example for user 'weatherbot' with installation in /home/weatherbot/MCWB:**
+```ini
+[Unit]
+Description=MCWB Web Dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=weatherbot
+WorkingDirectory=/home/weatherbot/MCWB
+ExecStart=/usr/bin/python3 /home/weatherbot/MCWB/web_dashboard.py --host 0.0.0.0 --port 8080
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Reload systemd and enable the service:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable mcwb-dashboard.service
+sudo systemctl start mcwb-dashboard.service
+```
+
+4. Check status:
+
+```bash
+sudo systemctl status mcwb-dashboard.service
+```
+
+If the service fails to start, check the troubleshooting section below.
+
+## Security Notes
+
+- By default, the dashboard binds to `0.0.0.0` (accessible on the network) for convenience
+- To restrict access to localhost only, use `--host 127.0.0.1`
+- For production use, consider:
+  - Using a reverse proxy (nginx, Apache) with SSL/TLS
+  - Implementing authentication
+  - Restricting access to specific IP addresses
+  - Using a firewall to limit access
+
+## Troubleshooting Connection Issues
+
+**Can't connect to http://192.168.1.109:5000 or similar?** Follow these steps:
+
+### Quick Checklist
+
+Run these commands on your Raspberry Pi to diagnose the issue:
+
+```bash
+# 1. Is the service running?
+sudo systemctl status mcwb-dashboard
+
+# 2. Can you connect locally?
+curl http://localhost:5000
+
+# 3. What's your actual IP address?
+hostname -I
+
+# 4. Is the firewall blocking?
+sudo ufw status
+```
+
+### Common Issues and Fixes
+
+**Issue 1: Dashboard Not Starting After Reboot (MOST COMMON)**
+
+If your dashboard was working before but stops working after you reboot your Pi, the service is likely starting before the network is fully online.
+
+**Symptoms:**
+- Service shows as `inactive` or `failed` after reboot
+- Dashboard was working fine before reboot
+- `curl http://localhost:5000` shows "Connection refused"
+
+**Solution:**
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This reinstalls the service with the correct network timing configuration, ensuring the dashboard waits for the network to be fully online before starting.
+
+**What changed:** The updated service uses `After=network-online.target` (waits for network to be online) instead of `After=network.target` (only waits for network subsystem initialization).
+
+**Issue 2: Service Not Running (Other Causes)**
+
+If `systemctl status` shows the service is not running or failed for reasons other than reboot:
+
+```bash
+# Solution: Reinstall with the automated installer
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This fixes username/path mismatches automatically.
+
+**Issue 3: Firewall Blocking Port 5000**
+
+If `ufw status` shows port 5000 is not allowed:
+
+```bash
+# Allow port 5000 through firewall
+sudo ufw allow 5000/tcp
+```
+
+**Issue 4: Wrong IP Address**
+
+Your IP address may have changed. Check with:
+
+```bash
+# Show your current IP
+hostname -I | awk '{print $1}'
+
+# Then use that IP in your browser
+# Example: http://192.168.1.109:5000
+```
+
+**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL. This is especially useful for website integration!
+
+**Issue 5: Service Running but Can't Connect**
+
+If the service is running and `curl http://localhost:5000` works but you can't connect from another device:
+
+```bash
+# Check if dashboard is listening on all interfaces
+sudo netstat -tlnp | grep 5000
+# OR
+sudo ss -tlnp | grep 5000
+
+# Should show: 0.0.0.0:5000 (means it's accessible from network)
+# If it shows: 127.0.0.1:5000 (means localhost only)
+```
+
+If it shows `127.0.0.1:5000`, the service is configured for localhost only. Fix:
+
+```bash
+# Edit the service file
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change: --host 127.0.0.1
+# To:     --host 0.0.0.0
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard
+```
+
+**Issue 6: Still Can't Connect After All Above Steps**
+
+Try a complete reset:
+
+```bash
+# Stop and disable old service
+sudo systemctl stop mcwb-dashboard
+sudo systemctl disable mcwb-dashboard
+sudo rm /etc/systemd/system/mcwb-dashboard.service
+sudo systemctl daemon-reload
+
+# Reinstall
+cd ~/MCWB
+./install_dashboard_service.sh
+
+# Test connection
+curl http://localhost:5000
+```
+
+**Issue 7: Dependencies Not Installed or Import Errors**
+
+If the service logs show `ModuleNotFoundError` or `ImportError`:
+
+```bash
+# Check if dependencies are installed
+python3 -c "import flask, flask_cors; print('✅ Dependencies OK')" 2>&1
+
+# If error, install dependencies
+pip3 install --user -r requirements.txt
+
+# Restart service
+sudo systemctl restart mcwb-dashboard
+
+# Check logs to verify it started
+sudo journalctl -u mcwb-dashboard -n 20
+```
+
+**Issue 8: Service Configuration Mismatch**
+
+View the actual service configuration to verify paths and user:
+
+```bash
+cat /etc/systemd/system/mcwb-dashboard.service
+```
+
+Verify:
+- `User=` matches your username (check with `whoami`)
+- `WorkingDirectory=` points to your MCWB installation directory
+- `ExecStart=` has correct paths and `--host 0.0.0.0 --port 5000`
+
+**If any mismatch found:** Reinstall with `./install_dashboard_service.sh` to auto-fix.
+
+## Troubleshooting
+
+### Systemd Service Fails to Start
+
+If you see `Active: activating (auto-restart)` or `Active: failed`, check the following:
+
+**RECOMMENDED FIX: Use the Automated Installer**
+
+The easiest way to fix service issues is to reinstall using the automated installation script:
+
+```bash
+cd ~/MCWB  # Or wherever you installed MCWB
+
+# If the service is installed, uninstall it first
+sudo systemctl stop mcwb-dashboard 2>/dev/null || true
+sudo systemctl disable mcwb-dashboard 2>/dev/null || true
+sudo rm /etc/systemd/system/mcwb-dashboard.service 2>/dev/null || true
+sudo systemctl daemon-reload
+
+# Run the installer (it automatically detects your username and paths)
+./install_dashboard_service.sh
+```
+
+**Manual Troubleshooting:**
+
+If you prefer to troubleshoot manually, check the following:
+
+**1. Exit Code 217/USER - User does not exist:**
+
+This error occurs when the `User=` setting in the service file doesn't match your actual username.
+
+```bash
+# Check your username
+whoami
+
+# View the service file to see what user it's configured for
+sudo grep User= /etc/systemd/system/mcwb-dashboard.service
+```
+
+Solution: The automated installer (`install_dashboard_service.sh`) fixes this automatically, or update manually:
+```bash
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change User=pi to User=yourname (e.g., User=weatherbot)
+# Also update WorkingDirectory and ExecStart paths to match
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard.service
+```
+
+**2. Corrupted Configuration - Port number appears as `8&gt;` or similar:**
+
+If you copied the configuration from a web browser, HTML entities may have corrupted the text. The port should be a number like `5000` or `8080`, not `8&gt;`.
+
+Solution: The automated installer prevents this issue, or fix manually:
+```bash
+# Edit the service file and fix the port number
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change: ExecStart=/usr/bin/python3 ... --port 8&gt;
+# To:     ExecStart=/usr/bin/python3 ... --port 5000
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard.service
+```
+
+**3. Exit Code 1/FAILURE - Python packages not found:**
+
+This error occurs when Python packages (Flask, flask-cors) are not installed.
+
+**Symptoms:**
+- Service shows `code=exited, status=1/FAILURE`
+- Running `python3 web_dashboard.py` manually shows "ERROR: Required dependencies not installed"
+- Service logs show `ModuleNotFoundError: No module named 'flask'`
+
+**Solution:** Install the required dependencies:
+```bash
+cd ~/MCWB
+pip3 install --user -r requirements.txt
+```
+
+If the service still doesn't start after installing dependencies, try reinstalling the service:
+```bash
+./install_dashboard_service.sh
+```
+
+**Note:** Python 3 automatically includes user site-packages in its search path, so packages installed with `pip3 install --user` will be available to the service.
+
+**4. Path does not exist:**
+
+Ensure all paths in the service file are correct:
+```bash
+# Verify the MCWB directory exists
+ls /home/pi/MCWB/web_dashboard.py
+# Or if installed elsewhere:
+ls /home/weatherbot/MCWB/web_dashboard.py
+
+# Check Python path
+which python3
+```
+
+**5. View detailed error logs:**
+
+```bash
+# View recent service logs
+sudo journalctl -u mcwb-dashboard.service -n 50
+
+# View live logs
+sudo journalctl -u mcwb-dashboard.service -f
+
+# Check for permission errors
+sudo journalctl -u mcwb-dashboard.service | grep -i "permission\|denied\|error"
+```
+
+### Dependencies Not Installed
+
+If you get an error like `ModuleNotFoundError: No module named 'flask'`, you need to install the required dependencies:
+
+```bash
+pip3 install --user -r requirements.txt
+```
+
+Or install manually:
+```bash
+pip3 install --user flask>=2.3.2 flask-cors>=4.0.0
+```
+
+**Note:** If you recently pulled the latest code, you may need to reinstall dependencies as new packages may have been added.
+
+**Systemd Service Note:** When you install dependencies with `pip3 install --user`, Python 3 automatically includes the user site-packages directory in its search path, so the systemd service will be able to find them. If you're still having import issues after installing dependencies, try reinstalling the service:
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+### Port Already in Use
+
+If port 5000 is already in use, specify a different port:
+
+```bash
+python3 web_dashboard.py --port 8080
+```
+
+### Cannot Access from Another Device
+
+**See the [Troubleshooting Connection Issues](#troubleshooting-connection-issues) section above for a complete step-by-step guide.**
+
+Quick summary:
+1. Verify the service is running: `sudo systemctl status mcwb-dashboard`
+2. Check firewall: `sudo ufw allow 5000/tcp`
+3. Get your IP: `hostname -I`
+4. Test locally first: `curl http://localhost:5000`
+
+### Logs Not Showing
+
+Make sure:
+1. The weather bot is running and generating logs
+2. Log files exist in the `logs/` directory
+3. The web dashboard has read permissions for the log files
+
+## Design
+
+The dashboard features:
+- Dark gradient background (#1a1a2e to #16213e)
+- Glassmorphic cards with transparency
+- Blue accent color (#60a5fa)
+- Smooth animations and transitions
+- Custom-styled scrollbars
+- Responsive grid layout
+
+## License
+
+Same as MCWB - See LICENSE file for details.
