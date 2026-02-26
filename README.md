@@ -352,9 +352,10 @@ The bot can send periodic announcements to let users know it's online and how to
 
 When you enable announcements with the `--announce` flag:
 
-- The bot announces **immediately on startup/reboot** to let users know it's operational
+- The bot **ALWAYS announces on every startup/reboot** to let users know it's operational
 - After startup, the bot announces every **3 hours** during normal operation
-- Announcement timestamps are persisted to disk (`logs/.last_announce`) for periodic announcements
+- Announcement timestamps are persisted to disk (`logs/.last_announce`) for tracking periodic announcements only
+- **No code prevents re-announcing** - the bot will announce on every boot, regardless of how recently it last announced
 
 ### Configuring Announcement Channel
 
