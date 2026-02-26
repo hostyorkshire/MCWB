@@ -80,7 +80,7 @@ class MockSerial:
 
 def setup_bot():
     """Create a weather bot with mocked serial and API"""
-    bot = WeatherBot(node_id="WX_BOT", debug=False, serial_port="/dev/mock", baud_rate=9600)
+    bot = WeatherBot(node_id="WX_BOT", debug=False, port="/dev/mock", baud=9600)
 
     # Replace serial with mock
     mock_serial = MockSerial()
