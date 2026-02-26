@@ -26,9 +26,12 @@ cd ~/MCWB  # Or wherever you cloned MCWB
 
 The installer will:
 - ✅ Automatically configure the service for your username and directory
+- ✅ Create virtual environment and install dependencies automatically
 - ✅ Configure firewall if needed
 - ✅ Start the dashboard and show you the connection URL
-- ✅ Enable auto-start on reboot
+- ✅ Enable auto-start on reboot (runs automatically, no manual venv activation needed)
+
+**✨ Important:** The service is configured to use the virtual environment automatically. After installation, the dashboard starts on every reboot without any manual steps - you never need to activate the venv manually!
 
 ### Step 2: Get Your Connection URL
 

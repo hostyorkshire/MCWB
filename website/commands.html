@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commands & Usage - MCWB Wiki</title>
+    <title>Commands & Usage - Meshcore Weather Bot</title>
     <link rel="stylesheet" href="css/style.css">
     <meta name="description" content="Complete command reference for the MeshCore Weather Bot">
 </head>
@@ -11,28 +11,35 @@
     <header>
         <div class="header-content">
             <div class="header-title">
-                <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
-                <p>MeshCore Weather Bot Documentation</p>
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
             </div>
             <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
                 <span id="theme-text">Dark Mode</span>
             </button>
         </div>
     </header>
 
     <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="getting-started.html">Getting Started</a></li>
-            <li><a href="installation.html">Installation</a></li>
-            <li><a href="features.html">Features</a></li>
-            <li><a href="commands.html" class="active">Commands</a></li>
-            <li><a href="channels.html">Channels</a></li>
-            <li><a href="dashboard.html">Live Dashboard</a></li>
-            <li><a href="troubleshooting.html">Troubleshooting</a></li>
-            <li><a href="api.html">API</a></li>
-        </ul>
+        <div class="nav-container">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="getting-started.html">Getting Started</a></li>
+                <li><a href="installation.html">Installation</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="commands.html" class="active">Commands</a></li>
+                <li><a href="channels.html">Channels</a></li>
+                <li><a href="dashboard.html">Live Dashboard</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                <li><a href="api.html">API</a></li>
+            </ul>
+        </div>
     </nav>
 
     <main>
@@ -41,7 +48,7 @@
             <p>Complete reference for all weather bot commands and command-line options.</p>
 
             <div class="info-box success">
-                <h3>⌨️ Basic Usage on MeshCore</h3>
+                <h3><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"> Basic Usage on MeshCore</h3>
                 <p>Open your MeshCore app and type:</p>
                 <div class="command-example">
                     <div class="command">wx [location]</div>
@@ -355,37 +362,37 @@ python3 weather_bot.py --channel-idx 2 --weather-channel-idx 2 --announce</code>
                 <tbody>
                     <tr>
                         <td><code>wx &lt;location&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>wx London</code>, <code>WX manchester</code></td>
                     </tr>
                     <tr>
                         <td><code>weather &lt;location&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>weather York</code>, <code>WEATHER leeds</code></td>
                     </tr>
                     <tr>
                         <td><code>wx &lt;location&gt; &lt;country&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>wx York UK</code>, <code>wx Paris FR</code></td>
                     </tr>
                     <tr>
                         <td><code>wx &lt;location&gt;, &lt;country&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>wx York, UK</code>, <code>wx New York, USA</code></td>
                     </tr>
                     <tr>
                         <td><code>wxLondon</code> (no space)</td>
-                        <td>❌ No</td>
+                        <td><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> No</td>
                         <td>Must have space after command</td>
                     </tr>
                     <tr>
                         <td><code>weather</code> (no location)</td>
-                        <td>❌ No</td>
+                        <td><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> No</td>
                         <td>Must specify a location</td>
                     </tr>
                     <tr>
                         <td><code>what's the weather</code></td>
-                        <td>❌ No</td>
+                        <td><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> No</td>
                         <td>Must use <code>wx</code> or <code>weather</code> prefix</td>
                     </tr>
                 </tbody>
@@ -532,7 +539,7 @@ sudo journalctl -u weather_bot -f</code></pre>
             </div>
 
             <div class="info-box">
-                <h3>💡 Tips</h3>
+                <h3><img src="img/emoji/1f4a1.svg" alt="💡" class="emoji-icon"> Tips</h3>
                 <ul style="margin-bottom: 0;">
                     <li>Commands are <strong>case-insensitive</strong>: <code>wx</code>, <code>WX</code>, <code>Wx</code> all work</li>
                     <li>Location names are <strong>flexible</strong>: Handle spaces and special characters</li>
