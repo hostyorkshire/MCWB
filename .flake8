@@ -1,0 +1,25 @@
+[flake8]
+# Flake8 configuration for MCWB project
+max-line-length = 120
+extend-ignore = E501,W503,E203,E402
+
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    ENV,
+    build,
+    dist,
+    .eggs,
+    *.egg-info,
+    logs
+
+per-file-ignores =
+    tests/*.py:E402,F401,F841
+
+# Statistics
+statistics = True
+count = True
+
