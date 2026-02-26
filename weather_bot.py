@@ -324,6 +324,13 @@ class WeatherBot:
 
     def _send_channel_msg(self, text: str, channel_idx: int):
         """Send a text message on the given channel slot."""
+        # Track active channel for dashboard display
+        # Note: This happens before the actual send because _send_cmd will raise
+        # an exception if the send fails, preventing the method from completing.
+        # This is consistent with mesh.send_message() behavior.
+        self.mesh._active_channels[channel_idx] = time.time()
+        self.mesh.save_active_channels()
+        
         ts = int(time.time()).to_bytes(4, "little")
         payload = bytes([_CMD_SEND_CHAN_MSG, 0, channel_idx]) + ts + text.encode("utf-8")
         self._send_cmd(payload)
