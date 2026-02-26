@@ -571,7 +571,7 @@ class WeatherBot:
                     # User said no or something else, clear pending state and acknowledge
                     del self._pending_outlook[state_key]
                     emoji = random.choice(WEATHER_EMOJIS)
-                    ok_msg = f"OK. Find out more about me and my commands at https://mcwb.netlify.app {emoji}"
+                    ok_msg = f"Find out more about me and my commands at https://mcwb.netlify.app {emoji}"
                     self._send_channel_msg(ok_msg, channel_idx)
                     return
 
