@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation - Meshcore Weather Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Complete installation guide for the MeshCore Weather Bot">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="installation.html" class="active">Installation</a></li>
+            <li><a href="features.html">Features</a></li>
+            <li><a href="commands.html">Commands</a></li>
+            <li><a href="channels.html">Channels</a></li>
+            <li><a href="dashboard.html">Live Dashboard</a></li>
+            <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            <li><a href="api.html">API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Installation Guide</h1>
+            <p>Complete installation instructions for various platforms and deployment scenarios.</p>
+
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#basic-install">Basic Installation</a></li>
+                    <li><a href="#raspberry-pi">Raspberry Pi Installation</a></li>
+                    <li><a href="#systemd">Running as a Service</a></li>
+                    <li><a href="#web-dashboard">Web Dashboard Setup</a></li>
+                    <li><a href="#requirements">System Requirements</a></li>
+                </ul>
+            </div>
+
+            <h2 id="basic-install">Basic Installation</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <h3>Update Your System</h3>
+                    <pre><code>sudo apt-get update
+sudo apt-get upgrade -y</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Install Python and Git</h3>
+                    <pre><code>sudo apt-get install -y python3 python3-pip git</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Clone the Repository</h3>
+                    <pre><code>cd ~
+git clone https://github.com/hostyorkshire/MCWB.git
+cd MCWB</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Install Python Dependencies</h3>
+                    <pre><code>python3 -m pip install -r requirements.txt</code></pre>
+                    <p>This installs:</p>
+                    <ul>
+                        <li><code>requests</code> - For API calls to Open-Meteo</li>
+                        <li><code>pyserial</code> - For USB serial communication with radio</li>
+                        <li><code>Flask</code> - For the web dashboard (optional)</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3>Verify Installation</h3>
+                    <pre><code>python3 weather_bot.py --location London</code></pre>
+                    <p>If this returns weather data, you're all set!</p>
+                </div>
+            </div>
+
+            <h2 id="raspberry-pi">Raspberry Pi Installation</h2>
+            <p>The bot is optimized for Raspberry Pi, especially the Pi Zero 2 for lightweight deployments.</p>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f353.svg" alt="🍓" class="emoji-icon"> Raspberry Pi Zero 2 Setup</h3>
+                <p>For complete headless setup with auto-start on boot, see the <a href="https://github.com/hostyorkshire/MCWB/blob/main/RASPBERRY_PI_SETUP.md">Raspberry Pi Setup Guide</a> in the repository.</p>
+            </div>
+
+            <h3>Quick Pi Installation</h3>
+            <pre><code># Update system
+sudo apt-get update && sudo apt-get upgrade -y
+
+# Install dependencies
+sudo apt-get install -y python3 python3-pip git
+
+# Clone repository
+cd ~
+git clone https://github.com/hostyorkshire/MCWB.git
+cd MCWB
+
+# Install Python packages
+python3 -m pip install -r requirements.txt
+
+# Test installation
+python3 weather_bot.py --location Leeds</code></pre>
+
+            <h2 id="systemd">Running as a systemd Service</h2>
+            <p>For production deployments, run the bot as a systemd service that starts automatically on boot.</p>
+
+            <h3>Method 1: Automated Installation (Recommended)</h3>
+            <pre><code>cd ~/MCWB
+./install_service.sh</code></pre>
+            <p>The script will:</p>
+            <ul>
+                <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Configure the service for your user and paths</li>
+                <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Install it to systemd</li>
+                <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Enable auto-start on boot</li>
+                <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Optionally start it immediately</li>
+            </ul>
+
+            <h3>Method 2: Manual Installation</h3>
+            <div class="steps">
+                <div class="step">
+                    <h3>Copy Service File</h3>
+                    <pre><code>sudo cp weather_bot.service /etc/systemd/system/</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Edit Service File</h3>
+                    <pre><code>sudo nano /etc/systemd/system/weather_bot.service</code></pre>
+                    <p>Update the following fields:</p>
+                    <ul>
+                        <li><code>User=pi</code> → Change to your username</li>
+                        <li><code>WorkingDirectory=/home/pi/MCWB</code> → Update path</li>
+                        <li><code>ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py</code> → Update path</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3>Enable and Start Service</h3>
+                    <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable weather_bot
+sudo systemctl start weather_bot</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Check Status</h3>
+                    <pre><code>sudo systemctl status weather_bot</code></pre>
+                    <p>View logs:</p>
+                    <pre><code>sudo journalctl -u weather_bot -f</code></pre>
+                </div>
+            </div>
+
+            <h2 id="web-dashboard">Web Dashboard Setup</h2>
+            <p>The bot includes a beautiful dark-themed web dashboard for monitoring.</p>
+
+            <div class="highlight">
+                <h3><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"> Dark Theme Dashboard</h3>
+                <p>Monitor your bot in real-time with:</p>
+                <ul>
+                    <li>Real-time status monitoring</li>
+                    <li>Log viewer with color-coded entries</li>
+                    <li>Auto-refresh every 10 seconds</li>
+                    <li>Responsive design for all devices</li>
+                </ul>
+            </div>
+
+            <h3>Quick Start Dashboard</h3>
+            <pre><code># Start the dashboard
+python3 web_dashboard.py
+
+# Access at: http://localhost:5000
+
+# For network access:
+python3 web_dashboard.py --host 0.0.0.0</code></pre>
+
+            <h3>Dashboard as a Service</h3>
+            <pre><code># Install dashboard service
+./install_dashboard_service.sh
+
+# Start dashboard service
+sudo systemctl start mcwb-dashboard
+sudo systemctl enable mcwb-dashboard</code></pre>
+
+            <h2 id="requirements">System Requirements</h2>
+            
+            <h3>Minimum Requirements</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Requirement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Python Version</td>
+                        <td>Python 3.7 or higher</td>
+                    </tr>
+                    <tr>
+                        <td>RAM</td>
+                        <td>50MB minimum (typical usage)</td>
+                    </tr>
+                    <tr>
+                        <td>Storage</td>
+                        <td>~50MB for code and dependencies</td>
+                    </tr>
+                    <tr>
+                        <td>CPU</td>
+                        <td>Minimal (tested on Pi Zero 2)</td>
+                    </tr>
+                    <tr>
+                        <td>Network</td>
+                        <td>Internet connection for weather API</td>
+                    </tr>
+                    <tr>
+                        <td>Hardware</td>
+                        <td>MeshCore companion radio (USB)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Python Dependencies</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>requests</code></td>
+                        <td>HTTP requests to weather API</td>
+                    </tr>
+                    <tr>
+                        <td><code>pyserial</code></td>
+                        <td>USB serial communication with radio</td>
+                    </tr>
+                    <tr>
+                        <td><code>Flask</code></td>
+                        <td>Web dashboard (optional)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Supported Platforms</h3>
+            <ul>
+                <li><span class="badge success">✓</span> Linux (Debian, Ubuntu, Raspbian)</li>
+                <li><span class="badge success">✓</span> Raspberry Pi OS</li>
+                <li><span class="badge success">✓</span> macOS</li>
+                <li><span class="badge success">✓</span> Windows (with Python installed)</li>
+            </ul>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f4da.svg" alt="📚" class="emoji-icon"> Additional Resources</h3>
+                <ul style="margin-bottom: 0;">
+                    <li><a href="https://github.com/hostyorkshire/MCWB/blob/main/RASPBERRY_PI_SETUP.md">Raspberry Pi Setup Guide</a></li>
+                    <li><a href="https://github.com/hostyorkshire/MCWB/blob/main/SSH_REMOTE_ACCESS.md">SSH Remote Access Guide</a></li>
+                    <li><a href="https://github.com/hostyorkshire/MCWB/blob/main/WEB_DASHBOARD.md">Web Dashboard Documentation</a></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

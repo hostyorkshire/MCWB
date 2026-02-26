@@ -1,0 +1,33 @@
+[Unit]
+Description=MCWB Web Dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Change 'pi' to your username if different
+User=pi
+# Change paths if you installed to a different location
+WorkingDirectory=/home/pi/MCWB
+ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 0.0.0.0 --port 5000
+# Automatically restart if the dashboard crashes, but not for config errors
+Restart=on-failure
+RestartSec=10
+# Don't restart on exit code 78 (missing dependencies/configuration error)
+RestartPreventExitStatus=78
+# Log to systemd journal (view with: sudo journalctl -u mcwb-dashboard -f)
+StandardOutput=journal
+StandardError=journal
+
+# Optional: Uncomment to bind to localhost only (more secure, prevents network access)
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 127.0.0.1 --port 5000
+
+# Optional: Uncomment to use a different port
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 0.0.0.0 --port 8080
+
+# Optional: Uncomment to enable debug mode (verbose logging)
+# ExecStart=/usr/bin/python3 /home/pi/MCWB/web_dashboard.py --host 0.0.0.0 --port 5000 --debug
+
+[Install]
+# Start automatically on boot
+WantedBy=multi-user.target

@@ -1,11 +1,11 @@
 #!/bin/bash
-# Installation script for MCWBv2 systemd service on Raspberry Pi
+# Installation script for MCWB systemd service on Raspberry Pi
 # This script sets up the weather bot to run automatically on boot
 
 set -e  # Exit on error
 
 echo "================================================"
-echo "MCWBv2 - MeshCore Weather Bot Service Installer"
+echo "MCWB - MeshCore Weather Bot Service Installer"
 echo "================================================"
 echo ""
 
@@ -39,19 +39,63 @@ fi
 
 # Check if Python dependencies are installed
 echo "🔍 Checking Python dependencies..."
-if ! python3 -c "import serial" 2>/dev/null; then
-    echo "⚠️  Warning: pyserial not installed"
-    echo "   Installing dependencies..."
-    pip3 install -r requirements.txt
+
+# Check if we're in a virtual environment
+if [ -z "$VIRTUAL_ENV" ]; then
+    # Not in a venv, check if one exists
+    if [ -d "venv" ] && [ -f "venv/bin/python3" ]; then
+        echo "📦 Virtual environment found at ./venv"
+        echo "   Checking if dependencies are installed in venv..."
+        if ./venv/bin/python3 -c "import serial" 2>/dev/null; then
+            echo "✅ Python dependencies OK in virtual environment"
+            USE_VENV=true
+            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
+        else
+            echo "⚠️  Dependencies not installed in venv"
+            echo "   Installing dependencies in virtual environment..."
+            ./venv/bin/pip install -r requirements.txt
+            USE_VENV=true
+            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
+        fi
+    else
+        # No venv, try system python
+        if python3 -c "import serial" 2>/dev/null; then
+            echo "✅ Python dependencies OK (system-wide)"
+            USE_VENV=false
+            PYTHON_PATH="/usr/bin/python3"
+        else
+            echo "⚠️  pyserial not installed"
+            echo ""
+            echo "📦 Creating virtual environment (recommended for newer systems)..."
+            python3 -m venv venv
+            echo "   Installing dependencies in virtual environment..."
+            ./venv/bin/pip install -r requirements.txt
+            USE_VENV=true
+            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
+            echo "✅ Virtual environment created and dependencies installed"
+        fi
+    fi
 else
-    echo "✅ Python dependencies OK"
+    # Already in a venv
+    echo "✅ Running in virtual environment: $VIRTUAL_ENV"
+    if python3 -c "import serial" 2>/dev/null; then
+        echo "✅ Python dependencies OK"
+        USE_VENV=true
+        PYTHON_PATH="$VIRTUAL_ENV/bin/python3"
+    else
+        echo "⚠️  Dependencies not installed"
+        echo "   Installing dependencies..."
+        pip install -r requirements.txt
+        USE_VENV=true
+        PYTHON_PATH="$VIRTUAL_ENV/bin/python3"
+    fi
 fi
 
 # Check if user is in dialout group
-if ! groups $CURRENT_USER | grep -q dialout; then
+if ! groups "$CURRENT_USER" | grep -q dialout; then
     echo ""
     echo "⚠️  Adding user to 'dialout' group for USB access..."
-    sudo usermod -a -G dialout $CURRENT_USER
+    sudo usermod -a -G dialout "$CURRENT_USER"
     echo "✅ User added to dialout group"
     echo "   ⚠️  You will need to log out and log back in (or reboot) for this to take effect"
     NEEDS_RELOGIN=true
@@ -61,29 +105,35 @@ fi
 echo ""
 echo "📝 Creating customized service file..."
 SERVICE_FILE=$(mktemp)
-sed "s|User=pi|User=$CURRENT_USER|g" weather_bot.service > $SERVICE_FILE
-sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" $SERVICE_FILE
+sed "s|User=pi|User=$CURRENT_USER|g" weather_bot.service > "$SERVICE_FILE"
+sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" "$SERVICE_FILE"
+
+# Update Python path if using venv
+if [ "$USE_VENV" = true ]; then
+    echo "   Using virtual environment Python: $PYTHON_PATH"
+    sed -i "s|/usr/bin/python3|$PYTHON_PATH|g" "$SERVICE_FILE"
+fi
 
 echo "📄 Service file contents:"
 echo "----------------------------------------"
-cat $SERVICE_FILE
+cat "$SERVICE_FILE"
 echo "----------------------------------------"
 echo ""
 
 # Ask for confirmation
-read -p "Do you want to install this service? (y/n) " -n 1 -r
+read -r -p "Do you want to install this service? (y/n) " -n 1
 echo ""
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "❌ Installation cancelled"
-    rm $SERVICE_FILE
+    rm "$SERVICE_FILE"
     exit 1
 fi
 
 # Install the service
 echo ""
 echo "🔧 Installing systemd service..."
-sudo cp $SERVICE_FILE /etc/systemd/system/weather_bot.service
-rm $SERVICE_FILE
+sudo cp "$SERVICE_FILE" /etc/systemd/system/weather_bot.service
+rm "$SERVICE_FILE"
 
 # Reload systemd
 echo "🔄 Reloading systemd daemon..."
@@ -95,7 +145,7 @@ sudo systemctl enable weather_bot
 
 # Ask if user wants to start now
 echo ""
-read -p "Do you want to start the service now? (y/n) " -n 1 -r
+read -r -p "Do you want to start the service now? (y/n) " -n 1
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "🚀 Starting weather_bot service..."

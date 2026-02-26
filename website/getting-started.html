@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - Meshcore Weather Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Quick start guide for setting up and using the MeshCore Weather Bot">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="getting-started.html" class="active">Getting Started</a></li>
+            <li><a href="installation.html">Installation</a></li>
+            <li><a href="features.html">Features</a></li>
+            <li><a href="commands.html">Commands</a></li>
+            <li><a href="channels.html">Channels</a></li>
+            <li><a href="dashboard.html">Live Dashboard</a></li>
+            <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            <li><a href="api.html">API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Getting Started</h1>
+            <p>Get up and running with the MeshCore Weather Bot in just a few steps!</p>
+
+            <div class="info-box success">
+                <h3><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"> Using the Bot on MeshCore</h3>
+                <p>Once the bot is running, simply open your <strong>MeshCore app or client</strong> and send:</p>
+                <div class="command-example" style="margin-top: 1rem;">
+                    <div class="command">wx London</div>
+                </div>
+                <p style="margin-bottom: 0;">The bot responds instantly with current weather conditions on the same channel!</p>
+            </div>
+
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#prerequisites">Prerequisites</a></li>
+                    <li><a href="#quick-setup">Quick Setup</a></li>
+                    <li><a href="#configure-channels">Configure Channels (Critical)</a></li>
+                    <li><a href="#test">Test the Bot</a></li>
+                    <li><a href="#next-steps">Next Steps</a></li>
+                </ul>
+            </div>
+
+            <h2 id="prerequisites">Prerequisites</h2>
+            <div class="info-box">
+                <h3>What You'll Need</h3>
+                <ul style="margin-bottom: 0;">
+                    <li>Raspberry Pi (Zero 2, 3, 4) or any Linux/macOS/Windows PC</li>
+                    <li>MeshCore companion radio (ESP32/LoRa device with MeshCore firmware)</li>
+                    <li>USB cable to connect the radio</li>
+                    <li>Internet connection</li>
+                    <li>Python 3.7 or higher</li>
+                </ul>
+            </div>
+
+            <h2 id="quick-setup">Quick Setup</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <h3>Clone the Repository</h3>
+                    <pre><code>git clone https://github.com/hostyorkshire/MCWB.git
+cd MCWB</code></pre>
+                </div>
+
+                <div class="step">
+                    <h3>Install Dependencies</h3>
+                    <pre><code>pip install -r requirements.txt</code></pre>
+                    <p>This installs <code>requests</code> and <code>pyserial</code> libraries.</p>
+                </div>
+
+                <div class="step">
+                    <h3>Connect Your Radio</h3>
+                    <p>Connect your MeshCore companion radio to your computer via USB. The device typically appears as:</p>
+                    <ul>
+                        <li><code>/dev/ttyUSB0</code> or <code>/dev/ttyACM0</code> on Linux</li>
+                        <li><code>COM3</code> or similar on Windows</li>
+                        <li><code>/dev/cu.usbserial-*</code> on macOS</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3>Run the Bot</h3>
+                    <pre><code>python3 weather_bot.py</code></pre>
+                    <p>The bot will auto-detect the serial port and start listening for commands!</p>
+                </div>
+            </div>
+
+            <h2 id="configure-channels">Configure Channels (Critical Step)</h2>
+            <div class="info-box warning">
+                <h3><img src="img/emoji/26a0.svg" alt="⚠️" class="emoji-icon"> Important: Configure Your Radio First</h3>
+                <p><strong>Before running the bot with your radio, you must configure which channels it should monitor using the MeshCore mobile app:</strong></p>
+                <ol>
+                    <li>Open the MeshCore app on your phone/tablet</li>
+                    <li>Connect to your companion radio</li>
+                    <li>Go to Channel Settings</li>
+                    <li>Join/subscribe to channels you want the bot to use:
+                        <ul>
+                            <li>Common examples: <code>#weather</code>, <code>#wxtest</code>, <code>#forecast</code></li>
+                            <li>You can add multiple channels</li>
+                        </ul>
+                    </li>
+                    <li>Save your configuration</li>
+                </ol>
+                <p><strong>Why this matters:</strong></p>
+                <ul style="margin-bottom: 0;">
+                    <li>The bot cannot add channels for you</li>
+                    <li>Without this step, the bot won't receive messages from those channels</li>
+                    <li>This is a one-time setup (unless you want to add more channels later)</li>
+                </ul>
+            </div>
+
+            <h2 id="test">Test the Bot</h2>
+            
+            <h3>Method 1: Test with MeshCore App</h3>
+            <ol>
+                <li>Ensure the bot is running (<code>python3 weather_bot.py</code>)</li>
+                <li>Open your MeshCore app on your phone</li>
+                <li>Navigate to any channel you've configured</li>
+                <li>Type and send: <code>wx London</code></li>
+                <li>Wait for the bot's response with weather information!</li>
+            </ol>
+
+            <h3>Method 2: Test Without Radio (Interactive Mode)</h3>
+            <pre><code>python3 weather_bot.py --interactive</code></pre>
+            <p>Then type commands directly in the terminal:</p>
+            <pre><code>wx London
+wx Manchester
+weather York
+quit</code></pre>
+
+            <h3>Method 3: Test Without Radio (One-Shot)</h3>
+            <pre><code>python3 weather_bot.py --location London</code></pre>
+            <p>This fetches weather and exits immediately (no radio hardware needed).</p>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f389.svg" alt="🎉" class="emoji-icon"> Success!</h3>
+                <p>If you see weather data returned, the bot is working correctly! You can now use it on your mesh network.</p>
+            </div>
+
+            <h2 id="next-steps">Next Steps</h2>
+            <div class="quick-links">
+                <a href="features.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/2728.svg" alt="✨" class="emoji-icon"></span>
+                    <h3>Explore Features</h3>
+                    <p>Learn about all the bot's capabilities</p>
+                </a>
+
+                <a href="installation.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"></span>
+                    <h3>Advanced Installation</h3>
+                    <p>Set up as a service, Raspberry Pi deployment</p>
+                </a>
+
+                <a href="commands.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/1f4d6.svg" alt="📖" class="emoji-icon"></span>
+                    <h3>Command Reference</h3>
+                    <p>Complete list of commands and options</p>
+                </a>
+
+                <a href="channels.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"></span>
+                    <h3>Channel Configuration</h3>
+                    <p>Advanced channel setup and filtering</p>
+                </a>
+            </div>
+
+            <h2>Troubleshooting</h2>
+            <p>If you encounter issues, check the <a href="troubleshooting.html">troubleshooting guide</a> for common problems and solutions.</p>
+
+            <h3>Quick Fixes</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Issue</th>
+                        <th>Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>No serial port found</td>
+                        <td>Check USB connection, try <code>ls /dev/ttyUSB*</code></td>
+                    </tr>
+                    <tr>
+                        <td>Bot not responding to messages</td>
+                        <td>Ensure radio is subscribed to channels via MeshCore app</td>
+                    </tr>
+                    <tr>
+                        <td>Location not found</td>
+                        <td>Use full city name or add country: <code>wx York, UK</code></td>
+                    </tr>
+                    <tr>
+                        <td>Wrong city returned</td>
+                        <td>Specify country in command: <code>wx York UK</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

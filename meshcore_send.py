@@ -4,16 +4,23 @@ MeshCore Send - Utility for sending messages via MeshCore network
 This is a simple command-line utility for sending messages through the MeshCore network.
 """
 
-import sys
 import argparse
+import sys
 from typing import Optional
+
 from meshcore import MeshCore
 
 
-def send_message(node_id: str, content: str, message_type: str = "text",
-                 channel: Optional[str] = None, channel_idx: Optional[int] = None,
-                 debug: bool = False,
-                 serial_port: Optional[str] = None, baud_rate: int = 9600):
+def send_message(
+    node_id: str,
+    content: str,
+    message_type: str = "text",
+    channel: Optional[str] = None,
+    channel_idx: Optional[int] = None,
+    debug: bool = False,
+    serial_port: Optional[str] = None,
+    baud_rate: int = 9600,
+):
     """
     Send a message via MeshCore network
 
@@ -48,62 +55,44 @@ def send_message(node_id: str, content: str, message_type: str = "text",
 
 def main():
     """Main entry point for meshcore_send utility"""
-    parser = argparse.ArgumentParser(
-        description="Send messages via MeshCore mesh radio network"
+    parser = argparse.ArgumentParser(description="Send messages via MeshCore mesh radio network")
+
+    parser.add_argument("content", help="Message content to send")
+
+    parser.add_argument("-n", "--node-id", default="sender_node", help="Node ID for this sender (default: sender_node)")
+
+    parser.add_argument("-t", "--type", default="text", help="Message type (default: text)")
+
+    parser.add_argument(
+        "-c",
+        "--channel",
+        help="Channel name to broadcast to (e.g. 'weather'). " "The name is mapped to a channel slot index internally.",
     )
 
     parser.add_argument(
-        "content",
-        help="Message content to send"
-    )
-
-    parser.add_argument(
-        "-n", "--node-id",
-        default="sender_node",
-        help="Node ID for this sender (default: sender_node)"
-    )
-
-    parser.add_argument(
-        "-t", "--type",
-        default="text",
-        help="Message type (default: text)"
-    )
-
-    parser.add_argument(
-        "-c", "--channel",
-        help="Channel name to broadcast to (e.g. 'weather'). "
-             "The name is mapped to a channel slot index internally."
-    )
-
-    parser.add_argument(
-        "-x", "--channel-idx",
+        "-x",
+        "--channel-idx",
         type=int,
         metavar="IDX",
         help="Channel slot index (0-7) to send on directly "
-             "(MESHCORE_CHANNEL_IDX). "
-             "Use this when you know the exact numeric slot configured on "
-             "your companion radio (e.g. 1 for the first named channel). "
-             "Takes precedence over --channel when both are given."
+        "(MESHCORE_CHANNEL_IDX). "
+        "Use this when you know the exact numeric slot configured on "
+        "your companion radio (e.g. 1 for the first named channel). "
+        "Takes precedence over --channel when both are given.",
     )
 
     parser.add_argument(
-        "-p", "--port",
+        "-p",
+        "--port",
         help="Serial port for LoRa module (e.g., /dev/ttyUSB0). "
-             "When omitted, the message is sent in simulation mode."
+        "When omitted, the message is sent in simulation mode.",
     )
 
     parser.add_argument(
-        "-b", "--baud",
-        type=int,
-        default=9600,
-        help="Baud rate for LoRa serial connection (default: 9600)"
+        "-b", "--baud", type=int, default=9600, help="Baud rate for LoRa serial connection (default: 9600)"
     )
 
-    parser.add_argument(
-        "-d", "--debug",
-        action="store_true",
-        help="Enable debug output"
-    )
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()
 
@@ -116,7 +105,7 @@ def main():
         channel_idx=args.channel_idx,
         debug=args.debug,
         serial_port=args.port,
-        baud_rate=args.baud
+        baud_rate=args.baud,
     )
 
     if not args.debug:

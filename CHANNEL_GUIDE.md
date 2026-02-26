@@ -266,7 +266,7 @@ Run the included examples to see channels in action:
 python3 example_channels.py
 
 # Test with channel tests
-python3 test_channel_functionality.py
+python3 tests/test_channel_functionality.py
 
 # Interactive testing
 python3 weather_bot.py --channel weather --interactive
@@ -301,5 +301,5 @@ python3 weather_bot.py --channel weather --interactive
 - See `README.md` for general usage
 - See `QUICKSTART.md` for quick setup instructions
 - Run `python3 example_channels.py` for working examples
-- Run `python3 test_channel_functionality.py` for feature tests
+- Run `python3 tests/test_channel_functionality.py` for feature tests
 
