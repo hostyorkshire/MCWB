@@ -817,18 +817,13 @@ class WeatherBot:
             location: City/location name to geocode
             country_override: Optional country code to filter results (e.g., "GB", "US").
                             Takes precedence over self.country if provided.
+        
+        Raises:
+            requests.exceptions.RequestException: On network or API errors
         """
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
-        # Request multiple results so we can filter by country_code client-side.
-        # The Open-Meteo geocoding API does not support a server-side country filter.
-        count = 10 if country else 1
-        geo_params = {"name": location, "count": count, "language": "en", "format": "json"}
-        geo = requests.get(
-            "https://geocoding-api.open-meteo.com/v1/search",
-            params=geo_params,
-            timeout=10,
-        ).json()
+main
         if "results" not in geo or not geo["results"]:
             return None
         results = geo["results"]
@@ -840,21 +835,34 @@ class WeatherBot:
 
     def get_weather(self, lat: float, lon: float) -> dict:
         """Fetch current weather for the given coordinates.  Returns the raw
-        Open-Meteo response dict (with a ``"current"`` key)."""
-        return requests.get(
-            "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": lat,
-                "longitude": lon,
-                "current": (
-                    "temperature_2m,apparent_temperature,"
-                    "relative_humidity_2m,precipitation,"
-                    "weather_code,wind_speed_10m,wind_direction_10m"
-                ),
-                "timezone": "auto",
-            },
-            timeout=10,
-        ).json()
+        Open-Meteo response dict (with a ``"current"`` key).
+        
+        Raises:
+            requests.exceptions.RequestException: On network or API errors
+        """
+        try:
+            response = requests.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current": (
+                        "temperature_2m,apparent_temperature,"
+                        "relative_humidity_2m,precipitation,"
+                        "weather_code,wind_speed_10m,wind_direction_10m"
+                    ),
+                    "timezone": "auto",
+                },
+                timeout=10,
+            )
+            response.raise_for_status()  # Raise exception for HTTP errors
+            return response.json()
+        except requests.exceptions.Timeout:
+            raise requests.exceptions.RequestException("Weather service timeout - please try again")
+        except requests.exceptions.ConnectionError:
+            raise requests.exceptions.RequestException("Cannot reach weather service - check network connection")
+        except requests.exceptions.HTTPError as e:
+            raise requests.exceptions.RequestException(f"Weather service error: {e.response.status_code}")
 
     def get_outlook(self, lat: float, lon: float) -> dict:
         """Fetch daily weather outlook for the given coordinates.  Returns the raw
@@ -934,10 +942,7 @@ class WeatherBot:
         try:
             r = self.geocode_location(location, country)
             if r is None:
-                msg = f"Location not found: {location}"
-                self.logger.warning(msg)
-                self.stats.record_error("location_not_found")
-                return msg
+
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
 
@@ -946,19 +951,7 @@ class WeatherBot:
             self.stats.record_request(location_name, user=user)
 
             return self.format_weather_response(r, wx)
-        except (ConnectionError, Timeout, RequestException) as e:
-            # Handle network-related errors with user-friendly message
-            msg = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
-            self.logger.error(f"Network error: {e}")
-            self.error_logger.error(f"Network error: {e}", exc_info=True)
-            self.stats.record_error("weather_api_error")
-            return msg
-        except Exception as e:
-            msg = f"Weather error: {e}"
-            self.logger.error(msg)
-            self.error_logger.error(msg, exc_info=True)
-            self.stats.record_error("weather_api_error")
-            return msg
+
 
     # ------------------------------------------------------------------
     # Main run loop
