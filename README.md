@@ -86,11 +86,10 @@ The bot replies on the same channel with current conditions:
 
 ```
 London, GB
-Partly cloudy
+⛅ Partly cloudy
 Temp: 14.2°C (feels 12.8°C)
 Humid: 72%
 Wind: 18 km/h at 230°
-https://mcwb.netlify.app
 ```
 
 ### 🌤️ NEW: Weather Outlook Feature
@@ -354,7 +353,7 @@ Without `--weather-channel-idx`, announcements default to channel_idx 0 (the def
 
 The announcement message is:
 ```
-Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? https://mcwb.netlify.app
+Hello this is the WX BoT. To get a weather update simply type WX and your location.
 ```
 
 ### Example: Raspberry Pi Service Setup

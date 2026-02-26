@@ -198,17 +198,17 @@ def test_no_response_clears_state():
 
     if bot._ser.write.called:
         msg = bot._ser.write.call_args[0][0]
-        if b"OK. Find out more about me and my commands at https://mcwb.netlify.app" in msg:
-            print("✅ PASS: OK message sent after 'n' response")
+        if b"Find out more about me and my commands at https://mcwb.netlify.app" in msg:
+            print("✅ PASS: Response message sent after 'n' response")
         else:
-            print("❌ FAIL: OK message not found in response")
+            print("❌ FAIL: Response message not found in response")
             print(f"   Got: {msg}")
             return False
         msg_str = msg.decode("utf-8", errors="replace")
         if any(emoji in msg_str for emoji in WEATHER_EMOJIS):
-            print("✅ PASS: Weather emoji included in OK message")
+            print("✅ PASS: Weather emoji included in response message")
         else:
-            print("❌ FAIL: No weather emoji found in OK message")
+            print("❌ FAIL: No weather emoji found in response message")
             print(f"   Got: {msg_str}")
             return False
     else:

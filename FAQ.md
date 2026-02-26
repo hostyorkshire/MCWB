@@ -185,9 +185,9 @@ sudo systemctl restart weather_bot
 ```
 
 **How announcements work:**
-- The bot sends periodic announcements every 3 hours
-- On reboot, it will announce ONLY if the last announcement was more than 3 hours ago
-- This prevents duplicate announcements when the bot restarts frequently
+- The bot sends periodic announcements every 3 hours during normal operation
+- On reboot, it will ALWAYS announce immediately to let users know the bot is operational
+- This ensures users are aware the bot is active, regardless of when the last announcement was sent
 - The `--weather-channel-idx 1` ensures announcements go to channel_idx 1 (typically the #weather channel)
 - Change the channel index if your #weather channel uses a different channel_idx
 

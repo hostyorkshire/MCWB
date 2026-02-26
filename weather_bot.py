@@ -67,41 +67,41 @@ _MAX_VALID_CHANNEL_IDX = 7  # Maximum valid channel index (0-7)
 # Matches meshcore.py's behavior in _dispatch_channel_message
 _DEFAULT_SENDER = "channel"
 
-# WMO weather interpretation codes
+# WMO weather interpretation codes with emoji icons
 WEATHER_CODES = {
-    0: "Clear sky",
-    1: "Mainly clear",
-    2: "Partly cloudy",
-    3: "Overcast",
-    45: "Fog",
-    48: "Rime fog",
-    51: "Light drizzle",
-    53: "Moderate drizzle",
-    55: "Dense drizzle",
-    56: "Light freezing drizzle",
-    57: "Dense freezing drizzle",
-    61: "Slight rain",
-    63: "Moderate rain",
-    65: "Heavy rain",
-    66: "Light freezing rain",
-    67: "Heavy freezing rain",
-    71: "Slight snow",
-    73: "Moderate snow",
-    75: "Heavy snow",
-    77: "Snow grains",
-    80: "Slight showers",
-    81: "Moderate showers",
-    82: "Violent showers",
-    85: "Slight snow showers",
-    86: "Heavy snow showers",
-    95: "Thunderstorm",
-    96: "Thunderstorm w/ slight hail",
-    99: "Thunderstorm w/ heavy hail",
+    0: "☀️ Clear sky",
+    1: "🌤️ Mainly clear",
+    2: "⛅ Partly cloudy",
+    3: "☁️ Overcast",
+    45: "🌫️ Fog",
+    48: "🌫️ Rime fog",
+    51: "🌦️ Light drizzle",
+    53: "🌦️ Moderate drizzle",
+    55: "🌧️ Dense drizzle",
+    56: "🌨️ Light freezing drizzle",
+    57: "🌨️ Dense freezing drizzle",
+    61: "🌧️ Slight rain",
+    63: "🌧️ Moderate rain",
+    65: "🌧️ Heavy rain",
+    66: "🌨️ Light freezing rain",
+    67: "🌨️ Heavy freezing rain",
+    71: "🌨️ Slight snow",
+    73: "❄️ Moderate snow",
+    75: "❄️ Heavy snow",
+    77: "🌨️ Snow grains",
+    80: "🌦️ Slight showers",
+    81: "🌧️ Moderate showers",
+    82: "⛈️ Violent showers",
+    85: "🌨️ Slight snow showers",
+    86: "🌨️ Heavy snow showers",
+    95: "⛈️ Thunderstorm",
+    96: "⛈️ Thunderstorm w/ slight hail",
+    99: "⛈️ Thunderstorm w/ heavy hail",
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = (
-    "Hello this is the WX BoT. To get a weather update simply type WX and your location. HELP? https://mcwb.netlify.app"
+    "Hello this is the WX BoT. To get a weather update simply type WX and your location."
 )
 # Use absolute path for timestamp file to ensure it works regardless of working directory
 ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
@@ -537,9 +537,6 @@ class WeatherBot:
         if self.weather_channel_idx is None:
             self._announce_channel_idx = channel_idx
 
-        # Clean up expired outlook requests on every processed message
-        # This ensures timely removal of stale outlook states (30s timeout)
-        self._cleanup_expired_outlook_requests()
 
         # Check if this is a weather command first (priority over outlook responses)
         location, country = self._parse_command(content)
@@ -760,8 +757,7 @@ class WeatherBot:
             f"(feels {c.get('apparent_temperature', 'N/A')}°C)\n"
             f"Humid: {c.get('relative_humidity_2m', 'N/A')}%\n"
             f"Wind: {c.get('wind_speed_10m', 'N/A')} km/h "
-            f"at {c.get('wind_direction_10m', 'N/A')}°\n"
-            f"https://mcwb.netlify.app"
+            f"at {c.get('wind_direction_10m', 'N/A')}°"
         )
 
     def handle_message(self, msg: MeshCoreMessage):

@@ -133,20 +133,23 @@ nav ul {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 
 nav ul li {
     margin: 0;
+    white-space: nowrap;
 }
 
 nav ul li a {
     display: block;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1rem;
     color: var(--text-secondary);
     text-decoration: none;
     transition: all 0.3s ease;
     border-bottom: 3px solid transparent;
+    font-size: 0.95rem;
 }
 
 nav ul li a:hover {
@@ -744,6 +747,15 @@ blockquote {
     font-size: 3rem;
     display: inline-block;
     margin-right: 1rem;
+}
+
+/* Emoji icon styling */
+.emoji-icon {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    margin: 0;
 }
 
 /* Protocol table special styling */
