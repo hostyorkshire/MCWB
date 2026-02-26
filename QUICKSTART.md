@@ -1,5 +1,7 @@
 # Quick Start Guide - MeshCore Weather Bot
 
+**❓ Have questions?** Check the [FAQ](FAQ.md) for common setup questions including "where is the boot setup script?"
+
 ## Installation on Raspberry Pi Zero 2
 
 **🍓 For headless setup with auto-start on boot, see [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md)**
@@ -25,8 +27,23 @@ cd MCWB
 ```
 
 ### 4. Install Python Dependencies
+
+**Recommended: Use a virtual environment** (prevents PEP 668 errors on newer systems):
 ```bash
-python3 -m pip install -r requirements.txt
+# Create virtual environment
+python3 -m venv venv
+
+# Activate it
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Alternative: Install directly** (may fail on Debian 12+, Ubuntu 23.04+ with PEP 668):
+```bash
+pip3 install -r requirements.txt
+# If this fails with "externally-managed-environment", use the virtual environment method above
 ```
 
 ### 5. Configure Radio Channels (Critical Step)

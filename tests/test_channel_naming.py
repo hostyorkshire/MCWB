@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
 Test to verify channel naming convention (with/without hash)
 """
 
-from weather_bot import WeatherBot
 from meshcore import MeshCore
+from weather_bot import WeatherBot
 
 
 def test_channel_naming_convention():
@@ -69,7 +70,7 @@ def test_channel_naming_convention():
 
     # Correct
     correct_channel = "weather,alerts,news"
-    channels_correct = [ch.strip() for ch in correct_channel.split(',')]
+    channels_correct = [ch.strip() for ch in correct_channel.split(",")]
     print(f"   Correct: '{correct_channel}'")
     print(f"   Parsed: {channels_correct}")
     print("   ✓ No hash in any channel name")
@@ -77,7 +78,7 @@ def test_channel_naming_convention():
 
     # Wrong
     wrong_channel = "#weather,#alerts,#news"
-    channels_wrong = [ch.strip() for ch in wrong_channel.split(',')]
+    channels_wrong = [ch.strip() for ch in wrong_channel.split(",")]
     print(f"   Wrong: '{wrong_channel}'")
     print(f"   Parsed: {channels_wrong}")
     print("   ⚠ Hash included in all channel names (creates wrong channels)")

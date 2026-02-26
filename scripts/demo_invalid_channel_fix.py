@@ -4,14 +4,13 @@ Demonstration that shows how the fix prevents garbled messages from being logged
 This simulates the exact scenario from the issue report.
 """
 
-from weather_bot import WeatherBot
-import io
-import sys
 import os
+import sys
+import time
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from contextlib import redirect_stdout
-import time
+from weather_bot import WeatherBot
 
 
 def simulate_message_reception():
@@ -34,7 +33,7 @@ def simulate_message_reception():
     valid_payload = bytes([0x88, 0, 0x05, 0x00]) + ts + b"M3UXC/M: Wx leeds"
 
     channel_idx, text = bot._parse_channel_message(valid_payload)
-    print(f"   Parsed: channel_idx={channel_idx}, text=\"{text}\"")
+    print(f'   Parsed: channel_idx={channel_idx}, text="{text}"')
     if channel_idx is not None:
         print(f"   ✅ This message would be processed correctly")
 

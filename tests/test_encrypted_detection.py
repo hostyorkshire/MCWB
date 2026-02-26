@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -12,6 +13,7 @@ have a valid channel_idx but garbled/encrypted content.
 import struct
 import time
 from unittest.mock import MagicMock
+
 from weather_bot import WeatherBot
 
 
@@ -22,7 +24,7 @@ def create_channel_message(channel_idx, text_bytes, code=0x88):
     """
     path_len = 0x00
     txt_type = 0x00
-    timestamp = struct.pack('<I', int(time.time()))
+    timestamp = struct.pack("<I", int(time.time()))
 
     payload = bytes([code, channel_idx, path_len, txt_type]) + timestamp + text_bytes
     return payload
@@ -41,7 +43,7 @@ def test_encrypted_message_detection():
     sent_responses = []
 
     def mock_send_channel_msg(text, channel_idx):
-        sent_responses.append({'text': text, 'channel_idx': channel_idx})
+        sent_responses.append({"text": text, "channel_idx": channel_idx})
 
     bot._send_channel_msg = mock_send_channel_msg
 
@@ -58,7 +60,7 @@ def test_encrypted_message_detection():
     print("\n--- Test 2: Encrypted message with valid channel_idx=1 ---")
     # Simulate encrypted data with lots of non-printable bytes
     # This is similar to what we see in the logs: ^t�&tE%3GۺIrƘ&cՆwguPv2>[0#0R#9
-    encrypted_bytes = b'\x01\x02\x03\x04\x05\x06\x07\x08test\x0a\x0b\x0c\x0d\x0e\x0f\x10'
+    encrypted_bytes = b"\x01\x02\x03\x04\x05\x06\x07\x08test\x0a\x0b\x0c\x0d\x0e\x0f\x10"
     payload2 = create_channel_message(1, encrypted_bytes)
 
     sent_responses.clear()
@@ -69,7 +71,7 @@ def test_encrypted_message_detection():
 
     print("\n--- Test 3: Another encrypted message with channel_idx=2 ---")
     # More encrypted data
-    encrypted_bytes2 = b'\x00\x00\x00hello\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6'
+    encrypted_bytes2 = b"\x00\x00\x00hello\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6"
     payload3 = create_channel_message(2, encrypted_bytes2)
 
     sent_responses.clear()
@@ -91,13 +93,15 @@ def test_encrypted_message_detection():
 
     print("\n--- Test 5: Long encrypted message (like in user's log) ---")
     # Simulate the 153-byte encrypted message from the log
-    long_encrypted = b'\x01\x15\x8a\x99' + b'encrypted' + b'\xf1\xaa\xbb' * 40
+    long_encrypted = b"\x01\x15\x8a\x99" + b"encrypted" + b"\xf1\xaa\xbb" * 40
     payload5 = create_channel_message(1, long_encrypted)
 
     sent_responses.clear()
     bot._dispatch(payload5)
 
-    assert len(sent_responses) == 0, f"Should NOT respond to long encrypted message, got {len(sent_responses)} responses"
+    assert (
+        len(sent_responses) == 0
+    ), f"Should NOT respond to long encrypted message, got {len(sent_responses)} responses"
     print(f"✅ Long encrypted message: correctly ignored")
 
     print("\n" + "=" * 80)
@@ -141,12 +145,16 @@ def test_byte_validation_directly():
             all_passed = False
 
         # Calculate actual ratio for debugging
-        printable = sum(1 for b in text_bytes if (
-            32 <= b <= 126 or               # Printable ASCII
-            b in (9, 10, 13) or             # Whitespace (tab, newline, CR)
-            0x80 <= b <= 0xBF or            # UTF-8 continuation bytes
-            0xC2 <= b <= 0xF4               # UTF-8 start bytes (2-4 byte sequences)
-        ))
+        printable = sum(
+            1
+            for b in text_bytes
+            if (
+                32 <= b <= 126  # Printable ASCII
+                or b in (9, 10, 13)  # Whitespace (tab, newline, CR)
+                or 0x80 <= b <= 0xBF  # UTF-8 continuation bytes
+                or 0xC2 <= b <= 0xF4  # UTF-8 start bytes (2-4 byte sequences)
+            )
+        )
         ratio = printable / len(text_bytes) if text_bytes else 0
 
         print(f"{status} {description}: expected={expected}, got={result}, ratio={ratio:.2f}")
@@ -169,5 +177,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         exit(1)

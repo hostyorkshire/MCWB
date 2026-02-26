@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 """
@@ -9,9 +10,10 @@ This test specifically addresses the issue where CMD_SYNC_NEXT_MSG was being sen
 before the listener thread started, causing messages to be missed.
 """
 
-import time
 import threading
+import time
 from io import BytesIO
+
 from meshcore import MeshCore
 
 # Frame constants
@@ -125,8 +127,9 @@ def test_listener_receives_initial_sync_response():
     print(f"   Frame codes: {[f'0x{code:02x}' for code in frames_received]}")
 
     # The listener should have received RESP_NO_MORE_MSGS (0x0A)
-    assert _RESP_NO_MORE_MSGS in frames_received, \
-        f"RESP_NO_MORE_MSGS (0x{_RESP_NO_MORE_MSGS:02x}) should have been received"
+    assert (
+        _RESP_NO_MORE_MSGS in frames_received
+    ), f"RESP_NO_MORE_MSGS (0x{_RESP_NO_MORE_MSGS:02x}) should have been received"
     print(f"   ✓ RESP_NO_MORE_MSGS (0x{_RESP_NO_MORE_MSGS:02x}) was received")
 
     print()
@@ -167,13 +170,21 @@ def test_listener_receives_channel_message():
     # Both formats are supported by the bot, so this validates the core functionality.
     # Format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
     message_text = b"User: wx London"
-    payload = bytes([
-        8,      # RESP_CHANNEL_MSG (old format)
-        0,      # channel_idx = 0 (default channel)
-        1,      # path_len
-        0,      # txt_type
-        0, 0, 0, 0,  # timestamp (placeholder)
-    ]) + message_text
+    payload = (
+        bytes(
+            [
+                8,  # RESP_CHANNEL_MSG (old format)
+                0,  # channel_idx = 0 (default channel)
+                1,  # path_len
+                0,  # txt_type
+                0,
+                0,
+                0,
+                0,  # timestamp (placeholder)
+            ]
+        )
+        + message_text
+    )
 
     # Create the complete frame
     frame = bytes([_FRAME_OUT]) + len(payload).to_bytes(2, "little") + payload

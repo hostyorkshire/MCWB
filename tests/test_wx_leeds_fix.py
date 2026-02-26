@@ -7,11 +7,13 @@ that caused the first character of messages to be skipped, turning
 "wx leeds" into "x leeds", which wouldn't match the weather command pattern.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock, patch
+
 from meshcore import MeshCore, MeshCoreMessage
 from weather_bot import WeatherBot
 
@@ -31,17 +33,19 @@ def test_wx_leeds_command():
     received_content = [None]
 
     # Create a weather bot
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding response for Leeds
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Leeds",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.8008,
-                "longitude": -1.5491
-            }]
+            "results": [
+                {
+                    "name": "Leeds",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.8008,
+                    "longitude": -1.5491,
+                }
+            ]
         }
         geocoding_response.raise_for_status = MagicMock()
 
@@ -55,7 +59,7 @@ def test_wx_leeds_command():
                 "wind_speed_10m": 15.0,
                 "wind_direction_10m": 180,
                 "precipitation": 0.0,
-                "weather_code": 2
+                "weather_code": 2,
             }
         }
         weather_response.raise_for_status = MagicMock()
@@ -68,6 +72,7 @@ def test_wx_leeds_command():
 
         # Wrap the original handler to track calls
         original_handler = bot.handle_message
+
         def tracking_handler(message: MeshCoreMessage):
             handler_called[0] = True
             received_content[0] = message.content

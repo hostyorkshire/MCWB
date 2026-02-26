@@ -4,11 +4,13 @@ Test that garbled/encrypted messages are properly sanitized in logs.
 This prevents terminal corruption from control characters and binary data.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import io
+
 from weather_bot import WeatherBot
 
 
@@ -36,17 +38,14 @@ def test_garbled_message_sanitization():
 
         # Verify that control characters are escaped in the output
         # The output should contain literal "\x01" not the actual control character
-        assert "\\x01" in output or "\\x" in output, \
-            "Control characters should be escaped with \\xNN notation"
+        assert "\\x01" in output or "\\x" in output, "Control characters should be escaped with \\xNN notation"
 
         # Verify that the raw binary \x01 byte is NOT in the output
         # (this would indicate unsanitized output)
-        assert "\x01" not in output, \
-            "Raw control character \\x01 should not appear in output"
+        assert "\x01" not in output, "Raw control character \\x01 should not appear in output"
 
         # Verify we don't have the literal bell/alert character
-        assert "\x07" not in output, \
-            "Raw control character \\x07 should not appear in output"
+        assert "\x07" not in output, "Raw control character \\x07 should not appear in output"
 
         print("✓ Test passed: Garbled messages are properly sanitized")
         return True
@@ -74,12 +73,14 @@ def test_garbled_sender_sanitization():
         output = captured_output.getvalue()
 
         # Verify sender is sanitized
-        assert "\\x02" in output or "\\x03" in output or "\\x" in output, \
-            "Control characters in sender should be escaped"
+        assert (
+            "\\x02" in output or "\\x03" in output or "\\x" in output
+        ), "Control characters in sender should be escaped"
 
         # Verify raw control characters are not present
-        assert "\x02" not in output and "\x03" not in output and "\x07" not in output, \
-            "Raw control characters should not appear in sender output"
+        assert (
+            "\x02" not in output and "\x03" not in output and "\x07" not in output
+        ), "Raw control characters should not appear in sender output"
 
         print("✓ Test passed: Garbled sender names are properly sanitized")
         return True
@@ -125,15 +126,15 @@ def test_weather_command_output_sanitization():
 
         # Verify that the sender name in the print output is sanitized
         # Look for the WX request line
-        lines = output.split('\n')
-        wx_request_line = [l for l in lines if "WX request" in l]
+        lines = output.split("\n")
+        wx_request_line = [line for line in lines if "WX request" in line]
 
         if wx_request_line:
             # Should contain escaped form, not raw control chars
-            assert "\x01" not in wx_request_line[0], \
-                "Raw control characters should not appear in WX request output"
-            assert "\\x01" in wx_request_line[0] or "\\x15" in wx_request_line[0], \
-                "Control characters should be escaped in WX request output"
+            assert "\x01" not in wx_request_line[0], "Raw control characters should not appear in WX request output"
+            assert (
+                "\\x01" in wx_request_line[0] or "\\x15" in wx_request_line[0]
+            ), "Control characters should be escaped in WX request output"
 
         print("✓ Test passed: Weather command output properly sanitizes user data")
         return True
@@ -181,5 +182,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Test error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

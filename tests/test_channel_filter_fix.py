@@ -4,8 +4,9 @@ Test for channel filtering: Bot should only accept messages from configured chan
 when channel filter is set, and accept all messages when no filter is set.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from meshcore import MeshCore, MeshCoreMessage
@@ -33,11 +34,9 @@ def test_with_channel_filtering():
     received_messages = []
 
     def handler(message):
-        received_messages.append({
-            'content': message.content,
-            'channel': message.channel,
-            'channel_idx': message.channel_idx
-        })
+        received_messages.append(
+            {"content": message.content, "channel": message.channel, "channel_idx": message.channel_idx}
+        )
 
     mesh.register_handler("text", handler)
     mesh.start()
@@ -51,11 +50,7 @@ def test_with_channel_filtering():
     print("Test 1: Named message channel='news' (not in filter)")
     received_messages.clear()
     msg_news = MeshCoreMessage(
-        sender="USER1",
-        content="some news",
-        message_type="text",
-        channel="news",
-        channel_idx=None
+        sender="USER1", content="some news", message_type="text", channel="news", channel_idx=None
     )
     mesh.receive_message(msg_news)
 
@@ -71,11 +66,7 @@ def test_with_channel_filtering():
     print("Test 2: Named message channel='weather' (in filter)")
     received_messages.clear()
     msg_weather_named = MeshCoreMessage(
-        sender="USER2",
-        content="wx London",
-        message_type="text",
-        channel="weather",
-        channel_idx=None
+        sender="USER2", content="wx London", message_type="text", channel="weather", channel_idx=None
     )
     mesh.receive_message(msg_weather_named)
 
@@ -90,17 +81,11 @@ def test_with_channel_filtering():
     # Tests 3–5: Binary-protocol messages (channel=None, channel_idx set) should
     # ALL be ACCEPTED regardless of the filter — physical slot indices do not map
     # to channel names reliably.
-    for test_num, (slot, location) in enumerate(
-        [(0, "wx Brighton"), (1, "wx Manchester"), (2, "wx Leeds")], start=3
-    ):
+    for test_num, (slot, location) in enumerate([(0, "wx Brighton"), (1, "wx Manchester"), (2, "wx Leeds")], start=3):
         print(f"Test {test_num}: Binary-protocol message on channel_idx={slot}")
         received_messages.clear()
         msg_binary = MeshCoreMessage(
-            sender="USER3",
-            content=location,
-            message_type="text",
-            channel=None,
-            channel_idx=slot
+            sender="USER3", content=location, message_type="text", channel=None, channel_idx=slot
         )
         mesh.receive_message(msg_binary)
 
@@ -138,11 +123,9 @@ def test_without_channel_filtering():
     received_messages = []
 
     def handler(message):
-        received_messages.append({
-            'content': message.content,
-            'channel': message.channel,
-            'channel_idx': message.channel_idx
-        })
+        received_messages.append(
+            {"content": message.content, "channel": message.channel, "channel_idx": message.channel_idx}
+        )
 
     mesh.register_handler("text", handler)
     mesh.start()
@@ -155,11 +138,7 @@ def test_without_channel_filtering():
     print("Test 1: Message on channel_idx 0 (default channel)")
     received_messages.clear()
     msg_default = MeshCoreMessage(
-        sender="USER1",
-        content="wx Brighton",
-        message_type="text",
-        channel=None,
-        channel_idx=0
+        sender="USER1", content="wx Brighton", message_type="text", channel=None, channel_idx=0
     )
     mesh.receive_message(msg_default)
 
@@ -174,13 +153,7 @@ def test_without_channel_filtering():
     # Test 2: Message on channel_idx 1 (weather) should be ACCEPTED
     print("Test 2: Message on channel_idx 1 (weather channel)")
     received_messages.clear()
-    msg_weather = MeshCoreMessage(
-        sender="USER2",
-        content="wx London",
-        message_type="text",
-        channel=None,
-        channel_idx=1
-    )
+    msg_weather = MeshCoreMessage(sender="USER2", content="wx London", message_type="text", channel=None, channel_idx=1)
     mesh.receive_message(msg_weather)
 
     if len(received_messages) == 1:
@@ -195,11 +168,7 @@ def test_without_channel_filtering():
     print("Test 3: Message on channel_idx 2 (different channel)")
     received_messages.clear()
     msg_other = MeshCoreMessage(
-        sender="USER3",
-        content="wx Manchester",
-        message_type="text",
-        channel=None,
-        channel_idx=2
+        sender="USER3", content="wx Manchester", message_type="text", channel=None, channel_idx=2
     )
     mesh.receive_message(msg_other)
 
@@ -252,6 +221,7 @@ def main():
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -4,13 +4,13 @@ MCWB Web Dashboard
 Dark-themed web interface for monitoring the MeshCore Weather Bot
 """
 
-import sys
 import socket
+import sys
 from pathlib import Path
 
 # Check for required dependencies before importing
 try:
-    from flask import Flask, render_template, jsonify
+    from flask import Flask, jsonify, render_template
     from flask_cors import CORS
 except ImportError:
     print("=" * 70)
@@ -18,21 +18,40 @@ except ImportError:
     print("=" * 70)
     print()
     print("The web dashboard requires Flask and flask-cors.")
-    print("Please install the required dependencies:")
     print()
-    print("    pip install -r requirements.txt")
+    print("Modern Python installations (Python 3.11+) require using a virtual")
+    print("environment to install packages. Follow these steps IN ORDER:")
+    print()
+    print("STEP 1: Create a virtual environment")
+    print("   python3 -m venv venv")
+    print()
+    print("STEP 2: Activate the virtual environment (IMPORTANT!)")
+    print("   source venv/bin/activate")
+    print()
+    print("   ⚠️  You MUST activate the venv before installing packages!")
+    print("   Your prompt should show '(venv)' when activated.")
+    print()
+    print("STEP 3: Install dependencies (only after activating venv)")
+    print("   pip install -r requirements.txt")
+    print()
+    print("STEP 4: Run the dashboard (venv should still be activated)")
+    print("   python3 web_dashboard.py --host 0.0.0.0 --ssl")
+    print()
+    print("If you're already in a virtual environment, install dependencies with:")
+    print("   pip install -r requirements.txt")
     print()
     print("Or install manually:")
-    print("    pip install flask>=2.3.2 flask-cors>=4.0.0")
+    print("   pip install flask>=2.3.2 flask-cors>=4.0.0")
     print()
     print("=" * 70)
     sys.exit(78)  # EX_CONFIG (78) - Configuration error, don't retry
 
 from datetime import datetime
+
 from stats_tracker import StatsTracker
 
 app = Flask(__name__)
-app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Enable CORS for all routes to allow static website to fetch data
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -51,7 +70,7 @@ def read_log_file(filename, lines=100):
         return []
 
     try:
-        with open(log_path, 'r', encoding='utf-8') as f:
+        with open(log_path, "r", encoding="utf-8") as f:
             all_lines = f.readlines()
             return all_lines[-lines:] if lines else all_lines
     except Exception as e:
@@ -68,34 +87,36 @@ def get_log_info(filename):
     return {
         "exists": True,
         "size": stat.st_size,
-        "modified": datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+        "modified": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
     }
 
 
-@app.route('/')
+@app.route("/")
 def index():
     """Main dashboard page"""
-    return render_template('index.html')
+    return render_template("index.html")
 
 
-@app.route('/api/status')
+@app.route("/api/status")
 def api_status():
     """Get bot status"""
     log_files = {
         "bot": get_log_info("weather_bot.log"),
         "bot_error": get_log_info("weather_bot_error.log"),
         "meshcore": get_log_info("meshcore.log"),
-        "meshcore_error": get_log_info("meshcore_error.log")
+        "meshcore_error": get_log_info("meshcore_error.log"),
     }
 
-    return jsonify({
-        "status": "running" if any(f["exists"] for f in log_files.values()) else "stopped",
-        "logs": log_files,
-        "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    })
+    return jsonify(
+        {
+            "status": "running" if any(f["exists"] for f in log_files.values()) else "stopped",
+            "logs": log_files,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
 
 
-@app.route('/api/logs/<log_type>')
+@app.route("/api/logs/<log_type>")
 def api_logs(log_type):
     """Get log content
 
@@ -107,95 +128,108 @@ def api_logs(log_type):
         "bot": "weather_bot.log",
         "bot_error": "weather_bot_error.log",
         "meshcore": "meshcore.log",
-        "meshcore_error": "meshcore_error.log"
+        "meshcore_error": "meshcore_error.log",
     }
 
     if log_type not in log_map:
         return jsonify({"error": "Invalid log type"}), 400
 
     lines = read_log_file(log_map[log_type], lines=100)
-    return jsonify({
-        "log_type": log_type,
-        "lines": lines,
-        "count": len(lines)
-    })
+    return jsonify({"log_type": log_type, "lines": lines, "count": len(lines)})
 
 
-@app.route('/api/stats')
+@app.route("/api/stats")
 def api_stats():
     """Get usage statistics"""
     stats_data = stats.get_stats()
 
-    return jsonify({
-        "total_requests": stats_data.get("total_requests", 0),
-        "total_errors": stats_data.get("total_errors", 0),
-        "last_updated": stats_data.get("last_updated"),
-        "success_rate": calculate_success_rate(
-            stats_data.get("total_requests", 0),
-            stats_data.get("total_errors", 0)
-        )
-    })
+    return jsonify(
+        {
+            "total_requests": stats_data.get("total_requests", 0),
+            "total_errors": stats_data.get("total_errors", 0),
+            "last_updated": stats_data.get("last_updated"),
+            "success_rate": calculate_success_rate(
+                stats_data.get("total_requests", 0), stats_data.get("total_errors", 0)
+            ),
+        }
+    )
 
 
-@app.route('/api/stats/hourly')
+@app.route("/api/stats/hourly")
 def api_stats_hourly():
     """Get hourly request statistics"""
     hourly_data = stats.get_recent_hourly(hours=24)
     return jsonify(hourly_data)
 
 
-@app.route('/api/stats/daily')
+@app.route("/api/stats/daily")
 def api_stats_daily():
     """Get daily request statistics"""
     daily_data = stats.get_recent_daily(days=7)
     return jsonify(daily_data)
 
 
-@app.route('/api/stats/locations')
+@app.route("/api/stats/locations")
 def api_stats_locations():
     """Get top requested locations"""
     top_locs = stats.get_top_locations(limit=10)
     return jsonify(top_locs)
 
 
-@app.route('/api/channels')
+@app.route("/api/stats/recent_users")
+def api_stats_recent_users():
+    """Get recent users who invoked the bot"""
+    recent_users = stats.get_recent_users(limit=10)
+    return jsonify({"users": recent_users})
+
+
+@app.route("/api/channels")
 def api_channels():
     """Get active channels from the LORA meshcore radio"""
     channels_file = Path(__file__).parent / "logs" / "channels.json"
-    
+
     if not channels_file.exists():
-        return jsonify({
-            "channels": [],
-            "last_updated": None
-        })
-    
+        return jsonify({"channels": [], "last_updated": None})
+
     try:
         import json
-        with open(channels_file, 'r') as f:
+        from datetime import datetime
+
+        with open(channels_file, "r") as f:
             data = json.load(f)
             # Format channel names with # prefix for display
             formatted_channels = []
             for ch in data.get("channels", []):
                 channel_name = ch.get("channel_name")
+                last_used = ch.get("last_used")
+
+                # Format display name
                 if channel_name:
                     # Add # prefix for display (e.g., "weather" -> "#weather")
-                    formatted_channels.append(f"#{channel_name}")
+                    display_name = f"#{channel_name}"
                 elif ch.get("channel_idx") == 0:
                     # Channel 0 is the default/public channel
-                    formatted_channels.append("#public")
+                    display_name = "#public"
                 else:
                     # Unknown named channel - show as index
-                    formatted_channels.append(f"#channel{ch.get('channel_idx')}")
-            
-            return jsonify({
-                "channels": formatted_channels,
-                "last_updated": data.get("last_updated")
-            })
+                    display_name = f"#channel{ch.get('channel_idx')}"
+
+                # Format timestamp for display
+                last_used_str = None
+                if last_used:
+                    try:
+                        dt = datetime.fromtimestamp(last_used)
+                        last_used_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    except (ValueError, OSError):
+                        last_used_str = "Unknown"
+
+                formatted_channels.append(
+                    {"name": display_name, "last_used": last_used_str, "last_used_timestamp": last_used}
+                )
+
+            return jsonify({"channels": formatted_channels, "last_updated": data.get("last_updated")})
     except (json.JSONDecodeError, IOError):
-        return jsonify({
-            "channels": [],
-            "last_updated": None
-        })
+        return jsonify({"channels": [], "last_updated": None})
 
 
 def calculate_success_rate(total, errors):
@@ -231,6 +265,9 @@ def main():
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")
     parser.add_argument("--port", type=int, default=5000, help="Port to bind to (default: 5000)")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument("--ssl", action="store_true", help="Enable HTTPS with SSL certificate")
+    parser.add_argument("--cert", default="cert.pem", help="SSL certificate file (default: cert.pem)")
+    parser.add_argument("--key", default="key.pem", help="SSL private key file (default: key.pem)")
 
     args = parser.parse_args()
 
@@ -241,15 +278,28 @@ def main():
     # Get local IP for network access
     local_ip = get_local_ip()
 
+    # Determine protocol
+    protocol = "https" if args.ssl else "http"
+
     print()
     print("🌐 Dashboard will be accessible at:")
-    print(f"   • Local:   http://localhost:{args.port}")
+    print(f"   • Local:   {protocol}://localhost:{args.port}")
     if args.host == "0.0.0.0" and local_ip:
-        print(f"   • Network: http://{local_ip}:{args.port}")
+        print(f"   • Network: {protocol}://{local_ip}:{args.port}")
         print()
-        print("⚠️  Dashboard is accessible on your local network")
-        print("   Only use on trusted networks (home/private networks)")
-        print("   To restrict to localhost only: --host 127.0.0.1")
+        if args.ssl:
+            print("🔒 HTTPS enabled with SSL certificate")
+            print(f"   Certificate: {args.cert}")
+            print(f"   Private Key: {args.key}")
+            print()
+            print("⚠️  Self-signed certificates will show browser warnings")
+            print("   This is normal - click 'Advanced' and proceed")
+        else:
+            print("⚠️  Dashboard is accessible on your local network")
+            print("   Only use on trusted networks (home/private networks)")
+            print("   To restrict to localhost only: --host 127.0.0.1")
+            print()
+            print("💡 For HTTPS support, use: --ssl")
     elif args.host == "127.0.0.1":
         print()
         print("ℹ️  Dashboard restricted to localhost only")
@@ -258,7 +308,31 @@ def main():
     print("Press Ctrl+C to stop")
     print("=" * 70)
 
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    # Check SSL certificate files if SSL is enabled
+    if args.ssl:
+        from pathlib import Path
+
+        cert_path = Path(args.cert)
+        key_path = Path(args.key)
+
+        if not cert_path.exists() or not key_path.exists():
+            print()
+            print("❌ ERROR: SSL certificate files not found!")
+            print()
+            print("Generate a self-signed certificate with:")
+            print(f"   python3 generate_ssl_cert.py --hostname {local_ip or '192.168.1.109'}")
+            print()
+            print("Then start the dashboard with:")
+            print("   python3 web_dashboard.py --ssl")
+            print()
+            sys.exit(1)
+
+        # Run with SSL
+        ssl_context = (str(cert_path), str(key_path))
+        app.run(host=args.host, port=args.port, debug=args.debug, ssl_context=ssl_context)
+    else:
+        # Run without SSL
+        app.run(host=args.host, port=args.port, debug=args.debug)
 
 
 if __name__ == "__main__":

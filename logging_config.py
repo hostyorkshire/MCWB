@@ -9,14 +9,12 @@ import logging.handlers
 from datetime import datetime
 from pathlib import Path
 
-
 # Create logs directory if it doesn't exist
 LOGS_DIR = Path(__file__).parent / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 
-def setup_logger(name: str, log_file: str, level=logging.INFO,
-                 console_output: bool = True, file_output: bool = True):
+def setup_logger(name: str, log_file: str, level=logging.INFO, console_output: bool = True, file_output: bool = True):
     """
     Set up a logger with both file and console handlers.
 
@@ -39,18 +37,14 @@ def setup_logger(name: str, log_file: str, level=logging.INFO,
 
     # Create formatter
     formatter = logging.Formatter(
-        fmt='[%(asctime)s] %(name)s [%(levelname)s]: %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        fmt="[%(asctime)s] %(name)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     # File handler with rotation (10 MB max, keep 5 backup files)
     if file_output:
         log_path = LOGS_DIR / log_file
         file_handler = logging.handlers.RotatingFileHandler(
-            log_path,
-            maxBytes=10 * 1024 * 1024,  # 10 MB
-            backupCount=5,
-            encoding='utf-8'
+            log_path, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"  # 10 MB
         )
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
@@ -86,18 +80,15 @@ def setup_error_logger(name: str, error_log_file: str):
 
     # Create formatter with detailed error information
     formatter = logging.Formatter(
-        fmt='[%(asctime)s] %(name)s [%(levelname)s]: %(message)s\n'
-            'Location: %(pathname)s:%(lineno)d in %(funcName)s\n',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        fmt="[%(asctime)s] %(name)s [%(levelname)s]: %(message)s\n"
+        "Location: %(pathname)s:%(lineno)d in %(funcName)s\n",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     # Error file handler with rotation
     error_log_path = LOGS_DIR / error_log_file
     error_handler = logging.handlers.RotatingFileHandler(
-        error_log_path,
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=5,
-        encoding='utf-8'
+        error_log_path, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"  # 10 MB
     )
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(formatter)
@@ -119,17 +110,14 @@ def get_weather_bot_logger(debug: bool = False):
     level = logging.DEBUG if debug else logging.INFO
 
     main_logger = setup_logger(
-        name='weather_bot',
-        log_file='weather_bot.log',
+        name="weather_bot",
+        log_file="weather_bot.log",
         level=level,
         console_output=debug,  # Only show console in debug mode
-        file_output=True
+        file_output=True,
     )
 
-    error_logger = setup_error_logger(
-        name='weather_bot_errors',
-        error_log_file='weather_bot_error.log'
-    )
+    error_logger = setup_error_logger(name="weather_bot_errors", error_log_file="weather_bot_error.log")
 
     return main_logger, error_logger
 
@@ -147,17 +135,14 @@ def get_meshcore_logger(debug: bool = False):
     level = logging.DEBUG if debug else logging.INFO
 
     main_logger = setup_logger(
-        name='meshcore',
-        log_file='meshcore.log',
+        name="meshcore",
+        log_file="meshcore.log",
         level=level,
         console_output=debug,  # Only show console in debug mode
-        file_output=True
+        file_output=True,
     )
 
-    error_logger = setup_error_logger(
-        name='meshcore_errors',
-        error_log_file='meshcore_error.log'
-    )
+    error_logger = setup_error_logger(name="meshcore_errors", error_log_file="meshcore_error.log")
 
     return main_logger, error_logger
 

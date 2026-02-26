@@ -7,13 +7,15 @@ This demonstrates the behavior change:
 - AFTER: Bot with --channel weather accepts messages from ALL channels
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WeatherBot
-from meshcore import MeshCoreMessage
 from unittest.mock import MagicMock, patch
+
+from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 
 def demonstrate_behavior():
@@ -25,17 +27,19 @@ def demonstrate_behavior():
     print()
 
     # Mock the API calls
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock responses
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Brighton",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 50.82838,
-                "longitude": -0.13947
-            }]
+            "results": [
+                {
+                    "name": "Brighton",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 50.82838,
+                    "longitude": -0.13947,
+                }
+            ]
         }
 
         weather_response = MagicMock()
@@ -47,7 +51,7 @@ def demonstrate_behavior():
                 "wind_speed_10m": 13.6,
                 "wind_direction_10m": 253,
                 "precipitation": 0.0,
-                "weather_code": 3
+                "weather_code": 3,
             }
         }
 
@@ -67,13 +71,7 @@ def demonstrate_behavior():
         print()
 
         # Simulate message from problem statement
-        msg = MeshCoreMessage(
-            sender="M3UXC",
-            content="wx Brighton",
-            message_type="text",
-            channel=None,
-            channel_idx=0
-        )
+        msg = MeshCoreMessage(sender="M3UXC", content="wx Brighton", message_type="text", channel=None, channel_idx=0)
 
         print(f"Incoming message:")
         print(f"  Sender: {msg.sender}")
@@ -89,11 +87,7 @@ def demonstrate_behavior():
         original_send = bot.mesh.send_message
 
         def track_send(content, message_type, channel=None, channel_idx=None):
-            sent_messages.append({
-                'content': content,
-                'channel': channel,
-                'channel_idx': channel_idx
-            })
+            sent_messages.append({"content": content, "channel": channel, "channel_idx": channel_idx})
             return original_send(content, message_type, channel, channel_idx)
 
         bot.mesh.send_message = track_send
@@ -155,6 +149,7 @@ def main():
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

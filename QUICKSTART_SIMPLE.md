@@ -1,5 +1,7 @@
 # Quick Start Guide
 
+**❓ Have questions?** Check the [FAQ](FAQ.md) for answers including "where is the boot setup script?"
+
 ## 🎛️ NEW: One Menu for Everything!
 
 **Simplest way to set up everything on Raspberry Pi:**
@@ -26,6 +28,17 @@ This interactive menu lets you:
 
 **⚠️ FIRST:** Configure channels on your radio using the MeshCore app BEFORE starting the bot!
 
+**Install dependencies (if not already installed):**
+```bash
+# Create and activate virtual environment (recommended for newer systems)
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Run the bot:**
 ```bash
 # Run the weather bot (that's it!)
 python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 -d

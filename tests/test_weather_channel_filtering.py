@@ -3,8 +3,9 @@
 Test for weather bot channel filtering: Bot should only accept messages from configured channels
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from meshcore import MeshCore, MeshCoreMessage
@@ -33,11 +34,9 @@ def test_channel_filtering():
     received_messages = []
 
     def handler(message):
-        received_messages.append({
-            'content': message.content,
-            'channel': message.channel,
-            'channel_idx': message.channel_idx
-        })
+        received_messages.append(
+            {"content": message.content, "channel": message.channel, "channel_idx": message.channel_idx}
+        )
 
     mesh.register_handler("text", handler)
     mesh.start()
@@ -59,7 +58,7 @@ def test_channel_filtering():
         content="wx Brighton",
         message_type="text",
         channel=None,  # Binary protocol - no channel name
-        channel_idx=0
+        channel_idx=0,
     )
     mesh.receive_message(msg_default)
 
@@ -80,7 +79,7 @@ def test_channel_filtering():
         content="wx London",
         message_type="text",
         channel=None,  # Binary protocol - no channel name
-        channel_idx=1
+        channel_idx=1,
     )
     mesh.receive_message(msg_weather)
 
@@ -101,7 +100,7 @@ def test_channel_filtering():
         content="wx Manchester",
         message_type="text",
         channel=None,  # Binary protocol - no channel name
-        channel_idx=2
+        channel_idx=2,
     )
     mesh.receive_message(msg_other)
 
@@ -122,7 +121,7 @@ def test_channel_filtering():
         content="some news",
         message_type="text",
         channel="news",  # Explicit channel name - will be filtered
-        channel_idx=None
+        channel_idx=None,
     )
     mesh.receive_message(msg_news)
 
@@ -142,7 +141,7 @@ def test_channel_filtering():
         content="wx Leeds",
         message_type="text",
         channel="weather",  # Explicit channel name in filter
-        channel_idx=None
+        channel_idx=None,
     )
     mesh.receive_message(msg_weather_named)
 
@@ -173,11 +172,9 @@ def test_no_filtering():
     received_messages = []
 
     def handler(message):
-        received_messages.append({
-            'content': message.content,
-            'channel': message.channel,
-            'channel_idx': message.channel_idx
-        })
+        received_messages.append(
+            {"content": message.content, "channel": message.channel, "channel_idx": message.channel_idx}
+        )
 
     mesh.register_handler("text", handler)
     mesh.start()
@@ -189,11 +186,7 @@ def test_no_filtering():
     print("Test 1: Message on channel_idx 0 (default channel)")
     received_messages.clear()
     msg_default = MeshCoreMessage(
-        sender="USER1",
-        content="wx Brighton",
-        message_type="text",
-        channel=None,
-        channel_idx=0
+        sender="USER1", content="wx Brighton", message_type="text", channel=None, channel_idx=0
     )
     mesh.receive_message(msg_default)
 
@@ -208,13 +201,7 @@ def test_no_filtering():
     # Test 2: Message on channel_idx 1 should be ACCEPTED
     print("Test 2: Message on channel_idx 1")
     received_messages.clear()
-    msg_ch1 = MeshCoreMessage(
-        sender="USER2",
-        content="wx London",
-        message_type="text",
-        channel=None,
-        channel_idx=1
-    )
+    msg_ch1 = MeshCoreMessage(sender="USER2", content="wx London", message_type="text", channel=None, channel_idx=1)
     mesh.receive_message(msg_ch1)
 
     if len(received_messages) == 1:
@@ -266,6 +253,7 @@ def main():
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

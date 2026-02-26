@@ -6,12 +6,13 @@ Practical demonstration showing the exact user scenario:
 This script simulates the exact scenario and shows the fix working.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock, patch
-from meshcore import MeshCore
+
 from weather_bot import WeatherBot
 
 
@@ -35,17 +36,19 @@ def simulate_user_scenario():
     print("-" * 70)
     print()
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock successful API responses
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Leeds",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.8008,
-                "longitude": -1.5491
-            }]
+            "results": [
+                {
+                    "name": "Leeds",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.8008,
+                    "longitude": -1.5491,
+                }
+            ]
         }
         geocoding_response.raise_for_status = MagicMock()
 
@@ -58,7 +61,7 @@ def simulate_user_scenario():
                 "wind_speed_10m": 14.2,
                 "wind_direction_10m": 225,
                 "precipitation": 0.0,
-                "weather_code": 1
+                "weather_code": 1,
             }
         }
         weather_response.raise_for_status = MagicMock()
@@ -73,7 +76,7 @@ def simulate_user_scenario():
             debug=True,
             serial_port=None,  # Simulation mode (no actual radio)
             baud_rate=115200,
-            announce_channel="wxtest"
+            announce_channel="wxtest",
         )
         bot.mesh.start()
         print()
@@ -102,11 +105,7 @@ def simulate_user_scenario():
 
         # Complete V3 frame payload
         v3_payload = (
-            bytes([frame_code, snr]) +
-            reserved +
-            bytes([channel_idx, path_len, txt_type]) +
-            timestamp +
-            message_text
+            bytes([frame_code, snr]) + reserved + bytes([channel_idx, path_len, txt_type]) + timestamp + message_text
         )
 
         print(f"Received V3 frame from companion radio:")
@@ -128,11 +127,10 @@ def simulate_user_scenario():
         print("✅ SUCCESS! Bot would send this response back on channel_idx 1:")
         print()
         print("    Leeds, UK")
-        print("    Cond: Mainly clear")
+        print("    🌤️ Mainly clear")
         print("    Temp: 12.5°C (feels 10.8°C)")
         print("    Humid: 68%")
         print("    Wind: 14.2 km/h at 225°")
-        print("    https://mcwb.netlify.app")
         print()
 
         bot.mesh.stop()

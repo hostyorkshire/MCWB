@@ -8,8 +8,9 @@ This test verifies that:
 3. Bot only filters messages when --channel-idx is explicitly set
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from weather_bot import WeatherBot
@@ -52,8 +53,7 @@ def test_weather_channel_idx_no_filtering():
 
     for channel_idx, description in test_channels:
         # Check if message would be filtered
-        would_be_filtered = (bot.allowed_channel_idx is not None and
-                             channel_idx != bot.allowed_channel_idx)
+        would_be_filtered = bot.allowed_channel_idx is not None and channel_idx != bot.allowed_channel_idx
 
         if would_be_filtered:
             print(f"❌ FAIL: channel_idx={channel_idx} ({description})")
@@ -112,8 +112,7 @@ def test_channel_idx_filtering():
     all_correct = True
 
     for channel_idx, expected, should_accept in test_cases:
-        would_be_accepted = not (bot.allowed_channel_idx is not None and
-                                channel_idx != bot.allowed_channel_idx)
+        would_be_accepted = not (bot.allowed_channel_idx is not None and channel_idx != bot.allowed_channel_idx)
 
         status = "ACCEPTED" if would_be_accepted else "REJECTED"
         expected_status = "ACCEPTED" if should_accept else "REJECTED"
@@ -172,8 +171,7 @@ def test_combined_flags():
     all_correct = True
 
     for channel_idx, expected in test_cases:
-        would_be_accepted = not (bot.allowed_channel_idx is not None and
-                                channel_idx != bot.allowed_channel_idx)
+        would_be_accepted = not (bot.allowed_channel_idx is not None and channel_idx != bot.allowed_channel_idx)
 
         status = "ACCEPTED" if would_be_accepted else "REJECTED"
 
@@ -225,8 +223,7 @@ def test_no_flags():
     all_passed = True
 
     for channel_idx in test_channels:
-        would_be_filtered = (bot.allowed_channel_idx is not None and
-                            channel_idx != bot.allowed_channel_idx)
+        would_be_filtered = bot.allowed_channel_idx is not None and channel_idx != bot.allowed_channel_idx
 
         if would_be_filtered:
             print(f"❌ FAIL: channel_idx={channel_idx} would be FILTERED")
@@ -292,6 +289,7 @@ def main():
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

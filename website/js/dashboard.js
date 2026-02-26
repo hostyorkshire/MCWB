@@ -1,237 +1,31 @@
-// MCWB Dashboard - Live monitoring with custom charts
+// MCWB Dashboard - Demo Mode Only
+// This is a static demo for the Netlify website
+// For live data, access the dashboard directly on your Raspberry Pi
 
 let autoRefreshEnabled = true;
 let refreshInterval = null;
-let dashboardUrl = null;
 
-// Initialize dashboard
+// Initialize dashboard in demo mode only
 document.addEventListener('DOMContentLoaded', function() {
-    loadCustomApiUrlFromStorage();
-    detectDashboardUrl();
-    setupAutoRefresh();
-    
-    // Handle window resize for responsive chart
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-            // Re-render the chart if data exists
-            const lineChart = document.querySelector('.line-chart');
-            if (lineChart) {
-                updateCharts();
-            }
-        }, 250);
-    });
-});
-
-// Load custom API URL from localStorage or URL parameter
-function loadCustomApiUrlFromStorage() {
-    // Check URL parameter first
-    const urlParams = new URLSearchParams(window.location.search);
-    const apiUrlParam = urlParams.get('apiUrl');
-    if (apiUrlParam) {
-        localStorage.setItem('customDashboardApiUrl', apiUrlParam);
-        const input = document.getElementById('customApiUrl');
-        if (input) input.value = apiUrlParam;
-    }
-    
-    // Load from localStorage
-    const savedUrl = localStorage.getItem('customDashboardApiUrl');
-    if (savedUrl) {
-        const input = document.getElementById('customApiUrl');
-        if (input) input.value = savedUrl;
-    }
-}
-
-// Set custom API URL
-function setCustomApiUrl() {
-    const input = document.getElementById('customApiUrl');
-    if (!input) return;
-    
-    let url = input.value.trim();
-    if (!url) {
-        alert('Please enter a valid URL');
-        return;
-    }
-    
-    // Validate and normalize URL
-    // Note: Default to http:// for local network access (Raspberry Pi typically doesn't have SSL)
-    // Users can explicitly specify https:// if they have SSL configured
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'http://' + url;
-    }
-    
-    // Remove trailing slash
-    url = url.replace(/\/$/, '');
-    
-    // Save to localStorage
-    localStorage.setItem('customDashboardApiUrl', url);
-    input.value = url;
-    
-    // Try to connect
-    dashboardUrl = null; // Reset to force re-detection
-    detectDashboardUrl();
-}
-
-// Clear custom API URL
-function clearCustomApiUrl() {
-    localStorage.removeItem('customDashboardApiUrl');
-    const input = document.getElementById('customApiUrl');
-    if (input) input.value = '';
-    
-    // Reset to default detection
-    dashboardUrl = null;
-    detectDashboardUrl();
-}
-
-// Detect dashboard URL
-async function detectDashboardUrl() {
-    // Build list of URLs to try
-    const urls = [];
-    
-    // 1. Try custom URL from localStorage first
-    const customUrl = localStorage.getItem('customDashboardApiUrl');
-    if (customUrl) {
-        urls.push(customUrl);
-    }
-    
-    // 2. Try common local URLs
-    urls.push('http://localhost:5000');
-    urls.push('http://127.0.0.1:5000');
-    
-    // 3. Try current hostname (useful when accessing via network)
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        urls.push(`${window.location.protocol}//${window.location.hostname}:5000`);
-    }
-    
-    for (const url of urls) {
-        try {
-            const response = await fetch(`${url}/api/stats`, { 
-                method: 'GET',
-                mode: 'cors',
-                signal: AbortSignal.timeout(2000) // 2 second timeout
-            });
-            if (response.ok) {
-                dashboardUrl = url;
-                console.log('Dashboard found at:', url);
-                showLiveDataInfo(url);
-                await updateDashboard();
-                return;
-            }
-        } catch (error) {
-            // Try next URL
-            continue;
-        }
-    }
-    
-    // No dashboard found, show demo mode
-    console.warn('Dashboard API not found. Showing demo mode.');
     showDemoMode();
-}
-
-// Show live data info banner
-function showLiveDataInfo(url) {
-    const demoWarning = document.getElementById('demoModeWarning');
-    const liveInfo = document.getElementById('liveDataInfo');
-    const connectedUrl = document.getElementById('connectedUrl');
-    
-    if (demoWarning) {
-        demoWarning.style.display = 'none';
-    }
-    if (liveInfo) {
-        liveInfo.style.display = 'block';
-    }
-    if (connectedUrl) {
-        connectedUrl.textContent = url;
-    }
-}
-
-// Update dashboard with real data from API
-async function updateDashboard() {
-    if (!dashboardUrl) {
-        showDemoMode();
-        return;
-    }
-    
-    try {
-        // Fetch stats data
-        const [statsRes, hourlyRes, locationsRes, channelsRes] = await Promise.all([
-            fetch(`${dashboardUrl}/api/stats`),
-            fetch(`${dashboardUrl}/api/stats/hourly`),
-            fetch(`${dashboardUrl}/api/stats/locations`),
-            fetch(`${dashboardUrl}/api/channels`)
-        ]);
-        
-        // Check core endpoints (channels is optional)
-        if (!statsRes.ok || !hourlyRes.ok || !locationsRes.ok) {
-            throw new Error('Failed to fetch dashboard data');
-        }
-        
-        const stats = await statsRes.json();
-        const hourly = await hourlyRes.json();
-        const locations = await locationsRes.json();
-        // Channels API is optional - gracefully handle failure
-        const channels = channelsRes.ok ? await channelsRes.json() : { channels: [] };
-        
-        // Update status indicator
-        const statusSpan = document.querySelector('#botStatus');
-        if (statusSpan) {
-            statusSpan.textContent = stats.total_requests > 0 ? 'Online' : 'Idle';
-        }
-        
-        // Calculate today's requests from hourly data
-        const today = new Date().toISOString().split('T')[0];
-        const todayRequests = hourly
-            .filter(item => item.hour.startsWith(today))
-            .reduce((sum, item) => sum + item.count, 0);
-        
-        // Update stat displays
-        document.getElementById('requestsToday').textContent = todayRequests;
-        
-        // Update active channels display with real channel data
-        const activeChannelsEl = document.getElementById('activeChannels');
-        if (channels.channels && channels.channels.length > 0) {
-            activeChannelsEl.textContent = channels.channels.join(', ');
-        } else {
-            activeChannelsEl.textContent = 'No channels detected';
-        }
-        
-        // Calculate uptime based on last update
-        if (stats.last_updated) {
-            const lastUpdate = new Date(stats.last_updated);
-            const now = new Date();
-            const MILLISECONDS_PER_HOUR = 3600000;
-            const diffHours = Math.abs(now - lastUpdate) / MILLISECONDS_PER_HOUR;
-            document.getElementById('uptime').textContent = diffHours.toFixed(1);
-        } else {
-            document.getElementById('uptime').textContent = '--';
-        }
-        
-        // Update last update time
-        const now = new Date();
-        document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
-        
-        // Update charts
-        updateUsageChart(hourly);
-        updateLocationsChart(locations);
-        
-        console.log('Dashboard updated at', now);
-    } catch (error) {
-        console.error('Error updating dashboard:', error);
-        showDemoMode();
-    }
-}
+    setupAutoRefresh();
+});
 
 // Show demo mode with fake data
 function showDemoMode() {
     // Show demo warning, hide live info
     const demoWarning = document.getElementById('demoModeWarning');
     const liveInfo = document.getElementById('liveDataInfo');
+    const connectionError = document.getElementById('connectionError');
+    
     if (demoWarning) {
         demoWarning.style.display = 'block';
     }
     if (liveInfo) {
         liveInfo.style.display = 'none';
+    }
+    if (connectionError) {
+        connectionError.style.display = 'none';
     }
     
     // Update stats with random demo data
@@ -247,67 +41,6 @@ function showDemoMode() {
     initializeLineChart();
     
     console.log('Dashboard in demo mode at', now);
-}
-
-// Update usage chart with real hourly data
-function updateUsageChart(hourlyData) {
-    if (!hourlyData || hourlyData.length === 0) {
-        initializeLineChart(); // Fallback to demo
-        return;
-    }
-    
-    // Take last 12 hours of data
-    const last12Hours = hourlyData.slice(-12);
-    const data = last12Hours.map(item => item.count);
-    
-    updateLineChart(data);
-}
-
-// Update locations bar chart with real data
-function updateLocationsChart(locationsData) {
-    const locationsChart = document.getElementById('locationsChart');
-    if (!locationsChart) return;
-    
-    if (!locationsData || locationsData.length === 0) {
-        return; // Keep demo bars
-    }
-    
-    // Take top 6 locations
-    const topLocations = locationsData.slice(0, 6);
-    
-    // Find max count for scaling
-    const maxCount = Math.max(...topLocations.map(loc => loc.count));
-    
-    // Clear chart safely
-    while (locationsChart.firstChild) {
-        locationsChart.removeChild(locationsChart.firstChild);
-    }
-    
-    topLocations.forEach(location => {
-        const container = document.createElement('div');
-        container.style.flex = '1';
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.alignItems = 'center';
-        
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        const height = (location.count / maxCount) * 80; // Scale to 80% max
-        bar.style.height = height + '%';
-        
-        const value = document.createElement('span');
-        value.className = 'bar-value';
-        value.textContent = location.count;
-        bar.appendChild(value);
-        
-        const label = document.createElement('div');
-        label.className = 'bar-label';
-        label.textContent = location.location;
-        
-        container.appendChild(bar);
-        container.appendChild(label);
-        locationsChart.appendChild(container);
-    });
 }
 
 // Initialize line chart with demo data
@@ -388,7 +121,6 @@ function startAutoRefresh() {
     
     refreshInterval = setInterval(function() {
         if (autoRefreshEnabled) {
-            updateDashboard();
             updateCharts();
         }
     }, 10000); // 10 seconds
@@ -402,47 +134,41 @@ function stopAutoRefresh() {
     }
 }
 
-// Manual refresh
+// Manual refresh of demo data
 function refreshDashboard() {
-    if (dashboardUrl) {
-        updateDashboard();
-    } else {
-        detectDashboardUrl();
-    }
+    updateCharts();
     
     // Visual feedback
     const btn = document.querySelector('.refresh-btn');
-    const originalText = btn.textContent;
-    btn.textContent = '✓ Refreshed';
-    setTimeout(() => {
-        btn.textContent = originalText;
-    }, 1000);
+    if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Refreshed';
+        setTimeout(() => {
+            btn.textContent = originalText;
+        }, 1000);
+    }
 }
 
 // Update charts with new data (called from auto-refresh in demo mode)
 function updateCharts() {
-    if (dashboardUrl) {
-        updateDashboard(); // Fetch real data
-    } else {
-        // Generate new demo data
-        const newData = [];
-        for (let i = 0; i < 12; i++) {
-            newData.push(Math.floor(Math.random() * 8) + 1);
-        }
-        updateLineChart(newData);
-        
-        // Update bar chart heights randomly for demo
-        const bars = document.querySelectorAll('.bar');
-        bars.forEach((bar, index) => {
-            const newHeight = Math.floor(Math.random() * 30) + 20;
-            const newValue = Math.floor(newHeight / 5);
-            bar.style.height = newHeight + '%';
-            const valueSpan = bar.querySelector('.bar-value');
-            if (valueSpan) {
-                valueSpan.textContent = newValue;
-            }
-        });
+    // Generate new demo data
+    const newData = [];
+    for (let i = 0; i < 12; i++) {
+        newData.push(Math.floor(Math.random() * 8) + 1);
     }
+    updateLineChart(newData);
+    
+    // Update bar chart heights randomly for demo
+    const bars = document.querySelectorAll('.bar');
+    bars.forEach((bar, index) => {
+        const newHeight = Math.floor(Math.random() * 30) + 20;
+        const newValue = Math.floor(newHeight / 5);
+        bar.style.height = newHeight + '%';
+        const valueSpan = bar.querySelector('.bar-value');
+        if (valueSpan) {
+            valueSpan.textContent = newValue;
+        }
+    });
 }
 
 // Simulate adding log entries (demo mode only)
@@ -526,17 +252,15 @@ function addLogEntry(timestamp, level, message) {
     }
 }
 
-// Demo: Simulate log updates every 30 seconds (only in demo mode)
+// Demo: Simulate log updates every 30 seconds
 setInterval(function() {
-    if (!dashboardUrl) {  // Only in demo mode
-        const now = new Date();
-        const timestamp = now.toLocaleTimeString();
-        const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
-        const city = cities[Math.floor(Math.random() * cities.length)];
-        const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
-        const user = users[Math.floor(Math.random() * users.length)];
-        
-        addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
-    }
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString();
+    const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
+    const user = users[Math.floor(Math.random() * users.length)];
+    
+    addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
 }, 30000);
 

@@ -3,11 +3,13 @@
 Demonstration script showing USB port auto-detection functionality
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from meshcore import find_serial_ports
+
 
 def main():
     print("=" * 60)
@@ -48,6 +50,7 @@ def main():
     print()
 
     return 0 if ports else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

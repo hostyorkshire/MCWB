@@ -23,10 +23,10 @@ function updateThemeButton(theme) {
     
     if (icon && text) {
         if (theme === 'dark') {
-            icon.textContent = '☀️';
+            icon.innerHTML = '<img src="img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
             text.textContent = 'Light Mode';
         } else {
-            icon.textContent = '🌙';
+            icon.innerHTML = '<img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
             text.textContent = 'Dark Mode';
         }
     }
@@ -35,6 +35,36 @@ function updateThemeButton(theme) {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize theme
     initTheme();
+    
+    // Hamburger menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.querySelector('nav ul');
+    
+    if (hamburger && navMenu) {
+        // Set initial ARIA attributes
+        hamburger.setAttribute('aria-label', 'Toggle navigation menu');
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.setAttribute('aria-controls', 'nav-menu');
+        navMenu.setAttribute('id', 'nav-menu');
+        
+        hamburger.addEventListener('click', function() {
+            const isActive = hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            
+            // Update ARIA expanded state
+            hamburger.setAttribute('aria-expanded', isActive.toString());
+        });
+        
+        // Close menu when a link is clicked
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
     
     // Back to top button
     const backToTop = document.getElementById('backToTop');

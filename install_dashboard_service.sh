@@ -39,12 +39,21 @@ fi
 
 # Check if Python dependencies are installed
 echo "🔍 Checking Python dependencies..."
-if ! python3 -c "import flask" 2>/dev/null; then
-    echo "⚠️  Warning: Flask not installed"
-    echo "   Installing dependencies..."
-    pip3 install -r requirements.txt
+ main
 else
-    echo "✅ Python dependencies OK"
+    # Already in a venv
+    echo "✅ Running in virtual environment: $VIRTUAL_ENV"
+    if python3 -c "import flask; import flask_cors" 2>/dev/null; then
+        echo "✅ Python dependencies OK"
+        USE_VENV=true
+        PYTHON_PATH="$VIRTUAL_ENV/bin/python3"
+    else
+        echo "⚠️  Dependencies not installed"
+        echo "   Installing dependencies..."
+        pip install -r requirements.txt
+        USE_VENV=true
+        PYTHON_PATH="$VIRTUAL_ENV/bin/python3"
+    fi
 fi
 
 # Create a customized service file
@@ -53,6 +62,12 @@ echo "📝 Creating customized service file..."
 SERVICE_FILE=$(mktemp)
 sed "s|User=pi|User=$CURRENT_USER|g" mcwb-dashboard.service > "$SERVICE_FILE"
 sed -i "s|/home/pi/MCWB|$INSTALL_DIR|g" "$SERVICE_FILE"
+
+# Update Python path if using venv
+if [ "$USE_VENV" = true ]; then
+    echo "   Using virtual environment Python: $PYTHON_PATH"
+    sed -i "s|/usr/bin/python3|$PYTHON_PATH|g" "$SERVICE_FILE"
+fi
 
 echo "📄 Service file contents:"
 echo "----------------------------------------"

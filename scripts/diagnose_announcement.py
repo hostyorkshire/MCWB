@@ -6,12 +6,13 @@ Note: The bot is channel-agnostic and works with ANY channel you create.
 Channel names in this script are just examples.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import time
-from weather_bot import WeatherBot, ANNOUNCE_MESSAGE, ANNOUNCE_INTERVAL
+from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE, WeatherBot
+
 
 def test_announcement_config():
     """Test announcement configuration"""
@@ -83,6 +84,7 @@ def test_announcement_config():
 
     return True
 
+
 def test_with_hardware():
     """Test with hardware detection"""
     print("=" * 70)
@@ -92,6 +94,7 @@ def test_with_hardware():
 
     try:
         from meshcore import find_serial_ports
+
         ports = find_serial_ports(debug=True)
         if ports:
             print(f"✓ Found serial ports: {ports}")
@@ -104,6 +107,7 @@ def test_with_hardware():
     except Exception as e:
         print(f"✗ Error detecting ports: {e}")
     print()
+
 
 if __name__ == "__main__":
     success = test_announcement_config()

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCWB - MeshCore Weather Bot Wiki</title>
+    <title>Meshcore Weather Bot - Intelligent MeshCore Weather Assistant</title>
     <link rel="stylesheet" href="css/style.css">
     <meta name="description" content="Documentation and wiki for the MeshCore Weather Bot (MCWB) - A lightweight Python weather bot for MeshCore mesh networks">
 </head>
@@ -11,28 +11,35 @@
     <header>
         <div class="header-content">
             <div class="header-title">
-                <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
-                <p>MeshCore Weather Bot Documentation</p>
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
             </div>
             <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
                 <span id="theme-text">Dark Mode</span>
             </button>
         </div>
     </header>
 
     <nav>
-        <ul>
-            <li><a href="index.html" class="active">Home</a></li>
-            <li><a href="getting-started.html">Getting Started</a></li>
-            <li><a href="installation.html">Installation</a></li>
-            <li><a href="features.html">Features</a></li>
-            <li><a href="commands.html">Commands</a></li>
-            <li><a href="channels.html">Channels</a></li>
-            <li><a href="dashboard.html">Live Dashboard</a></li>
-            <li><a href="troubleshooting.html">Troubleshooting</a></li>
-            <li><a href="api.html">API</a></li>
-        </ul>
+        <div class="nav-container">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="getting-started.html">Getting Started</a></li>
+                <li><a href="installation.html">Installation</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="commands.html">Commands</a></li>
+                <li><a href="channels.html">Channels</a></li>
+                <li><a href="dashboard.html">Live Dashboard</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                <li><a href="api.html">API</a></li>
+            </ul>
+        </div>
     </nav>
 
     <main>
@@ -46,12 +53,12 @@
 
             <!-- Active Channels Display -->
             <div class="info-box" id="active-channels-box" style="display: none;">
-                <h3>📡 Active Broadcasting Channels</h3>
+                <h3><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> Active Broadcasting Channels</h3>
                 <p id="channels-status" style="font-size: 1.1em; margin: 0.5rem 0;">Loading...</p>
             </div>
 
             <div class="info-box success">
-                <h3>⌨️ How to Use the Bot</h3>
+                <h3><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"> How to Use the Bot</h3>
                 <p>Open your MeshCore app or client and send a weather command on any channel:</p>
                 <div class="command-example" style="margin-top: 1rem;">
                     <div class="command">wx London</div>
@@ -66,46 +73,46 @@
             </div>
 
             <div class="info-box success">
-                <h3>✨ Zero Configuration Required</h3>
+                <h3><img src="img/emoji/2728.svg" alt="✨" class="emoji-icon"> Zero Configuration Required</h3>
                 <p>The bot automatically works on any channel without needing to configure channel IDs! Just run it and start using it on any channel you've created.</p>
             </div>
 
             <h2>Overview</h2>
-            <p>MCWBv2 (MeshCore Weather Bot) is a lightweight Python3 weather bot designed for MeshCore mesh networks. It provides real-time weather information to users on your mesh network by responding to weather queries with current conditions from the free Open-Meteo API.</p>
+            <p>MCWB (MeshCore Weather Bot) is a lightweight Python3 weather bot designed for MeshCore mesh networks. It provides real-time weather information to users on your mesh network by responding to weather queries with current conditions from the free Open-Meteo API.</p>
 
             <div class="feature-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
+                    <div class="feature-icon"><img src="img/emoji/26a1.svg" alt="⚡" class="emoji-icon"></div>
                     <h3>Zero Configuration</h3>
                     <p>Works on ANY channel automatically. No setup needed - just run and use!</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🆓</div>
+                    <div class="feature-icon"><img src="img/emoji/1f193.svg" alt="🆓" class="emoji-icon"></div>
                     <h3>Free & Open Source</h3>
                     <p>Uses the free Open-Meteo API - no API keys required. MIT licensed.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🍓</div>
+                    <div class="feature-icon"><img src="img/emoji/1f353.svg" alt="🍓" class="emoji-icon"></div>
                     <h3>Raspberry Pi Ready</h3>
                     <p>Perfect for Raspberry Pi Zero 2 with headless auto-start on boot support.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🌙</div>
+                    <div class="feature-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></div>
                     <h3>Web Dashboard</h3>
                     <p>Beautiful dark-themed web interface for real-time monitoring.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
+                    <div class="feature-icon"><img src="img/emoji/1f30d.svg" alt="🌍" class="emoji-icon"></div>
                     <h3>Global Coverage</h3>
                     <p>Get weather for any location worldwide with country-specific search.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">📡</div>
+                    <div class="feature-icon"><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"></div>
                     <h3>LoRa Powered</h3>
                     <p>Works with MeshCore companion radios via USB serial connection.</p>
                 </div>
@@ -127,13 +134,13 @@ Wind: 18 km/h at 230°<br>
             </div>
 
             <div class="highlight">
-                <h3>🎯 Works on ANY Channel</h3>
+                <h3><img src="img/emoji/1f3af.svg" alt="🎯" class="emoji-icon"> Works on ANY Channel</h3>
                 <p>The bot is NOT limited to any specific channel. It works on:</p>
                 <ul>
-                    <li>✅ <strong>ANY channel name</strong> you create in your MeshCore app</li>
-                    <li>✅ <strong>#weather</strong>, <strong>#wxtest</strong>, <strong>#forecast</strong>, <strong>#sensors</strong> - whatever you want!</li>
-                    <li>✅ <strong>ALL your channels simultaneously</strong> by default</li>
-                    <li>✅ <strong>Zero configuration needed</strong> - just run it!</li>
+                    <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> <strong>ANY channel name</strong> you create in your MeshCore app</li>
+                    <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> <strong>#weather</strong>, <strong>#wxtest</strong>, <strong>#forecast</strong>, <strong>#sensors</strong> - whatever you want!</li>
+                    <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> <strong>ALL your channels simultaneously</strong> by default</li>
+                    <li><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> <strong>Zero configuration needed</strong> - just run it!</li>
                 </ul>
             </div>
 
@@ -153,8 +160,8 @@ Wind: 18 km/h at 230°<br>
             <p>The bot connects to a MeshCore companion radio (ESP32/LoRa device) via USB serial connection. It listens for weather commands from users on the mesh network, fetches current weather data from the Open-Meteo API, and broadcasts the response back on the same channel.</p>
 
             <div class="info-box">
-                <h3>📡 LoRa Radio Hardware</h3>
-                <p>MCWBv2 connects to a <strong>MeshCore companion radio</strong> over USB serial. The companion radio is a LoRa-based device (e.g., T-Beam, LILYGO LoRa32, or similar ESP32/LoRa board) running the <a href="https://github.com/ripplebiz/MeshCore">MeshCore firmware</a>.</p>
+                <h3><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> LoRa Radio Hardware</h3>
+                <p>MCWB connects to a <strong>MeshCore companion radio</strong> over USB serial. The companion radio is a LoRa-based device (e.g., T-Beam, LILYGO LoRa32, or similar ESP32/LoRa board) running the <a href="https://github.com/ripplebiz/MeshCore">MeshCore firmware</a>.</p>
             </div>
 
             <div style="text-align: center; margin: 3rem 0; overflow-x: auto;">
@@ -171,31 +178,31 @@ MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
             <h2>Quick Start</h2>
             <div class="quick-links">
                 <a href="getting-started.html" class="quick-link-card">
-                    <span class="icon">🚀</span>
+                    <span class="icon"><img src="img/emoji/1f680.svg" alt="🚀" class="emoji-icon"></span>
                     <h3>Getting Started</h3>
                     <p>Set up and run the bot in minutes</p>
                 </a>
 
                 <a href="installation.html" class="quick-link-card">
-                    <span class="icon">📦</span>
+                    <span class="icon"><img src="img/emoji/1f4e6.svg" alt="📦" class="emoji-icon"></span>
                     <h3>Installation</h3>
                     <p>Detailed installation instructions</p>
                 </a>
 
                 <a href="dashboard.html" class="quick-link-card">
-                    <span class="icon">📊</span>
+                    <span class="icon"><img src="img/emoji/1f4ca.svg" alt="📊" class="emoji-icon"></span>
                     <h3>Live Dashboard</h3>
                     <p>Monitor bot activity with logs & graphs</p>
                 </a>
 
                 <a href="commands.html" class="quick-link-card">
-                    <span class="icon">⌨️</span>
+                    <span class="icon"><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"></span>
                     <h3>Commands</h3>
                     <p>Learn all available commands</p>
                 </a>
 
                 <a href="troubleshooting.html" class="quick-link-card">
-                    <span class="icon">🔧</span>
+                    <span class="icon"><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"></span>
                     <h3>Troubleshooting</h3>
                     <p>Fix common issues</p>
                 </a>
@@ -219,7 +226,7 @@ MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
             </ul>
 
             <div class="info-box">
-                <h3>📚 About This Documentation</h3>
+                <h3><img src="img/emoji/1f4da.svg" alt="📚" class="emoji-icon"> About This Documentation</h3>
                 <p>This wiki provides comprehensive documentation for the MeshCore Weather Bot project. Navigate using the menu above to explore different topics, or use the quick links to jump to specific sections.</p>
             </div>
         </div>
@@ -264,7 +271,16 @@ MeshCore companion radio  ←→  LoRa RF  ←→  Other MeshCore nodes
                     
                     box.style.display = 'block';
                     box.className = 'info-box success';
-                    status.textContent = 'Broadcasting on: ' + channelsData.channels.join(', ');
+                    
+                    // Format channels with timestamps if available
+                    const channelText = channelsData.channels.map(ch => {
+                        if (typeof ch === 'object' && ch.name) {
+                            return ch.last_used ? `${ch.name} (last used: ${ch.last_used})` : ch.name;
+                        }
+                        return ch; // Backward compatibility
+                    }).join(', ');
+                    
+                    status.textContent = 'Broadcasting on: ' + channelText;
                 }
             } catch (error) {
                 // Silently fail - channels display is optional enhancement

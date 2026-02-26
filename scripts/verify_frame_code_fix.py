@@ -5,12 +5,15 @@ This script simulates receiving the problematic frame codes that were causing
 "Unhandled frame code" errors in the logs.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WeatherBot
 from unittest.mock import MagicMock
+
+from weather_bot import WeatherBot
+
 
 def simulate_frame_codes():
     """Simulate receiving the problematic frame codes"""
@@ -31,9 +34,11 @@ def simulate_frame_codes():
     # Track log messages
     log_messages = []
     original_log = bot._log
+
     def capture_log(msg):
         log_messages.append(msg)
         original_log(msg)
+
     bot._log = capture_log
 
     # Simulate the problematic frame codes from the user's log
@@ -42,12 +47,12 @@ def simulate_frame_codes():
 
     # Frame code 0x8a (from log line "[07:38:11] Unhandled frame code 0x8a")
     print("1. Receiving frame code 0x8a (PUSH_NO_MORE_MSGS)...")
-    payload_8a = bytes([0x8a, 0x00])
+    payload_8a = bytes([0x8A, 0x00])
     bot._dispatch(payload_8a)
 
     # Frame code 0x90 (from log line "[07:38:11] Unhandled frame code 0x90")
     print("2. Receiving frame code 0x90 (PUSH_CONTACT_MSG_V3)...")
-    payload_90 = bytes([0x90] + [0x00] * 15 + list(b'Test contact msg'))
+    payload_90 = bytes([0x90] + [0x00] * 15 + list(b"Test contact msg"))
     bot._dispatch(payload_90)
 
     # Frame code 0x80 (from log line "[07:38:50] Unhandled frame code 0x80")
@@ -79,6 +84,7 @@ def simulate_frame_codes():
 
     print("=" * 70)
     print()
+
 
 if __name__ == "__main__":
     simulate_frame_codes()

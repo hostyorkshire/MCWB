@@ -3,17 +3,18 @@
 Test web dashboard functionality
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
-import tempfile
-import shutil
 
 # Import the Flask app
-from web_dashboard import app, read_log_file, get_log_info
+from web_dashboard import app, get_log_info, read_log_file
 
 
 class TestWebDashboard(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestWebDashboard(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         self.app = app
-        self.app.config['TESTING'] = True
+        self.app.config["TESTING"] = True
         self.client = self.app.test_client()
 
         # Create a temporary logs directory for testing
@@ -35,43 +36,43 @@ class TestWebDashboard(unittest.TestCase):
 
     def test_index_page_loads(self):
         """Test that the index page loads successfully"""
-        response = self.client.get('/')
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'MCWB Dashboard', response.data)
-        self.assertIn(b'MeshCore Weather Bot', response.data)
+        self.assertIn(b"MCWB Dashboard", response.data)
+        self.assertIn(b"MeshCore Weather Bot", response.data)
 
     def test_status_api(self):
         """Test the status API endpoint"""
-        response = self.client.get('/api/status')
+        response = self.client.get("/api/status")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, "application/json")
 
         data = response.get_json()
-        self.assertIn('status', data)
-        self.assertIn('logs', data)
-        self.assertIn('timestamp', data)
+        self.assertIn("status", data)
+        self.assertIn("logs", data)
+        self.assertIn("timestamp", data)
 
         # Check log file keys
-        self.assertIn('bot', data['logs'])
-        self.assertIn('bot_error', data['logs'])
-        self.assertIn('meshcore', data['logs'])
-        self.assertIn('meshcore_error', data['logs'])
+        self.assertIn("bot", data["logs"])
+        self.assertIn("bot_error", data["logs"])
+        self.assertIn("meshcore", data["logs"])
+        self.assertIn("meshcore_error", data["logs"])
 
     def test_logs_api(self):
         """Test the logs API endpoint"""
-        response = self.client.get('/api/logs/bot')
+        response = self.client.get("/api/logs/bot")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, "application/json")
 
         data = response.get_json()
-        self.assertIn('log_type', data)
-        self.assertIn('lines', data)
-        self.assertIn('count', data)
-        self.assertEqual(data['log_type'], 'bot')
+        self.assertIn("log_type", data)
+        self.assertIn("lines", data)
+        self.assertIn("count", data)
+        self.assertEqual(data["log_type"], "bot")
 
     def test_invalid_log_type(self):
         """Test that invalid log types return 400"""
-        response = self.client.get('/api/logs/invalid')
+        response = self.client.get("/api/logs/invalid")
         self.assertEqual(response.status_code, 400)
 
     def test_read_log_file(self):
@@ -104,9 +105,9 @@ class TestWebDashboard(unittest.TestCase):
 
         try:
             info = get_log_info("test_dashboard_info.log")
-            self.assertTrue(info['exists'])
-            self.assertGreater(info['size'], 0)
-            self.assertIsNotNone(info['modified'])
+            self.assertTrue(info["exists"])
+            self.assertGreater(info["size"], 0)
+            self.assertIsNotNone(info["modified"])
         finally:
             # Clean up
             if test_log.exists():
@@ -115,69 +116,92 @@ class TestWebDashboard(unittest.TestCase):
     def test_get_log_info_nonexisting(self):
         """Test getting info for non-existing log file"""
         info = get_log_info("nonexistent.log")
-        self.assertFalse(info['exists'])
-        self.assertEqual(info['size'], 0)
-        self.assertIsNone(info['modified'])
+        self.assertFalse(info["exists"])
+        self.assertEqual(info["size"], 0)
+        self.assertIsNone(info["modified"])
 
     def test_dark_theme_css(self):
         """Test that theme CSS variables are present"""
-        response = self.client.get('/')
-        self.assertIn(b'data-theme', response.data)
-        self.assertIn(b'--bg-gradient-start', response.data)  # CSS variables
-        self.assertIn(b'--text-color', response.data)  # CSS variables
-        self.assertIn(b'#000000', response.data)  # Dark background color
-        self.assertIn(b'#ffffff', response.data)  # White text color in dark mode
+        response = self.client.get("/")
+        self.assertIn(b"data-theme", response.data)
+        self.assertIn(b"--bg-gradient-start", response.data)  # CSS variables
+        self.assertIn(b"--text-color", response.data)  # CSS variables
+        self.assertIn(b"#000000", response.data)  # Dark background color
+        self.assertIn(b"#ffffff", response.data)  # White text color in dark mode
 
     def test_stats_api(self):
         """Test the stats API endpoint"""
-        response = self.client.get('/api/stats')
+        response = self.client.get("/api/stats")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, "application/json")
 
         data = response.get_json()
-        self.assertIn('total_requests', data)
-        self.assertIn('total_errors', data)
-        self.assertIn('success_rate', data)
-        self.assertIn('last_updated', data)
+        self.assertIn("total_requests", data)
+        self.assertIn("total_errors", data)
+        self.assertIn("success_rate", data)
+        self.assertIn("last_updated", data)
 
     def test_stats_hourly_api(self):
         """Test the hourly stats API endpoint"""
-        response = self.client.get('/api/stats/hourly')
+        response = self.client.get("/api/stats/hourly")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, "application/json")
 
         data = response.get_json()
         self.assertIsInstance(data, list)
 
     def test_stats_daily_api(self):
         """Test the daily stats API endpoint"""
-        response = self.client.get('/api/stats/daily')
+        response = self.client.get("/api/stats/daily")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, "application/json")
 
         data = response.get_json()
         self.assertIsInstance(data, list)
 
     def test_stats_locations_api(self):
         """Test the locations stats API endpoint"""
-        response = self.client.get('/api/stats/locations')
+        response = self.client.get("/api/stats/locations")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.content_type, "application/json")
 
         data = response.get_json()
         self.assertIsInstance(data, list)
 
     def test_usage_statistics_section(self):
         """Test that usage statistics section is present"""
-        response = self.client.get('/')
-        self.assertIn(b'Usage Statistics', response.data)
-        self.assertIn(b'Total Requests', response.data)
-        self.assertIn(b'Success Rate', response.data)
-        self.assertIn(b'Top Locations', response.data)
-        self.assertIn(b'Requests Over Time', response.data)
+        response = self.client.get("/")
+        self.assertIn(b"Usage Statistics", response.data)
+        self.assertIn(b"Total Requests", response.data)
+        self.assertIn(b"Success Rate", response.data)
+        self.assertIn(b"Top Locations", response.data)
+        self.assertIn(b"Requests Over Time", response.data)
+
+    def test_stats_recent_users_api(self):
+        """Test the recent users stats API endpoint"""
+        response = self.client.get("/api/stats/recent_users")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, "application/json")
+
+        data = response.get_json()
+        self.assertIn("users", data)
+        self.assertIsInstance(data["users"], list)
+
+    def test_recent_users_section(self):
+        """Test that recent users section is present"""
+        response = self.client.get("/")
+        self.assertIn(b"Recent Users", response.data)
+        self.assertIn(b"recent-users", response.data)
+
+    def test_gauge_visualization(self):
+        """Test that gauge visualization is present"""
+        response = self.client.get("/")
+        self.assertIn(b"size-gauge", response.data)
+        self.assertIn(b"createSizeGauge", response.data)
+        self.assertIn(b"gauge-svg", response.data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Running Web Dashboard Tests...")
     print("=" * 70)
 
