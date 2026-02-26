@@ -1043,7 +1043,29 @@
                         channelsDiv.appendChild(badge);
                     });
                 } else {
-                    channelsDiv.innerHTML = '<div class="loading">No active channels detected yet</div>';
+                    channelsDiv.innerHTML = `
+                        <div class="loading" style="text-align: left; padding: 20px; line-height: 1.8;">
+                            <div style="font-size: 1.1em; margin-bottom: 15px;">ℹ️ No active channels detected yet</div>
+                            <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
+                                <strong>Most common cause:</strong> Your MeshCore radio is not subscribed to any channels.
+                            </div>
+                            <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
+                                <strong>Solution:</strong>
+                                <ol style="margin: 10px 0 10px 20px;">
+                                    <li>Open the MeshCore app on your phone</li>
+                                    <li>Go to Channel Settings</li>
+                                    <li>Join/subscribe to channels (e.g., #weather, #wxtest)</li>
+                                    <li>Wait for the bot to receive or send messages on those channels</li>
+                                </ol>
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 10px;">
+                                💡 The bot cannot configure channels automatically - you must add them through the MeshCore app first.
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 10px;">
+                                📖 For more help, see the <a href="https://github.com/hostyorkshire/MCWB#bot-connects-but-receives-no-messages" target="_blank" rel="noopener noreferrer" style="color: var(--accent-color);">troubleshooting guide</a>.
+                            </div>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Error loading channels:', error);
