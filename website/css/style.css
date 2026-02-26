@@ -42,8 +42,8 @@
     --error-color: #f87171;
     --code-bg: #0f0f0f;
     --shadow: rgba(0, 0, 0, 0.4);
-    --header-gradient-start: #4f46e5;
-    --header-gradient-end: #7c3aed;
+    --header-gradient-start: #3b82f6;
+    --header-gradient-end: #2563eb;
 }
 
 * {
