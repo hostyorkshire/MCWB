@@ -77,11 +77,11 @@ echo "Option 2: Disable firewall completely"
 echo "   This will disable all firewall protection."
 echo ""
 
-read -p "Would you like to fix this now? (y/n) " -r
+echo "Would you like to fix this now? (y/n) " -r
 echo ""
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "❌ No changes made."
+    echo "No changes made."
     echo ""
     echo "To fix manually, run:"
     echo "   sudo ufw allow 22/tcp"
@@ -93,8 +93,9 @@ fi
 echo "Choose fix method:"
 echo "  1) Allow SSH (port 22) - RECOMMENDED"
 echo "  2) Disable firewall completely"
+echo "  0) Cancel (no changes)"
 echo ""
-read -p "Enter choice (1 or 2): " -n 1 choice
+read -p "Enter choice (0, 1, or 2): " -n 1 choice
 echo ""
 echo ""
 
@@ -125,8 +126,20 @@ case $choice in
         echo "   sudo ufw allow 22/tcp"
         echo "   sudo ufw enable"
         ;;
+    0)
+        echo "Cancelled. No changes made."
+        echo ""
+        echo "To fix manually, run:"
+        echo "   sudo ufw allow 22/tcp"
+        echo "   sudo ufw reload"
+        exit 0
+        ;;
     *)
         echo -e "${RED}Invalid choice. No changes made.${NC}"
+        echo ""
+        echo "To fix manually, run:"
+        echo "   sudo ufw allow 22/tcp"
+        echo "   sudo ufw reload"
         exit 1
         ;;
 esac
