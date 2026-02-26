@@ -1,266 +1,17 @@
-// MCWB Dashboard - Live monitoring with custom charts
-
-// Hardcoded API URL for automatic connection
-// This is the primary dashboard API that the static site will connect to
-// Using HTTPS for secure connection from Netlify (HTTPS) to Raspberry Pi (HTTPS)
-const HARDCODED_API_URL = 'https://192.168.1.109:5000';
+// MCWB Dashboard - Demo Mode Only
+// This is a static demo for the Netlify website
+// For live data, access the dashboard directly on your Raspberry Pi
 
 let autoRefreshEnabled = true;
 let refreshInterval = null;
-let dashboardUrl = null;
 
-// Initialize dashboard
+// Initialize dashboard in demo mode only
 document.addEventListener('DOMContentLoaded', function() {
-    loadCustomApiUrlFromStorage();
-    detectDashboardUrl();
+    showDemoMode();
     setupAutoRefresh();
-    
-    // Handle window resize for responsive chart
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-            // Re-render the chart if data exists
-            const lineChart = document.querySelector('.line-chart');
-            if (lineChart) {
-                updateCharts();
-            }
-        }, 250);
-    });
 });
 
-// Load custom API URL from localStorage or URL parameter
-function loadCustomApiUrlFromStorage() {
-    // Check URL parameter first
-    const urlParams = new URLSearchParams(window.location.search);
-    const apiUrlParam = urlParams.get('apiUrl');
-    if (apiUrlParam) {
-        localStorage.setItem('customDashboardApiUrl', apiUrlParam);
-        const input = document.getElementById('customApiUrl');
-        if (input) input.value = apiUrlParam;
-    }
-    
-    // Load from localStorage
-    const savedUrl = localStorage.getItem('customDashboardApiUrl');
-    if (savedUrl) {
-        const input = document.getElementById('customApiUrl');
-        if (input) input.value = savedUrl;
-    }
-}
-
-// Set custom API URL
-function setCustomApiUrl() {
-    const input = document.getElementById('customApiUrl');
-    if (!input) return;
-    
-    let url = input.value.trim();
-    if (!url) {
-        alert('Please enter a valid URL');
-        return;
-    }
-    
-    // Validate and normalize URL
-    // Note: Default to http:// for local network access (Raspberry Pi typically doesn't have SSL)
-    // Users can explicitly specify https:// if they have SSL configured
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'http://' + url;
-    }
-    
-    // Remove trailing slash
-    url = url.replace(/\/$/, '');
-    
-    // Save to localStorage
-    localStorage.setItem('customDashboardApiUrl', url);
-    input.value = url;
-    
-    // Try to connect
-    dashboardUrl = null; // Reset to force re-detection
-    detectDashboardUrl();
-}
-
-// Clear custom API URL
-function clearCustomApiUrl() {
-    localStorage.removeItem('customDashboardApiUrl');
-    const input = document.getElementById('customApiUrl');
-    if (input) input.value = '';
-    
-    // Reset to default detection
-    dashboardUrl = null;
-    detectDashboardUrl();
-}
-
-// Detect dashboard URL
-async function detectDashboardUrl() {
-    // Build list of URLs to try
-    const urls = [];
-    
-    // 1. Try hardcoded API URL FIRST (primary dashboard location)
-    urls.push(HARDCODED_API_URL);
-    
-    // 2. Try custom URL from localStorage (if user has overridden)
-    const customUrl = localStorage.getItem('customDashboardApiUrl');
-    if (customUrl && customUrl !== HARDCODED_API_URL) {
-        urls.push(customUrl);
-    }
-    
-    // 3. Try common local URLs (for local development/testing)
-    urls.push('http://localhost:5000');
-    urls.push('http://127.0.0.1:5000');
-    
-    // 4. Try current hostname (useful when accessing via network)
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        const hostnameUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        if (!urls.includes(hostnameUrl)) {
-            urls.push(hostnameUrl);
-        }
-    }
-    
-    let lastError = null;
-    let triedCustomUrl = false;
-    
-    for (const url of urls) {
-        try {
-            const isCustomUrl = customUrl && url === customUrl;
-            if (isCustomUrl) triedCustomUrl = true;
-            
-            const response = await fetch(`${url}/api/stats`, { 
-                method: 'GET',
-                mode: 'cors',
-                signal: AbortSignal.timeout(2000) // 2 second timeout
-            });
-            if (response.ok) {
-                dashboardUrl = url;
-                console.log('Dashboard found at:', url);
-                showLiveDataInfo(url);
-                await updateDashboard();
-                return;
-            }
-        } catch (error) {
-            // Save error from custom URL for detailed feedback
-            if (customUrl && url === customUrl) {
-                lastError = error;
-            }
-            // Try next URL
-            continue;
-        }
-    }
-    
-    // No dashboard found, show demo mode with error details
-    console.warn('Dashboard API not found. Showing demo mode.');
-    
-    // Show specific error if custom URL was configured but failed
-    if (triedCustomUrl && customUrl) {
-        showDemoModeWithError(customUrl, lastError);
-    } else {
-        showDemoMode();
-    }
-}
-
-// Show live data info banner
-function showLiveDataInfo(url) {
-    const demoWarning = document.getElementById('demoModeWarning');
-    const liveInfo = document.getElementById('liveDataInfo');
-    const connectedUrl = document.getElementById('connectedUrl');
-    
-    if (demoWarning) {
-        demoWarning.style.display = 'none';
-    }
-    if (liveInfo) {
-        liveInfo.style.display = 'block';
-    }
-    if (connectedUrl) {
-        connectedUrl.textContent = url;
-    }
-}
-
-// Update dashboard with real data from API
-async function updateDashboard() {
-    if (!dashboardUrl) {
-        showDemoMode();
-        return;
-    }
-    
-    try {
-        // Fetch stats data
-        const [statsRes, hourlyRes, locationsRes, channelsRes] = await Promise.all([
-            fetch(`${dashboardUrl}/api/stats`),
-            fetch(`${dashboardUrl}/api/stats/hourly`),
-            fetch(`${dashboardUrl}/api/stats/locations`),
-            fetch(`${dashboardUrl}/api/channels`)
-        ]);
-        
-        // Check core endpoints (channels is optional)
-        if (!statsRes.ok || !hourlyRes.ok || !locationsRes.ok) {
-            throw new Error('Failed to fetch dashboard data');
-        }
-        
-        const stats = await statsRes.json();
-        const hourly = await hourlyRes.json();
-        const locations = await locationsRes.json();
-        // Channels API is optional - gracefully handle failure
-        const channels = channelsRes.ok ? await channelsRes.json() : { channels: [] };
-        
-        // Update status indicator
-        const statusSpan = document.querySelector('#botStatus');
-        if (statusSpan) {
-            statusSpan.textContent = stats.total_requests > 0 ? 'Online' : 'Idle';
-        }
-        
-        // Calculate today's requests from hourly data
-        const today = new Date().toISOString().split('T')[0];
-        const todayRequests = hourly
-            .filter(item => item.hour.startsWith(today))
-            .reduce((sum, item) => sum + item.count, 0);
-        
-        // Update stat displays
-        document.getElementById('requestsToday').textContent = todayRequests;
-        
-        // Update active channels display with real channel data
-        const activeChannelsEl = document.getElementById('activeChannels');
-        if (channels.channels && channels.channels.length > 0) {
-            // Format channels with timestamps if available
-            const channelText = channels.channels.map(ch => {
-                if (typeof ch === 'object' && ch.name) {
-                    return ch.last_used ? `${ch.name} (${ch.last_used})` : ch.name;
-                }
-                return ch; // Backward compatibility with string format
-            }).join(', ');
-            activeChannelsEl.textContent = channelText;
-        } else {
-            // Show contextual message based on whether bot has activity
-            if (stats.total_requests === 0 && !channels.last_updated) {
-                activeChannelsEl.textContent = 'Waiting for activity...';
-            } else {
-                activeChannelsEl.textContent = 'No active channels';
-            }
-        }
-        
-        // Calculate uptime based on last update
-        if (stats.last_updated) {
-            const lastUpdate = new Date(stats.last_updated);
-            const now = new Date();
-            const MILLISECONDS_PER_HOUR = 3600000;
-            const diffHours = Math.abs(now - lastUpdate) / MILLISECONDS_PER_HOUR;
-            document.getElementById('uptime').textContent = diffHours.toFixed(1);
-        } else {
-            document.getElementById('uptime').textContent = '--';
-        }
-        
-        // Update last update time
-        const now = new Date();
-        document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
-        
-        // Update charts
-        updateUsageChart(hourly);
-        updateLocationsChart(locations);
-        
-        console.log('Dashboard updated at', now);
-    } catch (error) {
-        console.error('Error updating dashboard:', error);
-        showDemoMode();
-    }
-}
-
+main
 // Show demo mode with fake data
 function showDemoMode() {
     // Show demo warning, hide live info
@@ -291,137 +42,6 @@ function showDemoMode() {
     initializeLineChart();
     
     console.log('Dashboard in demo mode at', now);
-}
-
-// Show demo mode with detailed error for custom URL failures
-function showDemoModeWithError(url, error) {
-    // First show normal demo mode
-    showDemoMode();
-    
-    // Then show additional error information
-    const connectionError = document.getElementById('connectionError');
-    const errorUrl = document.getElementById('errorUrl');
-    const errorMessage = document.getElementById('errorMessage');
-    const errorSolution = document.getElementById('errorSolution');
-    
-    if (!connectionError) return;
-    
-    // Detect type of error
-    let message = 'Unable to connect to the dashboard API.';
-    let solution = '';
-    
-    // Check if it's a mixed content error (HTTPS -> HTTP)
-    const isHttps = window.location.protocol === 'https:';
-    const urlIsHttp = url.startsWith('http://');
-    
-    if (isHttps && urlIsHttp) {
-        message = 'Mixed Content Error: Cannot connect from HTTPS to HTTP';
-        solution = `<strong>Solution:</strong> When accessing this page via HTTPS (like Netlify), browsers block HTTP requests for security.
-        <br><br>
-        <strong>Option 1 (Recommended):</strong> Access the static site via HTTP instead:
-        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
-            <li>If using Netlify, consider hosting on GitHub Pages with HTTP support</li>
-            <li>Or access your dashboard directly at <code>${url}</code></li>
-        </ul>
-        <strong>Option 2:</strong> Set up HTTPS for your Raspberry Pi dashboard (advanced):
-        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
-            <li>Use a reverse proxy like ngrok or Cloudflare Tunnel</li>
-            <li>Or configure SSL certificates on your Pi</li>
-        </ul>`;
-    } else if (error && error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        message = 'Connection Failed: Unable to reach the dashboard';
-        solution = `<strong>Possible causes:</strong>
-        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
-            <li>Dashboard is not running at <code>${url}</code></li>
-            <li>Firewall blocking the connection</li>
-            <li>Wrong IP address or port</li>
-            <li>Not on the same network</li>
-        </ul>
-        <strong>Verify:</strong>
-        <ol style="margin-top: 0.5rem; padding-left: 1.5rem;">
-            <li>Dashboard is running: <code>python3 web_dashboard.py --host 0.0.0.0</code></li>
-            <li>Check IP address on Raspberry Pi: <code>hostname -I</code></li>
-            <li>Test from command line: <code>curl ${url}/api/stats</code></li>
-        </ol>`;
-    } else if (error && error.name === 'AbortError') {
-        message = 'Connection Timeout: Dashboard took too long to respond';
-        solution = `<strong>Possible causes:</strong>
-        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
-            <li>Network is slow or unreliable</li>
-            <li>Dashboard is overloaded</li>
-            <li>Device is far from router</li>
-        </ul>`;
-    }
-    
-    // Update error display
-    if (errorUrl) errorUrl.textContent = url;
-    if (errorMessage) errorMessage.textContent = message;
-    if (errorSolution) errorSolution.innerHTML = solution;
-    
-    connectionError.style.display = 'block';
-    
-    console.error('Connection error for', url, error);
-}
-
-// Update usage chart with real hourly data
-function updateUsageChart(hourlyData) {
-    if (!hourlyData || hourlyData.length === 0) {
-        initializeLineChart(); // Fallback to demo
-        return;
-    }
-    
-    // Take last 12 hours of data
-    const last12Hours = hourlyData.slice(-12);
-    const data = last12Hours.map(item => item.count);
-    
-    updateLineChart(data);
-}
-
-// Update locations bar chart with real data
-function updateLocationsChart(locationsData) {
-    const locationsChart = document.getElementById('locationsChart');
-    if (!locationsChart) return;
-    
-    if (!locationsData || locationsData.length === 0) {
-        return; // Keep demo bars
-    }
-    
-    // Take top 6 locations
-    const topLocations = locationsData.slice(0, 6);
-    
-    // Find max count for scaling
-    const maxCount = Math.max(...topLocations.map(loc => loc.count));
-    
-    // Clear chart safely
-    while (locationsChart.firstChild) {
-        locationsChart.removeChild(locationsChart.firstChild);
-    }
-    
-    topLocations.forEach(location => {
-        const container = document.createElement('div');
-        container.style.flex = '1';
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.alignItems = 'center';
-        
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        const height = (location.count / maxCount) * 80; // Scale to 80% max
-        bar.style.height = height + '%';
-        
-        const value = document.createElement('span');
-        value.className = 'bar-value';
-        value.textContent = location.count;
-        bar.appendChild(value);
-        
-        const label = document.createElement('div');
-        label.className = 'bar-label';
-        label.textContent = location.location;
-        
-        container.appendChild(bar);
-        container.appendChild(label);
-        locationsChart.appendChild(container);
-    });
 }
 
 // Initialize line chart with demo data
@@ -502,7 +122,6 @@ function startAutoRefresh() {
     
     refreshInterval = setInterval(function() {
         if (autoRefreshEnabled) {
-            updateDashboard();
             updateCharts();
         }
     }, 10000); // 10 seconds
@@ -516,47 +135,41 @@ function stopAutoRefresh() {
     }
 }
 
-// Manual refresh
+// Manual refresh of demo data
 function refreshDashboard() {
-    if (dashboardUrl) {
-        updateDashboard();
-    } else {
-        detectDashboardUrl();
-    }
+    updateCharts();
     
     // Visual feedback
     const btn = document.querySelector('.refresh-btn');
-    const originalText = btn.textContent;
-    btn.textContent = '✓ Refreshed';
-    setTimeout(() => {
-        btn.textContent = originalText;
-    }, 1000);
+    if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Refreshed';
+        setTimeout(() => {
+            btn.textContent = originalText;
+        }, 1000);
+    }
 }
 
 // Update charts with new data (called from auto-refresh in demo mode)
 function updateCharts() {
-    if (dashboardUrl) {
-        updateDashboard(); // Fetch real data
-    } else {
-        // Generate new demo data
-        const newData = [];
-        for (let i = 0; i < 12; i++) {
-            newData.push(Math.floor(Math.random() * 8) + 1);
-        }
-        updateLineChart(newData);
-        
-        // Update bar chart heights randomly for demo
-        const bars = document.querySelectorAll('.bar');
-        bars.forEach((bar, index) => {
-            const newHeight = Math.floor(Math.random() * 30) + 20;
-            const newValue = Math.floor(newHeight / 5);
-            bar.style.height = newHeight + '%';
-            const valueSpan = bar.querySelector('.bar-value');
-            if (valueSpan) {
-                valueSpan.textContent = newValue;
-            }
-        });
+    // Generate new demo data
+    const newData = [];
+    for (let i = 0; i < 12; i++) {
+        newData.push(Math.floor(Math.random() * 8) + 1);
     }
+    updateLineChart(newData);
+    
+    // Update bar chart heights randomly for demo
+    const bars = document.querySelectorAll('.bar');
+    bars.forEach((bar, index) => {
+        const newHeight = Math.floor(Math.random() * 30) + 20;
+        const newValue = Math.floor(newHeight / 5);
+        bar.style.height = newHeight + '%';
+        const valueSpan = bar.querySelector('.bar-value');
+        if (valueSpan) {
+            valueSpan.textContent = newValue;
+        }
+    });
 }
 
 // Simulate adding log entries (demo mode only)
@@ -640,17 +253,15 @@ function addLogEntry(timestamp, level, message) {
     }
 }
 
-// Demo: Simulate log updates every 30 seconds (only in demo mode)
+// Demo: Simulate log updates every 30 seconds
 setInterval(function() {
-    if (!dashboardUrl) {  // Only in demo mode
-        const now = new Date();
-        const timestamp = now.toLocaleTimeString();
-        const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
-        const city = cities[Math.floor(Math.random() * cities.length)];
-        const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
-        const user = users[Math.floor(Math.random() * users.length)];
-        
-        addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
-    }
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString();
+    const cities = ['London', 'Manchester', 'York', 'Leeds', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'];
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    const users = ['User1', 'User2', 'User3', 'User4', 'User5'];
+    const user = users[Math.floor(Math.random() * users.length)];
+    
+    addLogEntry(timestamp, 'INFO', `${user} requested weather for ${city}, GB`);
 }, 30000);
 

@@ -1,6 +1,16 @@
-# Netlify Automatic Deployment Guide
+# Netlify Static Website Deployment Guide
 
-This guide shows you how to set up automatic deployment from GitHub to Netlify, so your website at https://mcwb.netlify.app/ updates automatically whenever you push changes to GitHub.
+This guide shows you how to set up automatic deployment of the **static documentation website** from GitHub to Netlify. The website at https://mcwb.netlify.app/ contains documentation and a demo dashboard - **no live data is transmitted** to keep hosting free and lightweight.
+
+## Important: Demo Data Only
+
+The static website on Netlify displays **demo data only**. This design choice:
+- ✅ Keeps Netlify hosting completely free
+- ✅ Eliminates resource usage and costs
+- ✅ Avoids CORS and connectivity issues
+- ✅ Provides fast, reliable documentation access
+
+**For live bot monitoring**, users should access the web dashboard directly on their Raspberry Pi (see instructions on the dashboard page, including DDNS/No-IP setup for remote access).
 
 ## Prerequisites
 
@@ -52,12 +62,14 @@ If you want to use `mcwb.netlify.app` instead of the random URL:
 
 Once configured, Netlify will:
 
-1. **Monitor your GitHub repository** for changes
+1. **Monitor your GitHub repository** for changes to the website
 2. **Automatically deploy** when you push commits to the main branch
-3. **Build and publish** your site (taking files from the `website` directory)
-4. **Update your live site** at https://mcwb.netlify.app/
+3. **Publish static files** from the `website` directory
+4. **Update the live site** at https://mcwb.netlify.app/
 
-You don't need to do anything else - just commit and push changes to GitHub as usual!
+The website contains only static HTML/CSS/JavaScript - no server-side processing or live data connections.
+
+You don't need to do anything else - just commit and push website changes to GitHub as usual!
 
 ## Deployment Triggers
 

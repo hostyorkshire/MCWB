@@ -28,20 +28,13 @@ def simulate_startup_announcement_logic(bot):
     """
     last_announce = bot._get_last_announce_time()
     current_time = time.time()
-    # Add 1 to ensure first startup always announces (when last_announce == 0)
-    time_since_last_announce = current_time - last_announce if last_announce > 0 else ANNOUNCE_INTERVAL + 1
 
-    if bot.announce and time_since_last_announce >= ANNOUNCE_INTERVAL:
+    # Always announce on startup to let users know the bot is operational
+    if bot.announce:
         bot._send_channel_msg(ANNOUNCE_MESSAGE, bot._announce_channel_idx)
         last_announce = current_time
         bot._save_last_announce_time(last_announce)
-        return True
-    elif bot.announce:
-        remaining = ANNOUNCE_INTERVAL - time_since_last_announce
-        msg = f"Skipping startup announcement (last announced {int(time_since_last_announce/60)} minutes ago, {int(remaining/60)} minutes until next)"
-        print(f"  {msg}")
-        return False
-    return False
+    return bot.announce
 
 
 def test_startup_with_recent_announcement():
@@ -79,10 +72,10 @@ def test_startup_with_recent_announcement():
         announced = simulate_startup_announcement_logic(bot)
         bot._running = False
 
-    # Should NOT have sent announcement
-    assert not announced, "Should not announce on startup"
-    assert len(sent_announcements) == 0, f"Should not announce on startup (sent {len(sent_announcements)})"
-    print(f"  ✓ No announcement sent on startup (30 min < 3 hours)")
+    # SHOULD have sent announcement (always announce on startup)
+    assert announced, "Should always announce on startup"
+    assert len(sent_announcements) == 1, f"Should announce on startup (sent {len(sent_announcements)})"
+    print(f"  ✓ Announcement sent on startup (always announces on reboot)")
 
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):

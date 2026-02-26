@@ -13,6 +13,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from weather_bot import WEATHER_EMOJIS
 import time
 from unittest.mock import MagicMock, call, patch
 
@@ -165,13 +166,14 @@ def test_yes_response_sends_outlook():
 
 
 def test_no_response_clears_state():
-    """Test that 'n' or other responses clear the pending state"""
+    """Test that 'n' or other responses clear the pending state and send OK message"""
     print("\n" + "=" * 70)
-    print("TEST: No Response Clears State")
+    print("TEST: No Response Clears State and Sends OK")
     print("=" * 70)
 
     bot = WeatherBot(debug=False)
     bot._ser = MagicMock()
+    bot._ser.write = MagicMock()
 
     # Set up pending outlook state
     state_key = ("TestUser", 1)
@@ -184,13 +186,33 @@ def test_no_response_clears_state():
         "timestamp": time.time(),
     }
 
-    # Test 'n' response
+    # Test 'n' response - should send OK message
+    bot._ser.write.reset_mock()
     bot._handle_channel_message("TestUser: n", 1)
 
     if state_key not in bot._pending_outlook:
         print("✅ PASS: State cleared after 'n' response")
     else:
         print("❌ FAIL: State not cleared after 'n'")
+        return False
+
+    if bot._ser.write.called:
+        msg = bot._ser.write.call_args[0][0]
+        if b"Find out more about me and my commands at https://mcwb.netlify.app" in msg:
+            print("✅ PASS: Response message sent after 'n' response")
+        else:
+            print("❌ FAIL: Response message not found in response")
+            print(f"   Got: {msg}")
+            return False
+        msg_str = msg.decode("utf-8", errors="replace")
+        if any(emoji in msg_str for emoji in WEATHER_EMOJIS):
+            print("✅ PASS: Weather emoji included in response message")
+        else:
+            print("❌ FAIL: No weather emoji found in response message")
+            print(f"   Got: {msg_str}")
+            return False
+    else:
+        print("❌ FAIL: No message sent after 'n' response")
         return False
 
     # Test random text

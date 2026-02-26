@@ -127,11 +127,10 @@ def simulate_user_scenario():
         print("✅ SUCCESS! Bot would send this response back on channel_idx 1:")
         print()
         print("    Leeds, UK")
-        print("    Cond: Mainly clear")
+        print("    🌤️ Mainly clear")
         print("    Temp: 12.5°C (feels 10.8°C)")
         print("    Humid: 68%")
         print("    Wind: 14.2 km/h at 225°")
-        print("    https://mcwb.netlify.app")
         print()
 
         bot.mesh.stop()
