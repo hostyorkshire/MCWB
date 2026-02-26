@@ -167,7 +167,7 @@ class WeatherBot:
         # State tracking for outlook feature
         # Maps (sender, channel_idx) -> (location, country, lat, lon, timestamp)
         self._pending_outlook = {}
-        self._outlook_timeout = 300  # 5 minutes timeout for outlook requests
+        self._outlook_timeout = 30  # 30 seconds timeout for outlook requests
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug, serial_port=self.port, baud_rate=self.baud)
         # Register this bot as the text message handler so that binary-protocol
@@ -537,6 +537,9 @@ class WeatherBot:
         if self.weather_channel_idx is None:
             self._announce_channel_idx = channel_idx
 
+        # Clean up expired outlook requests on every message
+        self._cleanup_expired_outlook_requests()
+
         # Check if this is a weather command first (priority over outlook responses)
         location, country = self._parse_command(content)
         state_key = (sender, channel_idx)
@@ -608,40 +611,36 @@ class WeatherBot:
         else:
             # Not a weather command - check if this is a yes/no response to a pending outlook request
             if state_key in self._pending_outlook:
-                # Clean up expired requests
-                self._cleanup_expired_outlook_requests()
+                # Check if this request is still valid (after cleanup above)
+                outlook_state = self._pending_outlook[state_key]
+                if self._is_yes_response(content):
+                    # User wants to see outlook
+                    location_name = outlook_state["location"]
+                    country = outlook_state["country"]
+                    lat = outlook_state["lat"]
+                    lon = outlook_state["lon"]
+                    location_data = outlook_state["location_data"]
 
-                # Check if this request is still valid
-                if state_key in self._pending_outlook:
-                    outlook_state = self._pending_outlook[state_key]
-                    if self._is_yes_response(content):
-                        # User wants to see outlook
-                        location_name = outlook_state["location"]
-                        country = outlook_state["country"]
-                        lat = outlook_state["lat"]
-                        lon = outlook_state["lon"]
-                        location_data = outlook_state["location_data"]
+                    safe_location = self._sanitize_for_log(location_name)
+                    msg = f"Outlook request for '{safe_location}' from {safe_sender}"
+                    print(msg, flush=True)
+                    self.logger.info(msg)
 
-                        safe_location = self._sanitize_for_log(location_name)
-                        msg = f"Outlook request for '{safe_location}' from {safe_sender}"
-                        print(msg, flush=True)
-                        self.logger.info(msg)
+                    outlook_response = self._get_outlook(location_data, lat, lon)
+                    print(f"Outlook Response:\n{outlook_response}\n", flush=True)
+                    self.logger.info(f"Outlook Response: {outlook_response}")
+                    self._send_channel_msg(outlook_response, channel_idx)
 
-                        outlook_response = self._get_outlook(location_data, lat, lon)
-                        print(f"Outlook Response:\n{outlook_response}\n", flush=True)
-                        self.logger.info(f"Outlook Response: {outlook_response}")
-                        self._send_channel_msg(outlook_response, channel_idx)
-
-                        # Clear the pending state
-                        del self._pending_outlook[state_key]
-                        return
-                    else:
-                        # User said no or something else, clear pending state and acknowledge
-                        del self._pending_outlook[state_key]
-                        emoji = random.choice(WEATHER_EMOJIS)
-                        ok_msg = f"OK. Find out more about me and my commands at https://mcwb.netlify.app {emoji}"
-                        self._send_channel_msg(ok_msg, channel_idx)
-                        return
+                    # Clear the pending state
+                    del self._pending_outlook[state_key]
+                    return
+                else:
+                    # User said no or something else, clear pending state and acknowledge
+                    del self._pending_outlook[state_key]
+                    emoji = random.choice(WEATHER_EMOJIS)
+                    ok_msg = f"OK. Find out more about me and my commands at https://mcwb.netlify.app {emoji}"
+                    self._send_channel_msg(ok_msg, channel_idx)
+                    return
 
     @staticmethod
     def _parse_command(text: str):
