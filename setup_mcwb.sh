@@ -150,8 +150,53 @@ install_both() {
     
     echo ""
     echo "================================================"
-    echo -e "${GREEN}✅ All services installed successfully!${NC}"
+    echo "Verifying service status..."
     echo "================================================"
+    echo ""
+    
+    # Check actual service status
+    WEATHER_BOT_OK=false
+    DASHBOARD_OK=false
+    
+    if systemctl is-enabled --quiet weather_bot 2>/dev/null; then
+        if systemctl is-active --quiet weather_bot 2>/dev/null; then
+            echo -e "${GREEN}✅${NC} Weather Bot:   Running"
+            WEATHER_BOT_OK=true
+        else
+            echo -e "${YELLOW}⚠️${NC}  Weather Bot:   Installed but not running"
+        fi
+    else
+        echo -e "${RED}❌${NC} Weather Bot:   Not installed"
+    fi
+    
+    if systemctl is-enabled --quiet mcwb-dashboard 2>/dev/null; then
+        if systemctl is-active --quiet mcwb-dashboard 2>/dev/null; then
+            echo -e "${GREEN}✅${NC} Web Dashboard: Running"
+            DASHBOARD_OK=true
+        else
+            echo -e "${YELLOW}⚠️${NC}  Web Dashboard: Installed but not running"
+            echo ""
+            echo "Checking dashboard logs for errors:"
+            sudo journalctl -u mcwb-dashboard -n 20 --no-pager | tail -10
+        fi
+    else
+        echo -e "${RED}❌${NC} Web Dashboard: Not installed"
+    fi
+    
+    echo ""
+    if [ "$WEATHER_BOT_OK" = true ] && [ "$DASHBOARD_OK" = true ]; then
+        echo "================================================"
+        echo -e "${GREEN}✅ All services installed and running!${NC}"
+        echo "================================================"
+    else
+        echo "================================================"
+        echo -e "${YELLOW}⚠️  Services installed with warnings${NC}"
+        echo "================================================"
+        echo ""
+        echo "Some services may not be running. Check logs with:"
+        echo "  sudo journalctl -u weather_bot -n 50"
+        echo "  sudo journalctl -u mcwb-dashboard -n 50"
+    fi
     echo ""
     read -r -p "Press Enter to return to menu..."
 }

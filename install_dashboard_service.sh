@@ -39,42 +39,7 @@ fi
 
 # Check if Python dependencies are installed
 echo "🔍 Checking Python dependencies..."
-
-# Check if we're in a virtual environment
-if [ -z "$VIRTUAL_ENV" ]; then
-    # Not in a venv, check if one exists
-    if [ -d "venv" ] && [ -f "venv/bin/python3" ]; then
-        echo "📦 Virtual environment found at ./venv"
-        echo "   Checking if dependencies are installed in venv..."
-        if ./venv/bin/python3 -c "import flask; import flask_cors" 2>/dev/null; then
-            echo "✅ Python dependencies OK in virtual environment"
-            USE_VENV=true
-            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
-        else
-            echo "⚠️  Dependencies not installed in venv"
-            echo "   Installing dependencies in virtual environment..."
-            ./venv/bin/pip install -r requirements.txt
-            USE_VENV=true
-            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
-        fi
-    else
-        # No venv, try system python
-        if python3 -c "import flask; import flask_cors" 2>/dev/null; then
-            echo "✅ Python dependencies OK (system-wide)"
-            USE_VENV=false
-            PYTHON_PATH="/usr/bin/python3"
-        else
-            echo "⚠️  Flask not installed"
-            echo ""
-            echo "📦 Creating virtual environment (recommended for newer systems)..."
-            python3 -m venv venv
-            echo "   Installing dependencies in virtual environment..."
-            ./venv/bin/pip install -r requirements.txt
-            USE_VENV=true
-            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
-            echo "✅ Virtual environment created and dependencies installed"
-        fi
-    fi
+ main
 else
     # Already in a venv
     echo "✅ Running in virtual environment: $VIRTUAL_ENV"
