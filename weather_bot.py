@@ -98,13 +98,46 @@ WEATHER_CODES = {
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
+ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location."
 
 
 
 class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
-
+    def __init__(
+        self,
+        port=None,
+        baud=115200,
+        debug=False,
+        announce=False,
+        reboot_notify=False,
+        allowed_channel_idx=None,
+        weather_channel_idx=None,
+        announce_channel=None,
+        country=None,
+        channel=None,
+        node_id=None,
+        verify_channels=False,
+    ):
+        """Initialize the weather bot.
+        
+        Args:
+            port: Serial port (e.g., /dev/ttyUSB0). Auto-detects if None.
+            baud: Baud rate (default: 115200)
+            debug: Enable debug logging
+            announce: Enable periodic announcements every 3 hours
+            reboot_notify: Send notification on reboot/restart
+            allowed_channel_idx: Only respond to messages from this channel index
+            weather_channel_idx: Channel index to use for announcements
+            announce_channel: Channel name to use for announcements
+            country: Default country code for geocoding (e.g., GB, US, FR)
+            channel: Comma-separated list of channel names to listen on
+            node_id: Node ID for MeshCore (default: "MCWB")
+            verify_channels: Show diagnostic info about encrypted messages
+        """
+        self.port = port
+        self.baud = baud
         self.debug = debug
         self.announce = announce or (announce_channel is not None)
         self.reboot_notify = reboot_notify
@@ -935,7 +968,19 @@ class WeatherBot:
         
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
-main
+        
+        # Call Open-Meteo geocoding API
+        url = "https://geocoding-api.open-meteo.com/v1/search"
+        params = {"name": location, "count": 10, "language": "en", "format": "json"}
+        
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            geo = response.json()
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"Geocoding API error for '{location}': {e}")
+            raise
+        
         if "results" not in geo or not geo["results"]:
             return None
         results = geo["results"]
@@ -1054,7 +1099,7 @@ main
         try:
             r = self.geocode_location(location, country)
             if r is None:
-
+                return f"Location '{location}' not found. Please check spelling or try a different location."
             lat, lon = r["latitude"], r["longitude"]
             wx = self.get_weather(lat, lon)
 
@@ -1063,6 +1108,15 @@ main
             self.stats.record_request(location_name, user=user)
 
             return self.format_weather_response(r, wx)
+        except requests.exceptions.Timeout:
+            return "Weather service timeout. Please try again in a moment."
+        except requests.exceptions.ConnectionError:
+            return "Cannot connect to weather service. Check your network connection."
+        except requests.exceptions.HTTPError as e:
+            return f"Weather service error: {e}"
+        except Exception as e:
+            self.error_logger.error(f"Error getting weather for {location}: {e}")
+            return f"Error getting weather: {e}"
 
 
     # ------------------------------------------------------------------
@@ -1199,6 +1253,30 @@ def main():
     parser.add_argument("-b", "--baud", type=int, default=115200, help="Baud rate (default: 115200)")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
     parser.add_argument("-a", "--announce", action="store_true", help="Send periodic announcements every 3 hours")
+    parser.add_argument("-r", "--reboot-notify", action="store_true", help="Send notification on reboot/restart")
+    parser.add_argument(
+        "-c",
+        "--channel-idx",
+        type=int,
+        help="Only respond to messages from this channel index (e.g., 1 for #weather)",
+    )
+    parser.add_argument(
+        "-w",
+        "--weather-channel-idx",
+        type=int,
+        help="Specify which channel index to use for announcements. Bot will still "
+        "respond to messages from ANY channel unless --channel-idx is also specified.",
+    )
+    parser.add_argument(
+        "--country",
+        help="Default country code for geocoding (e.g., GB, US, FR). Filters location "
+        "searches to prefer cities in this country.",
+    )
+    parser.add_argument(
+        "-l",
+        "--location",
+        help="Look up weather and exit (no radio needed)",
+    )
     parser.add_argument(
         "--channel",
         help="Comma-separated list of MeshCore hashtag channel names to listen "
@@ -1206,18 +1284,35 @@ def main():
         "Binary-protocol frames without a channel name are always accepted. "
         "When omitted the bot responds on any channel.",
     )
+    parser.add_argument(
+        "--verify-channels",
+        action="store_true",
+        help="Show diagnostic info about encrypted messages",
+    )
 
     args = parser.parse_args()
 
-    # --weather-channel-idx controls announcement channel only
-    # --channel-idx controls message filtering (if set, only accept messages from that channel)
-    # If neither is set, accept messages from all channels (default behavior)
-    weather_idx = args.weather_channel_idx
+    # Create bot instance
+    bot = WeatherBot(
+        port=args.port,
+        baud=args.baud,
+        debug=args.debug,
+        announce=args.announce,
+        reboot_notify=args.reboot_notify,
+        allowed_channel_idx=args.channel_idx,
+        weather_channel_idx=args.weather_channel_idx,
+        country=args.country,
+        channel=args.channel,
+        verify_channels=args.verify_channels,
+    )
 
+    # If location specified, just do a lookup and exit
     if args.location:
-        print(bot._get_weather(args.location))
+        result = bot._get_weather(args.location)
+        print(result)
         return
 
+    # Otherwise run the bot
     bot.run()
 
 
