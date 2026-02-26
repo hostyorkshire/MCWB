@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAutoRefresh();
 });
 
+main
 // Show demo mode with fake data
 function showDemoMode() {
     // Show demo warning, hide live info

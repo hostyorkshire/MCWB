@@ -4,6 +4,7 @@ MCWB Web Dashboard
 Dark-themed web interface for monitoring the MeshCore Weather Bot
 """
 
+import json
 import socket
 import sys
 from pathlib import Path
@@ -61,6 +62,32 @@ LOGS_DIR = Path(__file__).parent / "logs"
 
 # Initialize stats tracker
 stats = StatsTracker()
+
+
+def initialize_channels_file():
+    """Initialize channels.json file if it doesn't exist"""
+    channels_file = LOGS_DIR / "channels.json"
+    
+    if not channels_file.exists():
+        # Create the logs directory if it doesn't exist
+        LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        
+        # Create empty channels file with proper structure
+        initial_data = {
+            "channels": [],
+            "last_updated": datetime.now().isoformat()
+        }
+        
+        try:
+            with open(channels_file, "w") as f:
+                json.dump(initial_data, f, indent=2)
+            print(f"✓ Initialized empty channels file: {channels_file}")
+        except (IOError, OSError) as e:
+            print(f"⚠️  Warning: Could not create channels.json: {e}")
+
+
+# Initialize channels file on startup
+initialize_channels_file()
 
 
 def read_log_file(filename, lines=100):
