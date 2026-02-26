@@ -621,9 +621,11 @@ class WeatherBot:
         safe_content = self._sanitize_for_log(content)
         self._log(f"channel_idx={channel_idx} {safe_sender}: {safe_content}")
 
+        # Parse command once for efficiency
+        location, country = self._parse_command(content)
+        
         # Auto-detect weather channel: If weather commands are received on a channel,
         # remember it as the weather channel for announcements
-        location, country = self._parse_command(content)
         if location and not self._weather_channel_detected and self.weather_channel_idx is None:
             # This channel is receiving weather requests, likely the #weather channel
             if channel_idx not in self._channel_idx_to_name:
@@ -634,15 +636,11 @@ class WeatherBot:
                 self.logger.info(msg)
             self._announce_channel_idx = channel_idx
             self.logger.info(f"Announcements will be sent to channel_idx={channel_idx} (detected from weather requests)")
-
-        # Remember this channel for periodic announcements (only if not explicitly configured)
-        if self.weather_channel_idx is None and not self._weather_channel_detected:
+        elif self.weather_channel_idx is None and not self._weather_channel_detected:
+            # Fallback: remember this channel only if no weather channel detected yet
             self._announce_channel_idx = channel_idx
 
-
-        # Check if this is a weather command first (priority over outlook responses)
-        location, country = self._parse_command(content)
-        
+        # Process weather command if found
         if location:
             # Sanitize sender for print output to prevent terminal corruption
             safe_sender_print = self._sanitize_for_log(sender)
@@ -717,10 +715,8 @@ class WeatherBot:
         # Remove channel indicators before parsing
         # Common patterns: "on #weather", "#weather", "#wx", "weather channel"
         text_cleaned = text.strip()
-        text_cleaned = re.sub(r'\s+on\s+#\w+', '', text_cleaned, flags=re.IGNORECASE)
-        text_cleaned = re.sub(r'\s+#weather\b', '', text_cleaned, flags=re.IGNORECASE)
-        text_cleaned = re.sub(r'\s+#wx\b', '', text_cleaned, flags=re.IGNORECASE)
-        text_cleaned = re.sub(r'\s+weather\s+channel\b', '', text_cleaned, flags=re.IGNORECASE)
+        # Combined regex for better performance: matches "on #weather", "#weather", "#wx", "weather channel"
+        text_cleaned = re.sub(r'(?:\s+on\s+)?#(?:weather|wx)\b|\s+weather\s+channel\b', '', text_cleaned, flags=re.IGNORECASE)
         text_cleaned = text_cleaned.strip()
         
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
