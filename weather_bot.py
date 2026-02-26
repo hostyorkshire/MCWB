@@ -354,7 +354,7 @@ class WeatherBot:
         """
         # Minimum 8 bytes required for old format header
         if len(payload) < _OLD_FORMAT_HEADER_SIZE:
-            self._log(f"Message too short ({len(payload)} bytes, need >= {_OLD_FORMAT_HEADER_SIZE})")
+
             return (None, None)
 
         # Try V3 format if payload is long enough (minimum 12 bytes for V3 header + text)
@@ -414,7 +414,7 @@ class WeatherBot:
         # Validate channel_idx is in valid range (0-7)
         # Invalid indices indicate encrypted/garbled messages
         if not (0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX):
-            # Silently skip - this is expected for encrypted messages from other channels
+
             return (None, None)
         text_bytes = payload[_OLD_FORMAT_HEADER_SIZE:]
         # Decode as UTF-8, ignoring invalid sequences, and strip whitespace
@@ -462,6 +462,8 @@ class WeatherBot:
             channel_idx, text = self._parse_channel_message(payload)
             if channel_idx is not None:
                 self._handle_channel_message(text, channel_idx)
+            # If channel_idx is None, message parsing failed (encrypted/corrupted)
+            # The _parse_channel_message method already logged diagnostic details
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG and len(payload) >= 8:
@@ -469,6 +471,8 @@ class WeatherBot:
             channel_idx, text = self._parse_channel_message(payload)
             if channel_idx is not None:
                 self._handle_channel_message(text, channel_idx)
+            # If channel_idx is None, message parsing failed (encrypted/corrupted)
+            # The _parse_channel_message method already logged diagnostic details
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_CHANNEL_MSG_V3 and len(payload) >= 12:
@@ -479,6 +483,8 @@ class WeatherBot:
             if 0 <= channel_idx <= _MAX_VALID_CHANNEL_IDX:
                 text = payload[11:].decode("utf-8", "ignore")
                 self._handle_channel_message(text, channel_idx)
+            else:
+                self._log(f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted")
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_NO_MORE_MSGS:
