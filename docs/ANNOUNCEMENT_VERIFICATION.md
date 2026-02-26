@@ -9,12 +9,13 @@ The Weather Bot correctly broadcasts announcements on the channel where users ar
 ## Default Configuration
 
 - **Channel**: Adapts to first received message (or channel 0 if no messages)
-- **Interval**: Every 3 hours (10,800 seconds)
+- **Interval**: Every 3 hours (10,800 seconds) for periodic announcements
 - **Message**: "Hello this is the WX BoT. To get a weather update simply type WX and your location."
 - **Behavior**: 
-  - Sends announcement immediately on startup (if --announce flag is used)
-  - Repeats every 3 hours while running
+  - **ALWAYS** sends announcement on startup (if --announce flag is used)
+  - Repeats every 3 hours while running (periodic announcements)
   - Automatically uses the channel where users send commands
+  - Timestamp tracking only applies to periodic announcements, NOT startup
 
 ## How to Start Bot
 
@@ -87,11 +88,11 @@ Enable debug mode (`-d` flag) to see detailed logs:
 
 The announcement functionality is implemented in `weather_bot.py`:
 
-- **Constants** (lines 26-28): ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE
-- **Bot Configuration** (line 106): announce_channel parameter
-- **Send Method** (lines 416-422): send_announcement()
-- **Main Loop** (lines 570-578): Periodic announcement logic
-- **CLI Option** (lines 521-526): --announce-channel argument
+- **Constants** (lines 109-110): ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE
+- **Startup Announcement** (lines 1130-1146): ALWAYS announces on boot when --announce is set
+- **Periodic Announcements** (lines 1151-1154): Respects 3-hour interval
+- **Timestamp Tracking** (lines 772-793): For periodic announcements only, not startup
+- **CLI Options**: --announce flag, --weather-channel-idx to specify announcement channel
 
 ## Test Results
 
