@@ -746,6 +746,15 @@ blockquote {
     margin-right: 1rem;
 }
 
+/* Emoji icon styling */
+.emoji-icon {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    margin: 0;
+}
+
 /* Protocol table special styling */
 .protocol-table {
     font-size: 0.9rem;
