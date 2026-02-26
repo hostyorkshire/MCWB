@@ -135,8 +135,10 @@ def test_outlook_format():
     print()
 
     # Check that response is reasonably short
-    if len(response) < 200:
-        print(f"✅ PASS: Response is concise ({len(response)} characters)")
+    # MeshCore has a 200 character limit per message. Outlook should be well under this.
+    MAX_OUTLOOK_LENGTH = 200  # Character limit for MeshCore messages
+    if len(response) < MAX_OUTLOOK_LENGTH:
+        print(f"✅ PASS: Response is concise ({len(response)} characters < {MAX_OUTLOOK_LENGTH})")
     else:
         print(f"⚠ WARNING: Response is long ({len(response)} characters)")
         print("   Consider making it shorter for MeshCore limits")

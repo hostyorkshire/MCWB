@@ -620,10 +620,9 @@ class WeatherBot:
                 time.sleep(0.5)
 
                 # Automatically send outlook after weather response
-                safe_location = self._sanitize_for_log(location)
-                msg = f"Sending outlook for '{safe_location}' to {safe_sender}"
-                print(msg, flush=True)
-                self.logger.info(msg)
+                outlook_log_msg = f"Sending outlook for '{safe_location}' to {safe_sender}"
+                print(outlook_log_msg, flush=True)
+                self.logger.info(outlook_log_msg)
 
                 outlook_response = self._get_outlook(r, lat, lon)
                 print(f"Outlook Response:\n{outlook_response}\n", flush=True)

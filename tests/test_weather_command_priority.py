@@ -131,6 +131,7 @@ def test_successive_weather_commands():
                 "relative_humidity_2m": 75,
                 "wind_speed_10m": 15.0,
                 "wind_direction_10m": 240,
+                "precipitation": 0.0,
                 "weather_code": 3,
             }
         }
