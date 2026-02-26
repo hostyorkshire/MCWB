@@ -711,8 +711,19 @@ class WeatherBot:
         - "wx York USA" -> ("York", "US")
         - "wx York FR" -> ("York", "FR")
         - "wx York, UK" -> ("York, UK", None)  # Explicit format, no extraction
+        
+        Channel indicators like "#weather", "#wx", "on #weather" are automatically filtered out.
         """
-        m = re.match(r"^(?:wx|weather)\s+(.+)$", text.strip(), re.IGNORECASE)
+        # Remove channel indicators before parsing
+        # Common patterns: "on #weather", "#weather", "#wx", "weather channel"
+        text_cleaned = text.strip()
+        text_cleaned = re.sub(r'\s+on\s+#\w+', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = re.sub(r'\s+#weather\b', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = re.sub(r'\s+#wx\b', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = re.sub(r'\s+weather\s+channel\b', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = text_cleaned.strip()
+        
+        m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
         if not m:
             return None, None
 
