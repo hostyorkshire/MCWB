@@ -27,11 +27,11 @@ if ! command -v ufw >/dev/null 2>&1; then
     echo "UFW is the recommended firewall tool for Ubuntu/Debian systems."
     echo ""
     echo "Would you like to install UFW now? (y/n)"
-    read -p "> " -n 1 -r
+    read -p "> " -n 1 -r INSTALL_REPLY
     echo ""
     echo ""
     
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if [[ $INSTALL_REPLY =~ ^[Yy]$ ]]; then
         echo "📦 Installing UFW..."
         if sudo apt-get update && sudo apt-get install -y ufw; then
             echo ""
@@ -42,11 +42,11 @@ if ! command -v ufw >/dev/null 2>&1; then
             sudo ufw allow 22/tcp
             echo ""
             echo "Would you like to enable UFW now? (y/n)"
-            read -p "> " -n 1 -r
+            read -p "> " -n 1 -r ENABLE_REPLY
             echo ""
             echo ""
             
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [[ $ENABLE_REPLY =~ ^[Yy]$ ]]; then
                 sudo ufw --force enable
                 echo ""
                 echo -e "${GREEN}✅ UFW enabled with SSH allowed${NC}"
@@ -81,13 +81,16 @@ if ! command -v ufw >/dev/null 2>&1; then
         echo -e "${BLUE}ℹ️  iptables is available${NC}"
         echo ""
         echo "Checking if SSH (port 22) is allowed in iptables..."
-        if sudo iptables -L INPUT -n | grep -q "dpt:22"; then
+        if sudo iptables -L INPUT -n | grep -E "ACCEPT.*dpt:22"; then
             echo -e "${GREEN}✅ SSH appears to be allowed in iptables${NC}"
         else
             echo -e "${YELLOW}⚠️  SSH may not be explicitly allowed in iptables${NC}"
             echo ""
             echo "To allow SSH in iptables, run:"
             echo "   sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT"
+            echo ""
+            echo "To make the rule persistent (requires iptables-persistent package):"
+            echo "   sudo apt-get install iptables-persistent"
             echo "   sudo iptables-save | sudo tee /etc/iptables/rules.v4"
         fi
         echo ""
