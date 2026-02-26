@@ -29,6 +29,9 @@ def test_command_parsing():
         ("wx  Birmingham  ", "Birmingham", None),
         ("wx York UK", "York", "GB"),
         ("wx York USA", "York", "US"),
+        ("wx S1 2HH", "S1 2HH", None),  # Full UK postcode
+        ("weather S71", "S71", None),  # Partial UK postcode
+        ("WX SW1A 1AA", "SW1A 1AA", None),  # Complex UK postcode
         ("hello", None, None),
         ("wx", None, None),
         ("weather", None, None),
@@ -288,6 +291,37 @@ def test_announcement():
     print()
 
 
+def test_postcode_detection():
+    """Test UK postcode detection"""
+    print("=" * 60)
+    print("TEST 8: UK Postcode Detection")
+    print("=" * 60)
+
+    bot = WeatherBot(debug=False)
+
+    test_cases = [
+        ("S1 2HH", True),      # Full postcode with space
+        ("S12HH", True),       # Full postcode without space
+        ("S71", True),         # Partial postcode (outward code)
+        ("S1", True),          # Partial postcode (short)
+        ("SW1A 1AA", True),    # Complex full postcode
+        ("SW1A", True),        # Complex partial postcode
+        ("M1 1AE", True),      # Manchester postcode
+        ("LS1 5DY", True),     # Leeds postcode
+        ("London", False),     # City name
+        ("York", False),       # City name
+        ("Leeds LS1", False),  # City + partial postcode (should not match)
+        ("wx S1", False),      # Command prefix (should not match)
+    ]
+
+    for text, expected in test_cases:
+        result = bot._is_uk_postcode(text)
+        status = "✓" if result == expected else "✗"
+        print(f"{status} '{text}' -> {result} (expected: {expected})")
+
+    print()
+
+
 def main():
     """Run all tests"""
     print("\n")
@@ -303,6 +337,7 @@ def main():
         test_meshcore_integration()
         test_reply_channel()
         test_announcement()
+        test_postcode_detection()
 
         print("=" * 60)
         print("All component tests completed!")
@@ -311,6 +346,7 @@ def main():
         print("Note: Full API integration tests require network access.")
         print("To test with real API:")
         print("  python3 weather_bot.py --location 'London'")
+        print("  python3 weather_bot.py --location 'S1 2HH'  # UK postcode")
         print("  python3 weather_bot.py --interactive")
         print()
 

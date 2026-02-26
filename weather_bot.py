@@ -809,18 +809,130 @@ class WeatherBot:
     # Weather data
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _is_uk_postcode(text: str) -> bool:
+        """Check if the text looks like a UK postcode.
+        
+        Matches full postcodes (e.g., S1 2HH) and partial postcodes (e.g., S1, S71).
+        UK postcode format: 
+        - Outward code: 1-2 letters + 1-2 digits + optional letter
+        - Inward code: 1 digit + 2 letters (optional for partial)
+        
+        Examples:
+        - Full: S1 2HH, SW1A 1AA, M1 1AE
+        - Partial: S1, S71, SW1A
+        """
+        # Remove extra whitespace and convert to uppercase
+        text = text.strip().upper()
+        
+        # Full postcode pattern: outward + space + inward
+        # Outward: 1-2 letters, 1-2 digits, optional letter
+        # Inward: 1 digit, 2 letters
+        full_postcode = re.match(r'^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$', text)
+        if full_postcode:
+            return True
+        
+        # Partial postcode pattern: just the outward code
+        # This handles formats like S1, S71, SW1A (first part of postcode)
+        partial_postcode = re.match(r'^[A-Z]{1,2}\d{1,2}[A-Z]?$', text)
+        if partial_postcode:
+            return True
+        
+        return False
+
+    def geocode_postcode(self, postcode: str):
+        """Geocode a UK postcode using postcodes.io API.
+        
+        Returns a dict with latitude, longitude, and location name, or None if not found.
+        
+        Args:
+            postcode: UK postcode (full or partial, e.g., "S1 2HH" or "S71")
+        
+        Returns:
+            dict with keys: latitude, longitude, name, country_code, postcode
+            or None if postcode not found
+        """
+        # Clean up postcode: remove extra spaces, convert to uppercase
+        postcode = postcode.strip().upper().replace(" ", "")
+        
+        try:
+            # Try exact postcode lookup first
+            url = f"https://api.postcodes.io/postcodes/{postcode}"
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == 200 and data.get("result"):
+                    result = data["result"]
+                    # Extract relevant location info
+                    # Use admin_district (e.g., "Sheffield") as the primary name
+                    # Fall back to parish, then postcode itself
+                    location_name = (
+                        result.get("admin_district") or 
+                        result.get("parish") or 
+                        result.get("postcode", postcode)
+                    )
+                    
+                    return {
+                        "latitude": result["latitude"],
+                        "longitude": result["longitude"],
+                        "name": location_name,
+                        "country_code": "GB",
+                        "postcode": result.get("postcode", postcode),
+                    }
+            
+            # If exact lookup failed, try partial postcode (outward code only)
+            # This handles cases like "S71" where we want the general area
+            url = f"https://api.postcodes.io/outcodes/{postcode}"
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == 200 and data.get("result"):
+                    result = data["result"]
+                    # For outward codes, admin_district can be a list or string
+                    admin_district = result.get("admin_district", postcode)
+                    if isinstance(admin_district, list):
+                        location_name = admin_district[0] if admin_district else postcode
+                    else:
+                        location_name = admin_district if admin_district else postcode
+                    
+                    return {
+                        "latitude": result["latitude"],
+                        "longitude": result["longitude"],
+                        "name": location_name,
+                        "country_code": "GB",
+                        "postcode": result.get("outcode", postcode),
+                    }
+                    
+        except (ConnectionError, Timeout, RequestException) as e:
+            self.logger.error(f"Network error geocoding postcode '{postcode}': {e}")
+            self.error_logger.error(f"Network error geocoding postcode: {e}", exc_info=True)
+        except Exception as e:
+            self.logger.error(f"Error geocoding postcode '{postcode}': {e}")
+            self.error_logger.error(f"Error geocoding postcode: {e}", exc_info=True)
+        
+        return None
+
     def geocode_location(self, location: str, country_override: str = None):
-        """Geocode *location* name via Open-Meteo.  Returns the first result
-        dict (with ``latitude``, ``longitude``, ``name``, etc.) or ``None``.
+        """Geocode *location* name via Open-Meteo or UK postcode via postcodes.io.
+        Returns the first result dict (with ``latitude``, ``longitude``, ``name``, etc.) or ``None``.
 
         Args:
-            location: City/location name to geocode
+            location: City/location name or UK postcode to geocode
             country_override: Optional country code to filter results (e.g., "GB", "US").
                             Takes precedence over self.country if provided.
         
         Raises:
             requests.exceptions.RequestException: On network or API errors
         """
+        # Check if this looks like a UK postcode first
+        if self._is_uk_postcode(location):
+            postcode_result = self.geocode_postcode(location)
+            if postcode_result:
+                return postcode_result
+            # If postcode lookup failed, fall through to regular geocoding
+        
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
 main

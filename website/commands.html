@@ -115,6 +115,38 @@ Wind: 18 km/h at 230°<br>
                 <div class="command">weather Paris, France</div>
             </div>
 
+            <h3>UK Postcodes</h3>
+            <p>Get weather by UK postcode - supports both full and partial postcodes:</p>
+            
+            <div class="command-example">
+                <div class="command">wx S1 2HH</div>
+                <div class="output">Sheffield, GB (Full postcode)</div>
+            </div>
+
+            <div class="command-example">
+                <div class="command">weather S71</div>
+                <div class="output">Barnsley, GB (Partial postcode/outward code)</div>
+            </div>
+
+            <div class="command-example">
+                <div class="command">wx SW1A 1AA</div>
+                <div class="output">London, GB (Buckingham Palace area)</div>
+            </div>
+
+            <div class="command-example">
+                <div class="command">WX M1 1AE</div>
+                <div class="output">Manchester, GB</div>
+            </div>
+
+            <div class="info-box">
+                <h4>Supported Postcode Formats</h4>
+                <ul>
+                    <li><strong>Full postcodes:</strong> S1 2HH, SW1A 1AA, M1 1AE (with or without space)</li>
+                    <li><strong>Partial postcodes:</strong> S71, S1, SW1A, LS1 (outward code only)</li>
+                </ul>
+                <p>The bot automatically detects UK postcodes and uses the free <a href="https://postcodes.io" target="_blank">Postcodes.io</a> API to geocode them.</p>
+            </div>
+
             <h2 id="cli-options">Command-Line Options</h2>
             <p>Options for running the weather bot script:</p>
 
