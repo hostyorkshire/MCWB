@@ -20,11 +20,10 @@ The bot sends two messages:
 **Message 1 - Current Weather:**
 ```
 York, GB
-Overcast
+☁️ Overcast
 Temp: 11.2°C (feels 9.5°C)
 Humid: 78%
 Wind: 16.5 km/h at 240°
-https://mcwb.netlify.app
 ```
 
 **Message 2 - Outlook Prompt:**
@@ -89,11 +88,11 @@ forecast_days=3
 ```
 User: wx London
 Bot:  London, GB
-      Partly cloudy
+      ⛅ Partly cloudy
       Temp: 14.2°C (feels 12.8°C)
       Humid: 72%
       Wind: 18 km/h at 230°
-      https://mcwb.netlify.app
+
 
 Bot:  Would you like to see the outlook for London? (y/n)
 
