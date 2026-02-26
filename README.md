@@ -115,21 +115,16 @@ Humid: 72%
 Wind: 18 km/h at 230°
 ```
 
-### 🌤️ NEW: Weather Outlook Feature
+### 🌤️ Weather Outlook Feature
 
-After sending the current weather, the bot now asks:
-
-```
-Would you like to see the outlook for [location]? (y/n)
-```
-
-Respond with `y` or `yes` to get a concise 3-day forecast:
+After sending the current weather, the bot **automatically sends** a concise 3-day forecast:
 
 ```
 London 3-day:
 02-25: Cloudy 8-15°C
 02-26: Rain 9-16°C
 02-27: Overcast 7-14°C
+https://mcwb.netlify.app
 ```
 
 See [docs/WEATHER_OUTLOOK_FEATURE.md](docs/WEATHER_OUTLOOK_FEATURE.md) for complete documentation.

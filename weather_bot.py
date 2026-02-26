@@ -177,10 +177,6 @@ class WeatherBot:
             self.channels = []
         # Initialize stats tracker
         self.stats = StatsTracker()
-        # State tracking for outlook feature
-        # Maps (sender, channel_idx) -> (location, country, lat, lon, timestamp)
-        self._pending_outlook = {}
-        self._outlook_timeout = 30  # 30 seconds timeout for outlook requests
         # MeshCore integration for public message-handling API
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug, serial_port=self.port, baud_rate=self.baud)
         # Register this bot as the text message handler so that binary-protocol
@@ -588,12 +584,8 @@ class WeatherBot:
 
         # Check if this is a weather command first (priority over outlook responses)
         location, country = self._parse_command(content)
-        state_key = (sender, channel_idx)
         
         if location:
-            # This is a new weather request - clear any pending outlook for this user
-            if state_key in self._pending_outlook:
-                del self._pending_outlook[state_key]
             # Sanitize sender for print output to prevent terminal corruption
             safe_sender_print = self._sanitize_for_log(sender)
             safe_location = self._sanitize_for_log(location)
@@ -624,22 +616,18 @@ class WeatherBot:
                 self.logger.info(f"Response: {response}")
                 self._send_channel_msg(response, channel_idx)
 
-                # Store state for potential outlook request and send prompt
-                self._pending_outlook[state_key] = {
-                    "location": location,
-                    "country": country,
-                    "lat": lat,
-                    "lon": lon,
-                    "location_data": r,
-                    "timestamp": time.time(),
-                }
-
-                # Add delay to allow first message to be transmitted before sending prompt
+                # Add delay to allow first message to be transmitted before sending outlook
                 time.sleep(0.5)
 
-                location_name = r.get("name", location)
-                prompt = f"Would you like to see the outlook for {location_name}? (y/n)"
-                self._send_channel_msg(prompt, channel_idx)
+                # Automatically send outlook after weather response
+                outlook_log_msg = f"Sending outlook for '{safe_location}' to {safe_sender}"
+                print(outlook_log_msg, flush=True)
+                self.logger.info(outlook_log_msg)
+
+                outlook_response = self._get_outlook(r, lat, lon)
+                print(f"Outlook Response:\n{outlook_response}\n", flush=True)
+                self.logger.info(f"Outlook Response: {outlook_response}")
+                self._send_channel_msg(outlook_response, channel_idx)
 
             except (ConnectionError, Timeout, RequestException) as e:
                 # Handle network-related errors with user-friendly message
@@ -654,39 +642,6 @@ class WeatherBot:
                 self.error_logger.error(response, exc_info=True)
                 self.stats.record_error("weather_api_error")
                 self._send_channel_msg(response, channel_idx)
-        else:
-            # Not a weather command - check if this is a yes/no response to a pending outlook request
-            if state_key in self._pending_outlook:
-                # State still exists (not expired during cleanup above)
-                outlook_state = self._pending_outlook[state_key]
-                if self._is_yes_response(content):
-                    # User wants to see outlook
-                    location_name = outlook_state["location"]
-                    country = outlook_state["country"]
-                    lat = outlook_state["lat"]
-                    lon = outlook_state["lon"]
-                    location_data = outlook_state["location_data"]
-
-                    safe_location = self._sanitize_for_log(location_name)
-                    msg = f"Outlook request for '{safe_location}' from {safe_sender}"
-                    print(msg, flush=True)
-                    self.logger.info(msg)
-
-                    outlook_response = self._get_outlook(location_data, lat, lon)
-                    print(f"Outlook Response:\n{outlook_response}\n", flush=True)
-                    self.logger.info(f"Outlook Response: {outlook_response}")
-                    self._send_channel_msg(outlook_response, channel_idx)
-
-                    # Clear the pending state
-                    del self._pending_outlook[state_key]
-                    return
-                else:
-                    # User said no or something else, clear pending state and acknowledge
-                    del self._pending_outlook[state_key]
-                    emoji = random.choice(WEATHER_EMOJIS)
-                    ok_msg = f"OK. Find out more about me and my commands at https://mcwb.netlify.app {emoji}"
-                    self._send_channel_msg(ok_msg, channel_idx)
-                    return
 
     @staticmethod
     def _parse_command(text: str):
@@ -741,23 +696,6 @@ class WeatherBot:
                 return location, country
 
         return location_str, None
-
-    @staticmethod
-    def _is_yes_response(text: str) -> bool:
-        """Check if the text is a yes response (y, Y, YES, yes)."""
-        text = text.strip().lower()
-        return text in ["y", "yes"]
-
-    def _cleanup_expired_outlook_requests(self):
-        """Remove outlook requests that have exceeded the timeout."""
-        current_time = time.time()
-        expired_keys = [
-            key
-            for key, state in self._pending_outlook.items()
-            if current_time - state["timestamp"] > self._outlook_timeout
-        ]
-        for key in expired_keys:
-            del self._pending_outlook[key]
 
     def _get_outlook(self, location_data: dict, lat: float, lon: float) -> str:
         """Fetch outlook for given coordinates and return a formatted string."""
@@ -1095,6 +1033,7 @@ class WeatherBot:
 
             lines.append(f"{date_short}: {condition} {tmin}-{tmax}°C")
 
+        lines.append("https://mcwb.netlify.app")
         return "\n".join(lines)
 
     def _get_weather(self, location: str, country: str = None, user: str = None) -> str:

@@ -2,20 +2,20 @@
 
 ## Overview
 
-The weather bot now supports weather outlook/forecast requests! After providing the current weather, the bot asks if you'd like to see a 3-day outlook.
+The weather bot automatically provides a 3-day outlook after sending the current weather! No user interaction required - you get both current conditions and the forecast in one go.
 
 ## User Experience
 
-### Step 1: Request Weather
+### Request Weather
 
 Send a weather command on any channel:
 ```
 wx York
 ```
 
-### Step 2: Bot Responds with Current Weather + Prompt
+### Bot Automatically Responds with Weather + Outlook
 
-The bot sends two messages:
+The bot sends two messages automatically:
 
 **Message 1 - Current Weather:**
 ```
@@ -26,30 +26,14 @@ Humid: 78%
 Wind: 16.5 km/h at 240°
 ```
 
-**Message 2 - Outlook Prompt:**
-```
-Would you like to see the outlook for [location]? (y/n)
-```
-
-### Step 3: User Responds
-
-**Option A: Say Yes**
-
-Respond with: `y`, `Y`, `yes`, or `YES`
-
-The bot sends a 3-day outlook:
+**Message 2 - 3-Day Outlook (sent automatically):**
 ```
 York 3-day:
 02-25: Overcast 6-13°C
 02-26: Rain 8-14°C
 02-27: Cloudy 5-12°C
+https://mcwb.netlify.app
 ```
-
-**Option B: Say No (or anything else)**
-
-Respond with: `n` or any other text
-
-The bot does nothing and clears the pending request.
 
 ## Technical Details
 
@@ -57,14 +41,7 @@ The bot does nothing and clears the pending request.
 
 All messages fit comfortably within MeshCore's 200 character limit:
 - Weather response: ~100-120 characters
-- Outlook prompt: ~50-70 characters (varies by location name length)
-- Outlook response: ~80-100 characters
-
-### State Management
-
-- The bot tracks pending outlook requests per (sender, channel) combination
-- Requests expire after 5 minutes to prevent stale state
-- State is automatically cleaned up after user responds
+- Outlook response: ~110-130 characters (including link)
 
 ### Compact Outlook Format
 
@@ -73,6 +50,7 @@ The outlook uses abbreviated format to minimize message size:
 - Short date format: `02-25` instead of `2026-02-25`
 - Abbreviated conditions: `Rain` instead of `Moderate rain`
 - No precipitation or wind details (just temperature range and condition)
+- Includes link to documentation at bottom
 
 ### API Usage
 
@@ -82,9 +60,9 @@ daily=temperature_2m_max,temperature_2m_min,weather_code
 forecast_days=3
 ```
 
-## Examples
+## Example
 
-### Example 1: User Gets Outlook
+### Complete Weather Request
 ```
 User: wx London
 Bot:  London, GB
@@ -94,51 +72,26 @@ Bot:  London, GB
       Wind: 18 km/h at 230°
 
 
-Bot:  Would you like to see the outlook for London? (y/n)
-
-User: y
 Bot:  London 3-day:
       02-25: Cloudy 8-15°C
       02-26: Rain 9-16°C
       02-27: Overcast 7-14°C
-```
-
-### Example 2: User Declines Outlook
-```
-User: wx Manchester
-Bot:  Manchester, GB
-      Slight rain
-      ...
-
-Bot:  Would you like to see the outlook for Manchester? (y/n)
-
-User: n
-      (Bot does nothing)
-```
-
-### Example 3: User Ignores Prompt
-```
-User: wx Leeds
-Bot:  Leeds, GB
-      ...
-
-Bot:  Would you like to see the outlook for Leeds? (y/n)
-
-User: (says nothing or sends different command)
-      (After 5 minutes, the pending request expires)
+      https://mcwb.netlify.app
 ```
 
 ## Implementation Notes
 
-- The feature is backward compatible - existing weather commands work exactly as before
-- Each user can have a pending outlook request (tracked per sender + channel)
+- The feature is fully automatic - no user prompts or interaction needed
+- Outlook is sent immediately after weather response with a 0.5s delay
+- Each weather request automatically includes outlook
 - Multiple users can request weather simultaneously without conflicts
-- The state automatically cleans up expired requests
+- Link to documentation website included at bottom of every outlook
 
 ## Testing
 
-New tests added:
-- `tests/test_weather_outlook.py` - Unit tests for outlook feature
+Tests updated:
+- `tests/test_weather_outlook.py` - Unit tests for automatic outlook sending
 - `tests/test_outlook_integration.py` - Integration tests showing complete flow
 
-All existing tests continue to pass.
+All tests pass with the new automatic behavior.
+

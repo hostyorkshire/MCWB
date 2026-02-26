@@ -3,9 +3,8 @@
 Test the weather outlook feature.
 Verifies that the bot:
 1. Sends initial weather response
-2. Prompts for outlook (y/n)
-3. Handles yes/no responses correctly
-4. Sends outlook when user responds with y/Y/yes/YES
+2. Automatically sends outlook after weather response
+3. Includes link at bottom of outlook message
 """
 
 import os
@@ -13,17 +12,16 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WEATHER_EMOJIS
 import time
 from unittest.mock import MagicMock, call, patch
 
 from weather_bot import WeatherBot
 
 
-def test_outlook_prompt_after_weather():
-    """Test that bot prompts for outlook after sending weather"""
+def test_outlook_sent_automatically_after_weather():
+    """Test that bot automatically sends outlook after weather response"""
     print("=" * 70)
-    print("TEST: Outlook Prompt After Weather Response")
+    print("TEST: Outlook Automatically Sent After Weather Response")
     print("=" * 70)
 
     bot = WeatherBot(debug=False)
@@ -59,61 +57,6 @@ def test_outlook_prompt_after_weather():
             }
         }
 
-        mock_get.side_effect = [geocoding_response, weather_response]
-
-        # Simulate receiving "wx London" from user on channel_idx 1
-        bot._handle_channel_message("TestUser: wx London", 1)
-
-        # Check that two messages were sent
-        calls = bot._ser.write.call_args_list
-        if len(calls) >= 2:
-            print(f"✅ PASS: Bot sent {len(calls)} messages (weather + prompt)")
-
-            # Verify the second message contains the outlook prompt
-            second_msg = calls[1][0][0]
-            if b"Would you like to see the outlook for" in second_msg:
-                print("✅ PASS: Second message contains outlook prompt")
-            else:
-                print("❌ FAIL: Second message doesn't contain outlook prompt")
-                print(f"   Got: {second_msg}")
-                return False
-        else:
-            print(f"❌ FAIL: Expected 2 messages, got {len(calls)}")
-            return False
-
-        # Check that state was stored
-        state_key = ("TestUser", 1)
-        if state_key in bot._pending_outlook:
-            print("✅ PASS: Pending outlook state stored")
-        else:
-            print("❌ FAIL: No pending outlook state")
-            return False
-
-        return True
-
-
-def test_yes_response_sends_outlook():
-    """Test that 'y' or 'yes' response sends the outlook"""
-    print("\n" + "=" * 70)
-    print("TEST: Yes Response Sends Outlook")
-    print("=" * 70)
-
-    bot = WeatherBot(debug=False)
-    bot._ser = MagicMock()
-    bot._ser.write = MagicMock()
-
-    # Manually set up pending outlook state
-    state_key = ("TestUser", 1)
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB", "latitude": 51.5074, "longitude": -0.1278},
-        "timestamp": time.time(),
-    }
-
-    with patch("weather_bot.requests.get") as mock_get:
         # Mock outlook response
         outlook_response = MagicMock()
         outlook_response.json.return_value = {
@@ -125,176 +68,52 @@ def test_yes_response_sends_outlook():
             }
         }
 
-        mock_get.return_value = outlook_response
+        mock_get.side_effect = [geocoding_response, weather_response, outlook_response]
 
-        # Test different yes variations
-        for yes_response in ["y", "Y", "yes", "YES"]:
-            print(f"\n  Testing response: '{yes_response}'")
-            bot._pending_outlook[state_key] = {
-                "location": "London",
-                "country": None,
-                "lat": 51.5074,
-                "lon": -0.1278,
-                "location_data": {"name": "London", "country_code": "GB", "latitude": 51.5074, "longitude": -0.1278},
-                "timestamp": time.time(),
-            }
+        # Simulate receiving "wx London" from user on channel_idx 1
+        bot._handle_channel_message("TestUser: wx London", 1)
 
-            bot._ser.write.reset_mock()
-            bot._handle_channel_message(f"TestUser: {yes_response}", 1)
+        # Check that two messages were sent (weather + outlook)
+        calls = bot._ser.write.call_args_list
+        if len(calls) >= 2:
+            print(f"✅ PASS: Bot sent {len(calls)} messages (weather + outlook)")
 
-            # Check that outlook was sent
-            if bot._ser.write.called:
-                msg = bot._ser.write.call_args[0][0]
-                if b"London 3-day" in msg or b"02-" in msg:
-                    print(f"    ✅ PASS: Outlook sent for '{yes_response}'")
-                else:
-                    print(f"    ❌ FAIL: Message doesn't look like outlook")
-                    print(f"       Got: {msg}")
-                    return False
+            # Verify the first message is weather
+            first_msg = calls[0][0][0]
+            if b"London" in first_msg and b"Temp:" in first_msg:
+                print("✅ PASS: First message is weather response")
             else:
-                print(f"    ❌ FAIL: No message sent for '{yes_response}'")
+                print("❌ FAIL: First message doesn't look like weather")
+                print(f"   Got: {first_msg}")
                 return False
 
-            # Check that state was cleared
-            if state_key not in bot._pending_outlook:
-                print(f"    ✅ PASS: State cleared after '{yes_response}'")
+            # Verify the second message is outlook (not a prompt)
+            second_msg = calls[1][0][0]
+            if b"3-day" in second_msg and b"02-" in second_msg:
+                print("✅ PASS: Second message is outlook (not prompt)")
             else:
-                print(f"    ❌ FAIL: State not cleared")
+                print("❌ FAIL: Second message doesn't look like outlook")
+                print(f"   Got: {second_msg}")
                 return False
 
-    return True
-
-
-def test_no_response_clears_state():
-    """Test that 'n' or other responses clear the pending state and send OK message"""
-    print("\n" + "=" * 70)
-    print("TEST: No Response Clears State and Sends OK")
-    print("=" * 70)
-
-    bot = WeatherBot(debug=False)
-    bot._ser = MagicMock()
-    bot._ser.write = MagicMock()
-
-    # Set up pending outlook state
-    state_key = ("TestUser", 1)
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time(),
-    }
-
-    # Test 'n' response - should send OK message
-    bot._ser.write.reset_mock()
-    bot._handle_channel_message("TestUser: n", 1)
-
-    if state_key not in bot._pending_outlook:
-        print("✅ PASS: State cleared after 'n' response")
-    else:
-        print("❌ FAIL: State not cleared after 'n'")
-        return False
-
-    if bot._ser.write.called:
-        msg = bot._ser.write.call_args[0][0]
-        if b"Find out more about me and my commands at https://mcwb.netlify.app" in msg:
-            print("✅ PASS: Response message sent after 'n' response")
+            # Verify outlook contains link
+            if b"https://mcwb.netlify.app" in second_msg:
+                print("✅ PASS: Outlook includes link at bottom")
+            else:
+                print("❌ FAIL: Outlook missing link")
+                print(f"   Got: {second_msg}")
+                return False
         else:
-            print("❌ FAIL: Response message not found in response")
-            print(f"   Got: {msg}")
+            print(f"❌ FAIL: Expected 2 messages, got {len(calls)}")
             return False
-        msg_str = msg.decode("utf-8", errors="replace")
-        if any(emoji in msg_str for emoji in WEATHER_EMOJIS):
-            print("✅ PASS: Weather emoji included in response message")
-        else:
-            print("❌ FAIL: No weather emoji found in response message")
-            print(f"   Got: {msg_str}")
-            return False
-    else:
-        print("❌ FAIL: No message sent after 'n' response")
-        return False
 
-    # Test random text
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time(),
-    }
-
-    bot._handle_channel_message("TestUser: maybe later", 1)
-
-    if state_key not in bot._pending_outlook:
-        print("✅ PASS: State cleared after other response")
-    else:
-        print("❌ FAIL: State not cleared after other text")
-        return False
-
-    return True
-
-
-def test_timeout_cleanup():
-    """Test that old outlook requests are cleaned up"""
-    print("\n" + "=" * 70)
-    print("TEST: Timeout Cleanup")
-    print("=" * 70)
-
-    bot = WeatherBot(debug=False)
-    bot._outlook_timeout = 2  # 2 second timeout for testing
-
-    # Add a pending outlook request
-    state_key = ("TestUser", 1)
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time() - 3,  # 3 seconds ago (expired)
-    }
-
-    print(f"  Added expired outlook request (3 seconds old, timeout={bot._outlook_timeout}s)")
-
-    # Trigger cleanup
-    bot._cleanup_expired_outlook_requests()
-
-    if state_key not in bot._pending_outlook:
-        print("✅ PASS: Expired request cleaned up")
-    else:
-        print("❌ FAIL: Expired request not cleaned up")
-        return False
-
-    # Add a fresh request
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time(),  # Fresh
-    }
-
-    print(f"  Added fresh outlook request")
-
-    # Trigger cleanup
-    bot._cleanup_expired_outlook_requests()
-
-    if state_key in bot._pending_outlook:
-        print("✅ PASS: Fresh request not cleaned up")
-    else:
-        print("❌ FAIL: Fresh request was incorrectly cleaned up")
-        return False
-
-    return True
+        return True
 
 
 def test_outlook_format():
-    """Test the outlook response format is concise"""
+    """Test the outlook response format is concise and includes link"""
     print("\n" + "=" * 70)
-    print("TEST: Outlook Format is Concise")
+    print("TEST: Outlook Format is Concise with Link")
     print("=" * 70)
 
     bot = WeatherBot(debug=False)
@@ -316,8 +135,10 @@ def test_outlook_format():
     print()
 
     # Check that response is reasonably short
-    if len(response) < 150:
-        print(f"✅ PASS: Response is concise ({len(response)} characters)")
+    # MeshCore has a 200 character limit per message. Outlook should be well under this.
+    MAX_OUTLOOK_LENGTH = 200  # Character limit for MeshCore messages
+    if len(response) < MAX_OUTLOOK_LENGTH:
+        print(f"✅ PASS: Response is concise ({len(response)} characters < {MAX_OUTLOOK_LENGTH})")
     else:
         print(f"⚠ WARNING: Response is long ({len(response)} characters)")
         print("   Consider making it shorter for MeshCore limits")
@@ -336,6 +157,18 @@ def test_outlook_format():
         print("❌ FAIL: Dates not in expected short format")
         return False
 
+    # Check that link is included at bottom
+    if "https://mcwb.netlify.app" in response:
+        print("✅ PASS: Link included at bottom of outlook")
+        # Verify it's at the end
+        if response.strip().endswith("https://mcwb.netlify.app"):
+            print("✅ PASS: Link is at the end of the message")
+        else:
+            print("⚠ WARNING: Link is not at the very end")
+    else:
+        print("❌ FAIL: Link not found in outlook")
+        return False
+
     return True
 
 
@@ -348,10 +181,7 @@ def main():
     print()
 
     tests = [
-        test_outlook_prompt_after_weather,
-        test_yes_response_sends_outlook,
-        test_no_response_clears_state,
-        test_timeout_cleanup,
+        test_outlook_sent_automatically_after_weather,
         test_outlook_format,
     ]
 
