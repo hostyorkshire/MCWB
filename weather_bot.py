@@ -537,7 +537,8 @@ class WeatherBot:
         if self.weather_channel_idx is None:
             self._announce_channel_idx = channel_idx
 
-        # Clean up expired outlook requests on every message
+        # Clean up expired outlook requests on every processed message
+        # This ensures timely removal of stale outlook states (30s timeout)
         self._cleanup_expired_outlook_requests()
 
         # Check if this is a weather command first (priority over outlook responses)
@@ -611,7 +612,7 @@ class WeatherBot:
         else:
             # Not a weather command - check if this is a yes/no response to a pending outlook request
             if state_key in self._pending_outlook:
-                # Check if this request is still valid (after cleanup above)
+                # State still exists (not expired during cleanup above)
                 outlook_state = self._pending_outlook[state_key]
                 if self._is_yes_response(content):
                     # User wants to see outlook
