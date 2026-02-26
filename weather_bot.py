@@ -135,7 +135,7 @@ class WeatherBot:
             port: Serial port (e.g., /dev/ttyUSB0). Auto-detects if None.
             baud: Baud rate (default: 115200)
             debug: Enable debug logging
-            announce: Enable periodic announcements every 3 hours
+            announce: Enable announcements (always on startup + periodic every 3 hours)
             reboot_notify: Send notification on reboot/restart
             allowed_channel_idx: Only respond to messages from this channel index
             weather_channel_idx: Channel index to use for announcements
@@ -1207,7 +1207,7 @@ def main():
     parser.add_argument("-p", "--port", help="Serial port (e.g. /dev/ttyUSB0). Auto-detects if omitted.")
     parser.add_argument("-b", "--baud", type=int, default=115200, help="Baud rate (default: 115200)")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
-    parser.add_argument("-a", "--announce", action="store_true", help="Send periodic announcements every 3 hours")
+    parser.add_argument("-a", "--announce", action="store_true", help="Send announcements on every startup and periodically every 3 hours")
     parser.add_argument("-r", "--reboot-notify", action="store_true", help="Send notification on reboot/restart")
     parser.add_argument(
         "-c",
