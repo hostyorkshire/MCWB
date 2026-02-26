@@ -280,8 +280,6 @@ python3 weather_bot.py -d
 # Enable periodic announcements every 3 hours
 python3 weather_bot.py --announce
 
-# Filter location searches to prefer UK cities (useful if most users are in UK)
-python3 weather_bot.py --country GB
 
 # Quick weather lookup (no radio hardware needed)
 python3 weather_bot.py --location Leeds
@@ -309,6 +307,7 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -b BAUD, --baud BAUD    Baud rate (default: 115200)
   -d, --debug             Enable debug output
   -a, --announce          Send periodic announcements every 3 hours
+  -r, --reboot-notify     Send notification on reboot/restart (useful for detecting power loss or crashes)
   -c CHANNEL_IDX, --channel-idx CHANNEL_IDX
                           Only respond to messages from this channel index (e.g., 1 for #weather)
   -w WEATHER_CHANNEL_IDX, --weather-channel-idx WEATHER_CHANNEL_IDX
@@ -463,7 +462,52 @@ python3 meshcore_send.py "wx Leeds" --channel weather
 
 See `CHANNEL_GUIDE.md` for a full explanation of the channel name / channel index relationship.
 
-## Running as a systemd service
+## Reboot Notifications
+
+The bot can automatically notify users when it restarts after a power loss or crash. This is useful for monitoring the bot's availability on remote or unmanned installations.
+
+### Enabling Reboot Notifications
+
+Add the `--reboot-notify` (or `-r`) flag when starting the bot:
+
+```bash
+python3 weather_bot.py --reboot-notify
+```
+
+### How It Works
+
+1. **First Run:** The bot creates a state file (`/var/tmp/mcwb_state.txt`) but does NOT send a notification
+2. **Subsequent Restarts:** If the state file exists when the bot starts, it detects this as a restart and sends a notification message
+3. **Notification Message:** "MCWBv2 weather bot has restarted and is now online."
+4. **Channel Selection:** The notification is sent on the same channel used for announcements (see `--weather-channel-idx`)
+
+The state file is stored in `/var/tmp/` which persists across system reboots, allowing the bot to detect and notify about both:
+- **Power loss/system reboots:** After the system restarts, the state file still exists
+- **Bot crashes:** When systemd restarts the service, the state file indicates the previous run
+
+- **Remote Monitoring:** Get alerted when your Raspberry Pi weather bot reboots after power loss
+- **Reliability Tracking:** Know when the bot crashes and automatically recovers
+- **Maintenance Awareness:** See when systemd restarts the service after failures
+
+### Example Configurations
+
+```bash
+# Reboot notifications only
+python3 weather_bot.py --reboot-notify
+
+# Reboot notifications with announcements
+python3 weather_bot.py --reboot-notify --announce
+
+# Reboot notifications on specific channel
+python3 weather_bot.py --reboot-notify --weather-channel-idx 1
+
+# Full production setup with all monitoring features
+python3 weather_bot.py --reboot-notify --announce --weather-channel-idx 1
+```
+
+**Note:** The reboot notification feature uses a state file stored in `/var/tmp/` which persists across system reboots. This allows detection of both power loss scenarios (full system reboot) and bot-only crashes (systemd service restart).
+
+### Use Cases
 
 For production deployments, especially on Raspberry Pi, you can run the bot as a systemd service that starts automatically on boot:
 

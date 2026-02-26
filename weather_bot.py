@@ -12,8 +12,6 @@ import random
 import re
 import sys
 import threading
-import time
-from pathlib import Path
 
 from logging_config import get_weather_bot_logger, log_startup_info
 from meshcore import MeshCore, MeshCoreMessage
@@ -100,43 +98,16 @@ WEATHER_CODES = {
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
-ANNOUNCE_MESSAGE = (
-    "Hello this is the WX BoT. To get a weather update simply type WX and your location."
-)
-# Use absolute path for timestamp file to ensure it works regardless of working directory
-ANNOUNCE_TIMESTAMP_FILE = Path(__file__).parent / "logs" / ".last_announce"
 
-WEATHER_EMOJIS = [
-    "☀️", "🌤️", "⛅", "🌥️", "☁️", "🌦️", "🌧️", "⛈️", "🌩️", "🌨️",
-    "❄️", "🌪️", "🌫️", "🌈", "💨", "🌬️", "🌡️", "💧", "⛄", "☔",
-    "🌊", "🌙", "⭐", "🌟", "🌂",
-]
 
 
 class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
-    def __init__(
-        self,
-        port=None,
-        baud=115200,
-        debug=False,
-        announce=False,
-        allowed_channel_idx=None,
-        node_id=None,
-        announce_channel=None,
-        weather_channel_idx=None,
-        country=None,
-        channel=None,
-        serial_port=None,
-        baud_rate=None,
-        verify_channels=False,
-    ):
-        # serial_port and baud_rate are aliases for port and baud
-        self.port = serial_port or port
-        self.baud = baud_rate or baud
+
         self.debug = debug
         self.announce = announce or (announce_channel is not None)
+        self.reboot_notify = reboot_notify
         self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
@@ -178,6 +149,35 @@ class WeatherBot:
         # of this filter – see meshcore.receive_message for details.
         if self.channels:
             self.mesh.set_channel_filter(self.channels)
+
+    # ------------------------------------------------------------------
+    # Reboot notification
+    # ------------------------------------------------------------------
+
+    def _is_reboot(self) -> bool:
+        """Check if this is a restart/reboot by examining state file."""
+        return os.path.exists(STATE_FILE)
+
+    def _mark_running(self):
+        """Mark the bot as running by creating state file."""
+        try:
+            with open(STATE_FILE, "w") as f:
+                f.write(f"{int(time.time())}\n")
+        except Exception as e:
+            self._log(f"Failed to create state file: {e}")
+
+    def _send_reboot_notification(self):
+        """Send reboot notification message."""
+        if self.reboot_notify and self._is_reboot():
+            print("Detected restart/reboot - sending notification...")
+            try:
+                # Use the configured weather channel or announcement channel
+                channel = self._announce_channel_idx
+                self._send_channel_msg(REBOOT_NOTIFY_MESSAGE, channel)
+                self._log(f"Sent reboot notification on channel_idx={channel}")
+            except Exception as e:
+                print(f"Warning: Failed to send reboot notification: {e}")
+                self._log(f"Failed to send reboot notification: {e}")
 
     # ------------------------------------------------------------------
     # Logging helpers
@@ -988,9 +988,6 @@ class WeatherBot:
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
-        # Give listener thread time to initialize and process sync response
-        # This prevents race condition where announcement is sent before radio is ready
-        time.sleep(0.5)
 
         if self.weather_channel_idx is not None:
             msg = f"MCWB running. Weather channel configured as channel_idx={self.weather_channel_idx}."
@@ -1104,49 +1101,13 @@ def main():
         "Binary-protocol frames without a channel name are always accepted. "
         "When omitted the bot responds on any channel.",
     )
-    parser.add_argument(
-        "-c", "--channel-idx", type=int, help="Only respond to messages from this channel index (e.g., 1 for #weather)"
-    )
-    parser.add_argument(
-        "-w",
-        "--weather-channel-idx",
-        type=int,
-        help="Specify which channel index to use for announcements. "
-        "Bot will still respond to messages from ANY channel "
-        "unless --channel-idx is also specified.",
-    )
-    parser.add_argument(
-        "--country",
-        help="Default country code for geocoding (e.g., GB, US, FR). "
-        "Filters location searches to prefer cities in this country.",
-    )
-    parser.add_argument(
-        "--verify-channels",
-        action="store_true",
-        help="Enable channel verification mode. Shows diagnostic info about which "
-        "channels are properly configured with decryption keys. Useful for "
-        "troubleshooting when the radio receives encrypted messages it cannot decrypt.",
-    )
-    parser.add_argument("-l", "--location", help="Look up weather for LOCATION and exit (no radio needed)")
+
     args = parser.parse_args()
 
     # --weather-channel-idx controls announcement channel only
     # --channel-idx controls message filtering (if set, only accept messages from that channel)
     # If neither is set, accept messages from all channels (default behavior)
     weather_idx = args.weather_channel_idx
-    allowed_idx = args.channel_idx  # Only filter if explicitly set via --channel-idx
-
-    bot = WeatherBot(
-        port=args.port,
-        baud=args.baud,
-        debug=args.debug,
-        announce=args.announce,
-        allowed_channel_idx=allowed_idx,
-        weather_channel_idx=weather_idx,
-        country=args.country,
-        channel=args.channel,
-        verify_channels=args.verify_channels,
-    )
 
     if args.location:
         print(bot._get_weather(args.location))
