@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commands & Usage - MCWB Wiki</title>
+    <title>Commands & Usage - Meshcore Weather Bot</title>
     <link rel="stylesheet" href="css/style.css">
     <meta name="description" content="Complete command reference for the MeshCore Weather Bot">
 </head>
@@ -11,11 +11,11 @@
     <header>
         <div class="header-content">
             <div class="header-title">
-                <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
-                <p>MeshCore Weather Bot Documentation</p>
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
             </div>
             <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
                 <span id="theme-text">Dark Mode</span>
             </button>
         </div>
@@ -48,7 +48,7 @@
             <p>Complete reference for all weather bot commands and command-line options.</p>
 
             <div class="info-box success">
-                <h3>⌨️ Basic Usage on MeshCore</h3>
+                <h3><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"> Basic Usage on MeshCore</h3>
                 <p>Open your MeshCore app and type:</p>
                 <div class="command-example">
                     <div class="command">wx [location]</div>
@@ -78,7 +78,7 @@ Partly cloudy<br>
 Temp: 14.2°C (feels 12.8°C)<br>
 Humid: 72%<br>
 Wind: 18 km/h at 230°<br>
-Precip: 0.0 mm
+<a href="https://mcwb.netlify.app">https://mcwb.netlify.app</a>
                 </div>
             </div>
 
@@ -330,37 +330,37 @@ python3 weather_bot.py --channel-idx 2 --weather-channel-idx 2 --announce</code>
                 <tbody>
                     <tr>
                         <td><code>wx &lt;location&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>wx London</code>, <code>WX manchester</code></td>
                     </tr>
                     <tr>
                         <td><code>weather &lt;location&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>weather York</code>, <code>WEATHER leeds</code></td>
                     </tr>
                     <tr>
                         <td><code>wx &lt;location&gt; &lt;country&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>wx York UK</code>, <code>wx Paris FR</code></td>
                     </tr>
                     <tr>
                         <td><code>wx &lt;location&gt;, &lt;country&gt;</code></td>
-                        <td>✅ Yes</td>
+                        <td><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Yes</td>
                         <td><code>wx York, UK</code>, <code>wx New York, USA</code></td>
                     </tr>
                     <tr>
                         <td><code>wxLondon</code> (no space)</td>
-                        <td>❌ No</td>
+                        <td><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> No</td>
                         <td>Must have space after command</td>
                     </tr>
                     <tr>
                         <td><code>weather</code> (no location)</td>
-                        <td>❌ No</td>
+                        <td><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> No</td>
                         <td>Must specify a location</td>
                     </tr>
                     <tr>
                         <td><code>what's the weather</code></td>
-                        <td>❌ No</td>
+                        <td><img src="img/emoji/274c.svg" alt="❌" class="emoji-icon"> No</td>
                         <td>Must use <code>wx</code> or <code>weather</code> prefix</td>
                     </tr>
                 </tbody>
@@ -465,7 +465,7 @@ sudo journalctl -u weather_bot -f</code></pre>
             <h2 id="country-codes">Country Code Reference</h2>
             <p>Common ISO-3166-1 alpha-2 country codes:</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1rem; margin: 1.5rem 0;">
                 <div class="info-box" style="margin: 0;">
                     <strong>Europe</strong>
                     <ul style="margin: 0.5rem 0 0 0;">
@@ -507,7 +507,7 @@ sudo journalctl -u weather_bot -f</code></pre>
             </div>
 
             <div class="info-box">
-                <h3>💡 Tips</h3>
+                <h3><img src="img/emoji/1f4a1.svg" alt="💡" class="emoji-icon"> Tips</h3>
                 <ul style="margin-bottom: 0;">
                     <li>Commands are <strong>case-insensitive</strong>: <code>wx</code>, <code>WX</code>, <code>Wx</code> all work</li>
                     <li>Location names are <strong>flexible</strong>: Handle spaces and special characters</li>

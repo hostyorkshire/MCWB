@@ -6,12 +6,13 @@ Note: The bot is channel-agnostic and works with ANY channel you create.
 Channel names in this script are just examples.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import time
-from weather_bot import WeatherBot, ANNOUNCE_MESSAGE, ANNOUNCE_INTERVAL
+from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE, WeatherBot
+
 
 def test_announcement_config():
     """Test announcement configuration"""
@@ -19,12 +20,12 @@ def test_announcement_config():
     print("ANNOUNCEMENT DIAGNOSTIC TOOL")
     print("=" * 70)
     print()
-    
+
     print("1. Checking announcement constants...")
     print(f"   ANNOUNCE_INTERVAL: {ANNOUNCE_INTERVAL} seconds ({ANNOUNCE_INTERVAL / 3600} hours)")
     print(f"   ANNOUNCE_MESSAGE: {ANNOUNCE_MESSAGE}")
     print()
-    
+
     print("2. Creating bot with example announce behavior...")
     try:
         # Note: The bot adapts to whatever channel receives messages
@@ -37,7 +38,7 @@ def test_announcement_config():
         print(f"   ✗ Error creating bot: {e}")
         return False
     print()
-    
+
     print("3. Starting bot...")
     try:
         bot.start()
@@ -46,7 +47,7 @@ def test_announcement_config():
         print(f"   ✗ Error starting bot: {e}")
         return False
     print()
-    
+
     print("4. Testing send_announcement() method...")
     try:
         bot.send_announcement()
@@ -56,7 +57,7 @@ def test_announcement_config():
         bot.stop()
         return False
     print()
-    
+
     print("5. Verifying bot is still running...")
     if bot.mesh.is_running():
         print("   ✓ Bot is still running")
@@ -64,12 +65,12 @@ def test_announcement_config():
         print("   ✗ Bot has stopped")
         return False
     print()
-    
+
     print("6. Stopping bot...")
     bot.stop()
     print("   ✓ Bot stopped cleanly")
     print()
-    
+
     print("=" * 70)
     print("DIAGNOSIS: Announcement code is WORKING correctly")
     print("=" * 70)
@@ -80,8 +81,9 @@ def test_announcement_config():
     print("  3. Check radio configuration and channel settings")
     print("  4. Ensure channel_idx mapping is correct (log shows 'wxtest' -> idx 1)")
     print()
-    
+
     return True
+
 
 def test_with_hardware():
     """Test with hardware detection"""
@@ -89,9 +91,10 @@ def test_with_hardware():
     print("HARDWARE DETECTION TEST")
     print("=" * 70)
     print()
-    
+
     try:
         from meshcore import find_serial_ports
+
         ports = find_serial_ports(debug=True)
         if ports:
             print(f"✓ Found serial ports: {ports}")
@@ -105,8 +108,9 @@ def test_with_hardware():
         print(f"✗ Error detecting ports: {e}")
     print()
 
+
 if __name__ == "__main__":
     success = test_announcement_config()
     test_with_hardware()
-    
+
     sys.exit(0 if success else 1)

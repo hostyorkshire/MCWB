@@ -2,9 +2,58 @@
 
 A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time.
 
+## 🚀 Super Quick Start (3 Simple Steps)
+
+**Can't connect to your dashboard?** Follow these steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
+
+### Method 1: Unified Service Manager (Easiest!)
+
+```bash
+cd ~/MCWB
+./setup_mcwb.sh
+```
+
+Choose option **2** (Install Web Dashboard) or **3** (Install BOTH services). The interactive menu will guide you through the setup!
+
+### Method 2: Direct Installation Script
+
+### Step 1: Install and Start the Dashboard
+
+```bash
+cd ~/MCWB  # Or wherever you cloned MCWB
+./install_dashboard_service.sh
+```
+
+The installer will:
+- ✅ Automatically configure the service for your username and directory
+- ✅ Configure firewall if needed
+- ✅ Start the dashboard and show you the connection URL
+- ✅ Enable auto-start on reboot
+
+### Step 2: Get Your Connection URL
+
+The installer will show you the URL, for example:
+```
+🌐 Web Dashboard Access:
+   Network: http://192.168.1.109:5000
+```
+
+**That's your connection URL!** Write it down.
+
+**💡 Pro Tip:** Once connected, you can use this URL to link your static website's Live Dashboard page to show real-time data. See [Remote Access and Static Website Integration](#remote-access-and-static-website-integration) below.
+
+### Step 3: Connect
+
+Open a web browser on any device on your local network and go to the URL from Step 2.
+
+**Still can't connect?** Jump to [Troubleshooting Connection Issues](#troubleshooting-connection-issues) below.
+
+---
+
 ## Features
 
 - 🌙 **Dark Theme** - Easy on the eyes with a beautiful gradient background
+- 📡 **Active Channels** - See which channels your LORA meshcore radio is broadcasting on (e.g., #weather, #alerts)
 - 📊 **Real-time Status** - Monitor bot status and log file information
 - 📝 **Log Viewer** - View and filter bot logs with color-coded entries
 - 🔄 **Auto-refresh** - Automatically updates every 10 seconds
@@ -58,7 +107,9 @@ python3 web_dashboard.py --help
 ### Dashboard Sections
 
 1. **System Status** - Shows the current status of the bot and log file information
-2. **Log Viewer** - View logs from different sources:
+2. **Active Channels** - Displays which channels the LORA meshcore radio is broadcasting on (e.g., #weather, #alerts)
+3. **Usage Statistics** - Charts and metrics showing bot usage over time
+4. **Log Viewer** - View logs from different sources:
    - Bot Log - Main weather bot logs
    - Bot Errors - Error logs from the bot
    - MeshCore - MeshCore communication logs
@@ -167,7 +218,8 @@ sudo nano /etc/systemd/system/mcwb-dashboard.service
 ```ini
 [Unit]
 Description=MCWB Web Dashboard
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -183,11 +235,14 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
+> **⚠️ IMPORTANT:** When creating the service file, do not copy from a web browser's rendered view. HTML entities (like `&gt;`, `&lt;`, `&amp;`) may corrupt the file. The section headers must be exactly `[Unit]`, `[Service]`, and `[Install]` with proper square brackets. If you see "Unknown section" errors, see the [Troubleshooting](#troubleshooting) section below.
+
 **Example for user 'weatherbot' with installation in /home/weatherbot/MCWB:**
 ```ini
 [Unit]
 Description=MCWB Web Dashboard
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -228,6 +283,161 @@ If the service fails to start, check the troubleshooting section below.
   - Implementing authentication
   - Restricting access to specific IP addresses
   - Using a firewall to limit access
+
+## Troubleshooting Connection Issues
+
+**Can't connect to http://192.168.1.109:5000 or similar?** Follow these steps:
+
+### Quick Checklist
+
+Run these commands on your Raspberry Pi to diagnose the issue:
+
+```bash
+# 1. Is the service running?
+sudo systemctl status mcwb-dashboard
+
+# 2. Can you connect locally?
+curl http://localhost:5000
+
+# 3. What's your actual IP address?
+hostname -I
+
+# 4. Is the firewall blocking?
+sudo ufw status
+```
+
+### Common Issues and Fixes
+
+**Issue 1: Dashboard Not Starting After Reboot (MOST COMMON)**
+
+If your dashboard was working before but stops working after you reboot your Pi, the service is likely starting before the network is fully online.
+
+**Symptoms:**
+- Service shows as `inactive` or `failed` after reboot
+- Dashboard was working fine before reboot
+- `curl http://localhost:5000` shows "Connection refused"
+
+**Solution:**
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This reinstalls the service with the correct network timing configuration, ensuring the dashboard waits for the network to be fully online before starting.
+
+**What changed:** The updated service uses `After=network-online.target` (waits for network to be online) instead of `After=network.target` (only waits for network subsystem initialization).
+
+**Issue 2: Service Not Running (Other Causes)**
+
+If `systemctl status` shows the service is not running or failed for reasons other than reboot:
+
+```bash
+# Solution: Reinstall with the automated installer
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This fixes username/path mismatches automatically.
+
+**Issue 3: Firewall Blocking Port 5000**
+
+If `ufw status` shows port 5000 is not allowed:
+
+```bash
+# Allow port 5000 through firewall
+sudo ufw allow 5000/tcp
+```
+
+**Issue 4: Wrong IP Address**
+
+Your IP address may have changed. Check with:
+
+```bash
+# Show your current IP
+hostname -I | awk '{print $1}'
+
+# Then use that IP in your browser
+# Example: http://192.168.1.109:5000
+```
+
+**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL. This is especially useful for website integration!
+
+**Issue 5: Service Running but Can't Connect**
+
+If the service is running and `curl http://localhost:5000` works but you can't connect from another device:
+
+```bash
+# Check if dashboard is listening on all interfaces
+sudo netstat -tlnp | grep 5000
+# OR
+sudo ss -tlnp | grep 5000
+
+# Should show: 0.0.0.0:5000 (means it's accessible from network)
+# If it shows: 127.0.0.1:5000 (means localhost only)
+```
+
+If it shows `127.0.0.1:5000`, the service is configured for localhost only. Fix:
+
+```bash
+# Edit the service file
+sudo nano /etc/systemd/system/mcwb-dashboard.service
+# Change: --host 127.0.0.1
+# To:     --host 0.0.0.0
+sudo systemctl daemon-reload
+sudo systemctl restart mcwb-dashboard
+```
+
+**Issue 6: Still Can't Connect After All Above Steps**
+
+Try a complete reset:
+
+```bash
+# Stop and disable old service
+sudo systemctl stop mcwb-dashboard
+sudo systemctl disable mcwb-dashboard
+sudo rm /etc/systemd/system/mcwb-dashboard.service
+sudo systemctl daemon-reload
+
+# Reinstall
+cd ~/MCWB
+./install_dashboard_service.sh
+
+# Test connection
+curl http://localhost:5000
+```
+
+**Issue 7: Dependencies Not Installed or Import Errors**
+
+If the service logs show `ModuleNotFoundError` or `ImportError`:
+
+```bash
+# Check if dependencies are installed
+python3 -c "import flask, flask_cors; print('✅ Dependencies OK')" 2>&1
+
+# If error, install dependencies
+pip3 install --user -r requirements.txt
+
+# Restart service
+sudo systemctl restart mcwb-dashboard
+
+# Check logs to verify it started
+sudo journalctl -u mcwb-dashboard -n 20
+```
+
+**Issue 8: Service Configuration Mismatch**
+
+View the actual service configuration to verify paths and user:
+
+```bash
+cat /etc/systemd/system/mcwb-dashboard.service
+```
+
+Verify:
+- `User=` matches your username (check with `whoami`)
+- `WorkingDirectory=` points to your MCWB installation directory
+- `ExecStart=` has correct paths and `--host 0.0.0.0 --port 5000`
+
+**If any mismatch found:** Reinstall with `./install_dashboard_service.sh` to auto-fix.
 
 ## Troubleshooting
 
@@ -291,7 +501,29 @@ sudo systemctl daemon-reload
 sudo systemctl restart mcwb-dashboard.service
 ```
 
-**3. Path does not exist:**
+**3. Exit Code 1/FAILURE - Python packages not found:**
+
+This error occurs when Python packages (Flask, flask-cors) are not installed.
+
+**Symptoms:**
+- Service shows `code=exited, status=1/FAILURE`
+- Running `python3 web_dashboard.py` manually shows "ERROR: Required dependencies not installed"
+- Service logs show `ModuleNotFoundError: No module named 'flask'`
+
+**Solution:** Install the required dependencies:
+```bash
+cd ~/MCWB
+pip3 install --user -r requirements.txt
+```
+
+If the service still doesn't start after installing dependencies, try reinstalling the service:
+```bash
+./install_dashboard_service.sh
+```
+
+**Note:** Python 3 automatically includes user site-packages in its search path, so packages installed with `pip3 install --user` will be available to the service.
+
+**4. Path does not exist:**
 
 Ensure all paths in the service file are correct:
 ```bash
@@ -304,7 +536,7 @@ ls /home/weatherbot/MCWB/web_dashboard.py
 which python3
 ```
 
-**4. View detailed error logs:**
+**5. View detailed error logs:**
 
 ```bash
 # View recent service logs
@@ -322,15 +554,21 @@ sudo journalctl -u mcwb-dashboard.service | grep -i "permission\|denied\|error"
 If you get an error like `ModuleNotFoundError: No module named 'flask'`, you need to install the required dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip3 install --user -r requirements.txt
 ```
 
 Or install manually:
 ```bash
-pip install flask>=2.3.2 flask-cors>=4.0.0
+pip3 install --user flask>=2.3.2 flask-cors>=4.0.0
 ```
 
 **Note:** If you recently pulled the latest code, you may need to reinstall dependencies as new packages may have been added.
+
+**Systemd Service Note:** When you install dependencies with `pip3 install --user`, Python 3 automatically includes the user site-packages directory in its search path, so the systemd service will be able to find them. If you're still having import issues after installing dependencies, try reinstalling the service:
+```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
 
 ### Port Already in Use
 
@@ -342,11 +580,13 @@ python3 web_dashboard.py --port 8080
 
 ### Cannot Access from Another Device
 
-Make sure:
-1. The dashboard is running (by default it binds to `0.0.0.0` for network access)
-2. Firewall allows incoming connections on the port
-3. You're using the correct IP address of the host machine
-4. If you previously ran with `--host 127.0.0.1`, restart without that option
+**See the [Troubleshooting Connection Issues](#troubleshooting-connection-issues) section above for a complete step-by-step guide.**
+
+Quick summary:
+1. Verify the service is running: `sudo systemctl status mcwb-dashboard`
+2. Check firewall: `sudo ufw allow 5000/tcp`
+3. Get your IP: `hostname -I`
+4. Test locally first: `curl http://localhost:5000`
 
 ### Logs Not Showing
 

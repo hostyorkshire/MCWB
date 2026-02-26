@@ -3,26 +3,28 @@
 Demonstration script showing USB port auto-detection functionality
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from meshcore import find_serial_ports
+
 
 def main():
     print("=" * 60)
     print("USB Port Auto-Detection Demo")
     print("=" * 60)
     print()
-    
+
     print("Searching for available USB serial ports...")
     print()
-    
+
     ports = find_serial_ports(debug=True)
-    
+
     print()
     print("-" * 60)
-    
+
     if ports:
         print(f"✓ Found {len(ports)} port(s):")
         for i, port in enumerate(ports, 1):
@@ -43,11 +45,12 @@ def main():
         print()
         print("To check manually:")
         print("  ls -l /dev/ttyUSB* /dev/ttyACM*")
-    
+
     print("-" * 60)
     print()
-    
+
     return 0 if ports else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

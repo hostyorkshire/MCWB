@@ -5,12 +5,14 @@ Uses unittest.mock to simulate serial hardware so tests run without
 physical LoRa hardware attached.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import json
 from unittest.mock import MagicMock, patch
+
 from meshcore import MeshCore, MeshCoreMessage
 
 
@@ -53,12 +55,12 @@ def test_send_over_lora():
     assert mock_serial.write.called, "serial.write should have been called"
     # After our fix, write is called twice: once for the message, once for CMD_SYNC_NEXT_MSG
     assert mock_serial.write.call_count == 2, "write should be called twice (message + sync)"
-    
+
     # Check the first call (the actual message)
     written_bytes = mock_serial.write.call_args_list[0][0][0]
 
     # Frame format (app→radio):  0x3C '<' + uint16_LE(length) + payload
-    assert written_bytes[0:1] == b'\x3c', "Frame must start with '<' (0x3C) inbound marker"
+    assert written_bytes[0:1] == b"\x3c", "Frame must start with '<' (0x3C) inbound marker"
     length = int.from_bytes(written_bytes[1:3], "little")
     assert len(written_bytes) == 3 + length, "Frame length field must match actual payload size"
 
@@ -73,11 +75,11 @@ def test_send_over_lora():
     print("✓ send_message writes binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port")
     print(f"  Frame (hex): {written_bytes.hex()}")
     print(f"  Channel 'weather' mapped to channel_idx=1")
-    
+
     # Check the second call (CMD_SYNC_NEXT_MSG)
     sync_bytes = mock_serial.write.call_args_list[1][0][0]
-    assert sync_bytes[0:1] == b'\x3c', "Sync frame must start with '<' (0x3C)"
-    assert sync_bytes[3:4] == b'\x0a', "Second call must be CMD_SYNC_NEXT_MSG (0x0A)"
+    assert sync_bytes[0:1] == b"\x3c", "Sync frame must start with '<' (0x3C)"
+    assert sync_bytes[3:4] == b"\x0a", "Second call must be CMD_SYNC_NEXT_MSG (0x0A)"
     print("✓ send_message follows up with CMD_SYNC_NEXT_MSG to complete protocol exchange")
 
     print()
@@ -321,8 +323,7 @@ def test_start_stop_with_mock_serial():
     print("TEST 7: Start/Stop Lifecycle with LoRa Serial")
     print("=" * 60)
 
-    with patch("meshcore.SERIAL_AVAILABLE", True), \
-         patch("meshcore.serial") as mock_serial_module:
+    with patch("meshcore.SERIAL_AVAILABLE", True), patch("meshcore.serial") as mock_serial_module:
 
         mock_port = MagicMock()
         mock_port.is_open = True
@@ -335,7 +336,11 @@ def test_start_stop_with_mock_serial():
         mesh.start()
 
         mock_serial_module.Serial.assert_called_once_with(
-            "/dev/ttyUSB0", 9600, timeout=1, rtscts=False, dsrdtr=False,
+            "/dev/ttyUSB0",
+            9600,
+            timeout=1,
+            rtscts=False,
+            dsrdtr=False,
         )
         assert mesh._listener_thread is not None
         assert mesh._listener_thread.is_alive()
@@ -354,8 +359,7 @@ def test_rts_dtr_deasserted_after_connect():
     print("TEST 8: RTS and DTR Deasserted After Connect")
     print("=" * 60)
 
-    with patch("meshcore.SERIAL_AVAILABLE", True), \
-         patch("meshcore.serial") as mock_serial_module:
+    with patch("meshcore.SERIAL_AVAILABLE", True), patch("meshcore.serial") as mock_serial_module:
 
         mock_port = MagicMock()
         mock_port.is_open = True
@@ -381,8 +385,7 @@ def test_invalid_baud_rate_rejected():
     print("TEST 9: Invalid Baud Rate Rejected (Preflight)")
     print("=" * 60)
 
-    with patch("meshcore.SERIAL_AVAILABLE", True), \
-         patch("meshcore.serial") as mock_serial_module:
+    with patch("meshcore.SERIAL_AVAILABLE", True), patch("meshcore.serial") as mock_serial_module:
 
         mock_serial_module.SerialException = Exception
 
@@ -405,8 +408,7 @@ def test_valid_baud_rates_accepted():
     from meshcore import VALID_BAUD_RATES
 
     for baud in sorted(VALID_BAUD_RATES):
-        with patch("meshcore.SERIAL_AVAILABLE", True), \
-             patch("meshcore.serial") as mock_serial_module:
+        with patch("meshcore.SERIAL_AVAILABLE", True), patch("meshcore.serial") as mock_serial_module:
 
             mock_port = MagicMock()
             mock_port.is_open = True
@@ -429,8 +431,9 @@ def _build_binary_frame(payload: bytes) -> bytes:
     return bytes([0x3E]) + len(payload).to_bytes(2, "little") + payload
 
 
-def _build_channel_msg_frame(text: str, channel_idx: int = 0, path_len: int = 0,
-                              txt_type: int = 0, timestamp: int = 0) -> bytes:
+def _build_channel_msg_frame(
+    text: str, channel_idx: int = 0, path_len: int = 0, txt_type: int = 0, timestamp: int = 0
+) -> bytes:
     """Build a RESP_CODE_CHANNEL_MSG_RECV (code 8) binary frame."""
     payload = bytes([8, channel_idx, path_len, txt_type]) + timestamp.to_bytes(4, "little") + text.encode("utf-8")
     return _build_binary_frame(payload)
@@ -559,8 +562,8 @@ def test_push_msg_waiting_triggers_sync():
     # CMD_SYNC_NEXT_MESSAGE frame: 0x3C + len(1 LE) + 0x0A
     assert mock_serial.write.called, "write() should be called for CMD_SYNC_NEXT_MESSAGE"
     written = mock_serial.write.call_args[0][0]
-    assert written[0:1] == b'\x3c', "Frame start byte must be '<' (0x3C)"
-    assert written[3:4] == b'\x0a', "Command byte must be CMD_SYNC_NEXT_MESSAGE (0x0A)"
+    assert written[0:1] == b"\x3c", "Frame start byte must be '<' (0x3C)"
+    assert written[3:4] == b"\x0a", "Command byte must be CMD_SYNC_NEXT_MESSAGE (0x0A)"
     print("✓ PUSH_MSG_WAITING triggers CMD_SYNC_NEXT_MESSAGE command")
     print(f"  Sent frame (hex): {written.hex()}")
     print()
@@ -572,8 +575,7 @@ def test_connect_serial_sends_app_start():
     print("TEST 14: _connect_serial Sends CMD_APP_START")
     print("=" * 60)
 
-    with patch("meshcore.SERIAL_AVAILABLE", True), \
-         patch("meshcore.serial") as mock_serial_module:
+    with patch("meshcore.SERIAL_AVAILABLE", True), patch("meshcore.serial") as mock_serial_module:
 
         mock_port = MagicMock()
         mock_port.is_open = True
@@ -586,8 +588,8 @@ def test_connect_serial_sends_app_start():
         assert mock_port.write.called, "write() must be called during _connect_serial"
         # First write should be CMD_APP_START frame
         first_write = mock_port.write.call_args_list[0][0][0]
-        assert first_write[0:1] == b'\x3c', "CMD_APP_START frame must start with '<'"
-        assert first_write[3:4] == b'\x01', "First command byte must be CMD_APP_START (0x01)"
+        assert first_write[0:1] == b"\x3c", "CMD_APP_START frame must start with '<'"
+        assert first_write[3:4] == b"\x01", "First command byte must be CMD_APP_START (0x01)"
         print("✓ _connect_serial sends CMD_APP_START on connection")
         print(f"  CMD_APP_START frame (hex): {first_write.hex()}")
 
@@ -634,11 +636,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

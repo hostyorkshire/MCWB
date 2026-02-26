@@ -114,6 +114,36 @@
             transform: translateY(-2px);
         }
 
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .website-link {
+            background: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .website-link:hover {
+            background: var(--tab-hover-bg);
+            border-color: var(--tab-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
         .status-card {
             background: var(--card-bg);
             padding: 25px;
@@ -168,6 +198,13 @@
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid var(--accent-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .log-item-content {
+            flex: 1;
         }
 
         .log-name {
@@ -180,6 +217,162 @@
         .log-info {
             color: var(--text-secondary);
             font-size: 1em;
+        }
+
+        .size-gauge {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: var(--log-border);
+            stroke-width: 8;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .gauge-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .recent-users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .user-item {
+            background: var(--tab-bg);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-name {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .user-time {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+        }
+
+        .channels-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .channel-badge {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(52, 211, 153, 0.2));
+            color: var(--accent-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+            border: 2px solid var(--accent-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .channel-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+        }
+
+        .channel-icon {
+            font-size: 1.2em;
+        }
+
+        .emoji-icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            display: inline-block;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .info-card h3 {
+            color: var(--text-color);
+            font-size: 1.3em;
+            margin-bottom: 12px;
+        }
+
+        .info-card p {
+            color: var(--text-secondary);
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .api-url-box {
+            background: var(--log-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            color: var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .copy-btn {
+            background: rgba(96, 165, 250, 0.2);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: rgba(96, 165, 250, 0.3);
+            transform: translateY(-2px);
         }
 
         .log-viewer {
@@ -496,14 +689,34 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <h1>🌤️ MCWB Dashboard</h1>
+                <h1><img src="/static/img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"> MCWB Dashboard</h1>
                 <p class="subtitle">MeshCore Weather Bot - Real-time Monitoring</p>
             </div>
-            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-text">Dark Mode</span>
-            </button>
+            <div class="header-actions">
+                <a href="https://mcwb.netlify.app" target="_blank" rel="noopener noreferrer" class="website-link">
+                    <span><img src="/static/img/emoji/1f310.svg" alt="🌐" class="emoji-icon"></span>
+                    <span>Visit Website</span>
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span id="theme-icon"><img src="/static/img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+            </div>
         </header>
+
+        <!-- API Connection Info -->
+        <div class="info-card" id="api-info-card">
+            <h3><img src="/static/img/emoji/1f310.svg" alt="🌐" class="emoji-icon"> API Connection URL</h3>
+            <p>Use this URL to connect your static website's Live Dashboard page to display real-time data from this running bot instance:</p>
+            <div class="api-url-box">
+                <span id="api-url">Loading...</span>
+                <button class="copy-btn" onclick="copyApiUrl()"><img src="/static/img/emoji/1f4cb.svg" alt="📋" class="emoji-icon"> Copy</button>
+            </div>
+            <p style="margin-bottom: 0; font-size: 0.9em;">
+                <strong>How to use:</strong> Open your static website's dashboard page and paste this URL in the "Configure Custom API URL" section, or use it as a parameter: 
+                <code style="color: var(--accent-color);">https://yoursite.com/dashboard.html?apiUrl=<span id="api-url-short">...</span></code>
+            </p>
+        </div>
 
         <div class="status-card">
             <div class="status-header">
@@ -515,9 +728,19 @@
             </div>
         </div>
 
+        <!-- Active Channels Section -->
+        <div class="status-card">
+            <div class="status-header">
+                <h2 class="status-title"><img src="/static/img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> Active Channels</h2>
+            </div>
+            <div id="channels-list" class="channels-display">
+                <div class="loading">Loading channels...</div>
+            </div>
+        </div>
+
         <!-- Usage Statistics Section -->
         <div class="stats-section">
-            <h2 class="status-title" style="margin-bottom: 20px; padding-left: 10px;">📊 Usage Statistics</h2>
+            <h2 class="status-title" style="margin-bottom: 20px; padding-left: 10px;"><img src="/static/img/emoji/1f4ca.svg" alt="📊" class="emoji-icon"> Usage Statistics</h2>
             
             <!-- Stats Summary Cards -->
             <div class="stats-grid">
@@ -542,27 +765,35 @@
             <!-- Charts Grid -->
             <div class="charts-grid">
                 <div class="chart-card">
-                    <h3 class="chart-title">📈 Requests Over Time (24 Hours)</h3>
+                    <h3 class="chart-title"><img src="/static/img/emoji/1f4c8.svg" alt="📈" class="emoji-icon"> Requests Over Time (24 Hours)</h3>
                     <div id="hourly-chart" class="line-chart"></div>
                     <div id="hourly-labels" class="chart-labels"></div>
                 </div>
                 <div class="chart-card">
-                    <h3 class="chart-title">📊 Top Locations</h3>
+                    <h3 class="chart-title"><img src="/static/img/emoji/1f4ca.svg" alt="📊" class="emoji-icon"> Top Locations</h3>
                     <div id="locations-chart" class="bar-chart"></div>
                 </div>
             </div>
 
             <div class="chart-card">
-                <h3 class="chart-title">📅 Daily Requests (7 Days)</h3>
+                <h3 class="chart-title"><img src="/static/img/emoji/1f4c5.svg" alt="📅" class="emoji-icon"> Daily Requests (7 Days)</h3>
                 <div id="daily-chart" class="line-chart"></div>
                 <div id="daily-labels" class="chart-labels"></div>
+            </div>
+
+            <!-- Recent Users Section -->
+            <div class="chart-card">
+                <h3 class="chart-title"><img src="/static/img/emoji/1f465.svg" alt="👥" class="emoji-icon"> Recent Users (Last 10)</h3>
+                <div id="recent-users" class="recent-users-list">
+                    <div class="loading">Loading recent users...</div>
+                </div>
             </div>
         </div>
 
         <div class="log-viewer">
             <div class="status-header">
                 <h2 class="status-title">Log Viewer</h2>
-                <button class="refresh-btn" onclick="refreshLogs()">🔄 Refresh</button>
+                <button class="refresh-btn" onclick="refreshLogs()"><img src="/static/img/emoji/1f504.svg" alt="🔄" class="emoji-icon"> Refresh</button>
             </div>
             <div class="log-tabs">
                 <div class="log-tab active" data-log="bot" onclick="switchLog('bot')">Bot Log</div>
@@ -577,13 +808,16 @@
 
         <div class="footer">
             <p>MCWB v2 - MeshCore Weather Bot | Theme-Aware Dashboard</p>
-            <p>Auto-refresh every 10 seconds</p>
+            <p>Logs auto-refresh every 5 seconds | Stats refresh every 60 seconds</p>
         </div>
     </div>
 
     <script>
         let currentLog = 'bot';
         let autoRefreshInterval;
+
+        // Configuration constants
+        const MAX_LOG_SIZE_BYTES = 10 * 1024 * 1024; // 10MB - maximum expected log file size
 
         // Theme management
         function initTheme() {
@@ -610,10 +844,10 @@
             const text = document.getElementById('theme-text');
             
             if (theme === 'dark') {
-                icon.textContent = '☀️';
+                icon.innerHTML = '<img src="/static/img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
                 text.textContent = 'Light Mode';
             } else {
-                icon.textContent = '🌙';
+                icon.innerHTML = '<img src="/static/img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
                 text.textContent = 'Dark Mode';
             }
         }
@@ -621,11 +855,74 @@
         // Load status and logs on page load
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
+            initApiUrl();
             loadStatus();
+            loadChannels();
             loadStats();
             loadLog(currentLog);
             startAutoRefresh();
         });
+
+        function initApiUrl() {
+            // Get the current URL to construct the API URL
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            const port = window.location.port || (protocol === 'https:' ? '443' : '80');
+            
+            // Construct the API URL (same as the dashboard URL since API is served from same server)
+            const apiUrl = `${protocol}//${hostname}${port !== '80' && port !== '443' ? ':' + port : ''}`;
+            
+            // Update the display
+            document.getElementById('api-url').textContent = apiUrl;
+            document.getElementById('api-url-short').textContent = apiUrl;
+        }
+
+        function copyApiUrl() {
+            const apiUrl = document.getElementById('api-url').textContent;
+            
+            // Use the modern clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(apiUrl).then(() => {
+                    // Show feedback
+                    const btn = document.querySelector('.copy-btn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✓ Copied!';
+                    btn.style.background = 'rgba(34, 197, 94, 0.2)';
+                    btn.style.borderColor = '#4ade80';
+                    btn.style.color = '#4ade80';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                        btn.style.borderColor = '';
+                        btn.style.color = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    alert('Failed to copy URL. Please copy manually: ' + apiUrl);
+                });
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = apiUrl;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const btn = document.querySelector('.copy-btn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✓ Copied!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                } catch (err) {
+                    alert('Failed to copy URL. Please copy manually: ' + apiUrl);
+                }
+                document.body.removeChild(textArea);
+            }
+        }
 
         async function loadStatus() {
             try {
@@ -649,6 +946,14 @@
                     const size = info.exists ? formatBytes(info.size) : 'N/A';
                     const modified = info.modified || 'Never';
                     
+                    // Calculate percentage for gauge (based on MAX_LOG_SIZE_BYTES)
+                    const sizeBytes = info.size || 0;
+                    const percentage = Math.min((sizeBytes / MAX_LOG_SIZE_BYTES) * 100, 100);
+                    
+                    // Create content container
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'log-item-content';
+                    
                     // Create elements safely without innerHTML
                     const nameDiv = document.createElement('div');
                     nameDiv.className = 'log-name';
@@ -662,9 +967,15 @@
                     modDiv.className = 'log-info';
                     modDiv.textContent = `Modified: ${modified}`;
                     
-                    logItem.appendChild(nameDiv);
-                    logItem.appendChild(sizeDiv);
-                    logItem.appendChild(modDiv);
+                    contentDiv.appendChild(nameDiv);
+                    contentDiv.appendChild(sizeDiv);
+                    contentDiv.appendChild(modDiv);
+                    
+                    // Create gauge
+                    const gauge = createSizeGauge(percentage);
+                    
+                    logItem.appendChild(contentDiv);
+                    logItem.appendChild(gauge);
                     
                     logFilesDiv.appendChild(logItem);
                 }
@@ -673,9 +984,139 @@
             }
         }
 
+        function createSizeGauge(percentage) {
+            const gaugeContainer = document.createElement('div');
+            gaugeContainer.className = 'size-gauge';
+            
+            // Create SVG
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'gauge-svg');
+            svg.setAttribute('width', '80');
+            svg.setAttribute('height', '80');
+            svg.setAttribute('viewBox', '0 0 80 80');
+            
+            const radius = 32;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percentage / 100) * circumference;
+            
+            // Background circle
+            const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            bgCircle.setAttribute('class', 'gauge-bg');
+            bgCircle.setAttribute('cx', '40');
+            bgCircle.setAttribute('cy', '40');
+            bgCircle.setAttribute('r', radius);
+            
+            // Foreground circle (the gauge fill)
+            const fgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            fgCircle.setAttribute('class', 'gauge-fill');
+            fgCircle.setAttribute('cx', '40');
+            fgCircle.setAttribute('cy', '40');
+            fgCircle.setAttribute('r', radius);
+            fgCircle.setAttribute('stroke-dasharray', circumference);
+            fgCircle.setAttribute('stroke-dashoffset', offset);
+            
+            // Change color based on percentage
+            if (percentage >= 80) {
+                fgCircle.style.stroke = '#f87171'; // Red for high usage
+            } else if (percentage >= 50) {
+                fgCircle.style.stroke = '#fbbf24'; // Yellow for medium usage
+            }
+            
+            svg.appendChild(bgCircle);
+            svg.appendChild(fgCircle);
+            
+            // Percentage text
+            const text = document.createElement('div');
+            text.className = 'gauge-text';
+            text.textContent = `${Math.round(percentage)}%`;
+            
+            gaugeContainer.appendChild(svg);
+            gaugeContainer.appendChild(text);
+            
+            return gaugeContainer;
+        }
+
+        async function loadChannels() {
+            try {
+                const response = await fetch('/api/channels');
+                const data = await response.json();
+                
+                const channelsDiv = document.getElementById('channels-list');
+                
+                if (data.channels && data.channels.length > 0) {
+                    channelsDiv.innerHTML = '';
+                    data.channels.forEach(channel => {
+                        const badge = document.createElement('div');
+                        badge.className = 'channel-badge';
+                        
+                        const icon = document.createElement('span');
+                        icon.className = 'channel-icon';
+                        icon.innerHTML = '<img src="/static/img/emoji/1f4e1.svg" alt="📡" class="emoji-icon">';
+                        
+                        const content = document.createElement('div');
+                        content.style.display = 'flex';
+                        content.style.flexDirection = 'column';
+                        content.style.gap = '2px';
+                        
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = channel.name || channel;
+                        nameSpan.style.fontWeight = '500';
+                        
+                        const timeSpan = document.createElement('span');
+                        if (channel.last_used) {
+                            timeSpan.textContent = `Last used: ${channel.last_used}`;
+                            timeSpan.style.fontSize = '0.75em';
+                            timeSpan.style.opacity = '0.7';
+                        }
+                        
+                        content.appendChild(nameSpan);
+                        if (channel.last_used) {
+                            content.appendChild(timeSpan);
+                        }
+                        
+                        badge.appendChild(icon);
+                        badge.appendChild(content);
+                        channelsDiv.appendChild(badge);
+                    });
+                } else {
+                    channelsDiv.innerHTML = `
+                        <div class="loading" style="text-align: left; padding: 20px; line-height: 1.8;">
+                            <div style="font-size: 1.1em; margin-bottom: 15px;">ℹ️ No active channels detected yet</div>
+                            <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
+                                <strong>Most common cause:</strong> Your MeshCore radio is not subscribed to any channels.
+                            </div>
+                            <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
+                                <strong>Solution:</strong>
+                                <ol style="margin: 10px 0 10px 20px;">
+                                    <li>Open the MeshCore app on your phone</li>
+                                    <li>Go to Channel Settings</li>
+                                    <li>Join/subscribe to channels (e.g., #weather, #wxtest)</li>
+                                    <li>Wait for the bot to receive or send messages on those channels</li>
+                                </ol>
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 10px;">
+                                💡 The bot cannot configure channels automatically - you must add them through the MeshCore app first.
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 10px;">
+                                📖 For more help, see the <a href="https://github.com/hostyorkshire/MCWB#bot-connects-but-receives-no-messages" target="_blank" rel="noopener noreferrer" style="color: var(--accent-color);">troubleshooting guide</a>.
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading channels:', error);
+                document.getElementById('channels-list').innerHTML = '<div class="loading">Error loading channels</div>';
+            }
+        }
+
         async function loadLog(logType) {
             const logContent = document.getElementById('log-content');
-            logContent.innerHTML = '<div class="loading">Loading logs...</div>';
+            
+            // Only show "Loading..." if the log content is currently empty or has a message
+            const currentContent = logContent.innerHTML;
+            if (!currentContent || currentContent.includes('loading') || currentContent.includes('No log')) {
+                logContent.innerHTML = '<div class="loading">Loading logs...</div>';
+            }
             
             try {
                 const response = await fetch(`/api/logs/${logType}`);
@@ -699,7 +1140,14 @@
                     // Auto-scroll to bottom
                     logContent.scrollTop = logContent.scrollHeight;
                 } else {
-                    logContent.innerHTML = '<div class="loading">No log entries found</div>';
+                    // Provide helpful message based on log type
+                    let message = 'No log entries found';
+                    if (logType.includes('error')) {
+                        message = '✓ No errors logged yet (this is good!)';
+                    } else {
+                        message = 'No log entries yet. Waiting for activity...';
+                    }
+                    logContent.innerHTML = `<div class="loading">${message}</div>`;
                 }
             } catch (error) {
                 console.error('Error loading log:', error);
@@ -722,16 +1170,27 @@
 
         function refreshLogs() {
             loadStatus();
+            loadChannels();
             loadStats();
             loadLog(currentLog);
         }
 
         function startAutoRefresh() {
+            // Refresh logs and status frequently (every 5 seconds)
             autoRefreshInterval = setInterval(() => {
-                loadStatus();
-                loadStats();
                 loadLog(currentLog);
-            }, 10000); // Refresh every 10 seconds
+                loadStatus();
+            }, 5000);
+            
+            // Refresh channels less frequently (every 30 seconds)
+            setInterval(() => {
+                loadChannels();
+            }, 30000);
+            
+            // Refresh stats even less frequently (every 60 seconds)
+            setInterval(() => {
+                loadStats();
+            }, 60000);
         }
 
         // Load and update statistics
@@ -741,10 +1200,22 @@
                 const statsResponse = await fetch('/api/stats');
                 const statsData = await statsResponse.json();
                 
-                // Update stat cards
-                document.getElementById('total-requests').textContent = statsData.total_requests;
-                document.getElementById('total-errors').textContent = statsData.total_errors;
-                document.getElementById('success-rate').textContent = statsData.success_rate + '%';
+                // Update stat cards only if values changed
+                const totalRequestsEl = document.getElementById('total-requests');
+                if (totalRequestsEl.textContent !== String(statsData.total_requests)) {
+                    totalRequestsEl.textContent = statsData.total_requests;
+                }
+                
+                const totalErrorsEl = document.getElementById('total-errors');
+                if (totalErrorsEl.textContent !== String(statsData.total_errors)) {
+                    totalErrorsEl.textContent = statsData.total_errors;
+                }
+                
+                const successRateEl = document.getElementById('success-rate');
+                const successRateText = statsData.success_rate + '%';
+                if (successRateEl.textContent !== successRateText) {
+                    successRateEl.textContent = successRateText;
+                }
                 
                 if (statsData.last_updated) {
                     const lastUpdate = new Date(statsData.last_updated);
@@ -752,16 +1223,25 @@
                     const diffMs = now - lastUpdate;
                     const diffMins = Math.floor(diffMs / 60000);
                     
+                    let lastUpdatedText;
                     if (diffMins < 1) {
-                        document.getElementById('last-updated').textContent = 'Just now';
+                        lastUpdatedText = 'Just now';
                     } else if (diffMins < 60) {
-                        document.getElementById('last-updated').textContent = diffMins + 'm ago';
+                        lastUpdatedText = diffMins + 'm ago';
                     } else {
                         const diffHours = Math.floor(diffMins / 60);
-                        document.getElementById('last-updated').textContent = diffHours + 'h ago';
+                        lastUpdatedText = diffHours + 'h ago';
+                    }
+                    
+                    const lastUpdatedEl = document.getElementById('last-updated');
+                    if (lastUpdatedEl.textContent !== lastUpdatedText) {
+                        lastUpdatedEl.textContent = lastUpdatedText;
                     }
                 } else {
-                    document.getElementById('last-updated').textContent = 'Never';
+                    const lastUpdatedEl = document.getElementById('last-updated');
+                    if (lastUpdatedEl.textContent !== 'Never') {
+                        lastUpdatedEl.textContent = 'Never';
+                    }
                 }
                 
                 // Load hourly data
@@ -779,8 +1259,66 @@
                 const locationsData = await locationsResponse.json();
                 renderBarChart('locations-chart', locationsData);
                 
+                // Load recent users
+                await loadRecentUsers();
+                
             } catch (error) {
                 console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadRecentUsers() {
+            try {
+                const response = await fetch('/api/stats/recent_users');
+                const data = await response.json();
+                
+                const recentUsersDiv = document.getElementById('recent-users');
+                
+                if (data.users && data.users.length > 0) {
+                    recentUsersDiv.innerHTML = '';
+                    data.users.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.className = 'user-item';
+                        
+                        const userName = document.createElement('span');
+                        userName.className = 'user-name';
+                        userName.textContent = user.user || 'Unknown';
+                        
+                        const userTime = document.createElement('span');
+                        userTime.className = 'user-time';
+                        if (user.timestamp) {
+                            const date = new Date(user.timestamp);
+                            const now = new Date();
+                            const diffMs = now - date;
+                            const diffMins = Math.floor(diffMs / 60000);
+                            
+                            if (diffMins < 1) {
+                                userTime.textContent = 'Just now';
+                            } else if (diffMins < 60) {
+                                userTime.textContent = diffMins + 'm ago';
+                            } else {
+                                const diffHours = Math.floor(diffMins / 60);
+                                if (diffHours < 24) {
+                                    userTime.textContent = diffHours + 'h ago';
+                                } else {
+                                    const diffDays = Math.floor(diffHours / 24);
+                                    userTime.textContent = diffDays + 'd ago';
+                                }
+                            }
+                        } else {
+                            userTime.textContent = 'Unknown time';
+                        }
+                        
+                        userItem.appendChild(userName);
+                        userItem.appendChild(userTime);
+                        recentUsersDiv.appendChild(userItem);
+                    });
+                } else {
+                    recentUsersDiv.innerHTML = '<div class="loading">No recent users</div>';
+                }
+            } catch (error) {
+                console.error('Error loading recent users:', error);
+                document.getElementById('recent-users').innerHTML = '<div class="loading">Error loading recent users</div>';
             }
         }
 

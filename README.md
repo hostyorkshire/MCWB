@@ -1,6 +1,14 @@
-# MCWBv2 - MeshCore Weather Bot
+# MCWB - MeshCore Weather Bot
 
 Lightweight Python3 weather bot for MeshCore mesh networks.
+
+## 📖 Quick Links
+
+- **❓ [FAQ](FAQ.md)** - Common questions & quick answers (including boot setup scripts!)
+- **🚀 [Quick Start](QUICKSTART_SIMPLE.md)** - Get started in minutes
+- **🍓 [Raspberry Pi Setup](RASPBERRY_PI_SETUP.md)** - Auto-start on boot guide
+- **🌐 [Web Dashboard](WEB_DASHBOARD.md)** - Monitor your bot with a web interface
+- **🐛 [Troubleshooting](TROUBLESHOOTING.md)** - Problem-solving guide
 
 ## 🎯 IMPORTANT: Bot Works on ANY Channel You Create!
 
@@ -16,13 +24,13 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 **🍓 Raspberry Pi Zero 2 Ready** - See [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) for headless auto-start on boot setup!
 
-**🌙 NEW: Dark-Themed Web Dashboard** - Monitor your bot in real-time with a beautiful dark-themed web interface! See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for details.
+**🌙 NEW: Dark-Themed Web Dashboard** - Monitor your bot in real-time with a beautiful dark-themed web interface! See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for details or [CONNECTION_GUIDE.md](CONNECTION_GUIDE.md) for quick troubleshooting.
 
 **📚 Documentation Website** - Complete wiki-style documentation website available at https://mcwb.netlify.app/. See [NETLIFY_DEPLOYMENT.md](NETLIFY_DEPLOYMENT.md) for automatic deployment setup from GitHub.
 
 ## Overview
 
-MCWBv2 listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
+MCWB listens for weather queries and responds using the free [Open-Meteo](https://open-meteo.com/) API (no API key needed).
 
 **Simple Setup:**
 1. Connect your MeshCore companion radio via USB
@@ -78,16 +86,34 @@ The bot replies on the same channel with current conditions:
 
 ```
 London, GB
-Partly cloudy
+⛅ Partly cloudy
 Temp: 14.2°C (feels 12.8°C)
 Humid: 72%
 Wind: 18 km/h at 230°
-Precip: 0.0 mm
 ```
+
+### 🌤️ NEW: Weather Outlook Feature
+
+After sending the current weather, the bot now asks:
+
+```
+Would you like to see the outlook for [location]? (y/n)
+```
+
+Respond with `y` or `yes` to get a concise 3-day forecast:
+
+```
+London 3-day:
+02-25: Cloudy 8-15°C
+02-26: Rain 9-16°C
+02-27: Overcast 7-14°C
+```
+
+See [docs/WEATHER_OUTLOOK_FEATURE.md](docs/WEATHER_OUTLOOK_FEATURE.md) for complete documentation.
 
 ## LoRa Radio Hardware
 
-MCWBv2 connects to a **MeshCore companion radio** over USB serial.
+MCWB connects to a **MeshCore companion radio** over USB serial.
 The companion radio is a LoRa-based device (e.g. a T-Beam, LILYGO LoRa32, or
 similar ESP32/LoRa board) running the
 [MeshCore firmware](https://github.com/ripplebiz/MeshCore).
@@ -132,27 +158,51 @@ python3 weather_bot.py
 
 ## Web Dashboard
 
-MCWBv2 now includes a beautiful dark-themed web interface for monitoring your bot in real-time!
+MCWB includes a beautiful dark-themed web interface for monitoring your bot in real-time!
 
-### Quick Start
+**🔒 NEW: HTTPS Support** - Run your dashboard with HTTPS for secure connections from Netlify or other HTTPS sites! See [HTTPS_SETUP.md](HTTPS_SETUP.md) for setup instructions.
+
+### 🚀 Quick Start (Recommended for Raspberry Pi)
+
+**The easiest way to set up the dashboard:**
 
 ```bash
+cd ~/MCWB
+./install_dashboard_service.sh
+```
+
+This script will:
+- ✅ Automatically configure everything for your system
+- ✅ Configure firewall if needed
+- ✅ Start the dashboard and show you the connection URL
+- ✅ Enable auto-start on reboot
+
+The installer will display your connection URL, like: `http://192.168.1.109:5000`
+
+**For HTTPS:** After installation, see [HTTPS_SETUP.md](HTTPS_SETUP.md) to enable SSL.
+
+### Manual Start (For Testing)
+
+```bash
+# Create and activate virtual environment if not already done
+python3 -m venv venv
+source venv/bin/activate
+
 # Install Flask (already in requirements.txt)
 pip install -r requirements.txt
 
-# Start the dashboard
+# Start the dashboard (HTTP)
 python3 web_dashboard.py
+
+# OR start with HTTPS (recommended for Netlify access)
+python3 web_dashboard.py --ssl
 ```
 
-Access the dashboard at: 
-- **Local access:** http://localhost:5000
-- **Network access:** http://[your-ip]:5000 (e.g., http://192.168.1.109:5000)
+**For HTTPS setup:** See [HTTPS_SETUP.md](HTTPS_SETUP.md) for generating SSL certificates.
 
-**Note:** By default, the dashboard binds to `0.0.0.0` (accessible on the network). To restrict access to localhost only, use:
+The dashboard will display the connection URL when it starts.
 
-```bash
-python3 web_dashboard.py --host 127.0.0.1
-```
+**Can't connect?** See [DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md](DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md) for a comprehensive step-by-step guide, or the [Troubleshooting Connection Issues](WEB_DASHBOARD.md#troubleshooting-connection-issues) section in WEB_DASHBOARD.md.
 
 ![Dark Theme Dashboard](https://github.com/user-attachments/assets/514e2c7d-0c52-4708-b0fc-ab571c9069f6)
 
@@ -164,7 +214,7 @@ python3 web_dashboard.py --host 127.0.0.1
 - 🔄 **Auto-refresh** - Updates every 10 seconds automatically
 - 📱 **Responsive** - Works on desktop, tablet, and mobile
 
-For detailed setup instructions including systemd service configuration, see [WEB_DASHBOARD.md](WEB_DASHBOARD.md).
+For detailed documentation, see [WEB_DASHBOARD.md](WEB_DASHBOARD.md).
 
 
 Or specify the port explicitly:
@@ -184,8 +234,36 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 ```bash
 git clone https://github.com/hostyorkshire/MCWB.git
 cd MCWB
+
+# Create and activate a virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), direct `pip install` may fail with "externally-managed-environment" error due to PEP 668. Using a virtual environment is the recommended solution.
+
+### 🎛️ Unified Service Manager (Raspberry Pi)
+
+**NEW: One menu for all services!** Manage weather bot and web dashboard from a single interactive menu:
+
+```bash
+./setup_mcwb.sh
+```
+
+This unified menu lets you:
+- ✅ Install weather bot and/or dashboard services
+- ✅ Check service status
+- ✅ Start/stop/restart services
+- ✅ View logs
+- ✅ Configure firewall
+- ✅ Uninstall services
+
+**Perfect for Raspberry Pi users** - No need to remember multiple scripts! See [SETUP_MENU_GUIDE.md](SETUP_MENU_GUIDE.md) for details.
+
+> **Note:** Individual installation scripts (`install_service.sh`, `install_dashboard_service.sh`) still work if you prefer to use them directly.
 
 ## Running the bot
 
@@ -202,8 +280,6 @@ python3 weather_bot.py -d
 # Enable periodic announcements every 3 hours
 python3 weather_bot.py --announce
 
-# Filter location searches to prefer UK cities (useful if most users are in UK)
-python3 weather_bot.py --country GB
 
 # Quick weather lookup (no radio hardware needed)
 python3 weather_bot.py --location Leeds
@@ -231,6 +307,7 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -b BAUD, --baud BAUD    Baud rate (default: 115200)
   -d, --debug             Enable debug output
   -a, --announce          Send periodic announcements every 3 hours
+  -r, --reboot-notify     Send notification on reboot/restart (useful for detecting power loss or crashes)
   -c CHANNEL_IDX, --channel-idx CHANNEL_IDX
                           Only respond to messages from this channel index (e.g., 1 for #weather)
   -w WEATHER_CHANNEL_IDX, --weather-channel-idx WEATHER_CHANNEL_IDX
@@ -242,6 +319,51 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -l LOCATION, --location LOCATION
                           Look up weather and exit (no radio needed)
 ```
+
+## Periodic Announcements
+
+The bot can send periodic announcements to let users know it's online and how to use it.
+
+### How Announcements Work
+
+When you enable announcements with the `--announce` flag:
+
+- The bot announces **immediately on startup/reboot** to let users know it's operational
+- After startup, the bot announces every **3 hours** during normal operation
+- Announcement timestamps are persisted to disk (`logs/.last_announce`) for periodic announcements
+
+### Configuring Announcement Channel
+
+**IMPORTANT:** Use `--weather-channel-idx` to specify which channel receives announcements:
+
+```bash
+# Announcements go to channel_idx 1 (typically #weather)
+python3 weather_bot.py --announce --weather-channel-idx 1
+
+# Announcements go to channel_idx 2
+python3 weather_bot.py --announce --weather-channel-idx 2
+```
+
+Without `--weather-channel-idx`, announcements default to channel_idx 0 (the default channel), which may not be your #weather channel.
+
+**Note:** The bot still **responds** to weather queries from **all channels** unless you also specify `--channel-idx` to restrict incoming messages.
+
+### Announcement Message
+
+The announcement message is:
+```
+Hello this is the WX BoT. To get a weather update simply type WX and your location.
+```
+
+### Example: Raspberry Pi Service Setup
+
+The included `weather_bot.service` file is pre-configured with announcements enabled:
+
+```ini
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --weather-channel-idx 1
+```
+
+This ensures announcements go to channel_idx 1 (typically #weather) while still responding to messages from all channels.
 
 ## How It Works
 
@@ -340,7 +462,52 @@ python3 meshcore_send.py "wx Leeds" --channel weather
 
 See `CHANNEL_GUIDE.md` for a full explanation of the channel name / channel index relationship.
 
-## Running as a systemd service
+## Reboot Notifications
+
+The bot can automatically notify users when it restarts after a power loss or crash. This is useful for monitoring the bot's availability on remote or unmanned installations.
+
+### Enabling Reboot Notifications
+
+Add the `--reboot-notify` (or `-r`) flag when starting the bot:
+
+```bash
+python3 weather_bot.py --reboot-notify
+```
+
+### How It Works
+
+1. **First Run:** The bot creates a state file (`/var/tmp/mcwb_state.txt`) but does NOT send a notification
+2. **Subsequent Restarts:** If the state file exists when the bot starts, it detects this as a restart and sends a notification message
+3. **Notification Message:** "MCWBv2 weather bot has restarted and is now online."
+4. **Channel Selection:** The notification is sent on the same channel used for announcements (see `--weather-channel-idx`)
+
+The state file is stored in `/var/tmp/` which persists across system reboots, allowing the bot to detect and notify about both:
+- **Power loss/system reboots:** After the system restarts, the state file still exists
+- **Bot crashes:** When systemd restarts the service, the state file indicates the previous run
+
+- **Remote Monitoring:** Get alerted when your Raspberry Pi weather bot reboots after power loss
+- **Reliability Tracking:** Know when the bot crashes and automatically recovers
+- **Maintenance Awareness:** See when systemd restarts the service after failures
+
+### Example Configurations
+
+```bash
+# Reboot notifications only
+python3 weather_bot.py --reboot-notify
+
+# Reboot notifications with announcements
+python3 weather_bot.py --reboot-notify --announce
+
+# Reboot notifications on specific channel
+python3 weather_bot.py --reboot-notify --weather-channel-idx 1
+
+# Full production setup with all monitoring features
+python3 weather_bot.py --reboot-notify --announce --weather-channel-idx 1
+```
+
+**Note:** The reboot notification feature uses a state file stored in `/var/tmp/` which persists across system reboots. This allows detection of both power loss scenarios (full system reboot) and bot-only crashes (systemd service restart).
+
+### Use Cases
 
 For production deployments, especially on Raspberry Pi, you can run the bot as a systemd service that starts automatically on boot:
 

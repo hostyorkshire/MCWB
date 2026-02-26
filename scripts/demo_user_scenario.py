@@ -6,12 +6,13 @@ Practical demonstration showing the exact user scenario:
 This script simulates the exact scenario and shows the fix working.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock, patch
-from meshcore import MeshCore
+
 from weather_bot import WeatherBot
 
 
@@ -34,21 +35,23 @@ def simulate_user_scenario():
     print()
     print("-" * 70)
     print()
-    
-    with patch('weather_bot.requests.get') as mock_get:
+
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock successful API responses
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Leeds",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.8008,
-                "longitude": -1.5491
-            }]
+            "results": [
+                {
+                    "name": "Leeds",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.8008,
+                    "longitude": -1.5491,
+                }
+            ]
         }
         geocoding_response.raise_for_status = MagicMock()
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -58,13 +61,13 @@ def simulate_user_scenario():
                 "wind_speed_10m": 14.2,
                 "wind_direction_10m": 225,
                 "precipitation": 0.0,
-                "weather_code": 1
+                "weather_code": 1,
             }
         }
         weather_response.raise_for_status = MagicMock()
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Create bot exactly as user would
         print("Step 1: Starting Weather Bot")
         print("-" * 70)
@@ -73,21 +76,21 @@ def simulate_user_scenario():
             debug=True,
             serial_port=None,  # Simulation mode (no actual radio)
             baud_rate=115200,
-            announce_channel="wxtest"
+            announce_channel="wxtest",
         )
         bot.mesh.start()
         print()
-        
+
         # Simulate receiving "wx leeds" message via V3 protocol
         # This is what happens when a MeshCore radio receives a message
         print("Step 2: User sends 'wx leeds' on wxtest channel")
         print("-" * 70)
         print()
-        
+
         # The MeshCore companion radio sends this frame to the bot:
         # Frame code 0x11 (RESP_CHANNEL_MSG_V3)
         # This includes SNR data and uses V3 format
-        
+
         # Build the exact binary frame that would come from the radio
         frame_code = 0x11  # RESP_CHANNEL_MSG_V3
         snr = 18  # Signal-to-noise ratio
@@ -96,47 +99,42 @@ def simulate_user_scenario():
         path_len = 3
         txt_type = 1
         timestamp = (1771711343).to_bytes(4, "little")
-        
+
         # The radio prepends sender name to message text
         message_text = b"UserNode: wx leeds"
-        
+
         # Complete V3 frame payload
         v3_payload = (
-            bytes([frame_code, snr]) +
-            reserved +
-            bytes([channel_idx, path_len, txt_type]) +
-            timestamp +
-            message_text
+            bytes([frame_code, snr]) + reserved + bytes([channel_idx, path_len, txt_type]) + timestamp + message_text
         )
-        
+
         print(f"Received V3 frame from companion radio:")
         print(f"  Frame code: 0x{frame_code:02x} (RESP_CHANNEL_MSG_V3)")
         print(f"  Channel idx: {channel_idx} (wxtest)")
         print(f"  SNR: {snr} dB")
         print(f"  Message: '{message_text.decode('utf-8')}'")
         print()
-        
+
         # Process the frame (this is what the bot does internally)
         print("Step 3: Bot processes the message")
         print("-" * 70)
         bot.mesh._parse_binary_frame(v3_payload)
         print()
-        
+
         print("Step 4: Bot sends response")
         print("-" * 70)
         print()
         print("✅ SUCCESS! Bot would send this response back on channel_idx 1:")
         print()
         print("    Leeds, UK")
-        print("    Cond: Mainly clear")
+        print("    🌤️ Mainly clear")
         print("    Temp: 12.5°C (feels 10.8°C)")
         print("    Humid: 68%")
         print("    Wind: 14.2 km/h at 225°")
-        print("    Precip: 0.0 mm")
         print()
-        
+
         bot.mesh.stop()
-    
+
     print("-" * 70)
     print()
     print("=" * 70)

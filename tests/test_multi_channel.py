@@ -2,17 +2,19 @@
 """
 Test script to verify multi-channel broadcast functionality for weather bot.
 Tests the feature requested in the problem statement:
-"can this bot only transmit to one channel? I tested with alerts channel 
+"can this bot only transmit to one channel? I tested with alerts channel
 but would like it to run on weather channel in meshcore"
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock
-from weather_bot import WeatherBot
+
 from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 
 def test_single_channel():
@@ -20,25 +22,25 @@ def test_single_channel():
     print("=" * 60)
     print("TEST: Single Channel Broadcast")
     print("=" * 60)
-    
+
     bot = WeatherBot(node_id="test_bot", debug=False, channel="weather")
-    
+
     # Verify channels are parsed correctly
     assert bot.channels == ["weather"], f"Expected ['weather'], got {bot.channels}"
     print("✓ Bot initialized with single channel: 'weather'")
-    
+
     # Mock the mesh send_message to capture calls
     sent_messages = []
-    
+
     def mock_send(content, msg_type, channel):
         sent_messages.append({"content": content, "type": msg_type, "channel": channel})
         return MeshCoreMessage(bot.mesh.node_id, content, msg_type, channel=channel)
-    
+
     bot.mesh.send_message = mock_send
-    
+
     # Send a response
     bot.send_response("Test weather message")
-    
+
     # Verify message was sent to the correct channel
     assert len(sent_messages) == 1, f"Expected 1 message, got {len(sent_messages)}"
     assert sent_messages[0]["channel"] == "weather", f"Expected 'weather' channel"
@@ -51,33 +53,33 @@ def test_multiple_channels():
     print("=" * 60)
     print("TEST: Multiple Channel Broadcast")
     print("=" * 60)
-    
+
     # Test with two channels as requested in problem statement
     bot = WeatherBot(node_id="test_bot", debug=False, channel="weather,alerts")
-    
+
     # Verify channels are parsed correctly
     assert bot.channels == ["weather", "alerts"], f"Expected ['weather', 'alerts'], got {bot.channels}"
     print("✓ Bot initialized with multiple channels: 'weather', 'alerts'")
-    
+
     # Mock the mesh send_message to capture calls
     sent_messages = []
-    
+
     def mock_send(content, msg_type, channel):
         sent_messages.append({"content": content, "type": msg_type, "channel": channel})
         return MeshCoreMessage(bot.mesh.node_id, content, msg_type, channel=channel)
-    
+
     bot.mesh.send_message = mock_send
-    
+
     # Send a response
     bot.send_response("Test weather message")
-    
+
     # Verify message was sent to both channels
     assert len(sent_messages) == 2, f"Expected 2 messages, got {len(sent_messages)}"
-    
+
     channels_sent = [msg["channel"] for msg in sent_messages]
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
     assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
-    
+
     print("✓ Message broadcast to both 'weather' and 'alerts' channels")
     print()
 
@@ -87,34 +89,38 @@ def test_multiple_channels_with_spaces():
     print("=" * 60)
     print("TEST: Multiple Channels with Spacing")
     print("=" * 60)
-    
+
     # Test with spaces around commas
     bot = WeatherBot(node_id="test_bot", debug=False, channel="weather, alerts, emergency")
-    
+
     # Verify channels are parsed correctly (spaces should be stripped)
-    assert bot.channels == ["weather", "alerts", "emergency"], f"Expected ['weather', 'alerts', 'emergency'], got {bot.channels}"
+    assert bot.channels == [
+        "weather",
+        "alerts",
+        "emergency",
+    ], f"Expected ['weather', 'alerts', 'emergency'], got {bot.channels}"
     print("✓ Bot correctly parses channels with spaces: 'weather, alerts, emergency'")
-    
+
     # Mock the mesh send_message to capture calls
     sent_messages = []
-    
+
     def mock_send(content, msg_type, channel):
         sent_messages.append({"content": content, "type": msg_type, "channel": channel})
         return MeshCoreMessage(bot.mesh.node_id, content, msg_type, channel=channel)
-    
+
     bot.mesh.send_message = mock_send
-    
+
     # Send a response
     bot.send_response("Test weather message")
-    
+
     # Verify message was sent to all three channels
     assert len(sent_messages) == 3, f"Expected 3 messages, got {len(sent_messages)}"
-    
+
     channels_sent = [msg["channel"] for msg in sent_messages]
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
     assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
     assert "emergency" in channels_sent, "Expected message on 'emergency' channel"
-    
+
     print("✓ Message broadcast to all 3 channels: 'weather', 'alerts', 'emergency'")
     print()
 
@@ -124,10 +130,10 @@ def test_empty_channel_names():
     print("=" * 60)
     print("TEST: Empty Channel Names Handling")
     print("=" * 60)
-    
+
     # Test with empty channel names (should be filtered out with warning)
     bot = WeatherBot(node_id="test_bot", debug=True, channel="weather,,,alerts")
-    
+
     # Verify only valid channels are kept
     assert bot.channels == ["weather", "alerts"], f"Expected ['weather', 'alerts'], got {bot.channels}"
     print("✓ Bot correctly filters out empty channel names from 'weather,,,alerts'")
@@ -140,25 +146,25 @@ def test_no_channel():
     print("=" * 60)
     print("TEST: No Channel (Broadcast to All)")
     print("=" * 60)
-    
+
     bot = WeatherBot(node_id="test_bot", debug=False, channel=None)
-    
+
     # Verify no channels are set
     assert bot.channels == [], f"Expected empty list, got {bot.channels}"
     print("✓ Bot initialized without channels (broadcast mode)")
-    
+
     # Mock the mesh send_message to capture calls
     sent_messages = []
-    
+
     def mock_send(content, msg_type, channel):
         sent_messages.append({"content": content, "type": msg_type, "channel": channel})
         return MeshCoreMessage(bot.mesh.node_id, content, msg_type, channel=channel)
-    
+
     bot.mesh.send_message = mock_send
-    
+
     # Send a response
     bot.send_response("Test weather message")
-    
+
     # Verify message was sent without a channel
     assert len(sent_messages) == 1, f"Expected 1 message, got {len(sent_messages)}"
     assert sent_messages[0]["channel"] is None, f"Expected no channel, got {sent_messages[0]['channel']}"
@@ -177,36 +183,27 @@ def test_problem_statement_scenario():
     print("User request: 'tested with alerts channel but would like it")
     print("              to run on weather channel in meshcore'")
     print()
-    
+
     # Create bot with both channels as requested
     bot = WeatherBot(node_id="weather_bot", debug=False, channel="alerts,weather")
-    
+
     print(f"✓ Bot created with channels: {bot.channels}")
-    
+
     # Mock the mesh send_message to capture calls
     sent_messages = []
-    
+
     def mock_send(content, msg_type, channel):
         sent_messages.append({"content": content, "type": msg_type, "channel": channel})
         return MeshCoreMessage(bot.mesh.node_id, content, msg_type, channel=channel)
-    
+
     bot.mesh.send_message = mock_send
-    
+
     # Simulate a weather request
-    msg = MeshCoreMessage(
-        sender="user",
-        content="wx London",
-        message_type="text"
-    )
-    
+    msg = MeshCoreMessage(sender="user", content="wx London", message_type="text")
+
     # Mock the weather API calls
-    bot.geocode_location = lambda loc: {
-        "name": "London",
-        "country": "GB",
-        "latitude": 51.5074,
-        "longitude": -0.1278
-    }
-    
+    bot.geocode_location = lambda loc: {"name": "London", "country": "GB", "latitude": 51.5074, "longitude": -0.1278}
+
     bot.get_weather = lambda lat, lon: {
         "current": {
             "temperature_2m": 15.5,
@@ -215,20 +212,20 @@ def test_problem_statement_scenario():
             "wind_speed_10m": 10.5,
             "wind_direction_10m": 180,
             "precipitation": 0.0,
-            "weather_code": 1
+            "weather_code": 1,
         }
     }
-    
+
     # Process the weather request directly without starting the event loop
     bot.handle_message(msg)
-    
+
     # Verify message was broadcast to both channels
     assert len(sent_messages) == 2, f"Expected 2 messages (one per channel), got {len(sent_messages)}"
-    
+
     channels_sent = [msg["channel"] for msg in sent_messages]
     assert "alerts" in channels_sent, "Expected message on 'alerts' channel"
     assert "weather" in channels_sent, "Expected message on 'weather' channel"
-    
+
     print("✓ Weather response broadcast to both 'alerts' and 'weather' channels")
     print("✓ Bot now supports multiple channels as requested!")
     print()
@@ -278,11 +275,13 @@ def main():
     except AssertionError as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -86,17 +86,16 @@ MCWB$ python3 weather_bot.py -d
 
 ```
 MCWB$ python3 weather_bot.py
-MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel.
+MCWB running. Send 'WX [location]' or 'weather [location]' on any channel.
 Press Ctrl+C to stop.
 
 WX request for 'Leeds' from M3UXC/M
 Response:
 Leeds, GB
-Overcast
+☁️ Overcast
 Temp: 9.8°C (feels 6.1°C)
 Humid: 85%
 Wind: 20.7 km/h at 239°
-Precip: 0.0 mm
 ```
 
 No confusing "unknown:" messages appear at all!

@@ -4,12 +4,13 @@ Test script for MeshCore Weather Bot
 Demonstrates the bot's functionality with mock data when API is not accessible
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from weather_bot import WeatherBot
 from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 
 def test_command_parsing():
@@ -41,7 +42,9 @@ def test_command_parsing():
             print(f"{status} '{command}' -> location={location} (expected: {expected_location})")
         else:
             status = "✓" if (location == expected_location and country == expected_country) else "✗"
-            print(f"{status} '{command}' -> location={location}, country={country} (expected: {expected_location}, {expected_country})")
+            print(
+                f"{status} '{command}' -> location={location}, country={country} (expected: {expected_location}, {expected_country})"
+            )
 
     print()
 
@@ -72,12 +75,7 @@ def test_weather_formatting():
     bot = WeatherBot(debug=False)
 
     # Mock location data
-    location_data = {
-        "name": "London",
-        "country": "GB",
-        "latitude": 51.5074,
-        "longitude": -0.1278
-    }
+    location_data = {"name": "London", "country": "GB", "latitude": 51.5074, "longitude": -0.1278}
 
     # Mock weather data
     weather_data = {
@@ -88,7 +86,7 @@ def test_weather_formatting():
             "wind_speed_10m": 15.3,
             "wind_direction_10m": 230,
             "precipitation": 0.0,
-            "weather_code": 2
+            "weather_code": 2,
         }
     }
 
@@ -107,11 +105,7 @@ def test_message_handling():
     bot.start()
 
     # Test with a weather command (will fail due to network, but shows handling)
-    MeshCoreMessage(
-        sender="test_user",
-        content="wx London",
-        message_type="text"
-    )
+    MeshCoreMessage(sender="test_user", content="wx London", message_type="text")
 
     print("\nProcessing: 'wx London'")
     print("-" * 40)
@@ -159,7 +153,7 @@ def test_reply_channel():
 
     from unittest.mock import MagicMock, patch
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock geocoding and weather responses
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
@@ -167,20 +161,29 @@ def test_reply_channel():
         }
         weather_response = MagicMock()
         weather_response.json.return_value = {
-            "current": {"temperature_2m": 10, "apparent_temperature": 8, "relative_humidity_2m": 70,
-                       "wind_speed_10m": 12, "wind_direction_10m": 180, "precipitation": 0, "weather_code": 1}
+            "current": {
+                "temperature_2m": 10,
+                "apparent_temperature": 8,
+                "relative_humidity_2m": 70,
+                "wind_speed_10m": 12,
+                "wind_direction_10m": 180,
+                "precipitation": 0,
+                "weather_code": 1,
+            }
         }
         mock_get.side_effect = [geocoding_response, weather_response]
 
         # Create bot (no channel parameter - accepts all channels)
         bot = WeatherBot(node_id="test_bot", debug=False)
-        
+
         # Track sent messages
         sent_messages = []
         original_send = bot.mesh.send_message
+
         def track_send(content, message_type, channel, channel_idx=None):
-            sent_messages.append({'channel': channel, 'channel_idx': channel_idx})
+            sent_messages.append({"channel": channel, "channel_idx": channel_idx})
             return original_send(content, message_type, channel, channel_idx)
+
         bot.mesh.send_message = track_send
         bot.mesh.start()
 
@@ -191,7 +194,7 @@ def test_reply_channel():
         bot.handle_message(msg)
         # Bot replies on the channel where message came from to ensure user sees response
         assert len(sent_messages) == 1
-        assert sent_messages[0]['channel_idx'] == 0, f"Expected channel_idx=0, got {sent_messages[0]['channel_idx']}"
+        assert sent_messages[0]["channel_idx"] == 0, f"Expected channel_idx=0, got {sent_messages[0]['channel_idx']}"
         print("   ✓ Bot replied on channel_idx 0 (where message came from)")
 
         # Test 2: Message from named channel - bot should reply on same channel_idx
@@ -200,32 +203,34 @@ def test_reply_channel():
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel="weather", channel_idx=1)
         sent_messages.clear()
         bot.handle_message(msg)
-        assert len(sent_messages) == 1 and sent_messages[0]['channel_idx'] == 1
+        assert len(sent_messages) == 1 and sent_messages[0]["channel_idx"] == 1
         print("   ✓ Bot replied on channel_idx 1 (where message came from)")
 
         bot.mesh.stop()
-    
+
     # Test bot WITHOUT configured channel - should reply on incoming channel
     print("\n3. Bot WITHOUT configured channel (default behavior):")
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = [geocoding_response, weather_response]
         bot_no_channel = WeatherBot(node_id="test_bot", debug=False)
-        
+
         sent_messages = []
         original_send = bot_no_channel.mesh.send_message
+
         def track_send(content, message_type, channel, channel_idx=None):
-            sent_messages.append({'channel': channel, 'channel_idx': channel_idx})
+            sent_messages.append({"channel": channel, "channel_idx": channel_idx})
             return original_send(content, message_type, channel, channel_idx)
+
         bot_no_channel.mesh.send_message = track_send
         bot_no_channel.mesh.start()
-        
+
         msg = MeshCoreMessage(sender="user", content="wx york", message_type="text", channel=None, channel_idx=2)
         sent_messages.clear()
         bot_no_channel.handle_message(msg)
         assert len(sent_messages) == 1
-        assert sent_messages[0]['channel_idx'] == 2, f"Expected channel_idx=2, got {sent_messages[0]['channel_idx']}"
+        assert sent_messages[0]["channel_idx"] == 2, f"Expected channel_idx=2, got {sent_messages[0]['channel_idx']}"
         print("   ✓ Bot replied on channel_idx 2 (where message came from)")
-        
+
         bot_no_channel.mesh.stop()
     print()
 
@@ -236,7 +241,7 @@ def test_announcement():
     print("TEST 7: Periodic Announcement")
     print("=" * 60)
 
-    from weather_bot import ANNOUNCE_MESSAGE, ANNOUNCE_INTERVAL
+    from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE
 
     # Verify constants
     assert ANNOUNCE_INTERVAL == 3 * 60 * 60, "ANNOUNCE_INTERVAL should be 3 hours"
@@ -250,9 +255,11 @@ def test_announcement():
 
     sent_messages = []
     original_send = bot.mesh.send_message
+
     def track_send(content, message_type, channel, channel_idx=None):
         sent_messages.append({"content": content, "channel": channel})
         return original_send(content, message_type, channel, channel_idx)
+
     bot.mesh.send_message = track_send
 
     bot.send_announcement()
@@ -266,9 +273,11 @@ def test_announcement():
     bot_no_announce.mesh.start()
     no_announce_messages = []
     original_send2 = bot_no_announce.mesh.send_message
+
     def track_send2(content, message_type, channel, channel_idx=None):
         no_announce_messages.append({"content": content, "channel": channel})
         return original_send2(content, message_type, channel, channel_idx)
+
     bot_no_announce.mesh.send_message = track_send2
     bot_no_announce.send_announcement()
     assert len(no_announce_messages) == 0, "No announcement should be sent when announce_channel is None"
@@ -310,6 +319,7 @@ def main():
     except Exception as e:
         print(f"Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

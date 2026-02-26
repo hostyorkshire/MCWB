@@ -1,5 +1,7 @@
 # Quick Start Guide - MeshCore Weather Bot
 
+**❓ Have questions?** Check the [FAQ](FAQ.md) for common setup questions including "where is the boot setup script?"
+
 ## Installation on Raspberry Pi Zero 2
 
 **🍓 For headless setup with auto-start on boot, see [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md)**
@@ -25,8 +27,23 @@ cd MCWB
 ```
 
 ### 4. Install Python Dependencies
+
+**Recommended: Use a virtual environment** (prevents PEP 668 errors on newer systems):
 ```bash
-python3 -m pip install -r requirements.txt
+# Create virtual environment
+python3 -m venv venv
+
+# Activate it
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Alternative: Install directly** (may fail on Debian 12+, Ubuntu 23.04+ with PEP 668):
+```bash
+pip3 install -r requirements.txt
+# If this fails with "externally-managed-environment", use the virtual environment method above
 ```
 
 ### 5. Configure Radio Channels (Critical Step)
@@ -52,14 +69,26 @@ python3 -m pip install -r requirements.txt
 - This is a one-time setup (unless you want to add more channels later)
 
 ### 6. Test the Bot
-```bash
-# Interactive mode
-python3 weather_bot.py --interactive
 
-# Try some commands:
+**Option A: Quick Weather Lookup (No Radio Needed)**
+```bash
+# Test without connecting to radio hardware
+python3 weather_bot.py --location London
+python3 weather_bot.py --location Manchester
+python3 weather_bot.py --location "York UK"
+```
+
+This will fetch and display weather without connecting to your MeshCore radio.
+
+**Option B: Test with Radio Connected**
+```bash
+# Start the bot and it will listen for commands on any channel
+python3 weather_bot.py
+
+# Then send a weather command from your MeshCore app:
 # wx London
-# wx Manchester
-# wx York
+# wx Manchester  
+# wx York UK
 ```
 
 ### 6. Run as Background Service (Auto-Start on Boot)
@@ -109,16 +138,18 @@ python3 weather_bot.py --location "Manchester"
 python3 weather_bot.py --location "Edinburgh"
 ```
 
-### Interactive Mode
+### Quick Weather Lookup (No Radio Needed)
+
+Test the bot without connecting to hardware:
+
 ```bash
-python3 weather_bot.py --interactive
+# Look up weather for any location
+python3 weather_bot.py --location London
+python3 weather_bot.py --location "York UK"
+python3 weather_bot.py --location "Paris FR"
 ```
 
-Then type commands like:
-- `wx London`
-- `weather York`
-- `wx Birmingham`
-- `quit` (to exit)
+The bot will fetch and display weather, then exit. Use this to verify the bot is working before connecting your radio.
 
 ### Send Message via MeshCore
 ```bash
@@ -133,15 +164,19 @@ python3 meshcore_send.py "wx London" --node-id my_node --port /dev/ttyUSB0 --cha
 ```
 
 ### Run Weather Bot on a Specific Channel
+
 ```bash
-# Start bot broadcasting responses on 'weather' channel (simulation mode)
-python3 weather_bot.py --interactive --channel weather
+# Start bot and let it respond on ANY channel automatically (default)
+python3 weather_bot.py
 
-# Start bot with LoRa hardware on /dev/ttyUSB0
-python3 weather_bot.py --port /dev/ttyUSB0 --baud 9600 --channel weather
+# Start bot with specific USB port
+python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 
-# Run bot with custom node ID and channel
-python3 weather_bot.py --node-id my_weather_bot --channel weather
+# Restrict bot to only respond on channel index 1
+python3 weather_bot.py --channel-idx 1
+
+# Enable periodic announcements every 3 hours
+python3 weather_bot.py --announce
 ```
 
 ## Running Tests
@@ -220,12 +255,17 @@ sudo systemctl restart weather_bot
 
 ### Run with Debug Mode
 ```bash
-python3 weather_bot.py --debug --interactive
+# See detailed protocol frames and debugging info
+python3 weather_bot.py --debug
 ```
 
-### Custom Node ID
+### Filter Locations by Country
 ```bash
-python3 weather_bot.py --node-id "my_custom_id"
+# Prefer UK cities when location is ambiguous
+python3 weather_bot.py --country GB
+
+# Prefer US cities
+python3 weather_bot.py --country US
 ```
 
 ### Run in Background (without service)

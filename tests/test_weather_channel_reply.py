@@ -3,13 +3,15 @@
 Test specifically for --channel weather scenario from problem statement.
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock, patch
-from weather_bot import WeatherBot
+
 from meshcore import MeshCoreMessage
+from weather_bot import WeatherBot
 
 
 def test_weather_channel():
@@ -19,20 +21,22 @@ def test_weather_channel():
     print("TEST: Bot with --channel weather")
     print("=" * 70)
     print()
-    
-    with patch('weather_bot.requests.get') as mock_get:
+
+    with patch("weather_bot.requests.get") as mock_get:
         # Mock responses
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
-            "results": [{
-                "name": "Barnsley",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.55,
-                "longitude": -1.48333
-            }]
+            "results": [
+                {
+                    "name": "Barnsley",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.55,
+                    "longitude": -1.48333,
+                }
+            ]
         }
-        
+
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
@@ -42,56 +46,46 @@ def test_weather_channel():
                 "wind_speed_10m": 10.3,
                 "wind_direction_10m": 241,
                 "precipitation": 0.0,
-                "weather_code": 3
+                "weather_code": 3,
             }
         }
-        
+
         mock_get.side_effect = [geocoding_response, weather_response]
-        
+
         # Create bot with --channel weather (from problem statement)
         bot = WeatherBot(node_id="WX_BOT", debug=True, channel="weather")
-        
+
         # Track messages
         sent_messages = []
         original_send = bot.mesh.send_message
-        
+
         def track_send(content, message_type, channel=None, channel_idx=None):
-            sent_messages.append({
-                'content': content,
-                'channel': channel,
-                'channel_idx': channel_idx
-            })
+            sent_messages.append({"content": content, "channel": channel, "channel_idx": channel_idx})
             return original_send(content, message_type, channel, channel_idx)
-        
+
         bot.mesh.send_message = track_send
         bot.mesh.start()
-        
+
         # Simulate exact message from problem statement logs
-        msg = MeshCoreMessage(
-            sender="USER1",
-            content="Wx barnsley",
-            message_type="text",
-            channel=None,
-            channel_idx=0
-        )
-        
+        msg = MeshCoreMessage(sender="USER1", content="Wx barnsley", message_type="text", channel=None, channel_idx=0)
+
         print("Scenario from problem statement:")
         print("  Command: python3 weather_bot.py --channel weather")
         print(f"  Receives: message from {msg.sender} on channel_idx {msg.channel_idx}")
         print(f"  Content: {msg.content}")
         print()
-        
+
         sent_messages.clear()
         bot.handle_message(msg)
-        
+
         print("Checking bot reply...")
         assert len(sent_messages) == 1
-        
+
         sent = sent_messages[0]
         print(f"  Bot replied on: channel='{sent['channel']}', channel_idx={sent['channel_idx']}")
         print()
-        
-        if sent['channel_idx'] == 0:
+
+        if sent["channel_idx"] == 0:
             print("✅ SUCCESS!")
             print()
             print("Bot correctly replied on channel_idx 0 (where message came from)")
@@ -103,7 +97,7 @@ def test_weather_channel():
             print(f"  Expected: channel_idx=0")
             print(f"  Got: channel_idx={sent['channel_idx']}")
             success = False
-        
+
         bot.mesh.stop()
         return success
 
@@ -114,10 +108,10 @@ def main():
     print("╔" + "=" * 68 + "╗")
     print("║" + " " * 18 + "Weather Channel Reply Test" + " " * 24 + "║")
     print("╚" + "=" * 68 + "╝")
-    
+
     try:
         success = test_weather_channel()
-        
+
         print()
         print("=" * 70)
         if success:
@@ -132,12 +126,13 @@ def main():
             print("❌ TEST FAILED")
         print("=" * 70)
         print()
-        
+
         return 0 if success else 1
-        
+
     except Exception as e:
         print(f"❌ ERROR: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

@@ -28,7 +28,7 @@ Channel 7:  "wx Rome"     ────────► Channel 7  ✅ (any channe
 python3 weather_bot.py
 
 # You'll see this message:
-# "MCWBv2 running. Send 'WX [location]' or 'weather [location]' on any channel."
+# "MCWB running. Send 'WX [location]' or 'weather [location]' on any channel."
 ```
 
 ## Test It Yourself
