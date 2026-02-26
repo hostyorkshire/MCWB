@@ -199,19 +199,37 @@
 python3 weather_bot.py --channel-idx 1</code></pre>
 
             <h3>Option 2: Announcement Channel Configuration</h3>
-            <pre><code># Send announcements on channel 2, respond to all channels
+            <div class="info-box">
+                <p><strong>✨ NEW: Automatic Weather Channel Detection</strong></p>
+                <p>The bot now automatically detects your #weather channel! Simply use:</p>
+                <pre><code>python3 weather_bot.py --announce</code></pre>
+                <p>The bot will detect your #weather channel from incoming messages and announcements will automatically go there.</p>
+            </div>
+            <p><strong>Optional Manual Configuration:</strong></p>
+            <pre><code># Manually specify announcement channel (optional)
 python3 weather_bot.py --weather-channel-idx 2 --announce
 
 # Both announce and respond only on channel 2
 python3 weather_bot.py --channel-idx 2 --weather-channel-idx 2 --announce</code></pre>
 
             <h2 id="filtering">Finding Your Channel Index</h2>
-            <p><strong>Remember:</strong> You usually don't need to find this! The bot works automatically.</p>
+            <p><strong>✨ NEW: Auto-detection makes this unnecessary in most cases!</strong></p>
+            <p>The bot automatically detects your #weather channel from incoming messages. Manual configuration is now optional.</p>
 
-            <h3>Method 1: Check MeshCore App</h3>
+            <h3>How Auto-Detection Works</h3>
+            <ul>
+                <li>Monitors messages for #weather channel indicators (#weather, #wx, "weather channel")</li>
+                <li>Learns from WX/weather commands to identify the active weather channel</li>
+                <li>Once detected, all announcements automatically use the detected channel</li>
+            </ul>
+
+            <h3>Manual Detection (Advanced)</h3>
+            <p>If you still need to manually find the channel index:</p>
+
+            <h4>Method 1: Check MeshCore App</h4>
             <p>Look at Channel Settings in your MeshCore app to see which slot #weather is assigned to.</p>
 
-            <h3>Method 2: Use Debug Mode</h3>
+            <h4>Method 2: Use Debug Mode</h4>
             <pre><code>python3 weather_bot.py --debug</code></pre>
             <p>Send a test message on #weather and observe the <code>channel_idx</code> in output:</p>
             <pre><code>[17:45:32] channel_idx=2 SomeUser: wx test</code></pre>

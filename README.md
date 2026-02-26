@@ -358,9 +358,26 @@ When you enable announcements with the `--announce` flag:
 - Announcement timestamps are persisted to disk (`logs/.last_announce`) for tracking periodic announcements only
 - **No code prevents re-announcing** - the bot will announce on every boot, regardless of how recently it last announced
 
-### Configuring Announcement Channel
+### ✨ NEW: Automatic Weather Channel Detection
 
-**IMPORTANT:** Use `--weather-channel-idx` to specify which channel receives announcements:
+**The bot now automatically detects your #weather channel!** No manual configuration needed in most cases.
+
+When announcements are enabled, the bot will:
+- 🔍 **Auto-detect** the #weather channel by monitoring incoming messages
+- 📡 Detect channels containing `#weather`, `#wx`, or "weather channel" in messages
+- 🎯 Automatically use the channel that receives weather commands (WX/weather)
+- 📢 Send all announcements to the detected weather channel
+
+**This works automatically - just run:**
+```bash
+python3 weather_bot.py --announce
+```
+
+The bot will detect your #weather channel from the first message it receives!
+
+### Manual Channel Configuration (Optional)
+
+If you need explicit control over the announcement channel, you can still manually specify it:
 
 ```bash
 # Announcements go to channel_idx 1 (typically #weather)
@@ -370,15 +387,16 @@ python3 weather_bot.py --announce --weather-channel-idx 1
 python3 weather_bot.py --announce --weather-channel-idx 2
 ```
 
-Without `--weather-channel-idx`, announcements default to channel_idx 0 (the default channel), which may not be your #weather channel.
-
-**Note:** The bot still **responds** to weather queries from **all channels** unless you also specify `--channel-idx` to restrict incoming messages.
+**Note:** Manual configuration overrides auto-detection and is useful for:
+- Pre-configuring the announcement channel before any messages arrive
+- Ensuring announcements go to a specific channel from bot startup
+- Advanced multi-bot deployments
 
 ### Announcement Message
 
 The announcement message is:
 ```
-Hello this is the WX BoT. To get a weather update simply type WX and your location.
+Hello this is the WX Bot. To get a weather update simply type WX and your location.
 ```
 
 ### Example: Raspberry Pi Service Setup
@@ -389,7 +407,12 @@ The included `weather_bot.service` file is pre-configured with announcements ena
 ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --weather-channel-idx 1
 ```
 
-This ensures announcements go to channel_idx 1 (typically #weather) while still responding to messages from all channels.
+**NEW:** You can now simplify this to use auto-detection:
+```ini
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce
+```
+
+The bot will automatically detect and use your #weather channel!
 
 ## How It Works
 
@@ -456,11 +479,13 @@ This is useful when:
 **Note:** Channel indices are numeric (0, 1, 2, etc.) and correspond to the physical channel
 slots on your MeshCore device. Slot 0 is the default channel (typically using a well-known PSK for broad accessibility). Slots 1–7 are hashtag/named channels configured in the MeshCore app with unique encryption keys (PSKs).
 
-### Finding Your Weather Channel Index (If Needed)
+### Finding Your Weather Channel Index (Optional)
 
-**Remember:** You usually don't need to find this! The bot works automatically.
+**✨ NEW: Auto-detection makes this unnecessary in most cases!**
 
-If you do need to configure a specific channel index for advanced scenarios:
+The bot now automatically detects your #weather channel from incoming messages. You rarely need to manually configure the channel index anymore.
+
+If you still need to find the channel index for advanced scenarios:
 
 1. **Check your MeshCore app** - Look at Channel Settings to see which slot #weather is assigned to
 2. **Use debug mode** - Run `python3 weather_bot.py --debug`, send a test message on #weather, 
@@ -469,10 +494,13 @@ If you do need to configure a specific channel index for advanced scenarios:
    [17:45:32] channel_idx=2 SomeUser: wx test
    ```
 
-Once you know the index, configure it with `--weather-channel-idx` if needed.
+Once you know the index, you can manually configure it with `--weather-channel-idx` if desired.
 
-**Important:** The bot cannot automatically detect which channel index corresponds to #weather 
-because the MeshCore protocol only provides numeric indices, not channel names. However, since 
+**How Auto-Detection Works:**
+- The bot monitors incoming messages for #weather channel indicators
+- It detects messages containing `#weather`, `#wx`, or "weather channel"
+- It also learns from weather commands (WX/weather) to identify the active weather channel
+- Once detected, all announcements use the detected channel automatically 
 the bot automatically replies on whatever channel receives requests, manual configuration is 
 usually not necessary.
 

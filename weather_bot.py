@@ -160,6 +160,9 @@ class WeatherBot:
         self.weather_channel_idx = weather_channel_idx
         self._announce_channel_idx = weather_channel_idx if weather_channel_idx is not None else 0
         self.announce_channel = announce_channel
+        # Track channel_idx to channel name mapping for auto-detection
+        self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
+        self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
         self.country = country
         # Channel verification mode - shows diagnostic info about encrypted messages
@@ -555,12 +558,46 @@ class WeatherBot:
     # Message handling
     # ------------------------------------------------------------------
 
+    def _detect_channel_name(self, text: str, channel_idx: int):
+        """
+        Attempt to detect channel name from message text.
+        
+        Some MeshCore firmware versions include channel hashtags in messages.
+        This method checks for channel indicators and maps them to channel_idx.
+        
+        Args:
+            text: Raw message text that may contain channel indicators
+            channel_idx: Numeric channel index from the protocol
+        """
+        # Check if text contains channel hashtag patterns like "#weather", "#alerts", etc.
+        # Common patterns: "#weather", "#wx", "weather channel", etc.
+        text_lower = text.lower()
+        
+        # Look for #weather or similar indicators
+        weather_patterns = ["#weather", "#wx", "weather channel"]
+        for pattern in weather_patterns:
+            if pattern in text_lower:
+                if channel_idx not in self._channel_idx_to_name:
+                    self._channel_idx_to_name[channel_idx] = "weather"
+                    self._weather_channel_detected = True
+                    msg = f"Auto-detected #weather channel on channel_idx={channel_idx}"
+                    print(msg)
+                    self.logger.info(msg)
+                    # Update announcement channel to use detected weather channel
+                    if self.weather_channel_idx is None:
+                        self._announce_channel_idx = channel_idx
+                        self.logger.info(f"Announcements will be sent to detected #weather channel (channel_idx={channel_idx})")
+                return
+
     def _handle_channel_message(self, text: str, channel_idx: int):
         """Parse a raw channel message and respond if it is a weather command or outlook response."""
         # Filter by channel_idx if specified
         if self.allowed_channel_idx is not None and channel_idx != self.allowed_channel_idx:
             self._log(f"Ignoring message from channel_idx={channel_idx} (filter={self.allowed_channel_idx})")
             return
+
+        # Try to detect channel name from message content
+        self._detect_channel_name(text, channel_idx)
 
         # MeshCore prepends "SenderName: " to channel messages.
         # However, messages from new hashtag channels or self-sent messages
@@ -584,14 +621,26 @@ class WeatherBot:
         safe_content = self._sanitize_for_log(content)
         self._log(f"channel_idx={channel_idx} {safe_sender}: {safe_content}")
 
-        # Remember this channel for periodic announcements (only if not explicitly configured)
-        if self.weather_channel_idx is None:
-            self._announce_channel_idx = channel_idx
-
-
-        # Check if this is a weather command first (priority over outlook responses)
+        # Parse command once for efficiency
         location, country = self._parse_command(content)
         
+        # Auto-detect weather channel: If weather commands are received on a channel,
+        # remember it as the weather channel for announcements
+        if location and not self._weather_channel_detected and self.weather_channel_idx is None:
+            # This channel is receiving weather requests, likely the #weather channel
+            if channel_idx not in self._channel_idx_to_name:
+                self._channel_idx_to_name[channel_idx] = "weather"
+                self._weather_channel_detected = True
+                msg = f"Auto-detected #weather channel from WX command on channel_idx={channel_idx}"
+                print(msg)
+                self.logger.info(msg)
+            self._announce_channel_idx = channel_idx
+            self.logger.info(f"Announcements will be sent to channel_idx={channel_idx} (detected from weather requests)")
+        elif self.weather_channel_idx is None and not self._weather_channel_detected:
+            # Fallback: remember this channel only if no weather channel detected yet
+            self._announce_channel_idx = channel_idx
+
+        # Process weather command if found
         if location:
             # Sanitize sender for print output to prevent terminal corruption
             safe_sender_print = self._sanitize_for_log(sender)
@@ -660,8 +709,17 @@ class WeatherBot:
         - "wx York USA" -> ("York", "US")
         - "wx York FR" -> ("York", "FR")
         - "wx York, UK" -> ("York, UK", None)  # Explicit format, no extraction
+        
+        Channel indicators like "#weather", "#wx", "on #weather" are automatically filtered out.
         """
-        m = re.match(r"^(?:wx|weather)\s+(.+)$", text.strip(), re.IGNORECASE)
+        # Remove channel indicators before parsing
+        # Common patterns: "on #weather", "#weather", "#wx", "weather channel"
+        text_cleaned = text.strip()
+        # Combined regex for better performance: matches "on #weather", "#weather", "#wx", "weather channel"
+        text_cleaned = re.sub(r'(?:\s+on\s+)?#(?:weather|wx)\b|\s+weather\s+channel\b', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = text_cleaned.strip()
+        
+        m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
         if not m:
             return None, None
 
@@ -1120,6 +1178,9 @@ class WeatherBot:
             msg = "MCWB running. Send 'WX [location]' or 'weather [location]' on any channel."
             print(msg)
             self.logger.info(msg)
+            if self.announce:
+                print("🔍 Auto-detection enabled: Bot will detect #weather channel from incoming messages.")
+                self.logger.info("Weather channel auto-detection enabled")
 
         if self.verify_channels:
             print("\n📡 Channel Verification Mode: Monitoring channel encryption status...")
@@ -1139,11 +1200,19 @@ class WeatherBot:
 
         # Always announce on startup to let users know the bot is operational
         if self.announce:
+            announce_info = f"channel_idx={self._announce_channel_idx}"
+            if self._weather_channel_detected:
+                announce_info += " (auto-detected #weather)"
+            elif self.weather_channel_idx is not None:
+                announce_info += " (configured)"
+            else:
+                announce_info += " (default, will auto-detect)"
+            
             self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
             last_announce = current_time
             self._save_last_announce_time(last_announce)
-            print("Sent startup announcement")
-            self.logger.info("Sent startup announcement")
+            print(f"Sent startup announcement to {announce_info}")
+            self.logger.info(f"Sent startup announcement to {announce_info}")
 
         try:
             while self._running:

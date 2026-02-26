@@ -88,7 +88,7 @@
                 <div class="feature-card">
                     <div class="feature-icon"><img src="img/emoji/1f4e2.svg" alt="📢" class="emoji-icon"></div>
                     <h3>Startup & Periodic Announcements</h3>
-                    <p>Announces on every startup/reboot and periodically every 3 hours to remind users the bot is available.</p>
+                    <p><span class="badge primary">NEW: Auto-Detect</span> Announces on every startup/reboot and periodically every 3 hours. Now automatically detects your #weather channel!</p>
                     <span class="badge">Optional</span>
                 </div>
             </div>
@@ -204,9 +204,12 @@
             <pre><code># Only respond on channel index 1
 python3 weather_bot.py --channel-idx 1
 
-# Configure announcement channel
+# Simple announcement with auto-detection (NEW!)
+python3 weather_bot.py --announce
+
+# Manual announcement channel configuration (optional)
 python3 weather_bot.py --weather-channel-idx 2 --announce</code></pre>
-            <p><strong>Note:</strong> Most users don't need this! The bot works automatically on all channels.</p>
+            <p><strong>Note:</strong> Most users don't need manual configuration! The bot automatically detects your #weather channel from incoming messages.</p>
 
             <h3><img src="img/emoji/1f310.svg" alt="🌐" class="emoji-icon"> Default Country Filtering</h3>
             <p>If most users are in one country, set a default to prefer local cities:</p>
