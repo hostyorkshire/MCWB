@@ -11,11 +11,11 @@
     <header>
         <div class="header-content">
             <div class="header-title">
-                <h1><span class="logo">🌤️</span> MCWB Wiki</h1>
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="<img src="img/emoji/1f324.svg" alt="🌤" class="emoji-icon">️" class="emoji-icon"></span> MCWB Wiki</h1>
                 <p>MeshCore Weather Bot Documentation</p>
             </div>
             <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
                 <span id="theme-text">Dark Mode</span>
             </button>
         </div>
@@ -44,42 +44,42 @@
             
             <div class="feature-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
+                    <div class="feature-icon"><img src="img/emoji/26a1.svg" alt="⚡" class="emoji-icon"></div>
                     <h3>Zero Configuration</h3>
                     <p>Works on ANY channel you create - no setup needed. Just run the bot and start using it!</p>
                     <span class="badge success">Default</span>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">📡</div>
+                    <div class="feature-icon"><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"></div>
                     <h3>Multi-Channel Support</h3>
                     <p>Listens and responds on ALL channels simultaneously. Users can query from any channel they've subscribed to.</p>
                     <span class="badge success">Automatic</span>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
+                    <div class="feature-icon"><img src="img/emoji/1f30d.svg" alt="🌍" class="emoji-icon"></div>
                     <h3>Global Weather Coverage</h3>
                     <p>Get weather for any location worldwide using the free Open-Meteo API. No API keys required!</p>
                     <span class="badge primary">Free API</span>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🗺️</div>
+                    <div class="feature-icon"><img src="img/emoji/1f5fa.svg" alt="<img src="img/emoji/1f5fa.svg" alt="🗺" class="emoji-icon">️" class="emoji-icon"></div>
                     <h3>Country Specification</h3>
                     <p>Disambiguate city names by specifying country: <code>wx York UK</code> vs <code>wx York USA</code></p>
                     <span class="badge primary">New</span>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
+                    <div class="feature-icon"><img src="img/emoji/1f50d.svg" alt="🔍" class="emoji-icon"></div>
                     <h3>Smart Geocoding</h3>
                     <p>Automatically finds locations with fuzzy matching. Handles various city name formats.</p>
                     <span class="badge primary">Smart</span>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">📢</div>
+                    <div class="feature-icon"><img src="img/emoji/1f4e2.svg" alt="📢" class="emoji-icon"></div>
                     <h3>Periodic Announcements</h3>
                     <p>Optional announcements every 3 hours to remind users the bot is available.</p>
                     <span class="badge">Optional</span>
@@ -143,7 +143,7 @@
 
             <h2>Advanced Features</h2>
 
-            <h3>🌙 Web Dashboard</h3>
+            <h3><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"> Web Dashboard</h3>
             <div class="info-box">
                 <p>Beautiful dark-themed web interface with:</p>
                 <ul>
@@ -156,7 +156,7 @@
                 <p><a href="installation.html#web-dashboard">Learn more about the Web Dashboard →</a></p>
             </div>
 
-            <h3>🔧 Debug Mode</h3>
+            <h3><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"> Debug Mode</h3>
             <p>Comprehensive logging for troubleshooting:</p>
             <pre><code>python3 weather_bot.py --debug</code></pre>
             <p>Shows:</p>
@@ -168,7 +168,7 @@
                 <li>Channel filtering decisions</li>
             </ul>
 
-            <h3>🎯 Flexible Command Formats</h3>
+            <h3><img src="img/emoji/1f3af.svg" alt="🎯" class="emoji-icon"> Flexible Command Formats</h3>
             <p>The bot recognizes multiple command formats (case-insensitive):</p>
             <div class="command-example">
                 <div class="command">wx London</div>
@@ -186,13 +186,13 @@
                 <div class="command">wx Paris FR</div>
             </div>
 
-            <h3>🚀 Auto Port Detection</h3>
+            <h3><img src="img/emoji/1f680.svg" alt="🚀" class="emoji-icon"> Auto Port Detection</h3>
             <p>The bot automatically detects your USB serial port:</p>
             <pre><code>python3 weather_bot.py  # Auto-detects port</code></pre>
             <p>Or specify manually:</p>
             <pre><code>python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200</code></pre>
 
-            <h3>🔒 Channel Filtering (Optional)</h3>
+            <h3><img src="img/emoji/1f512.svg" alt="🔒" class="emoji-icon"> Channel Filtering (Optional)</h3>
             <p>For advanced users who want to restrict the bot to specific channels:</p>
             <pre><code># Only respond on channel index 1
 python3 weather_bot.py --channel-idx 1
@@ -201,7 +201,7 @@ python3 weather_bot.py --channel-idx 1
 python3 weather_bot.py --weather-channel-idx 2 --announce</code></pre>
             <p><strong>Note:</strong> Most users don't need this! The bot works automatically on all channels.</p>
 
-            <h3>🌐 Default Country Filtering</h3>
+            <h3><img src="img/emoji/1f310.svg" alt="🌐" class="emoji-icon"> Default Country Filtering</h3>
             <p>If most users are in one country, set a default to prefer local cities:</p>
             <pre><code># Prefer UK cities
 python3 weather_bot.py --country GB
@@ -266,22 +266,22 @@ python3 weather_bot.py --country US</code></pre>
             
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h3>💾 Memory</h3>
+                    <h3><img src="img/emoji/1f4be.svg" alt="💾" class="emoji-icon"> Memory</h3>
                     <p>Typical usage: &lt; 50MB RAM</p>
                 </div>
 
                 <div class="feature-card">
-                    <h3>⚡ CPU</h3>
+                    <h3><img src="img/emoji/26a1.svg" alt="⚡" class="emoji-icon"> CPU</h3>
                     <p>Minimal CPU usage when idle</p>
                 </div>
 
                 <div class="feature-card">
-                    <h3>🌐 Network</h3>
+                    <h3><img src="img/emoji/1f310.svg" alt="🌐" class="emoji-icon"> Network</h3>
                     <p>Low bandwidth - only queries API when needed</p>
                 </div>
 
                 <div class="feature-card">
-                    <h3>🔋 Power</h3>
+                    <h3><img src="img/emoji/1f50b.svg" alt="🔋" class="emoji-icon"> Power</h3>
                     <p>Efficient - perfect for battery-powered Pi deployments</p>
                 </div>
             </div>
@@ -305,7 +305,7 @@ sudo systemctl start weather_bot</code></pre>
             <p>Docker support is community-maintained. See GitHub issues for containerized deployments.</p>
 
             <div class="info-box">
-                <h3>🍓 Raspberry Pi Optimization</h3>
+                <h3><img src="img/emoji/1f353.svg" alt="🍓" class="emoji-icon"> Raspberry Pi Optimization</h3>
                 <p>The bot is specifically optimized for Raspberry Pi Zero 2 and other Pi models. It's lightweight, efficient, and perfect for headless deployments in remote locations.</p>
             </div>
         </div>

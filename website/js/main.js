@@ -23,10 +23,10 @@ function updateThemeButton(theme) {
     
     if (icon && text) {
         if (theme === 'dark') {
-            icon.textContent = '☀️';
+            icon.innerHTML = '<img src="img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
             text.textContent = 'Light Mode';
         } else {
-            icon.textContent = '🌙';
+            icon.innerHTML = '<img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
             text.textContent = 'Dark Mode';
         }
     }

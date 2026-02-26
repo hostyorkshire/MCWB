@@ -92,11 +92,10 @@ Press Ctrl+C to stop.
 WX request for 'Leeds' from M3UXC/M
 Response:
 Leeds, GB
-Overcast
+☁️ Overcast
 Temp: 9.8°C (feels 6.1°C)
 Humid: 85%
 Wind: 20.7 km/h at 239°
-https://mcwb.netlify.app
 ```
 
 No confusing "unknown:" messages appear at all!

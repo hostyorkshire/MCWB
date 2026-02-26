@@ -282,6 +282,13 @@
             font-size: 1.2em;
         }
 
+        .emoji-icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            display: inline-block;
+        }
+
         .info-card {
             background: var(--card-bg);
             padding: 20px 25px;
@@ -652,22 +659,22 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <h1>🌤️ MCWB Dashboard</h1>
+                <h1><img src="/static/img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"> MCWB Dashboard</h1>
                 <p class="subtitle">MeshCore Weather Bot - Real-time Monitoring</p>
             </div>
             <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
-                <span id="theme-icon">🌙</span>
+                <span id="theme-icon"><img src="/static/img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
                 <span id="theme-text">Dark Mode</span>
             </button>
         </header>
 
         <!-- API Connection Info -->
         <div class="info-card" id="api-info-card">
-            <h3>🌐 API Connection URL</h3>
+            <h3><img src="/static/img/emoji/1f310.svg" alt="🌐" class="emoji-icon"> API Connection URL</h3>
             <p>Use this URL to connect your static website's Live Dashboard page to display real-time data from this running bot instance:</p>
             <div class="api-url-box">
                 <span id="api-url">Loading...</span>
-                <button class="copy-btn" onclick="copyApiUrl()">📋 Copy</button>
+                <button class="copy-btn" onclick="copyApiUrl()"><img src="/static/img/emoji/1f4cb.svg" alt="📋" class="emoji-icon"> Copy</button>
             </div>
             <p style="margin-bottom: 0; font-size: 0.9em;">
                 <strong>How to use:</strong> Open your static website's dashboard page and paste this URL in the "Configure Custom API URL" section, or use it as a parameter: 
@@ -688,7 +695,7 @@
         <!-- Active Channels Section -->
         <div class="status-card">
             <div class="status-header">
-                <h2 class="status-title">📡 Active Channels</h2>
+                <h2 class="status-title"><img src="/static/img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> Active Channels</h2>
             </div>
             <div id="channels-list" class="channels-display">
                 <div class="loading">Loading channels...</div>
@@ -697,7 +704,7 @@
 
         <!-- Usage Statistics Section -->
         <div class="stats-section">
-            <h2 class="status-title" style="margin-bottom: 20px; padding-left: 10px;">📊 Usage Statistics</h2>
+            <h2 class="status-title" style="margin-bottom: 20px; padding-left: 10px;"><img src="/static/img/emoji/1f4ca.svg" alt="📊" class="emoji-icon"> Usage Statistics</h2>
             
             <!-- Stats Summary Cards -->
             <div class="stats-grid">
@@ -722,25 +729,25 @@
             <!-- Charts Grid -->
             <div class="charts-grid">
                 <div class="chart-card">
-                    <h3 class="chart-title">📈 Requests Over Time (24 Hours)</h3>
+                    <h3 class="chart-title"><img src="/static/img/emoji/1f4c8.svg" alt="📈" class="emoji-icon"> Requests Over Time (24 Hours)</h3>
                     <div id="hourly-chart" class="line-chart"></div>
                     <div id="hourly-labels" class="chart-labels"></div>
                 </div>
                 <div class="chart-card">
-                    <h3 class="chart-title">📊 Top Locations</h3>
+                    <h3 class="chart-title"><img src="/static/img/emoji/1f4ca.svg" alt="📊" class="emoji-icon"> Top Locations</h3>
                     <div id="locations-chart" class="bar-chart"></div>
                 </div>
             </div>
 
             <div class="chart-card">
-                <h3 class="chart-title">📅 Daily Requests (7 Days)</h3>
+                <h3 class="chart-title"><img src="/static/img/emoji/1f4c5.svg" alt="📅" class="emoji-icon"> Daily Requests (7 Days)</h3>
                 <div id="daily-chart" class="line-chart"></div>
                 <div id="daily-labels" class="chart-labels"></div>
             </div>
 
             <!-- Recent Users Section -->
             <div class="chart-card">
-                <h3 class="chart-title">👥 Recent Users (Last 10)</h3>
+                <h3 class="chart-title"><img src="/static/img/emoji/1f465.svg" alt="👥" class="emoji-icon"> Recent Users (Last 10)</h3>
                 <div id="recent-users" class="recent-users-list">
                     <div class="loading">Loading recent users...</div>
                 </div>
@@ -750,7 +757,7 @@
         <div class="log-viewer">
             <div class="status-header">
                 <h2 class="status-title">Log Viewer</h2>
-                <button class="refresh-btn" onclick="refreshLogs()">🔄 Refresh</button>
+                <button class="refresh-btn" onclick="refreshLogs()"><img src="/static/img/emoji/1f504.svg" alt="🔄" class="emoji-icon"> Refresh</button>
             </div>
             <div class="log-tabs">
                 <div class="log-tab active" data-log="bot" onclick="switchLog('bot')">Bot Log</div>
@@ -801,10 +808,10 @@
             const text = document.getElementById('theme-text');
             
             if (theme === 'dark') {
-                icon.textContent = '☀️';
+                icon.innerHTML = '<img src="/static/img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
                 text.textContent = 'Light Mode';
             } else {
-                icon.textContent = '🌙';
+                icon.innerHTML = '<img src="/static/img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
                 text.textContent = 'Dark Mode';
             }
         }
@@ -1008,7 +1015,7 @@
                         
                         const icon = document.createElement('span');
                         icon.className = 'channel-icon';
-                        icon.textContent = '📡';
+                        icon.innerHTML = '<img src="/static/img/emoji/1f4e1.svg" alt="📡" class="emoji-icon">';
                         
                         const content = document.createElement('div');
                         content.style.display = 'flex';
