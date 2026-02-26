@@ -698,7 +698,6 @@ class WeatherBot:
 
         return location_str, None
 
-    @staticmethod
     def _get_outlook(self, location_data: dict, lat: float, lon: float) -> str:
         """Fetch outlook for given coordinates and return a formatted string."""
         try:

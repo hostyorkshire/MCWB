@@ -115,12 +115,12 @@ def test_weather_command_overrides_pending_outlook():
                 print(f"      Got: {first_msg}")
                 return False
                 
-            # Check second message is the outlook prompt for Paris
+            # Check second message is the outlook for Paris
             second_msg = calls[1][0][0]
-            if b"Would you like to see the outlook for Paris" in second_msg:
-                print("   ✅ Second message is outlook prompt for Paris")
+            if b"Paris 3-day" in second_msg or b"02-" in second_msg:
+                print("   ✅ Second message is outlook for Paris (sent automatically)")
             else:
-                print("   ❌ FAIL: Second message is not outlook prompt for Paris")
+                print("   ❌ FAIL: Second message is not outlook for Paris")
                 print(f"      Got: {second_msg}")
                 return False
         else:
@@ -186,7 +186,7 @@ def test_weather_command_with_no_pending_outlook():
 
         calls = bot._ser.write.call_args_list
         if len(calls) >= 2:
-            print("✅ PASS: Bot sent 2 messages (weather + prompt)")
+            print("✅ PASS: Bot sent 2 messages (weather + outlook)")
             
             first_msg = calls[0][0][0]
             if b"York" in first_msg and b"GB" in first_msg:
@@ -196,17 +196,16 @@ def test_weather_command_with_no_pending_outlook():
                 return False
                 
             second_msg = calls[1][0][0]
-            if b"Would you like to see the outlook for York" in second_msg:
-                print("✅ PASS: Second message is outlook prompt")
+            if b"York 3-day" in second_msg or b"02-" in second_msg:
+                print("✅ PASS: Second message is outlook (sent automatically)")
             else:
-                print("❌ FAIL: Second message is not outlook prompt")
+                print("❌ FAIL: Second message is not outlook")
                 return False
         else:
             print(f"❌ FAIL: Expected 2 messages, got {len(calls)}")
             return False
 
         return True
-
 
 def test_yes_response_still_works():
     """Test that 'yes' responses still trigger outlook after the fix"""

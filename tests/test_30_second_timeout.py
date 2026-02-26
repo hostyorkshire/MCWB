@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """
-Test the 30-second outlook timeout feature.
-Verifies that:
-1. Outlook requests expire after 30 seconds
-2. Expired requests are automatically cleaned up
-3. Other users can use the bot without interference from expired outlooks
+Test that outlook is sent automatically without timeout concerns.
+Since outlook is now sent immediately, there's no pending state or timeout to manage.
 """
 
 import os
@@ -18,64 +15,30 @@ from unittest.mock import MagicMock, patch
 from weather_bot import WeatherBot
 
 
-def test_30_second_timeout():
-    """Test that outlook requests expire after 30 seconds"""
+def test_no_pending_outlook_state():
+    """Test that outlook is sent immediately without pending state"""
     print("=" * 70)
-    print("TEST: 30-Second Outlook Timeout")
+    print("TEST: No Pending Outlook State (Immediate Send)")
     print("=" * 70)
 
     bot = WeatherBot(debug=False)
+    bot._ser = MagicMock()
     
-    # Verify the timeout is set to 30 seconds
-    if bot._outlook_timeout == 30:
-        print(f"✅ PASS: Outlook timeout is set to 30 seconds")
+    # Verify no pending outlook tracking exists
+    if not hasattr(bot, '_pending_outlook'):
+        print(f"✅ PASS: No pending outlook state management (immediate send)")
     else:
-        print(f"❌ FAIL: Outlook timeout is {bot._outlook_timeout}s, expected 30s")
+        print(f"❌ FAIL: Bot still has pending outlook state tracking")
         return False
 
-    # Add a pending outlook request that's 31 seconds old (expired)
-    state_key = ("TestUser", 1)
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time() - 31,  # 31 seconds ago (expired)
-    }
-
-    print(f"  Added expired outlook request (31 seconds old)")
-
-    # Trigger cleanup
-    bot._cleanup_expired_outlook_requests()
-
-    if state_key not in bot._pending_outlook:
-        print("✅ PASS: Expired request (31s old) was cleaned up")
+    # Verify no timeout configuration exists
+    if not hasattr(bot, '_outlook_timeout'):
+        print(f"✅ PASS: No outlook timeout configuration (not needed)")
     else:
-        print("❌ FAIL: Expired request was not cleaned up")
+        print(f"❌ FAIL: Bot still has outlook timeout configuration")
         return False
 
-    # Add a fresh request (29 seconds old, not expired)
-    bot._pending_outlook[state_key] = {
-        "location": "London",
-        "country": None,
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "location_data": {"name": "London", "country_code": "GB"},
-        "timestamp": time.time() - 29,  # 29 seconds ago (still valid)
-    }
-
-    print(f"  Added fresh outlook request (29 seconds old)")
-
-    # Trigger cleanup
-    bot._cleanup_expired_outlook_requests()
-
-    if state_key in bot._pending_outlook:
-        print("✅ PASS: Fresh request (29s old) was not cleaned up")
-    else:
-        print("❌ FAIL: Fresh request was incorrectly cleaned up")
-        return False
-
+    print("\n✅ Bot sends outlook immediately - no state or timeout needed")
     return True
 
 

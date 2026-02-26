@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Integration test: Complete weather outlook conversation flow.
-This demonstrates the full user experience of the new outlook feature.
+This demonstrates the full user experience - weather followed by automatic outlook.
 """
 
 import os
@@ -59,7 +59,17 @@ def integration_test():
             }
         }
 
-        mock_get.side_effect = [geocoding_response, weather_response]
+        outlook_response = MagicMock()
+        outlook_response.json.return_value = {
+            "daily": {
+                "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
+                "temperature_2m_max": [15.0, 16.5, 14.0],
+                "temperature_2m_min": [8.0, 9.5, 7.0],
+                "weather_code": [3, 61, 2],
+            }
+        }
+
+        mock_get.side_effect = [geocoding_response, weather_response, outlook_response]
         bot._handle_channel_message("UserNode123: wx York UK", 1)
 
         # Extract bot responses
@@ -74,49 +84,24 @@ def integration_test():
                 pass
 
         print()
-        print("-" * 70)
-
-        # ===== Step 2: User says yes =====
-        print("\n[User on #weather channel]: y")
-        print()
-
-        outlook_response = MagicMock()
-        outlook_response.json.return_value = {
-            "daily": {
-                "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
-                "temperature_2m_max": [13.0, 14.5, 12.0],
-                "temperature_2m_min": [6.0, 8.5, 5.0],
-                "weather_code": [3, 61, 2],
-            }
-        }
-
-        mock_get.side_effect = [outlook_response]
-        bot._ser.write.reset_mock()
-        bot._handle_channel_message("UserNode123: y", 1)
-
-        # Extract outlook response
-        calls = bot._ser.write.call_args_list
-        print("[WeatherBot response]:")
-        if calls:
-            msg_bytes = calls[0][0][0]
-            try:
-                text = msg_bytes[7:].decode("utf-8", "ignore")
-                print(f"\n{text}")
-            except Exception:
-                pass
-
-        print()
         print("=" * 70)
         print("✅ INTEGRATION TEST COMPLETE")
         print("=" * 70)
         print()
 
-        # Verify state
-        state_key = ("UserNode123", 1)
-        if state_key not in bot._pending_outlook:
-            print("✅ State properly cleaned up after outlook sent")
+        # Verify messages
+        if len(calls) >= 2:
+            print("✅ Bot sent weather and outlook automatically")
+            
+            # Check second message is outlook
+            second_msg = calls[1][0][0]
+            if b"3-day" in second_msg and b"https://mcwb.netlify.app" in second_msg:
+                print("✅ Outlook sent automatically with link")
+            else:
+                print("❌ Outlook not properly formatted")
+                return False
         else:
-            print("❌ State not cleaned up")
+            print(f"❌ Expected 2 messages, got {len(calls)}")
             return False
 
         return True
