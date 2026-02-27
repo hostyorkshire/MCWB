@@ -28,12 +28,14 @@ Wind: 16.5 km/h at 240°
 
 **Message 2 - 3-Day Outlook (sent automatically):**
 ```
-York 3-day:
+York, GB 3-day:
 02-25: Overcast 6-13°C
 02-26: Rain 8-14°C
 02-27: Cloudy 5-12°C
 https://mcwb.netlify.app
 ```
+
+Note: The outlook now includes the country code (e.g., "York, GB" or "York, US") to match the weather response and avoid confusion when cities have the same name in different countries.
 
 ## Technical Details
 
@@ -72,7 +74,7 @@ Bot:  London, GB
       Wind: 18 km/h at 230°
 
 
-Bot:  London 3-day:
+Bot:  London, GB 3-day:
       02-25: Cloudy 8-15°C
       02-26: Rain 9-16°C
       02-27: Overcast 7-14°C
@@ -82,10 +84,11 @@ Bot:  London 3-day:
 ## Implementation Notes
 
 - The feature is fully automatic - no user prompts or interaction needed
-- Outlook is sent immediately after weather response with a 0.5s delay
+- Outlook is sent immediately after weather response with a 2.0s delay to ensure reliable delivery
 - Each weather request automatically includes outlook
 - Multiple users can request weather simultaneously without conflicts
 - Link to documentation website included at bottom of every outlook
+- Country code is included in outlook header to match weather response format and avoid confusion
 
 ## Testing
 

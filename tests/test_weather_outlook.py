@@ -150,6 +150,14 @@ def test_outlook_format():
         print("❌ FAIL: Response missing expected elements")
         return False
 
+    # Check that country code is included in outlook header
+    if "York, GB 3-day:" in response:
+        print("✅ PASS: Response includes country code (York, GB)")
+    else:
+        print("❌ FAIL: Response missing country code")
+        print(f"   Expected 'York, GB 3-day:' in response")
+        return False
+
     # Check that dates are shortened
     if "02-25" in response or "02-26" in response:
         print("✅ PASS: Dates are shortened (MM-DD format)")
@@ -172,6 +180,62 @@ def test_outlook_format():
     return True
 
 
+def test_outlook_includes_country_code():
+    """Test that outlook includes country code to match weather response"""
+    print("\n" + "=" * 70)
+    print("TEST: Outlook Includes Country Code")
+    print("=" * 70)
+
+    bot = WeatherBot(debug=False)
+
+    # Test with York, GB
+    location_data_gb = {"name": "York", "country_code": "GB", "latitude": 53.9599, "longitude": -1.0873}
+    outlook_data = {
+        "daily": {
+            "time": ["2026-02-25", "2026-02-26", "2026-02-27"],
+            "temperature_2m_max": [15.0, 16.5, 14.0],
+            "temperature_2m_min": [8.0, 9.5, 7.0],
+            "weather_code": [2, 61, 3],
+        }
+    }
+
+    response_gb = bot.format_outlook_response(location_data_gb, outlook_data)
+    print("\nYork, GB outlook:")
+    print(response_gb)
+
+    if "York, GB 3-day:" in response_gb:
+        print("✅ PASS: GB outlook includes 'York, GB 3-day:'")
+    else:
+        print("❌ FAIL: GB outlook missing country code")
+        return False
+
+    # Test with York, US
+    location_data_us = {"name": "York", "country_code": "US", "latitude": 39.9626, "longitude": -76.7277}
+    response_us = bot.format_outlook_response(location_data_us, outlook_data)
+    print("\nYork, US outlook:")
+    print(response_us)
+
+    if "York, US 3-day:" in response_us:
+        print("✅ PASS: US outlook includes 'York, US 3-day:'")
+    else:
+        print("❌ FAIL: US outlook missing country code")
+        return False
+
+    # Test with location without country code
+    location_data_no_country = {"name": "Unknown City"}
+    response_no_country = bot.format_outlook_response(location_data_no_country, outlook_data)
+    print("\nOutlook without country:")
+    print(response_no_country)
+
+    if "Unknown City 3-day:" in response_no_country and ", " not in response_no_country.split('\n')[0]:
+        print("✅ PASS: Outlook without country code shows city name only")
+    else:
+        print("❌ FAIL: Outlook without country code has unexpected format")
+        return False
+
+    return True
+
+
 def main():
     """Run all outlook tests"""
     print("\n")
@@ -183,6 +247,7 @@ def main():
     tests = [
         test_outlook_sent_automatically_after_weather,
         test_outlook_format,
+        test_outlook_includes_country_code,
     ]
 
     passed = 0
