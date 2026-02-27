@@ -4,7 +4,7 @@ This guide provides fast solutions for the most common issues.
 
 ## 🚨 EMERGENCY: Can't SSH Into Pi AND/OR Can't See Dashboard
 
-### Symptom
+### Symptoms
 - Cannot SSH into your Raspberry Pi
 - Cannot access dashboard at http://[your-pi-ip]:5000
 - One or both services not working
