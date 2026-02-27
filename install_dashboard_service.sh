@@ -67,9 +67,17 @@ if [ -z "$VIRTUAL_ENV" ]; then
             echo "⚠️  Flask packages not installed"
             echo ""
             echo "📦 Creating virtual environment (recommended for newer systems)..."
-            python3 -m venv venv
+            if ! python3 -m venv venv; then
+                echo "❌ Failed to create virtual environment"
+                echo "   You may need to install python3-venv:"
+                echo "   sudo apt-get install python3-venv"
+                exit 1
+            fi
             echo "   Installing dependencies in virtual environment..."
-            ./venv/bin/pip install -r requirements.txt
+            if ! ./venv/bin/pip install -r requirements.txt; then
+                echo "❌ Failed to install dependencies"
+                exit 1
+            fi
             USE_VENV=true
             PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
             echo "✅ Virtual environment created and dependencies installed"

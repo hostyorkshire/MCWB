@@ -104,12 +104,20 @@ else
                     # Check if venv exists, if not create it
                     if [ ! -d "venv" ]; then
                         echo "Creating virtual environment..."
-                        python3 -m venv venv
+                        if ! python3 -m venv venv; then
+                            echo "✗ Failed to create virtual environment"
+                            echo "  You may need to install python3-venv:"
+                            echo "  sudo apt-get install python3-venv"
+                            exit 1
+                        fi
                     fi
                     
                     # Install dependencies in venv
                     echo "Installing dependencies in virtual environment..."
-                    ./venv/bin/pip install -r requirements.txt
+                    if ! ./venv/bin/pip install -r requirements.txt; then
+                        echo "✗ Failed to install dependencies"
+                        exit 1
+                    fi
                     echo "✓ Dependencies installed"
                     echo ""
                     echo "Restarting service..."
