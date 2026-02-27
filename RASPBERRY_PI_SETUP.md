@@ -543,13 +543,20 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Note:** If you're using a virtual environment, you'll need to update the service file in the next section to use the virtual environment's Python interpreter (e.g., `/home/pi/MCWB/venv/bin/python3` instead of `/usr/bin/python3`).
+**Note:** The automated installer (`install_service.sh` and `install_dashboard_service.sh`) handles virtual environment setup automatically, including updating the service file to use the venv's Python interpreter.
 
-**Alternative: Install to user directory** (may fail on newer systems):
+**Alternative: Manual venv setup** (not recommended, use the automated installer instead):
 ```bash
-pip3 install --user -r requirements.txt
-# If this fails with "externally-managed-environment", use the virtual environment method above
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+deactivate
 ```
+
+Then update the service file to use `/home/pi/MCWB/venv/bin/python3` instead of `/usr/bin/python3`.
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), `pip3 install --user` will fail with "externally-managed-environment" error due to PEP 668. Always use a virtual environment or the automated installers.
 
 ### 3. Connect Your MeshCore Radio
 

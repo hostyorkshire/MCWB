@@ -39,7 +39,53 @@ fi
 
 # Check if Python dependencies are installed
 echo "🔍 Checking Python dependencies..."
- main
+
+# Check if we're in a virtual environment
+if [ -z "$VIRTUAL_ENV" ]; then
+    # Not in a venv, check if one exists
+    if [ -d "venv" ] && [ -f "venv/bin/python3" ]; then
+        echo "📦 Virtual environment found at ./venv"
+        echo "   Checking if dependencies are installed in venv..."
+        if ./venv/bin/python3 -c "import flask; import flask_cors" 2>/dev/null; then
+            echo "✅ Python dependencies OK in virtual environment"
+            USE_VENV=true
+            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
+        else
+            echo "⚠️  Dependencies not installed in venv"
+            echo "   Installing dependencies in virtual environment..."
+            if ! ./venv/bin/pip install -r requirements.txt; then
+                echo "❌ Failed to install dependencies"
+                exit 1
+            fi
+            USE_VENV=true
+            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
+        fi
+    else
+        # No venv, try system python
+        if python3 -c "import flask; import flask_cors" 2>/dev/null; then
+            echo "✅ Python dependencies OK (system-wide)"
+            USE_VENV=false
+            PYTHON_PATH="/usr/bin/python3"
+        else
+            echo "⚠️  Flask packages not installed"
+            echo ""
+            echo "📦 Creating virtual environment (recommended for newer systems)..."
+            if ! python3 -m venv venv; then
+                echo "❌ Failed to create virtual environment"
+                echo "   You may need to install python3-venv:"
+                echo "   sudo apt-get install python3-venv"
+                exit 1
+            fi
+            echo "   Installing dependencies in virtual environment..."
+            if ! ./venv/bin/pip install -r requirements.txt; then
+                echo "❌ Failed to install dependencies"
+                exit 1
+            fi
+            USE_VENV=true
+            PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
+            echo "✅ Virtual environment created and dependencies installed"
+        fi
+    fi
 else
     # Already in a venv
     echo "✅ Running in virtual environment: $VIRTUAL_ENV"

@@ -145,8 +145,8 @@ sudo journalctl -u mcwb-dashboard -n 100
 **Solution:**
 ```bash
 cd ~/MCWB
-pip3 install --user -r requirements.txt
-sudo systemctl restart mcwb-dashboard
+# The automated installer handles dependencies and venv setup
+./install_dashboard_service.sh
 ```
 
 ### Problem 2: Dependencies Not Installed
@@ -158,8 +158,14 @@ python3 -c "import flask, flask_cors; print('✅ OK')"
 
 **If fails:**
 ```bash
-pip3 install --user -r requirements.txt
-sudo systemctl restart mcwb-dashboard
+cd ~/MCWB
+# Create virtual environment if needed and install dependencies
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+./venv/bin/pip install -r requirements.txt
+# Reinstall service to use the venv
+./install_dashboard_service.sh
 ```
 
 ### Problem 3: Service Only Listening on Localhost
@@ -281,11 +287,8 @@ sudo systemctl disable mcwb-dashboard
 sudo rm /etc/systemd/system/mcwb-dashboard.service
 sudo systemctl daemon-reload
 
-# 2. Reinstall dependencies
+# 2. Reinstall service (handles dependencies and venv automatically)
 cd ~/MCWB
-pip3 install --user -r requirements.txt
-
-# 3. Reinstall service
 ./install_dashboard_service.sh
 
 # 4. Wait 5 seconds, then test
