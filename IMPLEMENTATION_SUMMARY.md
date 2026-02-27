@@ -2,13 +2,13 @@
 
 ## Overview
 
-Successfully implemented Cloudflare Tunnel integration to connect the static website hosted at **wx.intergalactic.it.com** (cPanel) to the bot dashboard running locally on **192.168.1.109:5000**.
+Successfully implemented Cloudflare Tunnel integration to connect the static website hosted at **weather.example.com** (cPanel) to the bot dashboard running locally on **192.168.1.100:5000**.
 
 ## Problem Solved
 
 **Original Challenge:**
 - Static website hosted on cPanel needs to display live data from bot
-- Bot runs locally on private network (192.168.1.109)
+- Bot runs locally on private network (192.168.1.100)
 - No way to expose local bot to internet without complex port forwarding
 - Need secure, reliable connection method
 
@@ -24,7 +24,7 @@ Successfully implemented Cloudflare Tunnel integration to connect the static web
 ```
 ┌─────────────────────────┐         ┌──────────────────┐         ┌────────────────────────┐
 │  Static Website         │         │                  │         │  Raspberry Pi          │
-│  wx.intergalactic.it.com│  HTTPS  │   Cloudflare     │  Tunnel │  192.168.1.109:5000    │
+│  weather.example.com│  HTTPS  │   Cloudflare     │  Tunnel │  192.168.1.100:5000    │
 │  (cPanel)               ├────────▶│   Network        ├────────▶│  Bot Dashboard         │
 │  dashboard.html         │         │                  │         │  (Local Only)          │
 └─────────────────────────┘         └──────────────────┘         └────────────────────────┘
@@ -49,7 +49,7 @@ Successfully implemented Cloudflare Tunnel integration to connect the static web
    - Multiple deployment options
 
 3. **`CPANEL_DEPLOYMENT_GUIDE.md`** (326 lines)
-   - Quick reference for wx.intergalactic.it.com
+   - Quick reference for weather.example.com
    - Step-by-step cPanel upload instructions
    - Testing and verification steps
    - Common issues and solutions
@@ -60,7 +60,7 @@ Successfully implemented Cloudflare Tunnel integration to connect the static web
 ### Modified Files
 1. **`web_dashboard.py`**
    - Updated CORS configuration
-   - Added wx.intergalactic.it.com to allowed origins
+   - Added weather.example.com to allowed origins
    - Added comments explaining wildcard use
 
 2. **`public_html/wx/js/dashboard.js`** 
@@ -125,7 +125,7 @@ const TUNNEL_URL = 'https://your-tunnel-url.yourdomain.com';
 ```
 
 **Step 3: Deploy to cPanel**
-- Upload `js/dashboard.js` to wx.intergalactic.it.com
+- Upload `js/dashboard.js` to weather.example.com
 - Visit site - will show live data!
 
 ### Configuration Details
@@ -138,7 +138,7 @@ The tunnel URL can be set in `public_html/wx/js/dashboard.js`:
 // 3. null (fallback) - Demo mode
 
 const TUNNEL_URL = ''; // Set your tunnel URL here
-const LOCAL_URL = 'http://192.168.1.109:5000';
+const LOCAL_URL = 'http://192.168.1.100:5000';
 ```
 
 ### Cloudflare Tunnel Config (Generated Automatically)
@@ -245,7 +245,7 @@ Potential improvements for future PRs:
 
 ### Main Guides
 - **[CLOUDFLARE_TUNNEL_SETUP.md](CLOUDFLARE_TUNNEL_SETUP.md)** - Complete setup guide
-- **[CPANEL_DEPLOYMENT_GUIDE.md](CPANEL_DEPLOYMENT_GUIDE.md)** - Quick reference for wx.intergalactic.it.com
+- **[CPANEL_DEPLOYMENT_GUIDE.md](CPANEL_DEPLOYMENT_GUIDE.md)** - Quick reference for weather.example.com
 - **[WEB_DASHBOARD.md](WEB_DASHBOARD.md)** - Dashboard features and setup
 
 ### Related Docs
@@ -256,7 +256,7 @@ Potential improvements for future PRs:
 
 All objectives achieved:
 - ✅ Cloudflare Tunnel installation script created
-- ✅ Dashboard CORS configured for wx.intergalactic.it.com
+- ✅ Dashboard CORS configured for weather.example.com
 - ✅ Static website can connect to local bot
 - ✅ Live data display implemented
 - ✅ Comprehensive documentation provided
@@ -267,7 +267,7 @@ All objectives achieved:
 
 ## Conclusion
 
-The Cloudflare Tunnel integration successfully solves the challenge of connecting a cPanel-hosted static website (wx.intergalactic.it.com) to a locally-running bot dashboard (192.168.1.109:5000) without requiring:
+The Cloudflare Tunnel integration successfully solves the challenge of connecting a cPanel-hosted static website (weather.example.com) to a locally-running bot dashboard (192.168.1.100:5000) without requiring:
 - Port forwarding configuration
 - Router access
 - Static IP address

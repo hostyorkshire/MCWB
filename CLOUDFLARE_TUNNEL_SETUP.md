@@ -1,6 +1,6 @@
 # Cloudflare Tunnel Setup Guide
 
-Connect your locally-running MCWB Dashboard (on 192.168.1.109) to your static website hosted on cPanel without port forwarding or exposing your local IP address.
+Connect your locally-running MCWB Dashboard (on 192.168.1.100) to your static website hosted on cPanel without port forwarding or exposing your local IP address.
 
 ## 🎯 What is Cloudflare Tunnel?
 
@@ -13,12 +13,12 @@ Cloudflare Tunnel creates a secure, encrypted connection from your Raspberry Pi 
 - ✅ **Free SSL/TLS** - Automatic HTTPS with valid certificates
 - ✅ **DDoS Protection** - Cloudflare's network protects your dashboard
 - ✅ **Global CDN** - Fast access from anywhere in the world
-- ✅ **Private Network** - Your local IP (192.168.1.109) stays private
+- ✅ **Private Network** - Your local IP (192.168.1.100) stays private
 
 ### How It Works
 
 ```
-Static Website (cPanel)  →  Cloudflare Network  →  Cloudflared Daemon  →  Dashboard (192.168.1.109:5000)
+Static Website (cPanel)  →  Cloudflare Network  →  Cloudflared Daemon  →  Dashboard (192.168.1.100:5000)
 ```
 
 1. **cloudflared** daemon runs on your Raspberry Pi and creates an outbound tunnel to Cloudflare
@@ -41,12 +41,12 @@ Static Website (cPanel)  →  Cloudflare Network  →  Cloudflared Daemon  →  
    - Option C: Use a free subdomain service like FreeDNS.afraid.org
 
 3. **Running Dashboard** on your Raspberry Pi
-   - Dashboard should be accessible at `http://192.168.1.109:5000`
+   - Dashboard should be accessible at `http://192.168.1.100:5000`
    - See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for setup
 
 ### Recommended
 
-- Static IP reservation for your Raspberry Pi (192.168.1.109)
+- Static IP reservation for your Raspberry Pi (192.168.1.100)
 - Dashboard running as a systemd service for auto-start
 
 ## 🚀 Quick Start (Automated Installation)
@@ -234,9 +234,9 @@ sudo systemctl status cloudflared-mcwb.service
 
 Once your tunnel is running, update your static website to use the new URL.
 
-### For Your cPanel-Hosted Site (wx.intergalactic.it.com)
+### For Your cPanel-Hosted Site (weather.example.com)
 
-Your static website is hosted at **wx.intergalactic.it.com** on cPanel. After setting up the Cloudflare Tunnel, you need to update the website to point to your tunnel URL.
+Your static website is hosted at **weather.example.com** on cPanel. After setting up the Cloudflare Tunnel, you need to update the website to point to your tunnel URL.
 
 ### Option 1: Hardcode the URL (Simple)
 
@@ -248,7 +248,7 @@ Edit `public_html/wx/js/dashboard.js`:
 const TUNNEL_URL = 'https://mcwb-dashboard.yourdomain.com';
 
 // Remove or comment out the local URL
-// const LOCAL_URL = 'http://192.168.1.109:5000';
+// const LOCAL_URL = 'http://192.168.1.100:5000';
 ```
 
 **Example tunnel URLs you might use:**
@@ -265,7 +265,7 @@ This allows your site to work both locally and remotely:
 ```javascript
 // Try Cloudflare Tunnel first, fallback to local
 const TUNNEL_URL = 'https://mcwb-dashboard.yourdomain.com';  // Your tunnel URL
-const LOCAL_URL = 'http://192.168.1.109:5000';
+const LOCAL_URL = 'http://192.168.1.100:5000';
 
 /**
  * Get the API URL to use for dashboard connections
@@ -300,12 +300,12 @@ After updating the configuration:
 1. **Upload to cPanel:**
    - Log in to your cPanel account
    - Navigate to File Manager
-   - Go to the directory where wx.intergalactic.it.com is hosted
+   - Go to the directory where weather.example.com is hosted
    - Upload the modified `js/dashboard.js` file
    - Overwrite the existing file
 
 2. **Verify the upload:**
-   - Visit https://wx.intergalactic.it.com/dashboard.html
+   - Visit https://weather.example.com/dashboard.html
    - Open browser console (F12) and check for connection messages
    - You should see "Connected to live dashboard" if successful
 
@@ -323,7 +323,7 @@ If you prefer FTP:
 ```bash
 # Example using lftp
 lftp -u your-username ftp.intergalactic.it.com
-cd public_html/wx  # Or wherever wx.intergalactic.it.com is hosted
+cd public_html/wx  # Or wherever weather.example.com is hosted
 put public_html/wx/js/dashboard.js
 quit
 ```
@@ -384,7 +384,7 @@ cloudflared --version
 
 ### What's Protected
 
-- ✅ Your local IP address (192.168.1.109) is never exposed
+- ✅ Your local IP address (192.168.1.100) is never exposed
 - ✅ All traffic is encrypted with TLS
 - ✅ No inbound firewall ports needed
 - ✅ Cloudflare provides DDoS protection

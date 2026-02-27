@@ -21,10 +21,10 @@ This installs `cryptography` needed for certificate generation.
 Run the certificate generation script:
 
 ```bash
-python3 generate_ssl_cert.py --hostname 192.168.1.109
+python3 generate_ssl_cert.py --hostname 192.168.1.100
 ```
 
-Replace `192.168.1.109` with your Raspberry Pi's actual IP address.
+Replace `192.168.1.100` with your Raspberry Pi's actual IP address.
 
 This creates two files:
 - `cert.pem` - SSL certificate (public)
@@ -37,7 +37,7 @@ python3 web_dashboard.py --host 0.0.0.0 --ssl
 ```
 
 The dashboard will now be accessible at:
-- `https://192.168.1.109:5000` (from network)
+- `https://192.168.1.100:5000` (from network)
 - `https://localhost:5000` (from Pi itself)
 
 ## Browser Security Warnings
@@ -48,7 +48,7 @@ Since we're using a self-signed certificate, browsers will show a security warni
 
 **Chrome/Edge:**
 1. Click "Advanced"
-2. Click "Proceed to 192.168.1.109 (unsafe)"
+2. Click "Proceed to 192.168.1.100 (unsafe)"
 
 **Firefox:**
 1. Click "Advanced"

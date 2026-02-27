@@ -6,7 +6,7 @@
 ---
 
 ## Symptoms
-- ✅ **Ping works:** `ping 192.168.1.109` succeeds  
+- ✅ **Ping works:** `ping 192.168.1.100` succeeds  
 - ❌ **SSH fails:** Connection refused or timeout
 
 ---
@@ -38,7 +38,7 @@
 
 4. **Test SSH** from another computer:
    ```bash
-   ssh your_username@192.168.1.109
+   ssh your_username@192.168.1.100
    ```
 
 ---

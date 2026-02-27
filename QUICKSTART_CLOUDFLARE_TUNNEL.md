@@ -1,17 +1,17 @@
-# Quick Start: Cloudflare Tunnel for wx.intergalactic.it.com
+# Quick Start: Cloudflare Tunnel for weather.example.com
 
 This is a quick reference guide for setting up and using the Cloudflare Tunnel integration.
 
 ## Prerequisites
 
-- Raspberry Pi with bot running at 192.168.1.109:5000
+- Raspberry Pi with bot running at 192.168.1.100:5000
 - Cloudflare account (free)
 - Domain registered with Cloudflare
-- Access to cPanel for wx.intergalactic.it.com
+- Access to cPanel for weather.example.com
 
 ## Installation (5 minutes)
 
-### On Raspberry Pi (192.168.1.109)
+### On Raspberry Pi (192.168.1.100)
 
 ```bash
 cd ~/MCWB
@@ -57,7 +57,7 @@ const TUNNEL_URL = 'https://mcwb-dashboard.example.com';
 **Method 1: File Manager**
 1. Login to cPanel
 2. Go to File Manager
-3. Navigate to `public_html/wx/js/` (or wherever wx.intergalactic.it.com is located)
+3. Navigate to `public_html/wx/js/` (or wherever weather.example.com is located)
 4. Upload `dashboard.js`
 5. Overwrite existing file
 
@@ -81,7 +81,7 @@ curl https://your-subdomain.yourdomain.com/api/status
 
 ### 2. Test Website
 
-Visit: `https://wx.intergalactic.it.com/dashboard.html`
+Visit: `https://weather.example.com/dashboard.html`
 
 **Expected:** Green banner saying "Live Dashboard Connected"
 
@@ -100,7 +100,7 @@ Check that:
 **Check 1:** TUNNEL_URL is set correctly
 ```bash
 # View your website's JS file
-curl https://wx.intergalactic.it.com/js/dashboard.js | grep TUNNEL_URL
+curl https://weather.example.com/js/dashboard.js | grep TUNNEL_URL
 ```
 
 **Check 2:** Clear browser cache
@@ -212,7 +212,7 @@ ingress:
 
 ```javascript
 const TUNNEL_URL = 'https://your-tunnel-url.com';
-const LOCAL_URL = 'http://192.168.1.109:5000';
+const LOCAL_URL = 'http://192.168.1.100:5000';
 ```
 
 **How it works:**
@@ -225,7 +225,7 @@ const LOCAL_URL = 'http://192.168.1.109:5000';
 ### What's Protected
 - ✅ All traffic encrypted with HTTPS
 - ✅ Valid SSL certificate (Cloudflare)
-- ✅ Local IP (192.168.1.109) never exposed
+- ✅ Local IP (192.168.1.100) never exposed
 - ✅ No inbound firewall ports needed
 - ✅ DDoS protection from Cloudflare
 
@@ -271,7 +271,7 @@ Upload the updated `dashboard.js` file
 
 ### Update Dashboard IP
 
-If bot moves to different IP (not 192.168.1.109):
+If bot moves to different IP (not 192.168.1.100):
 
 **File:** `public_html/wx/js/dashboard.js` (line 21)
 ```javascript
@@ -320,6 +320,6 @@ A: Minimal - only API calls, not full page loads
 
 ## That's It!
 
-Your static website at **wx.intergalactic.it.com** is now displaying live data from your bot at **192.168.1.109** through a secure Cloudflare Tunnel.
+Your static website at **weather.example.com** is now displaying live data from your bot at **192.168.1.100** through a secure Cloudflare Tunnel.
 
 **No port forwarding. No exposed IPs. Just works.** 🎉

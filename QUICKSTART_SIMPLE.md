@@ -63,7 +63,7 @@ cd ~/MCWB
 The installer will:
 - Configure the dashboard to start automatically on boot
 - Configure firewall if needed
-- Show you the connection URL (e.g., http://192.168.1.109:5000)
+- Show you the connection URL (e.g., http://192.168.1.100:5000)
 
 **Can't connect?** See [WEB_DASHBOARD.md](WEB_DASHBOARD.md#troubleshooting-connection-issues) for help.
 

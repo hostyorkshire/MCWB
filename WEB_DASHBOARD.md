@@ -46,7 +46,7 @@ The installer will:
 The installer will show you the URL, for example:
 ```
 🌐 Web Dashboard Access:
-   Network: http://192.168.1.109:5000
+   Network: http://192.168.1.100:5000
 ```
 
 **That's your connection URL!** Write it down.
@@ -100,7 +100,7 @@ python3 web_dashboard.py
 
 By default, the dashboard will be available at:
 - **Local access:** http://localhost:5000
-- **Network access:** http://[your-ip]:5000 (e.g., http://192.168.1.109:5000)
+- **Network access:** http://[your-ip]:5000 (e.g., http://192.168.1.100:5000)
 
 To restrict access to localhost only:
 ```bash
@@ -155,14 +155,14 @@ When you deploy the static website (e.g., to GitHub Pages, cPanel, etc.), the Li
 **Option 1: Configure via UI**
 1. Navigate to the Live Dashboard page on your static website
 2. Look for the "Configure Custom API URL" section in the demo mode warning
-3. Enter your Raspberry Pi's IP address and port, e.g., `http://192.168.1.109:5000`
+3. Enter your Raspberry Pi's IP address and port, e.g., `http://192.168.1.100:5000`
 4. Click "Connect"
 5. The URL is saved in your browser and will be remembered
 
 **Option 2: Share Direct Link**
 You can share a direct link with the API URL as a parameter:
 ```
-https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.109:5000
+https://yoursite.com/dashboard.html?apiUrl=http://192.168.1.100:5000
 ```
 
 ### Network Requirements
@@ -304,7 +304,7 @@ If the service fails to start, check the troubleshooting section below.
 
 ## Troubleshooting Connection Issues
 
-**Can't connect to http://192.168.1.109:5000 or similar?** Follow these steps:
+**Can't connect to http://192.168.1.100:5000 or similar?** Follow these steps:
 
 ### Quick Checklist
 
@@ -375,7 +375,7 @@ Your IP address may have changed. Check with:
 hostname -I | awk '{print $1}'
 
 # Then use that IP in your browser
-# Example: http://192.168.1.109:5000
+# Example: http://192.168.1.100:5000
 ```
 
 **⭐ HIGHLY RECOMMENDED: Reserve a Static IP Address**
@@ -386,7 +386,7 @@ To avoid IP address changes and ensure consistent access to your dashboard:
 2. **Find DHCP Settings** (may be under Advanced, LAN Settings, or Network Settings)
 3. **Look for "DHCP Reservation," "Static DHCP," or "Address Reservation"**
 4. **Find your Raspberry Pi** in the list of connected devices (look for hostname like "raspberrypi")
-5. **Reserve/assign a static IP** (e.g., 192.168.1.109)
+5. **Reserve/assign a static IP** (e.g., 192.168.1.100)
 6. **Save the settings** and optionally reboot your Raspberry Pi
 
 **Benefits of reserving an IP:**

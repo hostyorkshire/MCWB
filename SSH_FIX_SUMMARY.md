@@ -3,7 +3,7 @@
 ## Your Problem
 You reported: "I can no longer SSH into the bot. What has changed? Please fix."
 
-- ✅ **Ping works** (192.168.1.109 responds)
+- ✅ **Ping works** (192.168.1.100 responds)
 - ❌ **SSH doesn't work** (connection refused or timeout)
 
 ## Root Cause Identified
@@ -67,7 +67,7 @@ Since you're locked out via SSH, you need to connect a keyboard and monitor to t
 
 4. **Test SSH access** from your computer:
    ```bash
-   ssh weatherbot@192.168.1.109
+   ssh weatherbot@192.168.1.100
    ```
 
 ## What We've Added to Help

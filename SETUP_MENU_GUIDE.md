@@ -120,7 +120,7 @@ cd ~/MCWB
 ```
 
 Then from any device on your network:
-- Access dashboard at: http://192.168.1.109:5000 (or your Pi's IP)
+- Access dashboard at: http://192.168.1.100:5000 (or your Pi's IP)
 - Send weather commands via mesh: "wx London"
 
 ## Documentation

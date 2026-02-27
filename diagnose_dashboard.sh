@@ -1,6 +1,6 @@
 #!/bin/bash
 # Diagnostic script to identify and fix dashboard connectivity issues
-# Run this if you cannot access the dashboard at http://192.168.1.109:5000
+# Run this if you cannot access the dashboard at http://192.168.1.100:5000
 
 # Note: No 'set -e' here - we want to continue through all checks even if some fail
 

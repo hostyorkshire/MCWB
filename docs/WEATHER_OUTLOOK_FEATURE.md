@@ -32,7 +32,7 @@ York, GB 3-day:
 02-25: Overcast 6-13°C
 02-26: Rain 8-14°C
 02-27: Cloudy 5-12°C
-https://wx.intergalactic.it.com
+https://weather.example.com
 ```
 
 Note: The outlook now includes the country code (e.g., "York, GB" or "York, US") to match the weather response and avoid confusion when cities have the same name in different countries.
@@ -78,7 +78,7 @@ Bot:  London, GB 3-day:
       02-25: Cloudy 8-15°C
       02-26: Rain 9-16°C
       02-27: Overcast 7-14°C
-      https://wx.intergalactic.it.com
+      https://weather.example.com
 ```
 
 ## Implementation Notes

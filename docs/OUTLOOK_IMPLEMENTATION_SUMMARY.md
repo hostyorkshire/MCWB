@@ -5,7 +5,7 @@
 The user requested a feature where:
 1. After the bot returns the initial weather, it automatically sends the outlook
 2. No user interaction required - outlook is sent immediately
-3. Include a link to https://wx.intergalactic.it.com at the bottom of the outlook
+3. Include a link to https://weather.example.com at the bottom of the outlook
 
 ## Solution Implemented
 
@@ -26,7 +26,7 @@ The user requested a feature where:
 - Only 3 days (not 5 or 7) to fit character limits
 - Short date format (MM-DD instead of YYYY-MM-DD)
 - Abbreviated weather conditions (e.g., "Rain" not "Moderate rain")
-- **NEW:** Appends https://wx.intergalactic.it.com link at bottom
+- **NEW:** Appends https://weather.example.com link at bottom
 - Result: ~110-130 characters (well under 200 char MeshCore limit)
 
 **4. Removed Helper Methods**
@@ -55,7 +55,7 @@ The user requested a feature where:
 - Better user experience (see weather immediately, then outlook)
 
 ### 3. Link Inclusion
-- Every outlook includes https://wx.intergalactic.it.com at the bottom
+- Every outlook includes https://weather.example.com at the bottom
 - Provides users with access to documentation
 - Fits within character limits
 
@@ -150,7 +150,7 @@ modified:   tests/test_weather_command_priority.py (expect outlook)
 **YES!** ✅ The feature is fully implemented and working:
 - ✅ Bot automatically sends outlook after weather response
 - ✅ No user prompts or interaction required
-- ✅ Includes https://wx.intergalactic.it.com link at bottom
+- ✅ Includes https://weather.example.com link at bottom
 - ✅ All messages fit within 200 character MeshCore limit
 - ✅ Works for the location initially sent by user
 - ✅ Multiple users can use feature simultaneously

@@ -2,6 +2,14 @@
 
 Lightweight Python3 weather bot for MeshCore mesh networks.
 
+> **⚠️ SECURITY NOTE:** All examples in this repository use placeholder values for security:
+> - Domain: `weather.example.com` (replace with your actual domain)
+> - IP Address: `192.168.1.100` (replace with your local IP)
+> - GitHub User: `yourusername` (replace with your GitHub username)
+> - Email: `your.email@example.com` (replace with your email)
+> 
+> **Never commit real credentials, API keys, or production URLs to public repositories!**
+
 ## 🚨 Having Issues?
 
 - **🆘 EMERGENCY: Cannot SSH OR Cannot See Dashboard?** → See [ACCESS_EMERGENCY.md](ACCESS_EMERGENCY.md) - ONE command fixes both!
@@ -39,7 +47,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 **🌐 NEW: Cloudflare Tunnel Integration** - Connect your static website to your local bot without port forwarding! Perfect for cPanel-hosted sites. See [CLOUDFLARE_TUNNEL_SETUP.md](CLOUDFLARE_TUNNEL_SETUP.md) and [CPANEL_DEPLOYMENT_GUIDE.md](CPANEL_DEPLOYMENT_GUIDE.md) for setup instructions.
 
-**📚 Documentation Website** - Complete wiki-style documentation website available at https://wx.intergalactic.it.com/
+**📚 Documentation Website** - Complete wiki-style documentation website available at https://weather.example.com/
 
 ## Overview
 
@@ -137,7 +145,7 @@ London, GB 3-day:
 02-25: Cloudy 8-15°C
 02-26: Rain 9-16°C
 02-27: Overcast 7-14°C
-https://wx.intergalactic.it.com
+https://weather.example.com
 ```
 
 The outlook includes the country code (e.g., "London, GB" or "York, US") to avoid confusion when cities have the same name in different countries.
@@ -212,7 +220,7 @@ This script will:
 - ✅ Start the dashboard and show you the connection URL
 - ✅ Enable auto-start on reboot
 
-The installer will display your connection URL, like: `http://192.168.1.109:5000`
+The installer will display your connection URL, like: `http://192.168.1.100:5000`
 
 **⭐ HIGHLY RECOMMENDED: Reserve a Static IP in Your Router**
 
@@ -278,7 +286,7 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 ## Installation
 
 ```bash
-git clone https://github.com/hostyorkshire/MCWB.git
+git clone https://github.com/yourusername/MCWB.git
 cd MCWB
 
 # Create and activate a virtual environment (recommended)

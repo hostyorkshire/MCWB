@@ -524,7 +524,7 @@ exit
 
 ```bash
 cd /home/pi
-git clone https://github.com/hostyorkshire/MCWB.git
+git clone https://github.com/yourusername/MCWB.git
 cd MCWB
 ```
 

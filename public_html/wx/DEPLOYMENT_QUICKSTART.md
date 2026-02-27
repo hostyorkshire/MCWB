@@ -14,7 +14,7 @@
    - Click Save
 
 3. **Access your site:**
-   - URL: `https://hostyorkshire.github.io/MCWB/`
+   - URL: `https://yourusername.github.io/MCWB/`
    - Updates automatically on git push!
 
 ### Option 2: Netlify (Automatic Deployment from GitHub)
@@ -24,7 +24,7 @@
 2. Click "Add new site" → "Import an existing project"
 3. Choose "Deploy with GitHub"
 4. Authorize Netlify to access your GitHub account
-5. Select the `hostyorkshire/MCWB` repository
+5. Select the `yourusername/MCWB` repository
 6. Configure build settings (should auto-detect from netlify.toml):
    - Base directory: (leave empty)
    - Build command: (leave empty)

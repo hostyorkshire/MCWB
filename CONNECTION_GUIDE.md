@@ -52,7 +52,7 @@ cd ~/MCWB
 ✅ Service is running!
 
 🌐 Web Dashboard Access:
-   Network: http://192.168.1.109:5000
+   Network: http://192.168.1.100:5000
 ```
 
 Write down that URL! That's where you'll connect.
@@ -80,7 +80,7 @@ Write down that URL! That's where you'll connect.
    - Find by hostname (e.g., "raspberrypi") or MAC address
 
 4. **Reserve the IP**
-   - Assign the current IP (e.g., 192.168.1.109) to always be used by this device
+   - Assign the current IP (e.g., 192.168.1.100) to always be used by this device
    - Save the settings
 
 5. **Done!** Your dashboard URL will never change.
@@ -104,7 +104,7 @@ Write down that URL! That's where you'll connect.
 On any device connected to the same network (laptop, phone, tablet):
 
 1. Open a web browser
-2. Type the URL from Step 1 (e.g., `http://192.168.1.109:5000`)
+2. Type the URL from Step 1 (e.g., `http://192.168.1.100:5000`)
 3. Done! You should see the dashboard
 
 ### Bonus: Connect Your Static Website
@@ -113,7 +113,7 @@ If you've deployed the MCWB static website (from the `public_html/wx/` folder), 
 
 1. Go to your static website's Live Dashboard page
 2. Look for "Configure Custom API URL"
-3. Enter the URL from Step 1 (e.g., `http://192.168.1.109:5000`)
+3. Enter the URL from Step 1 (e.g., `http://192.168.1.100:5000`)
 4. Click "Connect"
 
 Now your website will show **real-time live data** from your Raspberry Pi! 🎉
@@ -122,7 +122,7 @@ Now your website will show **real-time live data** from your Raspberry Pi! 🎉
 
 ### ⚡ Dashboard Was Working Before But Stopped?
 
-If your dashboard was working at http://192.168.1.109:5000 before but suddenly stopped:
+If your dashboard was working at http://192.168.1.100:5000 before but suddenly stopped:
 
 **Quick Fix (Recommended):**
 ```bash
@@ -211,17 +211,17 @@ Your Pi's IP address might have changed. Check it:
 hostname -I
 ```
 
-Use the first IP address shown (e.g., `192.168.1.109`) in your browser.
+Use the first IP address shown (e.g., `192.168.1.100`) in your browser.
 
-**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL (e.g., `http://192.168.1.109:5000`). This also makes the website integration more stable!
+**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL (e.g., `http://192.168.1.100:5000`). This also makes the website integration more stable!
 
 ### Check 5: Are You on the Same Network?
 
 The device you're connecting from (laptop/phone) must be on the **same local network** as the Raspberry Pi.
 
 **Example:**
-- ✅ Pi: 192.168.1.109, Laptop: 192.168.1.50 → Same network (192.168.1.x)
-- ❌ Pi: 192.168.1.109, Laptop: 192.168.2.50 → Different networks
+- ✅ Pi: 192.168.1.100, Laptop: 192.168.1.50 → Same network (192.168.1.x)
+- ❌ Pi: 192.168.1.100, Laptop: 192.168.2.50 → Different networks
 
 ### Check 6: Verify Network Binding
 
@@ -337,4 +337,4 @@ The dashboard will display the connection URL when it starts. Press Ctrl+C to st
 
 - Full documentation: [WEB_DASHBOARD.md](WEB_DASHBOARD.md)
 - General troubleshooting: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- Open an issue: https://github.com/hostyorkshire/MCWB/issues
+- Open an issue: https://github.com/yourusername/MCWB/issues

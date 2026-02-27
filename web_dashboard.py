@@ -63,8 +63,8 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 CORS(app, resources={
     r"/api/*": {
         "origins": [
-            "https://wx.intergalactic.it.com",  # Production cPanel site
-            "http://wx.intergalactic.it.com",   # Allow HTTP variant
+            "https://weather.example.com",  # Production cPanel site
+            "http://weather.example.com",   # Allow HTTP variant
             "*"                                  # Allow all (for dev & tunnel flexibility)
         ],
         "methods": ["GET", "POST", "OPTIONS"],
@@ -610,7 +610,7 @@ def main():
             print("❌ ERROR: SSL certificate files not found!")
             print()
             print("Generate a self-signed certificate with:")
-            print(f"   python3 generate_ssl_cert.py --hostname {local_ip or '192.168.1.109'}")
+            print(f"   python3 generate_ssl_cert.py --hostname {local_ip or '192.168.1.100'}")
             print()
             print("Then start the dashboard with:")
             print("   python3 web_dashboard.py --ssl")
