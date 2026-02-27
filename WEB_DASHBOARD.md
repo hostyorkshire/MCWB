@@ -150,7 +150,7 @@ The MCWB project includes a static documentation website (in the `public_html/wx
 
 ### Accessing Dashboard from Static Website
 
-When you deploy the static website (e.g., to Netlify, GitHub Pages, etc.), the Live Dashboard page will show demo data by default. To connect it to your real Raspberry Pi dashboard:
+When you deploy the static website (e.g., to GitHub Pages, cPanel, etc.), the Live Dashboard page will show demo data by default. To connect it to your real Raspberry Pi dashboard:
 
 **Option 1: Configure via UI**
 1. Navigate to the Live Dashboard page on your static website

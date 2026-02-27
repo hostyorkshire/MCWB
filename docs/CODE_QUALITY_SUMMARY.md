@@ -128,7 +128,7 @@ This document summarizes the comprehensive code quality check and cleanup perfor
 - ✅ Publish directory set to "website"
 - ✅ Security headers configured
 - ✅ Static site deployment (no build step needed)
-- ✅ Documentation site available at https://mcwb.netlify.app/
+- ✅ Documentation site available at https://wx.intergalactic.it.com/
 
 ## Files Changed in This Cleanup
 
