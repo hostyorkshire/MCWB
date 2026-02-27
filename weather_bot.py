@@ -160,6 +160,90 @@ def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwa
         raise RequestException(f"API request failed after {max_retries} attempts") from last_exception
 
 
+class LEDController:
+    """Control the three front-panel LEDs on the Heltec WiFi LoRa 32 V2.
+
+    LED colour assignments (verify GPIO pins against your board):
+      Blue  (GPIO25) – heartbeat: blinks periodically while the bot is running
+      Green (GPIO26) – RX: flashes when a weather request is received
+      Red   (GPIO27) – TX: flashes when a response is being sent
+
+    MeshCore firmware does not currently expose GPIO-write commands over the
+    companion-radio serial protocol, so this implementation uses a debug-log
+    fallback that keeps the structure ready for future GPIO command support.
+    """
+
+    # Default GPIO pin assignments for the three front-panel LEDs on Heltec v2
+    DEFAULT_BLUE_PIN = 25   # Heartbeat (onboard blue LED)
+    DEFAULT_GREEN_PIN = 26  # RX indicator
+    DEFAULT_RED_PIN = 27    # TX indicator
+
+    HEARTBEAT_INTERVAL = 2.0  # seconds between blue LED blinks
+    HEARTBEAT_ON_TIME = 0.1   # seconds the blue LED stays on per blink
+
+    def __init__(self, bot, enabled=True, blue_pin=None, green_pin=None, red_pin=None):
+        self.bot = bot
+        self.enabled = enabled
+        self.blue_pin = blue_pin if blue_pin is not None else self.DEFAULT_BLUE_PIN
+        self.green_pin = green_pin if green_pin is not None else self.DEFAULT_GREEN_PIN
+        self.red_pin = red_pin if red_pin is not None else self.DEFAULT_RED_PIN
+        self._heartbeat_thread = None
+        self._heartbeat_stop = threading.Event()
+
+    def _flash_pin(self, pin, colour, duration):
+        """Flash a single LED pin for *duration* seconds (log-only fallback)."""
+        self.bot.logger.debug(f"LED {colour} GPIO{pin} ON  ({duration}s)")
+        time.sleep(duration)
+        self.bot.logger.debug(f"LED {colour} GPIO{pin} OFF")
+
+    def _flash_nonblocking(self, pin, colour, on_time):
+        """Start a daemon thread to flash one LED without blocking the caller."""
+        threading.Thread(
+            target=self._flash_pin,
+            args=(pin, colour, on_time),
+            daemon=True,
+            name=f"mcwb-led-{colour.lower()}",
+        ).start()
+
+    def rx_flash(self, on_time=0.15):
+        """Flash the green LED (non-blocking) to indicate an incoming weather request (RX)."""
+        if not self.enabled:
+            return
+        self._flash_nonblocking(self.green_pin, "GREEN", on_time)
+
+    def tx_flash(self, on_time=0.15):
+        """Flash the red LED (non-blocking) to indicate a response is being sent (TX)."""
+        if not self.enabled:
+            return
+        self._flash_nonblocking(self.red_pin, "RED", on_time)
+
+    def _heartbeat_loop(self):
+        """Background thread: blink blue LED at HEARTBEAT_INTERVAL while running."""
+        while not self._heartbeat_stop.is_set():
+            self._flash_pin(self.blue_pin, "BLUE", self.HEARTBEAT_ON_TIME)
+            self._heartbeat_stop.wait(self.HEARTBEAT_INTERVAL)
+
+    def start_heartbeat(self):
+        """Start the blue-LED heartbeat background thread."""
+        if not self.enabled:
+            return
+        self._heartbeat_stop.clear()
+        self._heartbeat_thread = threading.Thread(
+            target=self._heartbeat_loop, daemon=True, name="mcwb-led-heartbeat"
+        )
+        self._heartbeat_thread.start()
+        self.bot.logger.debug(
+            f"LED heartbeat started (blue GPIO{self.blue_pin}, interval={self.HEARTBEAT_INTERVAL}s)"
+        )
+
+    def stop_heartbeat(self):
+        """Stop the blue-LED heartbeat background thread."""
+        self._heartbeat_stop.set()
+        if self._heartbeat_thread is not None:
+            self._heartbeat_thread.join(timeout=1)
+            self._heartbeat_thread = None
+
+
 class WeatherBot:
     """Lightweight MeshCore weather bot."""
 
@@ -177,6 +261,7 @@ class WeatherBot:
         channel=None,
         node_id=None,
         verify_channels=False,
+        enable_leds=False,
     ):
         """Initialize the weather bot.
 
@@ -193,6 +278,7 @@ class WeatherBot:
             channel: Comma-separated list of channel names to listen on
             node_id: Node ID for MeshCore (default: "MCWB")
             verify_channels: Show diagnostic info about encrypted messages
+            enable_leds: Enable LED flashing for visual activity indication
         """
         self.port = port
         self.baud = baud
@@ -204,6 +290,8 @@ class WeatherBot:
         self._running = False
         # Set up logging
         self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
+        # LED controller for visual activity indication (log-only if GPIO not available)
+        self.led_controller = LEDController(self, enabled=enable_leds)
         self.weather_channel_idx = weather_channel_idx
         # Track channel_idx to channel name mapping for auto-detection
         self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
@@ -731,6 +819,9 @@ class WeatherBot:
 
         # Process weather command if found
         if location:
+            # Green LED: RX – weather request received
+            self.led_controller.rx_flash()
+
             # Sanitize sender for print output to prevent terminal corruption
             safe_sender_print = self._sanitize_for_log(sender)
             safe_location = self._sanitize_for_log(location)
@@ -759,6 +850,8 @@ class WeatherBot:
                 response = self.format_weather_response(r, wx)
                 print(f"Response:\n{response}\n", flush=True)
                 self.logger.info(f"Response: {response}")
+                # Red LED: TX – sending current weather response
+                self.led_controller.tx_flash()
                 self._send_channel_msg(response, channel_idx)
                 print(f"✓ First message (current weather) sent to channel_idx={channel_idx}", flush=True)
                 self.logger.info(f"First message (current weather) sent to channel_idx={channel_idx}")
@@ -775,6 +868,8 @@ class WeatherBot:
                 outlook_response = self._get_outlook(r, lat, lon)
                 print(f"Outlook Response:\n{outlook_response}\n", flush=True)
                 self.logger.info(f"Outlook Response: {outlook_response}")
+                # Red LED: TX – sending outlook response
+                self.led_controller.tx_flash()
                 self._send_channel_msg(outlook_response, channel_idx)
                 print(f"✓ Second message (outlook) sent to channel_idx={channel_idx}", flush=True)
                 self.logger.info(f"Second message (outlook) sent to channel_idx={channel_idx}")
@@ -1313,6 +1408,9 @@ class WeatherBot:
         listener = threading.Thread(target=self._listen_loop, daemon=True, name="mcwb-listener")
         listener.start()
 
+        # Start blue-LED heartbeat (no-op when LEDs are disabled)
+        self.led_controller.start_heartbeat()
+
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
@@ -1386,6 +1484,7 @@ class WeatherBot:
             self.logger.info(msg)
         finally:
             self._running = False
+            self.led_controller.stop_heartbeat()
             if self.verify_channels:
                 self._print_channel_diagnostic()
             if self._ser:
@@ -1472,6 +1571,13 @@ def main():
         action="store_true",
         help="Show diagnostic info about encrypted messages",
     )
+    parser.add_argument(
+        "--enable-leds",
+        action="store_true",
+        help="Enable LED flashing on the three Heltec v2 front-panel LEDs (GPIO25/26/27) "
+        "for visual activity indication (requires GPIO support in MeshCore firmware; "
+        "falls back to debug logging if not available)",
+    )
 
     args = parser.parse_args()
 
@@ -1487,6 +1593,7 @@ def main():
         country=args.country,
         channel=args.channel,
         verify_channels=args.verify_channels,
+        enable_leds=args.enable_leds,
     )
 
     # If location specified, just do a lookup and exit
