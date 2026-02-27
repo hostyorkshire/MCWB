@@ -173,10 +173,10 @@ class LEDController:
     fallback that keeps the structure ready for future GPIO command support.
     
     Board Variants:
-      - heltec-v2: Heltec WiFi LoRa 32 V2 (Blue=GPIO25, Green=GPIO26, Red=GPIO27)
-        WARNING: GPIO26 conflicts with LoRa DIO0 on actual hardware!
+      - heltec-v2: Heltec WiFi LoRa 32 V2 (Blue=GPIO25 only)
+        Only the blue LED on GPIO25 is available. GPIO26/27 are used by LoRa hardware.
       - dollatek: DollaTek ESP32 SX1276 Wireless Bridge (Blue=GPIO25 only)
-        This board only has a single LED on GPIO25. Green/Red are disabled.
+        Only the blue LED on GPIO25 is available. GPIO26/27 are used by LoRa hardware.
       - custom: User-specified GPIO pins via command-line arguments
     """
 
@@ -185,19 +185,19 @@ class LEDController:
         "heltec-v2": {
             "blue": 25,    # Onboard LED
             "green": None,  # GPIO26 is used for LoRa DIO0, not available for LED
-            "red": None,    # GPIO27 may not be available on all boards
+            "red": None,    # GPIO27 is used for LoRa MOSI, not available for LED
         },
         "dollatek": {
             "blue": 25,    # Only LED available on DollaTek board
-            "green": None,  # Not available on DollaTek
-            "red": None,    # Not available on DollaTek
+            "green": None,  # GPIO26 is used for LoRa DIO0, not available
+            "red": None,    # GPIO27 is used for LoRa MOSI, not available
         },
     }
 
-    # Default GPIO pin assignments for the three front-panel LEDs on Heltec v2
+    # Default GPIO pin assignments
     DEFAULT_BLUE_PIN = 25   # Heartbeat (onboard blue LED)
-    DEFAULT_GREEN_PIN = None  # Disabled by default (conflicts with LoRa DIO0 on many boards)
-    DEFAULT_RED_PIN = None    # Disabled by default (not available on many boards)
+    DEFAULT_GREEN_PIN = None  # Disabled by default (conflicts with LoRa DIO0 on most boards)
+    DEFAULT_RED_PIN = None    # Disabled by default (conflicts with LoRa MOSI on most boards)
 
     HEARTBEAT_INTERVAL = 2.0  # seconds between blue LED blinks
     HEARTBEAT_ON_TIME = 0.1   # seconds the blue LED stays on per blink

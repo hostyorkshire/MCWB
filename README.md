@@ -690,7 +690,7 @@ Available LEDs:
 - **Green LED**: RX indicator (flashes when a weather request is received)
 - **Red LED**: TX indicator (flashes when a response is sent)
 
-Set any pin to `-1` or omit it to disable that specific LED.
+To disable a specific LED, simply omit the corresponding `--led-*-pin` argument. The bot will automatically handle disabled LEDs gracefully.
 
 ### Technical Notes
 
