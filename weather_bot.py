@@ -590,13 +590,12 @@ class WeatherBot:
         
         # Look for weather channel indicators using regex for word boundaries
         # This matches:
-        # - "#weather" or "#wx" (with hashtag)
-        # - "weather" or "wx" as standalone words (with word boundaries)
+        # - "#weather" or "#wx" (with hashtag, ensuring word boundary at end)
+        # - "weather" or "wx" as standalone words (with word boundaries on both sides)
         # - "weather channel" phrase
-        import re
         weather_patterns = [
-            r'#weather\b',      # hashtag weather
-            r'#wx\b',           # hashtag wx
+            r'#weather\b',      # hashtag weather (word boundary at end only)
+            r'#wx\b',           # hashtag wx (word boundary at end only)
             r'\bweather\b',     # standalone word "weather"
             r'\bwx\b',          # standalone word "wx"
             r'weather\s+channel'  # phrase "weather channel"
