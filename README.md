@@ -2,8 +2,14 @@
 
 Lightweight Python3 weather bot for MeshCore mesh networks.
 
+## 🚨 Having Issues?
+
+- **Dashboard URL not working?** → See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) - Fast solutions for connectivity issues
+- **Bot not announcing on boot?** → See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) - Fix announcement problems in 2 steps
+
 ## 📖 Quick Links
 
+- **⚡ [QUICK FIX GUIDE](QUICK_FIX_GUIDE.md)** - Fast solutions for common issues
 - **❓ [FAQ](FAQ.md)** - Common questions & quick answers (including boot setup scripts!)
 - **🚀 [Quick Start](QUICKSTART_SIMPLE.md)** - Get started in minutes
 - **🍓 [Raspberry Pi Setup](RASPBERRY_PI_SETUP.md)** - Auto-start on boot guide
