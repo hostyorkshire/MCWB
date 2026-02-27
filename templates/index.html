@@ -1439,7 +1439,7 @@
                 
                 if (result.success) {
                     // Show success message
-                    alert(`Logs have been cleared successfully!\n${result.message}`);
+                    alert(result.message);
                     // Reload current log to show cleared state
                     await loadLog(currentLog);
                 } else {
