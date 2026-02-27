@@ -139,10 +139,13 @@ tunnel: YOUR_TUNNEL_ID_HERE
 credentials-file: /home/pi/.cloudflared/YOUR_TUNNEL_ID_HERE.json
 
 ingress:
+  # Route all traffic to local dashboard
   - service: http://localhost:5000
     originRequest:
       noTLSVerify: true
       connectTimeout: 30s
+  # Required catch-all rule
+  - service: http_status:404
 ```
 
 **Important:** Replace:

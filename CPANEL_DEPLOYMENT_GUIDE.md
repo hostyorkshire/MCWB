@@ -35,6 +35,7 @@ Example tunnel URL: `https://mcwb-dashboard.yourdomain.com`
 1. **Download the file from your repository:**
    ```bash
    # On your development machine
+   # Adjust path if your repo is installed elsewhere
    cd ~/MCWB/website/js
    nano dashboard.js  # or use your preferred editor
    ```
