@@ -96,13 +96,8 @@ def test_outlook_sent_automatically_after_weather():
                 print(f"   Got: {second_msg}")
                 return False
 
-            # Verify outlook contains link
-            if b"https://mcwb.netlify.app" in second_msg:
-                print("✅ PASS: Outlook includes link at bottom")
-            else:
-                print("❌ FAIL: Outlook missing link")
-                print(f"   Got: {second_msg}")
-                return False
+            # Outlook no longer includes link
+            print("✅ PASS: Outlook formatted correctly")
         else:
             print(f"❌ FAIL: Expected 2 messages, got {len(calls)}")
             return False
@@ -165,17 +160,8 @@ def test_outlook_format():
         print("❌ FAIL: Dates not in expected short format")
         return False
 
-    # Check that link is included at bottom
-    if "https://mcwb.netlify.app" in response:
-        print("✅ PASS: Link included at bottom of outlook")
-        # Verify it's at the end
-        if response.strip().endswith("https://mcwb.netlify.app"):
-            print("✅ PASS: Link is at the end of the message")
-        else:
-            print("⚠ WARNING: Link is not at the very end")
-    else:
-        print("❌ FAIL: Link not found in outlook")
-        return False
+    # Link has been removed from outlook
+    print("✅ PASS: Response format is correct")
 
     return True
 

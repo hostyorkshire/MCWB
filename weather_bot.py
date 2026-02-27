@@ -1160,7 +1160,6 @@ class WeatherBot:
 
             lines.append(f"{date_short}: {condition} {tmin}-{tmax}°C")
 
-        lines.append("https://mcwb.netlify.app")
         return "\n".join(lines)
 
     def _get_weather(self, location: str, country: str = None, user: str = None) -> str:
