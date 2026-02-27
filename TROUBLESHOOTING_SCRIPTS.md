@@ -1,6 +1,36 @@
-# Dashboard Troubleshooting Scripts
+# Troubleshooting Scripts
 
-This directory includes two scripts to help diagnose and fix dashboard connectivity issues.
+This directory includes several scripts to help diagnose and fix common issues with the MeshCore Weather Bot.
+
+## check_wifi.sh - WiFi Connectivity Diagnostic
+
+**Use when:** 
+- `git pull` fails with "could not resolve host"
+- Cannot access the internet
+- WiFi connection issues
+- Network troubleshooting needed
+
+```bash
+cd ~/MCWB
+./check_wifi.sh
+```
+
+**What it checks:**
+1. WiFi adapter status and configuration
+2. WiFi connection status and signal strength
+3. IP address assignment
+4. Gateway (router) connectivity
+5. Internet connectivity (ping tests)
+6. DNS resolution
+7. Network configuration files
+
+**Best for:**
+- Diagnosing "could not resolve host" errors
+- Network connectivity problems
+- WiFi configuration issues
+- Internet access troubleshooting
+
+---
 
 ## fix_dashboard.sh - Quick Fix (Use this first!)
 

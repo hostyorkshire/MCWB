@@ -5,6 +5,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 ## 🚨 Having Issues?
 
 - **🆘 EMERGENCY: Cannot SSH OR Cannot See Dashboard?** → See [ACCESS_EMERGENCY.md](ACCESS_EMERGENCY.md) - ONE command fixes both!
+- **📡 WiFi Not Working / Cannot Resolve Host?** → Run `./check_wifi.sh` - Diagnose and fix WiFi connectivity issues
 - **Cannot SSH into Pi AND/OR Dashboard not working?** → Run `./fix_access_issues.sh` - Master fix script for both issues
 - **Dashboard URL not working?** → See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) - Fast solutions for connectivity issues
 - **Bot not announcing on boot?** → See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) - Fix announcement problems in 2 steps
