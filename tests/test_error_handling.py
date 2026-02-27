@@ -3,7 +3,11 @@
 Test improved error handling for network issues.
 Demonstrates better user-facing error messages when the weather service is unreachable.
 """
+import os
 import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from unittest.mock import Mock, patch
 import requests
 from weather_bot import WeatherBot

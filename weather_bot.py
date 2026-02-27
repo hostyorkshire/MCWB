@@ -109,6 +109,58 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location.\n\nHelp? https://tinyurl.com/wxbot"
+<<<<<<< copilot/improve-open-meto-api-reliability
+
+
+# ---------------------------------------------------------------------------
+# Retry logic for API calls
+# ---------------------------------------------------------------------------
+def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwargs):
+    """Execute an API request with exponential backoff retry logic.
+    
+    Args:
+        func: The function to call (e.g., requests.get)
+        *args: Positional arguments to pass to func
+        max_retries: Maximum number of retry attempts (default: 3)
+        initial_timeout: Initial timeout value in seconds (default: 10)
+        **kwargs: Keyword arguments to pass to func (except timeout)
+    
+    Returns:
+        Response object from successful request
+        
+    Raises:
+        RequestException: If all retries are exhausted
+    """
+    last_exception = None
+    
+    for attempt in range(max_retries):
+        # Increase timeout with each retry: 10s, 15s, 20s
+        timeout = initial_timeout + (attempt * 5)
+        
+        try:
+            # Add timeout to kwargs
+            kwargs['timeout'] = timeout
+            response = func(*args, **kwargs)
+            return response
+        except (Timeout, ConnectionError) as e:
+            last_exception = e
+            if attempt < max_retries - 1:
+                # Exponential backoff: wait 1s, 2s, 4s between retries
+                wait_time = 2 ** attempt
+                time.sleep(wait_time)
+                continue
+            else:
+                # Final attempt failed, raise the exception
+                raise RequestException(f"API request failed after {max_retries} attempts: {e}") from e
+        except RequestException as e:
+            # Non-retryable errors (e.g., HTTPError 4xx) - raise immediately
+            raise
+    
+    # Should not reach here, but just in case
+    if last_exception:
+        raise RequestException(f"API request failed after {max_retries} attempts") from last_exception
+=======
+>>>>>>> main
 
 
 
@@ -959,9 +1011,9 @@ class WeatherBot:
         postcode = postcode.strip().upper().replace(" ", "")
         
         try:
-            # Try exact postcode lookup first
+            # Try exact postcode lookup first with retry logic
             url = f"https://api.postcodes.io/postcodes/{postcode}"
-            response = requests.get(url, timeout=10)
+            response = api_request_with_retry(requests.get, url)
             
             if response.status_code == 200:
                 data = response.json()
@@ -984,10 +1036,10 @@ class WeatherBot:
                         "postcode": result.get("postcode", postcode),
                     }
             
-            # If exact lookup failed, try partial postcode (outward code only)
+            # If exact lookup failed, try partial postcode (outward code only) with retry logic
             # This handles cases like "S71" where we want the general area
             url = f"https://api.postcodes.io/outcodes/{postcode}"
-            response = requests.get(url, timeout=10)
+            response = api_request_with_retry(requests.get, url)
             
             if response.status_code == 200:
                 data = response.json()
@@ -1044,7 +1096,7 @@ class WeatherBot:
         params = {"name": location, "count": 10, "language": "en", "format": "json"}
         
         try:
-            response = requests.get(url, params=params, timeout=10)
+            response = api_request_with_retry(requests.get, url, params=params)
             response.raise_for_status()
             geo = response.json()
         except requests.exceptions.RequestException as e:
@@ -1068,7 +1120,8 @@ class WeatherBot:
             requests.exceptions.RequestException: On network or API errors
         """
         try:
-            response = requests.get(
+            response = api_request_with_retry(
+                requests.get,
                 "https://api.open-meteo.com/v1/forecast",
                 params={
                     "latitude": lat,
@@ -1080,7 +1133,6 @@ class WeatherBot:
                     ),
                     "timezone": "auto",
                 },
-                timeout=10,
             )
             response.raise_for_status()  # Raise exception for HTTP errors
             return response.json()
@@ -1094,7 +1146,8 @@ class WeatherBot:
     def get_outlook(self, lat: float, lon: float) -> dict:
         """Fetch daily weather outlook for the given coordinates.  Returns the raw
         Open-Meteo response dict (with a ``"daily"`` key)."""
-        return requests.get(
+        response = api_request_with_retry(
+            requests.get,
             "https://api.open-meteo.com/v1/forecast",
             params={
                 "latitude": lat,
@@ -1103,8 +1156,8 @@ class WeatherBot:
                 "timezone": "auto",
                 "forecast_days": 3,
             },
-            timeout=10,
-        ).json()
+        )
+        return response.json()
 
     def format_outlook_response(self, location_data: dict, outlook_data: dict) -> str:
         """Format a concise outlook response from pre-fetched location and outlook data."""
@@ -1182,15 +1235,16 @@ class WeatherBot:
             self.stats.record_request(location_name, user=user)
 
             return self.format_weather_response(r, wx)
-        except requests.exceptions.Timeout:
-            return "Weather service timeout. Please try again in a moment."
-        except requests.exceptions.ConnectionError:
-            return "Cannot connect to weather service. Check your network connection."
-        except requests.exceptions.HTTPError as e:
-            return f"Weather service error: {e}"
+        except requests.exceptions.RequestException as e:
+            # Handle network errors (timeout, connection issues, etc.) with user-friendly message
+            # Check if it's an HTTP error (4xx/5xx) which we should report differently
+            if isinstance(e, requests.exceptions.HTTPError):
+                return f"Weather service error: {e}"
+            # All other RequestException errors are network-related
+            return "Sorry, I didn't get that due to network problems. But don't worry, hit me with it again!"
         except Exception as e:
             self.error_logger.error(f"Error getting weather for {location}: {e}")
-            return f"Error getting weather: {e}"
+            return f"Weather error: {e}"
 
 
     # ------------------------------------------------------------------
