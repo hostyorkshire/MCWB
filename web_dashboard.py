@@ -49,8 +49,6 @@ except ImportError:
     print("=" * 70)
     sys.exit(78)  # EX_CONFIG (78) - Configuration error, don't retry
 
-from datetime import datetime
-
 from stats_tracker import StatsTracker
 
 app = Flask(__name__)
@@ -347,18 +345,18 @@ def api_cloudflare_status():
     try:
         # Check if cloudflared is installed
         cloudflared_path = next(
-            (path for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"] 
-             if Path(path).exists()), 
+            (path for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"]
+             if Path(path).exists()),
             None
         )
-        
+
         if not cloudflared_path:
             return jsonify({
                 "installed": False,
                 "connected": False,
                 "message": "Cloudflare Tunnel (cloudflared) is not installed"
             })
-        
+
         # Check if cloudflared service is running
         service_running = False
         service_status = "inactive"
@@ -373,13 +371,13 @@ def api_cloudflare_status():
             service_running = (service_status == "active")
         except (subprocess.TimeoutExpired, FileNotFoundError):
             pass
-        
+
         # Get tunnel info
         tunnel_name = None
         tunnel_id = None
         tunnel_url = None
         connections = 0
-        
+
         if service_running:
             try:
                 # Get tunnel list
@@ -389,7 +387,7 @@ def api_cloudflare_status():
                     text=True,
                     timeout=10
                 )
-                
+
                 if result.returncode == 0:
                     lines = result.stdout.strip().split('\n')
                     # Skip header line and parse tunnel info
@@ -405,7 +403,7 @@ def api_cloudflare_status():
                                 break
             except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
                 pass
-            
+
             # Try to read tunnel URL from saved config
             tunnel_url_file = Path.home() / ".cloudflared" / "tunnel_url.txt"
             if tunnel_url_file.exists():
@@ -425,11 +423,11 @@ def api_cloudflare_status():
                                 url_without_protocol = tunnel_url[len(https_prefix):]
                             elif url_lower.startswith(http_prefix):
                                 url_without_protocol = tunnel_url[len(http_prefix):]
-                            
+
                             # Remove port and path if present
                             url_part = url_without_protocol.split('/')[0]
                             hostname = url_part.split(':')[0]
-                            
+
                             if hostname and '.' in hostname:
                                 first_part = hostname.split('.')[0]
                                 tunnel_name = first_part.upper()
@@ -441,7 +439,7 @@ def api_cloudflare_status():
                             pass
                 except IOError:
                     pass
-        
+
         # Get service uptime if running
         uptime = None
         if service_running:
@@ -466,7 +464,7 @@ def api_cloudflare_status():
                             uptime = format_uptime(uptime_seconds)
             except (subprocess.TimeoutExpired, FileNotFoundError, ValueError, AttributeError):
                 pass
-        
+
         return jsonify({
             "installed": True,
             "connected": service_running,
@@ -478,7 +476,7 @@ def api_cloudflare_status():
             "uptime": uptime,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
-        
+
     except Exception as e:
         return jsonify({
             "installed": False,
