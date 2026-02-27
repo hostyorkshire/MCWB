@@ -24,7 +24,7 @@ def test_parse_command_with_uk():
     bot = WeatherBot(debug=False)
     location, country = bot._parse_command("wx York UK")
 
-    print(f"Input: 'wx York UK'")
+    print("Input: 'wx York UK'")
     print(f"Parsed location: '{location}'")
     print(f"Parsed country: '{country}'")
     print()
@@ -46,7 +46,7 @@ def test_parse_command_with_usa():
     bot = WeatherBot(debug=False)
     location, country = bot._parse_command("wx York USA")
 
-    print(f"Input: 'wx York USA'")
+    print("Input: 'wx York USA'")
     print(f"Parsed location: '{location}'")
     print(f"Parsed country: '{country}'")
     print()
@@ -68,7 +68,7 @@ def test_parse_command_with_us():
     bot = WeatherBot(debug=False)
     location, country = bot._parse_command("wx York US")
 
-    print(f"Input: 'wx York US'")
+    print("Input: 'wx York US'")
     print(f"Parsed location: '{location}'")
     print(f"Parsed country: '{country}'")
     print()
@@ -90,7 +90,7 @@ def test_parse_command_without_country():
     bot = WeatherBot(debug=False)
     location, country = bot._parse_command("wx York")
 
-    print(f"Input: 'wx York'")
+    print("Input: 'wx York'")
     print(f"Parsed location: '{location}'")
     print(f"Parsed country: '{country}'")
     print()
@@ -112,7 +112,7 @@ def test_parse_command_with_comma_format():
     bot = WeatherBot(debug=False)
     location, country = bot._parse_command("wx York, UK")
 
-    print(f"Input: 'wx York, UK'")
+    print("Input: 'wx York, UK'")
     print(f"Parsed location: '{location}'")
     print(f"Parsed country: '{country}'")
     print()
@@ -177,7 +177,7 @@ def test_weather_request_with_uk():
         location, country = bot._parse_command("wx York UK")
         result = bot._get_weather(location, country)
 
-        print(f"User command: 'wx York UK'")
+        print("User command: 'wx York UK'")
         print(f"Result:\n{result}")
         print()
 
@@ -240,8 +240,8 @@ def test_weather_request_with_usa():
         location, country = bot._parse_command("wx York USA")
         result = bot._get_weather(location, country)
 
-        print(f"Bot configured with default country='GB'")
-        print(f"User command: 'wx York USA'")
+        print("Bot configured with default country='GB'")
+        print("User command: 'wx York USA'")
         print(f"Result:\n{result}")
         print()
 

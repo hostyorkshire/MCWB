@@ -31,9 +31,9 @@ def test_announcement_config():
         # Note: The bot adapts to whatever channel receives messages
         # "wxtest" is just used here as an example channel name
         bot = WeatherBot(node_id="DIAG_BOT", debug=True, announce=True)
-        print(f"   ✓ Bot created")
-        print(f"   ✓ Announcements enabled")
-        print(f"   ✓ Bot will announce on channel where it receives messages")
+        print("   ✓ Bot created")
+        print("   ✓ Announcements enabled")
+        print("   ✓ Bot will announce on channel where it receives messages")
     except Exception as e:
         print(f"   ✗ Error creating bot: {e}")
         return False

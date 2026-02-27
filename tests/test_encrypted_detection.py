@@ -55,7 +55,7 @@ def test_encrypted_message_detection():
     bot._dispatch(payload1)
 
     assert len(sent_responses) == 1, f"Should respond to valid message, got {len(sent_responses)} responses"
-    print(f"✅ Valid message: responded correctly")
+    print("✅ Valid message: responded correctly")
 
     print("\n--- Test 2: Encrypted message with valid channel_idx=1 ---")
     # Simulate encrypted data with lots of non-printable bytes
@@ -67,7 +67,7 @@ def test_encrypted_message_detection():
     bot._dispatch(payload2)
 
     assert len(sent_responses) == 0, f"Should NOT respond to encrypted message, got {len(sent_responses)} responses"
-    print(f"✅ Encrypted message with valid channel_idx=1: correctly ignored")
+    print("✅ Encrypted message with valid channel_idx=1: correctly ignored")
 
     print("\n--- Test 3: Another encrypted message with channel_idx=2 ---")
     # More encrypted data
@@ -78,7 +78,7 @@ def test_encrypted_message_detection():
     bot._dispatch(payload3)
 
     assert len(sent_responses) == 0, f"Should NOT respond to encrypted message, got {len(sent_responses)} responses"
-    print(f"✅ Encrypted message with valid channel_idx=2: correctly ignored")
+    print("✅ Encrypted message with valid channel_idx=2: correctly ignored")
 
     print("\n--- Test 4: Valid message without 'SenderName:' prefix ---")
     # This simulates new hashtag channels
@@ -89,7 +89,7 @@ def test_encrypted_message_detection():
     bot._dispatch(payload4)
 
     assert len(sent_responses) == 1, f"Should respond to valid WX command, got {len(sent_responses)} responses"
-    print(f"✅ Valid message without prefix: responded correctly")
+    print("✅ Valid message without prefix: responded correctly")
 
     print("\n--- Test 5: Long encrypted message (like in user's log) ---")
     # Simulate the 153-byte encrypted message from the log
@@ -102,7 +102,7 @@ def test_encrypted_message_detection():
     assert (
         len(sent_responses) == 0
     ), f"Should NOT respond to long encrypted message, got {len(sent_responses)} responses"
-    print(f"✅ Long encrypted message: correctly ignored")
+    print("✅ Long encrypted message: correctly ignored")
 
     print("\n" + "=" * 80)
     print("✅ ALL TESTS PASSED!")

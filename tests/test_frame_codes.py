@@ -76,7 +76,7 @@ def test_cmd_get_device_time():
     current_time = int(time.time())
     assert abs(timestamp - current_time) < 60, f"Timestamp {timestamp} should be close to current time {current_time}"
 
-    print(f"✓ CMD_GET_DEVICE_TIME (0x05) handled correctly")
+    print("✓ CMD_GET_DEVICE_TIME (0x05) handled correctly")
     print(f"✓ Responded with RESP_CURR_TIME (0x09) + timestamp {timestamp}")
     print()
 
@@ -134,9 +134,9 @@ def test_push_chan_msg():
     cmd_payload = cmd_frame[3 : 3 + payload_length]
     assert cmd_payload[0] == 0x0A, f"Command should be CMD_SYNC_NEXT_MSG (0x0a), got {cmd_payload[0]:#04x}"
 
-    print(f"✓ PUSH_CHAN_MSG (0x88) dispatched message correctly")
+    print("✓ PUSH_CHAN_MSG (0x88) dispatched message correctly")
     print(f"  sender='{msg.sender}', content='{msg.content}', channel_idx={msg.channel_idx}")
-    print(f"✓ CMD_SYNC_NEXT_MSG (0x0a) sent to drain remaining queue")
+    print("✓ CMD_SYNC_NEXT_MSG (0x0a) sent to drain remaining queue")
     print()
 
     return True

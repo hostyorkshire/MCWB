@@ -114,7 +114,7 @@ def test_listener_receives_initial_sync_response():
     # Give the listener thread time to start and process
     time.sleep(0.5)
 
-    print(f"Step 2: Checking that CMD_SYNC_NEXT_MSG was sent...")
+    print("Step 2: Checking that CMD_SYNC_NEXT_MSG was sent...")
     writes = mock_serial.get_write_count()
     print(f"   Total writes: {writes}")
 
@@ -122,7 +122,7 @@ def test_listener_receives_initial_sync_response():
     assert writes >= 1, "CMD_SYNC_NEXT_MSG should have been sent"
     print("   ✓ CMD_SYNC_NEXT_MSG was sent")
 
-    print(f"Step 3: Checking that listener received the response...")
+    print("Step 3: Checking that listener received the response...")
     print(f"   Frames received: {len(frames_received)}")
     print(f"   Frame codes: {[f'0x{code:02x}' for code in frames_received]}")
 
@@ -213,7 +213,7 @@ def test_listener_receives_channel_message():
     # Give the listener thread time to read and process the frame
     time.sleep(0.5)
 
-    print(f"Step 2: Checking that message was received and processed...")
+    print("Step 2: Checking that message was received and processed...")
     print(f"   Messages received: {len(messages_received)}")
 
     assert len(messages_received) >= 1, "At least one message should have been received"
@@ -225,7 +225,7 @@ def test_listener_receives_channel_message():
     assert "wx London" in msg.content, f"Expected content to contain 'wx London', got '{msg.content}'"
     assert msg.channel_idx == 0, f"Expected channel_idx 0, got {msg.channel_idx}"
 
-    print(f"   ✓ Message properly parsed:")
+    print("   ✓ Message properly parsed:")
     print(f"     - Sender: {msg.sender}")
     print(f"     - Content: {msg.content}")
     print(f"     - Channel idx: {msg.channel_idx}")

@@ -32,7 +32,7 @@ def test_auto_detect_from_hashtag():
     assert bot._channel_idx_to_name[2] == "weather", "Should map to 'weather'"
     assert bot._announce_channel_idx == 2, "Should update announcement channel to 2"
 
-    print(f"  ✓ Detected #weather on channel_idx=2")
+    print("  ✓ Detected #weather on channel_idx=2")
     print(f"  ✓ _announce_channel_idx updated to: {bot._announce_channel_idx}")
     print(f"  ✓ Channel mapping: {bot._channel_idx_to_name}")
     print()
@@ -53,10 +53,10 @@ def test_auto_detect_from_wx_command():
     # Simulate receiving a WX command on channel_idx=3
     # This should trigger auto-detection in _handle_channel_message
     test_message = "User456: WX London"
-    
+
     # Parse the command to trigger detection
     location, country = bot._parse_command("WX London")
-    
+
     # If location is found and channel not detected yet, it should detect
     if location and not bot._weather_channel_detected and bot.weather_channel_idx is None:
         # Simulate the detection logic from _handle_channel_message
@@ -68,7 +68,7 @@ def test_auto_detect_from_wx_command():
     assert bot._weather_channel_detected, "Should have detected weather channel from command"
     assert bot._announce_channel_idx == 3, "Should update announcement channel to 3"
 
-    print(f"  ✓ Detected weather channel from WX command on channel_idx=3")
+    print("  ✓ Detected weather channel from WX command on channel_idx=3")
     print(f"  ✓ _announce_channel_idx updated to: {bot._announce_channel_idx}")
     print()
 
@@ -92,7 +92,7 @@ def test_no_override_when_configured():
     # Announcement channel should still be 1 (configured value)
     assert bot._announce_channel_idx == 1, "Should not change configured channel"
     print(f"  ✓ _announce_channel_idx remains: {bot._announce_channel_idx}")
-    print(f"  ✓ Explicit configuration not overridden")
+    print("  ✓ Explicit configuration not overridden")
     print()
 
 
@@ -112,7 +112,7 @@ def test_pattern_variations():
         bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
         test_message = f"User: Message on {pattern}"
         bot._detect_channel_name(test_message, channel_idx=4)
-        
+
         assert bot._weather_channel_detected, f"Should detect from '{pattern}'"
         print(f"  ✓ Detected from: {description}")
 

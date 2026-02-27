@@ -69,7 +69,7 @@ def test_html_encoded_json():
 
     # We expect at least 1 message to be received (the last one)
     assert len(received) >= 1, f"Expected at least 1 valid message, got {len(received)}"
-    print(f"✓ Messages with HTML entities are now properly decoded")
+    print("✓ Messages with HTML entities are now properly decoded")
     print()
 
 
@@ -117,7 +117,7 @@ def test_html_entities_in_message_content():
     assert "&" in received[0].content, "HTML entities should be decoded in content"
     assert ">" in received[0].content, "HTML entities should be decoded in content"
     print(f"✓ Message content: '{received[0].content}'")
-    print(f"✓ HTML entities in content are properly decoded")
+    print("✓ HTML entities in content are properly decoded")
     print()
 
 

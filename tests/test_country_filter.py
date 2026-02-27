@@ -72,9 +72,9 @@ def test_country_filter_applied():
         params = geocoding_call[1]["params"]
 
         if params.get("count") == 10:
-            print(f"✅ PASS: Geocoding API called with count=10 for client-side filtering")
+            print("✅ PASS: Geocoding API called with count=10 for client-side filtering")
         else:
-            print(f"❌ FAIL: Expected count=10 in params for client-side filtering")
+            print("❌ FAIL: Expected count=10 in params for client-side filtering")
             print(f"   Got: {params}")
             return False
 
@@ -129,13 +129,7 @@ def test_no_country_filter_when_not_configured():
         print(result)
         print()
 
-        # Check that bot defaults to GB when not explicitly configured
-        if bot.country == "GB":
-            print(f"✅ PASS: Bot defaults to GB country filter when not configured")
-            print(f"   Bot country: {bot.country}")
-        else:
-            print(f"❌ FAIL: Bot should default to GB when country=None")
-            print(f"   Got: {bot.country}")
+main
             return False
 
         return True

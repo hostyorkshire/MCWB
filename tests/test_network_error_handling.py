@@ -34,7 +34,7 @@ def test_connection_error_handling():
         expected_msg = "Sorry, I didn't get that due to network problems. But don't worry, hit me with it again!"
 
         assert result == expected_msg, f"Expected: {expected_msg}, Got: {result}"
-        print(f"✓ ConnectionError returns user-friendly message")
+        print("✓ ConnectionError returns user-friendly message")
 
     # Test Timeout in geocode_location
     with patch("weather_bot.requests.get") as mock_get:
@@ -43,7 +43,7 @@ def test_connection_error_handling():
         result = bot._get_weather("Manchester")
 
         assert result == expected_msg, f"Expected: {expected_msg}, Got: {result}"
-        print(f"✓ Timeout returns user-friendly message")
+        print("✓ Timeout returns user-friendly message")
 
     # Test RequestException (general network error)
     with patch("weather_bot.requests.get") as mock_get:
@@ -52,7 +52,7 @@ def test_connection_error_handling():
         result = bot._get_weather("Birmingham")
 
         assert result == expected_msg, f"Expected: {expected_msg}, Got: {result}"
-        print(f"✓ RequestException returns user-friendly message")
+        print("✓ RequestException returns user-friendly message")
 
     # Test that other exceptions still get logged properly
     with patch("weather_bot.requests.get") as mock_get:
@@ -63,7 +63,7 @@ def test_connection_error_handling():
         # Other exceptions should still be caught and logged (not the network message)
         assert "Sorry, I didn't get that due to network problems" not in result
         assert "Weather error" in result or "error" in result.lower()
-        print(f"✓ Non-network errors still get caught and logged")
+        print("✓ Non-network errors still get caught and logged")
 
     print()
 
@@ -96,7 +96,7 @@ def test_network_error_after_geocoding():
         expected_msg = "Sorry, I didn't get that due to network problems. But don't worry, hit me with it again!"
 
         assert result == expected_msg, f"Expected: {expected_msg}, Got: {result}"
-        print(f"✓ Network error during weather fetch returns user-friendly message")
+        print("✓ Network error during weather fetch returns user-friendly message")
 
     print()
 

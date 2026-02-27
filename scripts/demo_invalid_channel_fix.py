@@ -35,7 +35,7 @@ def simulate_message_reception():
     channel_idx, text = bot._parse_channel_message(valid_payload)
     print(f'   Parsed: channel_idx={channel_idx}, text="{text}"')
     if channel_idx is not None:
-        print(f"   ✅ This message would be processed correctly")
+        print("   ✅ This message would be processed correctly")
 
     # Invalid message on channel 49 (like in the log: "channel_idx=49 unknown: p...")
     print("\n2. ENCRYPTED/GARBLED message with channel_idx=49:")
@@ -45,9 +45,9 @@ def simulate_message_reception():
     channel_idx, text = bot._parse_channel_message(garbled_payload)
     print(f"   Parsed: channel_idx={channel_idx}, text={repr(text)}")
     if channel_idx is None:
-        print(f"   ✅ This garbled message is now BLOCKED!")
+        print("   ✅ This garbled message is now BLOCKED!")
     else:
-        print(f"   ❌ This shouldn't happen - garbled message leaked through!")
+        print("   ❌ This shouldn't happen - garbled message leaked through!")
 
     # Invalid message on channel 50 (like in the log: "channel_idx=50 unknown: Y/7*M...")
     print("\n3. ENCRYPTED/GARBLED message with channel_idx=50:")
@@ -57,9 +57,9 @@ def simulate_message_reception():
     channel_idx, text = bot._parse_channel_message(garbled_payload2)
     print(f"   Parsed: channel_idx={channel_idx}, text={repr(text)}")
     if channel_idx is None:
-        print(f"   ✅ This garbled message is now BLOCKED!")
+        print("   ✅ This garbled message is now BLOCKED!")
     else:
-        print(f"   ❌ This shouldn't happen - garbled message leaked through!")
+        print("   ❌ This shouldn't happen - garbled message leaked through!")
 
     print()
     print("=" * 70)

@@ -65,12 +65,12 @@ def test_message_reception():
     print("Step 2: Verify handler was triggered")
     print("-" * 70)
     if handler_called[0]:
-        print(f"✅ Handler WAS called!")
+        print("✅ Handler WAS called!")
         print(f"   Sender: {received_message[0].sender}")
         print(f"   Content: {received_message[0].content}")
         print(f"   Channel idx: {received_message[0].channel_idx}")
     else:
-        print(f"❌ Handler was NOT called!")
+        print("❌ Handler was NOT called!")
         return False
 
     print()
@@ -97,12 +97,12 @@ def test_message_reception():
     print()
 
     if handler_called[0]:
-        print(f"✅ Handler WAS called for V3 frame!")
+        print("✅ Handler WAS called for V3 frame!")
         print(f"   Sender: {received_message[0].sender}")
         print(f"   Content: {received_message[0].content}")
         print(f"   Channel idx: {received_message[0].channel_idx}")
     else:
-        print(f"❌ Handler was NOT called for V3 frame!")
+        print("❌ Handler was NOT called for V3 frame!")
         return False
 
     print()

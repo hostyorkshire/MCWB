@@ -39,10 +39,10 @@ def demonstrate_feature():
     current_time = time.time()
 
     if bot1.announce:
-        print(f"  ✓ Bot WILL ALWAYS announce on startup (first startup)")
+        print("  ✓ Bot WILL ALWAYS announce on startup (first startup)")
         bot1._save_last_announce_time(current_time)
     else:
-        print(f"  ✗ Announcements disabled (--announce flag not set)")
+        print("  ✗ Announcements disabled (--announce flag not set)")
 
     print()
     print("\nScenario 2: Bot restart after 30 minutes")
@@ -65,10 +65,10 @@ def demonstrate_feature():
     print(f"  Time until next periodic announcement: {minutes_until} minutes")
 
     if bot2.announce:
-        print(f"  ✓ Bot WILL ALWAYS announce on startup")
-        print(f"  ℹ️ Periodic announcements respect 3-hour interval (not startup)")
+        print("  ✓ Bot WILL ALWAYS announce on startup")
+        print("  ℹ️ Periodic announcements respect 3-hour interval (not startup)")
     else:
-        print(f"  ✗ Announcements disabled (--announce flag not set)")
+        print("  ✗ Announcements disabled (--announce flag not set)")
 
     print()
     print("\nScenario 3: Bot restart after 4 hours")
@@ -90,10 +90,10 @@ def demonstrate_feature():
     print(f"  Announcement interval: {ANNOUNCE_INTERVAL / 3600} hours")
 
     if bot3.announce:
-        print(f"  ✓ Bot WILL ALWAYS announce on startup")
-        print(f"  ℹ️ Next periodic announcement will occur immediately (>6 hours passed)")
+        print("  ✓ Bot WILL ALWAYS announce on startup")
+        print("  ℹ️ Next periodic announcement will occur immediately (>6 hours passed)")
     else:
-        print(f"  ✗ Announcements disabled (--announce flag not set)")
+        print("  ✗ Announcements disabled (--announce flag not set)")
 
     print()
     print("=" * 70)

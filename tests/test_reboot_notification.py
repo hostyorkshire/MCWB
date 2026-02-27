@@ -43,7 +43,7 @@ class TestRebootNotification(unittest.TestCase):
         # First run - create state file
         bot1 = WeatherBot(debug=False, reboot_notify=True)
         bot1._mark_running()
-        
+
         # Second run - should detect reboot
         bot2 = WeatherBot(debug=False, reboot_notify=True)
         self.assertTrue(bot2._is_reboot())
@@ -51,7 +51,7 @@ class TestRebootNotification(unittest.TestCase):
     def test_reboot_notification_not_sent_on_first_run(self):
         """Test that reboot notification is not sent on first run"""
         bot = WeatherBot(debug=False, reboot_notify=True)
-        
+
         # Mock the send method
         with patch.object(bot, '_send_channel_msg') as mock_send:
             bot._send_reboot_notification()
@@ -63,10 +63,10 @@ class TestRebootNotification(unittest.TestCase):
         # First run - create state file
         bot1 = WeatherBot(debug=False, reboot_notify=True)
         bot1._mark_running()
-        
+
         # Second run - should send notification
         bot2 = WeatherBot(debug=False, reboot_notify=True, weather_channel_idx=1)
-        
+
         with patch.object(bot2, '_send_channel_msg') as mock_send:
             bot2._send_reboot_notification()
             # Should send notification on restart
@@ -77,10 +77,10 @@ class TestRebootNotification(unittest.TestCase):
         # Create state file to simulate restart
         bot1 = WeatherBot(debug=False)
         bot1._mark_running()
-        
+
         # Second run without reboot_notify flag
         bot2 = WeatherBot(debug=False, reboot_notify=False)
-        
+
         with patch.object(bot2, '_send_channel_msg') as mock_send:
             bot2._send_reboot_notification()
             # Should not send notification when disabled
@@ -90,11 +90,11 @@ class TestRebootNotification(unittest.TestCase):
         """Test that state file contains a timestamp"""
         bot = WeatherBot(debug=False, reboot_notify=True)
         bot._mark_running()
-        
+
         # Read state file
         with open(STATE_FILE, 'r') as f:
             content = f.read().strip()
-        
+
         # Should be a valid timestamp
         try:
             timestamp = int(content)
@@ -108,7 +108,7 @@ class TestRebootNotification(unittest.TestCase):
         # Create state file to simulate restart
         bot1 = WeatherBot(debug=False)
         bot1._mark_running()
-        
+
         # Test with weather_channel_idx
         bot2 = WeatherBot(debug=False, reboot_notify=True, weather_channel_idx=5)
         with patch.object(bot2, '_send_channel_msg') as mock_send:
@@ -121,12 +121,12 @@ def main():
     print("=" * 60)
     print("Testing Reboot Notification Functionality")
     print("=" * 60)
-    
+
     # Run tests
     suite = unittest.TestLoader().loadTestsFromTestCase(TestRebootNotification)
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
-    
+
     # Summary
     print("\n" + "=" * 60)
     if result.wasSuccessful():

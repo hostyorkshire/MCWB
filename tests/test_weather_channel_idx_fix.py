@@ -35,7 +35,7 @@ def test_weather_channel_idx_no_filtering():
     # Create bot with weather_channel_idx=2 but NO allowed_channel_idx filtering
     bot = WeatherBot(weather_channel_idx=2, allowed_channel_idx=None, announce=True, debug=False)
 
-    print(f"Bot configuration:")
+    print("Bot configuration:")
     print(f"  weather_channel_idx = {bot.weather_channel_idx}")
     print(f"  allowed_channel_idx = {bot.allowed_channel_idx}")
     print(f"  announce = {bot.announce}\n")
@@ -57,11 +57,11 @@ def test_weather_channel_idx_no_filtering():
 
         if would_be_filtered:
             print(f"❌ FAIL: channel_idx={channel_idx} ({description})")
-            print(f"   Message would be FILTERED (should be ACCEPTED)\n")
+            print("   Message would be FILTERED (should be ACCEPTED)\n")
             all_passed = False
         else:
             print(f"✅ PASS: channel_idx={channel_idx} ({description})")
-            print(f"   Message would be ACCEPTED ✓\n")
+            print("   Message would be ACCEPTED ✓\n")
 
     if all_passed:
         print("=" * 70)
@@ -97,7 +97,7 @@ def test_channel_idx_filtering():
     # Create bot with allowed_channel_idx=1 (explicit filtering)
     bot = WeatherBot(allowed_channel_idx=1, debug=False)
 
-    print(f"Bot configuration:")
+    print("Bot configuration:")
     print(f"  allowed_channel_idx = {bot.allowed_channel_idx}")
     print(f"  weather_channel_idx = {bot.weather_channel_idx}\n")
 
@@ -156,7 +156,7 @@ def test_combined_flags():
     # Create bot with both parameters
     bot = WeatherBot(weather_channel_idx=2, allowed_channel_idx=1, debug=False)
 
-    print(f"Bot configuration:")
+    print("Bot configuration:")
     print(f"  weather_channel_idx = {bot.weather_channel_idx} (announcements)")
     print(f"  allowed_channel_idx = {bot.allowed_channel_idx} (message filter)\n")
 
@@ -213,7 +213,7 @@ def test_no_flags():
     # Create bot with default settings
     bot = WeatherBot(debug=False)
 
-    print(f"Bot configuration:")
+    print("Bot configuration:")
     print(f"  weather_channel_idx = {bot.weather_channel_idx}")
     print(f"  allowed_channel_idx = {bot.allowed_channel_idx}\n")
 

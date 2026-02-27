@@ -40,16 +40,16 @@ def test_new_hashtag_channel():
 
         # Simulate receiving a weather command message
         # Format: "SenderName: wx location"
-        test_message = f"TestUser: wx London"
+        test_message = "TestUser: wx London"
 
         # Check if the message would be filtered out
         if bot.allowed_channel_idx is not None and channel_idx != bot.allowed_channel_idx:
-            print(f"❌ FAIL: Message would be FILTERED OUT")
+            print("❌ FAIL: Message would be FILTERED OUT")
             print(f"   Bot has allowed_channel_idx={bot.allowed_channel_idx}")
             print(f"   But message arrived on channel_idx={channel_idx}")
             all_passed = False
         else:
-            print(f"✅ PASS: Message would be ACCEPTED")
+            print("✅ PASS: Message would be ACCEPTED")
             print(f"   Bot has allowed_channel_idx={bot.allowed_channel_idx} (None = accepts all)")
 
             # Test that the command would be parsed correctly
@@ -58,7 +58,7 @@ def test_new_hashtag_channel():
             if location:
                 print(f"   Command parsed successfully: location = '{location}'")
             else:
-                print(f"   ⚠️  Warning: Command not recognized")
+                print("   ⚠️  Warning: Command not recognized")
 
     print("\n" + "=" * 70)
     if all_passed:
@@ -84,7 +84,7 @@ def test_with_channel_filtering():
     bot = WeatherBot(allowed_channel_idx=1, debug=True)
 
     print(f"Bot configured with allowed_channel_idx={bot.allowed_channel_idx}")
-    print(f"This simulates running: python3 weather_bot.py --channel-idx 1\n")
+    print("This simulates running: python3 weather_bot.py --channel-idx 1\n")
 
     # Test different channel indices
     test_cases = [

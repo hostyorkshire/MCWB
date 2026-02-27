@@ -21,62 +21,62 @@ def main():
     print("╔" + "=" * 68 + "╗")
     print("║" + " " * 10 + "Diagnostic Logging Demonstration" + " " * 26 + "║")
     print("╚" + "=" * 68 + "╝")
-    
+
     print("\nThis demonstrates the improved diagnostic logging that helps users")
     print("understand WHY some channels don't work (encrypted, not subscribed, etc.)")
-    
+
     # Create bot with debug enabled
     bot = WeatherBot(debug=True)
-    
+
     print_banner("Scenario 1: Valid Message on Channel 0 (#wxtest)")
     print("\nUser sends: 'Wx barnsley' on #wxtest (channel_idx=0)")
     print("Expected: Bot processes and responds\n")
-    
+
     # Simulate valid message
     valid_payload = bytes([0x88, 0, 1, 1, 0, 0, 0, 0]) + b'M3UXC: Wx barnsley'
     channel_idx, text = bot._parse_channel_message(valid_payload)
-    
+
     if channel_idx is not None:
-        print(f"✓ SUCCESS: Message parsed successfully")
+        print("✓ SUCCESS: Message parsed successfully")
         print(f"  Channel: {channel_idx}")
         print(f"  Text: {text[:50]}...")
-        print(f"  Bot would respond with weather for 'barnsley'")
+        print("  Bot would respond with weather for 'barnsley'")
     else:
         print("✗ FAILED: Message was rejected")
-    
+
     print_banner("Scenario 2: Encrypted Message on Channel 1")
     print("\nUser sends message on an encrypted channel (channel_idx=1)")
     print("Expected: Bot detects encryption and logs helpful diagnostic\n")
-    
+
     # Simulate encrypted message (channel_idx > 7 is a signature of encryption)
     encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b'garbled'
     channel_idx, text = bot._parse_channel_message(encrypted_payload)
-    
+
     if channel_idx is None:
-        print(f"\n✓ SUCCESS: Encrypted message correctly rejected")
-        print(f"  Bot logged helpful diagnostic explaining the issue")
-        print(f"  User can now understand why this channel doesn't work")
+        print("\n✓ SUCCESS: Encrypted message correctly rejected")
+        print("  Bot logged helpful diagnostic explaining the issue")
+        print("  User can now understand why this channel doesn't work")
     else:
         print("✗ FAILED: Encrypted message was not detected")
-    
+
     print_banner("Scenario 3: Corrupted/Short Message")
     print("\nRadio interference causes a corrupted message")
     print("Expected: Bot detects corruption and logs diagnostic\n")
-    
+
     # Simulate short/corrupted message
     short_payload = bytes([0x88, 0, 1])
     channel_idx, text = bot._parse_channel_message(short_payload)
-    
+
     if channel_idx is None:
-        print(f"\n✓ SUCCESS: Corrupted message correctly rejected")
-        print(f"  Bot logged that message was too short/corrupted")
+        print("\n✓ SUCCESS: Corrupted message correctly rejected")
+        print("  Bot logged that message was too short/corrupted")
     else:
         print("✗ FAILED: Corrupted message was not detected")
-    
+
     print_banner("Scenario 4: V3 Format with Invalid Channel")
     print("\nV3 format message with invalid channel_idx")
     print("Expected: Bot detects and logs as encrypted/invalid\n")
-    
+
     # Simulate V3 format with invalid channel
     v3_invalid = bytes([0x11, 25, 0, 0, 99, 0, 0, 0, 0, 0, 0]) + b'test'
     # This would be caught in _dispatch
@@ -85,8 +85,8 @@ def main():
         channel_idx = v3_invalid[4]
         if not (0 <= channel_idx <= 7):
             bot._log(f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted")
-            print(f"\n✓ SUCCESS: V3 invalid channel correctly detected")
-    
+            print("\n✓ SUCCESS: V3 invalid channel correctly detected")
+
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)

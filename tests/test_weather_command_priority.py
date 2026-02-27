@@ -27,7 +27,7 @@ def test_weather_command_sends_outlook_automatically():
 
     with patch("weather_bot.requests.get") as mock_get:
         print("\n1. User asks: wx Paris")
-        
+
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
             "results": [
@@ -71,7 +71,7 @@ def test_weather_command_sends_outlook_automatically():
         calls = bot._ser.write.call_args_list
         if len(calls) >= 2:
             print("   ✅ Bot sent 2 messages (weather + outlook)")
-            
+
             first_msg = calls[0][0][0]
             if b"Paris" in first_msg and b"FR" in first_msg:
                 print("   ✅ First message contains Paris weather")
@@ -79,7 +79,7 @@ def test_weather_command_sends_outlook_automatically():
                 print("   ❌ FAIL: First message doesn't contain Paris weather")
                 print(f"      Got: {first_msg}")
                 return False
-                
+
             # Check second message is the outlook for Paris
             second_msg = calls[1][0][0]
             if b"Paris 3-day" in second_msg or b"02-" in second_msg:
@@ -111,7 +111,7 @@ def test_successive_weather_commands():
     with patch("weather_bot.requests.get") as mock_get:
         # First command: York
         print("\n1. User asks: wx York")
-        
+
         geocoding_york = MagicMock()
         geocoding_york.json.return_value = {
             "results": [{
@@ -153,14 +153,14 @@ def test_successive_weather_commands():
         calls = bot._ser.write.call_args_list
         if len(calls) >= 2:
             print("   ✅ Bot sent 2 messages (weather + outlook)")
-            
+
             first_msg = calls[0][0][0]
             if b"York" in first_msg and b"GB" in first_msg:
                 print("   ✅ First message contains York weather")
             else:
                 print("   ❌ FAIL: First message doesn't contain York weather")
                 return False
-                
+
             second_msg = calls[1][0][0]
             if b"York 3-day" in second_msg or b"02-" in second_msg:
                 print("   ✅ Second message is outlook (sent automatically)")

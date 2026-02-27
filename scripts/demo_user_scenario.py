@@ -108,7 +108,7 @@ def simulate_user_scenario():
             bytes([frame_code, snr]) + reserved + bytes([channel_idx, path_len, txt_type]) + timestamp + message_text
         )
 
-        print(f"Received V3 frame from companion radio:")
+        print("Received V3 frame from companion radio:")
         print(f"  Frame code: 0x{frame_code:02x} (RESP_CHANNEL_MSG_V3)")
         print(f"  Channel idx: {channel_idx} (wxtest)")
         print(f"  SNR: {snr} dB")

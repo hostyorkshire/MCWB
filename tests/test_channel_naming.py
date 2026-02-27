@@ -59,7 +59,7 @@ def test_channel_naming_convention():
     print(f"   '#weather' → channel_idx {idx2}")
 
     assert idx1 != idx2, "Different names should get different indices"
-    print(f"   ✓ 'weather' and '#weather' are treated as DIFFERENT channels")
+    print("   ✓ 'weather' and '#weather' are treated as DIFFERENT channels")
     print(f"     (channel_idx {idx1} vs {idx2})")
 
     mesh1.stop()

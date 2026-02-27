@@ -39,7 +39,7 @@ def example_2_multiple_locations():
     bot = WeatherBot(node_id="example_bot", debug=False)
     bot.start()
 
-    locations = ["London", "Manchester", "Edinburgh", "Cardiff"]
+    locations = ["London", "Manchester", "Edinburgh", "Cardif"]
 
     for location in locations:
         message = MeshCoreMessage(sender="user_node", content=f"wx {location}", message_type="text")
