@@ -1047,6 +1047,8 @@
                     }
                     
                     if (data.connections !== undefined) {
+                        // Note: Cloudflare Tunnels maintain 4 connections by default for redundancy
+                        // See: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/
                         statsHTML += `
                             <div class="tunnel-stat-item">
                                 <div class="stat-label">Connections</div>

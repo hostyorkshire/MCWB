@@ -8,6 +8,7 @@ import json
 import socket
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Check for required dependencies before importing
@@ -328,11 +329,11 @@ def api_cloudflare_status():
     """Get Cloudflare Tunnel status and statistics"""
     try:
         # Check if cloudflared is installed
-        cloudflared_path = None
-        for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"]:
-            if Path(path).exists():
-                cloudflared_path = path
-                break
+        cloudflared_path = next(
+            (path for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"] 
+             if Path(path).exists()), 
+            None
+        )
         
         if not cloudflared_path:
             return jsonify({
@@ -401,7 +402,7 @@ def api_cloudflare_status():
         if service_running:
             try:
                 result = subprocess.run(
-                    ["systemctl", "show", "cloudflared-mcwb.service", "--property=ActiveEnterTimestamp"],
+                    ["systemctl", "show", "cloudflared-mcwb.service", "--property=ActiveEnterTimestampMonotonic"],
                     capture_output=True,
                     text=True,
                     timeout=5
@@ -409,16 +410,16 @@ def api_cloudflare_status():
                 if result.returncode == 0:
                     timestamp_line = result.stdout.strip()
                     if "=" in timestamp_line:
+                        # ActiveEnterTimestampMonotonic gives microseconds since boot
                         timestamp_str = timestamp_line.split("=", 1)[1]
-                        if timestamp_str and timestamp_str != "":
-                            from datetime import datetime
-                            try:
-                                start_time = datetime.strptime(timestamp_str, "%a %Y-%m-%d %H:%M:%S %Z")
-                                uptime_seconds = (datetime.now() - start_time).total_seconds()
-                                uptime = format_uptime(uptime_seconds)
-                            except ValueError:
-                                pass
-            except (subprocess.TimeoutExpired, FileNotFoundError):
+                        if timestamp_str and timestamp_str.isdigit():
+                            # Get current monotonic time
+                            import time
+                            current_monotonic = int(time.clock_gettime(time.CLOCK_MONOTONIC) * 1000000)
+                            start_monotonic = int(timestamp_str)
+                            uptime_seconds = (current_monotonic - start_monotonic) / 1000000
+                            uptime = format_uptime(uptime_seconds)
+            except (subprocess.TimeoutExpired, FileNotFoundError, ValueError, AttributeError):
                 pass
         
         return jsonify({
