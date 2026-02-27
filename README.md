@@ -37,6 +37,8 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 **🌙 NEW: Dark-Themed Web Dashboard** - Monitor your bot in real-time with a beautiful dark-themed web interface! See [WEB_DASHBOARD.md](WEB_DASHBOARD.md) for details or [CONNECTION_GUIDE.md](CONNECTION_GUIDE.md) for quick troubleshooting.
 
+**🌐 NEW: Cloudflare Tunnel Integration** - Connect your static website to your local bot without port forwarding! Perfect for cPanel-hosted sites. See [CLOUDFLARE_TUNNEL_SETUP.md](CLOUDFLARE_TUNNEL_SETUP.md) and [CPANEL_DEPLOYMENT_GUIDE.md](CPANEL_DEPLOYMENT_GUIDE.md) for setup instructions.
+
 **📚 Documentation Website** - Complete wiki-style documentation website available at https://mcwb.netlify.app/. See [NETLIFY_DEPLOYMENT.md](NETLIFY_DEPLOYMENT.md) for automatic deployment setup from GitHub.
 
 ## Overview
