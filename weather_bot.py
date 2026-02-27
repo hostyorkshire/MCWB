@@ -585,11 +585,11 @@ class WeatherBot:
             channel_idx: Numeric channel index from the protocol
         """
         # Check if text contains channel hashtag patterns like "#weather", "#alerts", etc.
-        # Common patterns: "#weather", "#wx", "weather channel", etc.
+        # Common patterns: "#weather", "#wx", "#wether" (typo variant), "weather channel", etc.
         text_lower = text.lower()
         
         # Look for #weather or similar indicators
-        weather_patterns = ["#weather", "#wx", "weather channel"]
+        weather_patterns = ["#weather", "#wx", "#wether", "weather channel"]
         for pattern in weather_patterns:
             if pattern in text_lower:
                 if channel_idx not in self._channel_idx_to_name:
@@ -734,10 +734,11 @@ class WeatherBot:
         Channel indicators like "#weather", "#wx", "on #weather" are automatically filtered out.
         """
         # Remove channel indicators before parsing
-        # Common patterns: "on #weather", "#weather", "#wx", "weather channel"
+        # Common patterns: "on #weather", "#weather", "#wx", "#wether", "weather channel"
         text_cleaned = text.strip()
-        # Combined regex for better performance: matches "on #weather", "#weather", "#wx", "weather channel"
-        text_cleaned = re.sub(r'(?:\s+on\s+)?#(?:weather|wx)\b|\s+weather\s+channel\b', '', text_cleaned, flags=re.IGNORECASE)
+        # Combined regex for better performance: matches "on #weather", "#weather", "#wx", "#wether", "weather channel"
+        # Pattern handles: "on #<channel>", "#<channel>", or "weather channel" followed by optional whitespace
+        text_cleaned = re.sub(r'(?:(?:on\s+)?#(?:weather|wx|wether)\s*)|(?:\s+weather\s+channel\b)', '', text_cleaned, flags=re.IGNORECASE)
         text_cleaned = text_cleaned.strip()
         
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
