@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stats - Meshcore Weather Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Live weather statistics from the MeshCore Weather Bot">
+    <style>
+        .weather-widget {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .weather-widget h3 {
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .weather-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .weather-item {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .weather-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .weather-item-key {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .weather-item-value {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 1.5rem;
+            font-style: italic;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .error p {
+            color: var(--error-color);
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+        }
+
+        .error small {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-container">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="getting-started.html">Getting Started</a></li>
+                <li><a href="installation.html">Installation</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="commands.html">Commands</a></li>
+                <li><a href="channels.html">Channels</a></li>
+                <li><a href="dashboard.html">Live Dashboard</a></li>
+                <li><a href="live-stats.html" class="active">Live Stats</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                <li><a href="api.html">API</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1>Live Stats</h1>
+            <p>Real-time weather data from the bot's API endpoint.</p>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> Live Data Feed</h3>
+                <p>This page displays live weather statistics fetched from the bot's API endpoint. The data refreshes automatically every 5 minutes.</p>
+            </div>
+
+            <div id="weather-container">
+                <div class="loading">Loading weather data</div>
+            </div>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"> Configuration</h3>
+                <p>The widget automatically fetches data from: <code>https://bot.intergalactic.it.com/api/data</code></p>
+                <p style="margin-top: 1rem;">To use your own API endpoint, modify the <code>apiUrl</code> parameter in the JavaScript code below.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Modern approach with better error handling
+        class WeatherWidget {
+            constructor(apiUrl, containerId) {
+                this.apiUrl = apiUrl;
+                this.container = document.getElementById(containerId);
+                this.refreshInterval = 300000; // 5 minutes
+            }
+
+            async fetchData() {
+                try {
+                    const response = await fetch(this.apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    this.render(data);
+                } catch (error) {
+                    this.renderError(error);
+                }
+            }
+
+            render(data) {
+                this.container.innerHTML = `
+                    <div class="weather-widget">
+                        <h3>Live Weather Data</h3>
+                        <div class="weather-info">
+                            ${Object.entries(data).map(([key, value]) => `
+                                <div class="weather-item">
+                                    <div class="weather-item-key">${key.replace(/_/g, ' ')}</div>
+                                    <div class="weather-item-value">${value}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p class="last-updated">Last updated: ${new Date().toLocaleString()}</p>
+                    </div>
+                `;
+            }
+
+            renderError(error) {
+                this.container.innerHTML = `
+                    <div class="error">
+                        <p>⚠️ Unable to fetch weather data</p>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+
+            start() {
+                this.fetchData();
+                setInterval(() => this.fetchData(), this.refreshInterval);
+            }
+        }
+
+        // Initialize the widget
+        const widget = new WeatherWidget('https://bot.intergalactic.it.com/api/data', 'weather-container');
+        widget.start();
+    </script>
+</body>
+</html>
