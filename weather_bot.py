@@ -189,7 +189,7 @@ class WeatherBot:
             allowed_channel_idx: Only respond to messages from this channel index
             weather_channel_idx: Channel index to use for announcements
             announce_channel: Channel name to use for announcements
-            country: Default country code for geocoding (e.g., GB, US, FR)
+            country: Default country code for geocoding (default: GB). Users can override with explicit country codes.
             channel: Comma-separated list of channel names to listen on
             node_id: Node ID for MeshCore (default: "MCWB")
             verify_channels: Show diagnostic info about encrypted messages
@@ -210,7 +210,8 @@ class WeatherBot:
         self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
         self.announce_channel = announce_channel
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
-        self.country = country
+        # Default to "GB" (UK) to bias location searches for UK users
+        self.country = country if country is not None else "GB"
         # Channel verification mode - shows diagnostic info about encrypted messages
         self.verify_channels = verify_channels
         # Track channels with valid messages vs encrypted messages for diagnostics

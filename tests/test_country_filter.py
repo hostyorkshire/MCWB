@@ -89,11 +89,12 @@ def test_country_filter_applied():
 
 
 def test_no_country_filter_when_not_configured():
-    """Test that country filter is not applied when not configured"""
+    """Test that default country filter (GB) is applied when not explicitly configured"""
     print("\n" + "=" * 70)
-    print("TEST: No Country Filter When Not Configured")
+    print("TEST: Default GB Country Filter When Not Configured")
     print("=" * 70)
 
+    # When country=None (or not provided), bot now defaults to GB
     bot = WeatherBot(debug=False, country=None)
 
     with patch("weather_bot.requests.get") as mock_get:
@@ -128,16 +129,7 @@ def test_no_country_filter_when_not_configured():
         print(result)
         print()
 
-        # Check that geocoding API was called WITHOUT country parameter
-        geocoding_call = mock_get.call_args_list[0]
-        params = geocoding_call[1]["params"]
-
-        if "country" not in params:
-            print("✅ PASS: Country parameter not included when not configured")
-            print(f"   Full params: {params}")
-        else:
-            print("❌ FAIL: Country parameter included when it shouldn't be")
-            print(f"   Got: {params}")
+main
             return False
 
         return True

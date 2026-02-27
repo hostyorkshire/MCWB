@@ -58,12 +58,17 @@ MCWB listens for weather queries and responds using the free [Open-Meteo](https:
 2. Run `python3 weather_bot.py`
 3. Done! The bot works on ANY channel where users send weather commands
 
-**✨ NEW: Country Specification** - Users can now specify country in their commands:
+**✨ UK Location Bias** - The bot defaults to UK locations for ambiguous city names:
+- `wx Halifax` → Halifax, United Kingdom (not Canada)
+- `wx York` → York, United Kingdom (not USA)
+- Users can still specify other countries: `wx Halifax CA` or `wx York USA`
+
+**✨ Country Specification** - Users can specify country in their commands:
 - `wx York UK` → York, United Kingdom
 - `wx York USA` → York, USA
 - No more confusion with ambiguous city names!
 
-**✨ NEW: UK Postcode Support** - Get weather by entering a UK postcode:
+**✨ UK Postcode Support** - Get weather by entering a UK postcode:
 - `wx S1 2HH` → Sheffield city centre
 - `weather S71` → Barnsley area
 - `wx SW1A 1AA` → London (Buckingham Palace area)
@@ -112,19 +117,29 @@ The bot automatically detects UK postcodes and uses the free [Postcodes.io](http
 
 ### Specifying Country in Your Query
 
-When city names are ambiguous (like York, Paris, Birmingham), you can specify the country directly in your command:
+**Default Behavior:** The bot defaults to UK locations for UK users. When you type `wx Halifax` or `wx York`, you'll get the UK location automatically.
+
+When you want a location in a different country, specify the country directly in your command:
 
 ```
-wx York UK        # York, United Kingdom
-wx York USA       # York, Pennsylvania USA
+wx Halifax        # Halifax, United Kingdom (default)
+wx Halifax CA     # Halifax, Canada (explicit)
+wx York           # York, United Kingdom (default)
+wx York USA       # York, Pennsylvania USA (explicit)
 wx Paris FR       # Paris, France
 wx Berlin DE      # Berlin, Germany
 ```
 
 **Supported country codes:**
-- `UK`, `GB`, or `United Kingdom` → United Kingdom
+- `UK`, `GB`, or `United Kingdom` → United Kingdom (default)
 - `USA`, `US`, or `United States` → United States
 - Any ISO-3166-1 alpha-2 country code (2 letters): `FR`, `DE`, `CA`, `JP`, `AU`, etc.
+
+**For non-UK deployments:** You can change the default country by running the bot with `--country <code>`:
+```bash
+python3 weather_bot.py --country US  # For US deployments
+python3 weather_bot.py --country FR  # For French deployments
+```
 
 The bot replies on the same channel with current conditions:
 
@@ -367,9 +382,9 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -w WEATHER_CHANNEL_IDX, --weather-channel-idx WEATHER_CHANNEL_IDX
                           Specify which channel index to use for announcements. Bot will still
                           respond to messages from ANY channel unless --channel-idx is also specified.
-  --country COUNTRY       Default country code for geocoding (e.g., GB, US, FR). Filters location
-                          searches to prefer cities in this country. Useful when city names are
-                          ambiguous (e.g., York, Paris, etc.).
+  --country COUNTRY       Default country code for geocoding (default: GB for UK).
+                          Filters location searches to prefer cities in this country.
+                          Useful for non-UK deployments (e.g., --country US, --country FR).
   -l LOCATION, --location LOCATION
                           Look up weather and exit (no radio needed)
 ```
@@ -626,25 +641,32 @@ sudo systemctl start weather_bot
 - **For UK locations**: Try using a postcode instead: `wx S1 2HH` or `wx S71`
 
 ### Wrong city returned (city in another country)
-Some city names exist in multiple countries (e.g., "York" in UK, USA; "Paris" in France, USA).
-By default, the bot returns the first match from the geocoding API.
+Some city names exist in multiple countries (e.g., "Halifax" in UK, Canada; "York" in UK, USA; "Paris" in France, USA).
+
+**Default behavior:** The bot defaults to UK locations. If you type `wx Halifax`, you'll get Halifax, UK automatically.
 
 **Solutions:**
 
-1. **Specify country in the command (recommended):** Users can add the country directly in their weather request:
-   - `wx York UK` → Returns York, United Kingdom
+1. **For UK locations (default):** Just use the city name:
+   - `wx Halifax` → Returns Halifax, United Kingdom (automatic)
+   - `wx York` → Returns York, United Kingdom (automatic)
+   - No need to specify UK!
+
+2. **For non-UK locations:** Specify the country in your command:
+   - `wx Halifax CA` → Returns Halifax, Canada
    - `wx York USA` → Returns York, Pennsylvania USA  
    - `wx Paris FR` → Returns Paris, France
-   - Supports: `UK`, `USA`, `US`, `GB`, or any ISO-3166-1 alpha-2 country code (2 letters)
+   - Supports: `UK`, `USA`, `US`, `GB`, `CA`, or any ISO-3166-1 alpha-2 country code (2 letters)
 
-2. **Use comma-separated format:** Traditional explicit format:
+3. **Use comma-separated format:** Traditional explicit format:
    - `wx York, UK` instead of just `wx York`
    - `wx Paris, France` instead of just `wx Paris`
 
-3. **Configure a default country:** If most users are in one country, run the bot with the `--country` flag:
+4. **Configure a different default country:** For non-UK deployments, run the bot with the `--country` flag:
    ```bash
-   python3 weather_bot.py --country GB  # Prefers UK cities
-   python3 weather_bot.py --country US  # Prefers US cities
+   python3 weather_bot.py --country US  # Defaults to US cities
+   python3 weather_bot.py --country FR  # Defaults to French cities
+   python3 weather_bot.py --country GB  # UK (default behavior)
    ```
    
    This filters location searches to prefer cities in the specified country while still
