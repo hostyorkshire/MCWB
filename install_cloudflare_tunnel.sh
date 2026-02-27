@@ -192,8 +192,8 @@ ingress:
       connectTimeout: 30s
       # HTTP/2 origin support
       http2Origin: false
-
-# No catch-all rule needed for single service
+  # Catch-all rule (required by Cloudflare Tunnel)
+  - service: http_status:404
 EOF
 
 echo -e "${GREEN}✓ Configuration file created: $TUNNEL_CONFIG_DIR/config.yml${NC}"

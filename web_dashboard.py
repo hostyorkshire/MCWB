@@ -61,8 +61,7 @@ CORS(app, resources={
         "origins": [
             "https://wx.intergalactic.it.com",  # Production cPanel site
             "http://wx.intergalactic.it.com",   # Allow HTTP variant
-            "https://*.cloudflare.com",         # Cloudflare Tunnel domains
-            "*"                                  # Allow all origins (for development)
+            "*"                                  # Allow all origins (for development and tunnel flexibility)
         ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Accept"],
