@@ -6,6 +6,7 @@
     <title>Live Stats - Meshcore Weather Bot</title>
     <link rel="stylesheet" href="css/style.css">
     <meta name="description" content="Live weather statistics from the MeshCore Weather Bot">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         .weather-widget {
             background: var(--bg-tertiary);
@@ -230,6 +231,33 @@
             padding: 2rem;
             color: var(--text-muted);
             font-style: italic;
+        }
+
+        .chart-container-wrapper {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chart-card {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .chart-card h4 {
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            text-align: center;
         }
     </style>
 </head>
@@ -459,7 +487,68 @@
                 });
                 
                 widget.appendChild(statsGrid);
+
+                // Add pie chart for success/error ratio
+                const chartCard = document.createElement('div');
+                chartCard.className = 'chart-card';
+                chartCard.innerHTML = '<h4>Request Success Rate</h4>';
+                const canvasWrapper = document.createElement('div');
+                canvasWrapper.className = 'chart-container-wrapper';
+                const canvas = document.createElement('canvas');
+                canvas.id = 'statsChart';
+                canvasWrapper.appendChild(canvas);
+                chartCard.appendChild(canvasWrapper);
+                widget.appendChild(chartCard);
+                
                 container.replaceChildren(widget);
+
+                // Create pie chart
+                const successCount = (data.total_requests || 0) - (data.total_errors || 0);
+                const errorCount = data.total_errors || 0;
+                
+                const ctx = canvas.getContext('2d');
+                if (window.statsChartInstance) {
+                    window.statsChartInstance.destroy();
+                }
+                window.statsChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Successful Requests', 'Errors'],
+                        datasets: [{
+                            data: [successCount, errorCount],
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderColor: ['#059669', '#dc2626'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#fff',
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             } catch (error) {
                 renderError('stats-container', 'Usage Statistics', error);
             }
@@ -487,6 +576,12 @@
                     emptyState.textContent = 'No active channels yet. Send a command to the bot to see channels appear here!';
                     widget.appendChild(emptyState);
                 } else {
+                    // Create two-column layout for list and chart
+                    const chartRow = document.createElement('div');
+                    chartRow.className = 'chart-row';
+
+                    // Channel list column
+                    const listColumn = document.createElement('div');
                     const channelList = document.createElement('ul');
                     channelList.className = 'channel-list';
                     
@@ -499,11 +594,72 @@
                         `;
                         channelList.appendChild(item);
                     });
+                    listColumn.appendChild(channelList);
+                    chartRow.appendChild(listColumn);
+
+                    // Pie chart column
+                    const chartColumn = document.createElement('div');
+                    chartColumn.className = 'chart-card';
+                    chartColumn.innerHTML = '<h4>Channel Distribution</h4>';
+                    const canvasWrapper = document.createElement('div');
+                    canvasWrapper.className = 'chart-container-wrapper';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'channelsChart';
+                    canvasWrapper.appendChild(canvas);
+                    chartColumn.appendChild(canvasWrapper);
+                    chartRow.appendChild(chartColumn);
+
+                    widget.appendChild(chartRow);
+                    container.replaceChildren(widget);
+
+                    // Create pie chart with channel distribution
+                    const ctx = canvas.getContext('2d');
+                    if (window.channelsChartInstance) {
+                        window.channelsChartInstance.destroy();
+                    }
                     
-                    widget.appendChild(channelList);
+                    // Generate colors for each channel
+                    const colors = [
+                        '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444',
+                        '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1'
+                    ];
+                    
+                    window.channelsChartInstance = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.channels.map(c => c.name),
+                            datasets: [{
+                                data: data.channels.map(() => 1), // Equal distribution for active channels
+                                backgroundColor: colors.slice(0, data.channels.length),
+                                borderColor: colors.slice(0, data.channels.length),
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#fff',
+                                        padding: 10,
+                                        font: {
+                                            size: 11
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.label}: Active`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
-                
-                container.replaceChildren(widget);
             } catch (error) {
                 renderError('channels-container', 'Active Channels', error);
             }
@@ -531,6 +687,12 @@
                     emptyState.textContent = 'No users yet. Send a weather command to appear here!';
                     widget.appendChild(emptyState);
                 } else {
+                    // Create two-column layout for list and chart
+                    const chartRow = document.createElement('div');
+                    chartRow.className = 'chart-row';
+
+                    // Users list column
+                    const listColumn = document.createElement('div');
                     const userList = document.createElement('ul');
                     userList.className = 'user-list';
                     
@@ -543,11 +705,72 @@
                         `;
                         userList.appendChild(item);
                     });
+                    listColumn.appendChild(userList);
+                    chartRow.appendChild(listColumn);
+
+                    // Pie chart column
+                    const chartColumn = document.createElement('div');
+                    chartColumn.className = 'chart-card';
+                    chartColumn.innerHTML = '<h4>User Activity</h4>';
+                    const canvasWrapper = document.createElement('div');
+                    canvasWrapper.className = 'chart-container-wrapper';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'usersChart';
+                    canvasWrapper.appendChild(canvas);
+                    chartColumn.appendChild(canvasWrapper);
+                    chartRow.appendChild(chartColumn);
+
+                    widget.appendChild(chartRow);
+                    container.replaceChildren(widget);
+
+                    // Create pie chart with user distribution
+                    const ctx = canvas.getContext('2d');
+                    if (window.usersChartInstance) {
+                        window.usersChartInstance.destroy();
+                    }
                     
-                    widget.appendChild(userList);
+                    // Generate colors for each user
+                    const colors = [
+                        '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444',
+                        '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1'
+                    ];
+                    
+                    window.usersChartInstance = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.users.map(u => u.user),
+                            datasets: [{
+                                data: data.users.map(() => 1), // Equal distribution for recent users
+                                backgroundColor: colors.slice(0, data.users.length),
+                                borderColor: colors.slice(0, data.users.length),
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#fff',
+                                        padding: 10,
+                                        font: {
+                                            size: 11
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.label}: Active`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
-                
-                container.replaceChildren(widget);
             } catch (error) {
                 renderError('users-container', 'Recent Users', error);
             }
@@ -575,35 +798,74 @@
                     emptyState.textContent = 'No request data available yet.';
                     widget.appendChild(emptyState);
                 } else {
-                    const maxCount = Math.max(...data.map(d => d.count), 1);
-                    
-                    data.forEach(day => {
-                        const barContainer = document.createElement('div');
-                        barContainer.className = 'chart-bar';
-                        
-                        const label = document.createElement('div');
-                        label.className = 'chart-label';
-                        label.textContent = day.date;
-                        barContainer.appendChild(label);
-                        
-                        const barWrapper = document.createElement('div');
-                        barWrapper.style.flex = '1';
-                        barWrapper.style.position = 'relative';
-                        
-                        const bar = document.createElement('div');
-                        bar.className = 'chart-bar-fill';
-                        // Show minimum width of 5% for zero counts to indicate presence
-                        const barWidth = day.count === 0 ? 5 : (day.count / maxCount) * 100;
-                        bar.style.width = `${barWidth}%`;
-                        bar.innerHTML = `<span class="chart-value">${day.count}</span>`;
-                        
-                        barWrapper.appendChild(bar);
-                        barContainer.appendChild(barWrapper);
-                        widget.appendChild(barContainer);
+                    // Create bar chart
+                    const chartCard = document.createElement('div');
+                    chartCard.className = 'chart-card';
+                    const canvasWrapper = document.createElement('div');
+                    canvasWrapper.className = 'chart-container-wrapper';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'dailyChart';
+                    canvasWrapper.appendChild(canvas);
+                    chartCard.appendChild(canvasWrapper);
+                    widget.appendChild(chartCard);
+
+                    container.replaceChildren(widget);
+
+                    // Create Chart.js bar chart
+                    const ctx = canvas.getContext('2d');
+                    if (window.dailyChartInstance) {
+                        window.dailyChartInstance.destroy();
+                    }
+                    window.dailyChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(d => d.date),
+                            datasets: [{
+                                label: 'Requests',
+                                data: data.map(d => d.count),
+                                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                                borderColor: 'rgba(37, 99, 235, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#9ca3af',
+                                        stepSize: 1
+                                    },
+                                    grid: {
+                                        color: 'rgba(75, 85, 99, 0.2)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#9ca3af'
+                                    },
+                                    grid: {
+                                        color: 'rgba(75, 85, 99, 0.2)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Requests: ${context.parsed.y}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     });
                 }
-                
-                container.replaceChildren(widget);
             } catch (error) {
                 renderError('daily-container', 'Daily Requests', error);
             }
@@ -631,41 +893,83 @@
                     emptyState.textContent = 'No hourly data available yet.';
                     widget.appendChild(emptyState);
                 } else {
-                    const maxCount = Math.max(...data.map(d => d.count), 1);
-                    
                     // Show only last 12 hours for better readability
                     const recentData = data.slice(-12);
-                    
-                    recentData.forEach(hour => {
-                        const barContainer = document.createElement('div');
-                        barContainer.className = 'chart-bar';
-                        
-                        const label = document.createElement('div');
-                        label.className = 'chart-label';
-                        // Format hour for display - expects format "YYYY-MM-DD HH:MM"
-                        // Extract just the time portion (HH:MM) after the space
+
+                    // Create bar chart
+                    const chartCard = document.createElement('div');
+                    chartCard.className = 'chart-card';
+                    const canvasWrapper = document.createElement('div');
+                    canvasWrapper.className = 'chart-container-wrapper';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'hourlyChart';
+                    canvasWrapper.appendChild(canvas);
+                    chartCard.appendChild(canvasWrapper);
+                    widget.appendChild(chartCard);
+
+                    container.replaceChildren(widget);
+
+                    // Format hour labels
+                    const labels = recentData.map(hour => {
                         const hourParts = hour.hour.split(' ');
-                        label.textContent = hourParts.length > 1 ? hourParts[1] : hour.hour;
-                        barContainer.appendChild(label);
-                        
-                        const barWrapper = document.createElement('div');
-                        barWrapper.style.flex = '1';
-                        barWrapper.style.position = 'relative';
-                        
-                        const bar = document.createElement('div');
-                        bar.className = 'chart-bar-fill';
-                        // Show minimum width of 5% for zero counts to indicate presence
-                        const barWidth = hour.count === 0 ? 5 : (hour.count / maxCount) * 100;
-                        bar.style.width = `${barWidth}%`;
-                        bar.innerHTML = `<span class="chart-value">${hour.count}</span>`;
-                        
-                        barWrapper.appendChild(bar);
-                        barContainer.appendChild(barWrapper);
-                        widget.appendChild(barContainer);
+                        return hourParts.length > 1 ? hourParts[1] : hour.hour;
+                    });
+
+                    // Create Chart.js bar chart
+                    const ctx = canvas.getContext('2d');
+                    if (window.hourlyChartInstance) {
+                        window.hourlyChartInstance.destroy();
+                    }
+                    window.hourlyChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Requests',
+                                data: recentData.map(d => d.count),
+                                backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                                borderColor: 'rgba(109, 40, 217, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#9ca3af',
+                                        stepSize: 1
+                                    },
+                                    grid: {
+                                        color: 'rgba(75, 85, 99, 0.2)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#9ca3af'
+                                    },
+                                    grid: {
+                                        color: 'rgba(75, 85, 99, 0.2)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Requests: ${context.parsed.y}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     });
                 }
-                
-                container.replaceChildren(widget);
             } catch (error) {
                 renderError('hourly-container', 'Hourly Requests', error);
             }
@@ -693,35 +997,75 @@
                     emptyState.textContent = 'No location data available yet.';
                     widget.appendChild(emptyState);
                 } else {
-                    const maxCount = Math.max(...data.map(d => d.count), 1);
-                    
-                    data.forEach(loc => {
-                        const barContainer = document.createElement('div');
-                        barContainer.className = 'chart-bar';
-                        
-                        const label = document.createElement('div');
-                        label.className = 'chart-label';
-                        label.textContent = loc.location;
-                        barContainer.appendChild(label);
-                        
-                        const barWrapper = document.createElement('div');
-                        barWrapper.style.flex = '1';
-                        barWrapper.style.position = 'relative';
-                        
-                        const bar = document.createElement('div');
-                        bar.className = 'chart-bar-fill';
-                        // Show minimum width of 5% for zero counts to indicate presence
-                        const barWidth = loc.count === 0 ? 5 : (loc.count / maxCount) * 100;
-                        bar.style.width = `${barWidth}%`;
-                        bar.innerHTML = `<span class="chart-value">${loc.count}</span>`;
-                        
-                        barWrapper.appendChild(bar);
-                        barContainer.appendChild(barWrapper);
-                        widget.appendChild(barContainer);
+                    // Create horizontal bar chart
+                    const chartCard = document.createElement('div');
+                    chartCard.className = 'chart-card';
+                    const canvasWrapper = document.createElement('div');
+                    canvasWrapper.className = 'chart-container-wrapper';
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'locationsChart';
+                    canvasWrapper.appendChild(canvas);
+                    chartCard.appendChild(canvasWrapper);
+                    widget.appendChild(chartCard);
+
+                    container.replaceChildren(widget);
+
+                    // Create Chart.js horizontal bar chart
+                    const ctx = canvas.getContext('2d');
+                    if (window.locationsChartInstance) {
+                        window.locationsChartInstance.destroy();
+                    }
+                    window.locationsChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(d => d.location),
+                            datasets: [{
+                                label: 'Requests',
+                                data: data.map(d => d.count),
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                borderColor: 'rgba(22, 163, 74, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#9ca3af',
+                                        stepSize: 1
+                                    },
+                                    grid: {
+                                        color: 'rgba(75, 85, 99, 0.2)'
+                                    }
+                                },
+                                y: {
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#9ca3af'
+                                    },
+                                    grid: {
+                                        color: 'rgba(75, 85, 99, 0.2)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Requests: ${context.parsed.x}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     });
                 }
-                
-                container.replaceChildren(widget);
             } catch (error) {
                 renderError('locations-container', 'Top Locations', error);
             }
@@ -766,9 +1110,13 @@
                     if (data.tunnel_name) {
                         const nameCard = document.createElement('div');
                         nameCard.className = 'stat-card';
+                        // Show tunnel URL if available and tunnel name looks generic
+                        const displayName = data.tunnel_url && data.tunnel_name && data.tunnel_name.toUpperCase() === 'NAME' 
+                            ? data.tunnel_url 
+                            : data.tunnel_name;
                         nameCard.innerHTML = `
-                            <div class="stat-label">Tunnel Name</div>
-                            <div class="stat-value" style="font-size: 1.2rem;">${data.tunnel_name}</div>
+                            <div class="stat-label">Tunnel ${data.tunnel_url && data.tunnel_name.toUpperCase() === 'NAME' ? 'URL' : 'Name'}</div>
+                            <div class="stat-value" style="font-size: 1.2rem;">${displayName}</div>
                         `;
                         statsGrid.appendChild(nameCard);
                     }
