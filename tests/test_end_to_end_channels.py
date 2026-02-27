@@ -66,7 +66,7 @@ def test_end_to_end_flow():
         else:
             formatted_channels.append(f"#channel{ch.get('channel_idx')}")
 
-    print(f"   ✓ Dashboard will display:")
+    print("   ✓ Dashboard will display:")
     for ch in formatted_channels:
         print(f"     • {ch}")
 

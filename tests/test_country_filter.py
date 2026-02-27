@@ -72,9 +72,9 @@ def test_country_filter_applied():
         params = geocoding_call[1]["params"]
 
         if params.get("count") == 10:
-            print(f"✅ PASS: Geocoding API called with count=10 for client-side filtering")
+            print("✅ PASS: Geocoding API called with count=10 for client-side filtering")
         else:
-            print(f"❌ FAIL: Expected count=10 in params for client-side filtering")
+            print("❌ FAIL: Expected count=10 in params for client-side filtering")
             print(f"   Got: {params}")
             return False
 
@@ -133,10 +133,10 @@ def test_no_country_filter_when_not_configured():
         params = geocoding_call[1]["params"]
 
         if "country" not in params:
-            print(f"✅ PASS: Country parameter not included when not configured")
+            print("✅ PASS: Country parameter not included when not configured")
             print(f"   Full params: {params}")
         else:
-            print(f"❌ FAIL: Country parameter included when it shouldn't be")
+            print("❌ FAIL: Country parameter included when it shouldn't be")
             print(f"   Got: {params}")
             return False
 

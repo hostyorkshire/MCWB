@@ -58,7 +58,7 @@ def test_garbled_messages_filtered():
     bot._dispatch(payload1)
 
     assert len(sent_responses) == 0, f"Should NOT respond to garbled message, got {len(sent_responses)} responses"
-    print(f"✅ Garbled message from channel_idx=0: correctly filtered (no response)")
+    print("✅ Garbled message from channel_idx=0: correctly filtered (no response)")
 
     print("\n--- Test 2: Garbled message from channel_idx=1 ---")
     # Another garbled message
@@ -69,7 +69,7 @@ def test_garbled_messages_filtered():
     bot._dispatch(payload2)
 
     assert len(sent_responses) == 0, f"Should NOT respond to garbled message, got {len(sent_responses)} responses"
-    print(f"✅ Garbled message from channel_idx=1: correctly filtered (no response)")
+    print("✅ Garbled message from channel_idx=1: correctly filtered (no response)")
 
     print("\n--- Test 3: Valid message from channel_idx=0 (should work) ---")
     # A proper weather request
@@ -80,7 +80,7 @@ def test_garbled_messages_filtered():
     bot._dispatch(payload3)
 
     assert len(sent_responses) == 1, f"Should respond to valid message, got {len(sent_responses)} responses"
-    print(f"✅ Valid message from channel_idx=0: correctly processed and responded")
+    print("✅ Valid message from channel_idx=0: correctly processed and responded")
 
     print("\n--- Test 4: Valid message from channel_idx=1 (should work) ---")
     # Another proper weather request
@@ -91,7 +91,7 @@ def test_garbled_messages_filtered():
     bot._dispatch(payload4)
 
     assert len(sent_responses) == 1, f"Should respond to valid message, got {len(sent_responses)} responses"
-    print(f"✅ Valid message from channel_idx=1: correctly processed and responded")
+    print("✅ Valid message from channel_idx=1: correctly processed and responded")
 
     print("\n--- Test 5: Message without SenderName prefix but valid (should work) ---")
     # Messages from new hashtag channels may not have "SenderName: " prefix
@@ -102,7 +102,7 @@ def test_garbled_messages_filtered():
     bot._dispatch(payload5)
 
     assert len(sent_responses) == 1, f"Should respond to valid WX command, got {len(sent_responses)} responses"
-    print(f"✅ Valid message without prefix from channel_idx=2: correctly processed")
+    print("✅ Valid message without prefix from channel_idx=2: correctly processed")
 
     print("\n" + "=" * 80)
     print("✅ ALL TESTS PASSED!")

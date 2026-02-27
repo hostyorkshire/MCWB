@@ -61,7 +61,7 @@ def test_uses_radio_active_channel_when_available():
         f"Expected channel_idx=1 from channels.json, got {bot._announce_channel_idx}"
     )
     assert bot._weather_channel_detected is True, "Should mark channel as detected"
-    print(f"  ✓ Bot uses radio active channel_idx=1 from channels.json")
+    print("  ✓ Bot uses radio active channel_idx=1 from channels.json")
 
     _cleanup()
     print()
@@ -87,7 +87,7 @@ def test_most_recently_active_channel_preferred():
     assert bot._announce_channel_idx == 3, (
         f"Expected most recently active channel_idx=3, got {bot._announce_channel_idx}"
     )
-    print(f"  ✓ Bot selected most recently active channel_idx=3")
+    print("  ✓ Bot selected most recently active channel_idx=3")
 
     _cleanup()
     print()
@@ -112,7 +112,7 @@ def test_explicit_config_overrides_radio_active_channel():
     assert bot._announce_channel_idx == 5, (
         f"Explicit config should override channels.json, expected 5, got {bot._announce_channel_idx}"
     )
-    print(f"  ✓ Explicit weather_channel_idx=5 takes precedence over channels.json channel 1")
+    print("  ✓ Explicit weather_channel_idx=5 takes precedence over channels.json channel 1")
 
     _cleanup()
     print()
@@ -139,7 +139,7 @@ def test_falls_back_to_persisted_when_no_non_default_radio_channels():
     assert bot._announce_channel_idx == 4, (
         f"Should fall back to persisted channel 4, got {bot._announce_channel_idx}"
     )
-    print(f"  ✓ Falls back to persisted channel_idx=4 (channels.json only has default channel)")
+    print("  ✓ Falls back to persisted channel_idx=4 (channels.json only has default channel)")
 
     _cleanup()
     print()
@@ -158,7 +158,7 @@ def test_falls_back_to_zero_when_no_channels_anywhere():
     assert bot._announce_channel_idx == 0, (
         f"Should default to channel_idx=0, got {bot._announce_channel_idx}"
     )
-    print(f"  ✓ Defaults to channel_idx=0 when no channel history exists")
+    print("  ✓ Defaults to channel_idx=0 when no channel history exists")
 
     _cleanup()
     print()
@@ -184,7 +184,7 @@ def test_corrupt_channels_json_handled_gracefully():
     assert bot._announce_channel_idx == 2, (
         f"Corrupt channels.json should fall back to persisted channel 2, got {bot._announce_channel_idx}"
     )
-    print(f"  ✓ Corrupt channels.json handled gracefully, using persisted channel_idx=2")
+    print("  ✓ Corrupt channels.json handled gracefully, using persisted channel_idx=2")
 
     _cleanup()
     print()

@@ -38,7 +38,7 @@ def diagnose_command(command):
         print("This means:")
         if channel_val and channel_val != '""' and channel_val != "''":
             print(f"  ✗ Bot will ONLY accept queries from '{channel_val}' channel")
-            print(f"  ✗ Queries from other channels will be IGNORED")
+            print("  ✗ Queries from other channels will be IGNORED")
             print()
             print("To fix: Remove the --channel parameter entirely")
         else:

@@ -65,10 +65,10 @@ class TestDashboardServiceInstall(unittest.TestCase):
                 "PYTHONPATH", content, "PYTHONPATH should not be set (Python includes user site-packages automatically)"
             )
 
-            print(f"✓ Service file generation successful")
+            print("✓ Service file generation successful")
             print(f"  User: {current_user}")
             print(f"  Install dir: {install_dir}")
-            print(f"  Python will automatically use user site-packages")
+            print("  Python will automatically use user site-packages")
 
         finally:
             # Clean up

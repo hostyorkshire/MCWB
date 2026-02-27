@@ -49,7 +49,7 @@ def test_frame_code_0x00():
     # Simulate receiving frame code 0x00
     frame = create_frame(0x00)
 
-    print(f"Sending frame with code 0x00...")
+    print("Sending frame with code 0x00...")
     print(f"Frame bytes: {frame.hex()}")
 
     # Parse the frame - should not raise any exception
@@ -136,7 +136,7 @@ def test_no_unhandled_error_logged():
 
     # Check that "unhandled frame code" does NOT appear in the output
     if "unhandled frame code" in output.lower():
-        print(f"✗ FAILED: 'unhandled frame code' found in output:")
+        print("✗ FAILED: 'unhandled frame code' found in output:")
         print(f"  {output}")
         return False
 

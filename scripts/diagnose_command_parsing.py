@@ -15,31 +15,31 @@ from weather_bot import WeatherBot
 def diagnose_command(command: str):
     """Parse and display how a command is interpreted."""
     bot = WeatherBot(debug=False, country=None)
-    
-    print(f"\nCommand: \"{command}\"")
+
+    print("\nCommand: \"{command}\"")
     print("-" * 60)
-    
+
     location, country = bot._parse_command(command)
-    
+
     if location is None:
         print("❌ NOT RECOGNIZED as a weather command")
         print("   Expected format: 'wx [location]' or 'weather [location]'")
         return False
-    
-    print(f"✅ RECOGNIZED as weather command")
-    print(f"   Location: \"{location}\"")
+
+    print("✅ RECOGNIZED as weather command")
+    print("   Location: \"{location}\"")
     print(f"   Country:  {country if country else '(not specified)'}")
-    
+
     # Show what would be sent to the API
     if country:
-        print(f"\n   API will search for: \"{location}\" in country \"{country}\"")
-        print(f"   URL: https://geocoding-api.open-meteo.com/v1/search")
+        print("\n   API will search for: \"{location}\" in country \"{country}\"")
+        print("   URL: https://geocoding-api.open-meteo.com/v1/search")
         print(f"        ?name={location}&country={country}")
     else:
-        print(f"\n   API will search for: \"{location}\" (global search)")
-        print(f"   URL: https://geocoding-api.open-meteo.com/v1/search")
+        print("\n   API will search for: \"{location}\" (global search)")
+        print("   URL: https://geocoding-api.open-meteo.com/v1/search")
         print(f"        ?name={location}")
-    
+
     return True
 
 
@@ -48,7 +48,7 @@ def main():
     print("=" * 60)
     print("Weather Command Parsing Diagnostic Tool")
     print("=" * 60)
-    
+
     if len(sys.argv) > 1:
         # Test commands provided as arguments
         commands = sys.argv[1:]
@@ -67,33 +67,33 @@ def main():
             "random text",
             "wx",
         ]
-    
+
     results = []
     for cmd in commands:
         success = diagnose_command(cmd)
         results.append((cmd, success))
-    
+
     # Summary
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
-    
+
     recognized = sum(1 for _, success in results if success)
     total = len(results)
-    
+
     for cmd, success in results:
         status = "✅" if success else "❌"
         print(f"{status} {cmd}")
-    
+
     print(f"\nRecognized: {recognized}/{total} commands")
-    
+
     if recognized == total:
         print("\n✅ All commands recognized correctly!")
     elif recognized > 0:
         print(f"\n⚠️  {total - recognized} command(s) not recognized")
     else:
         print("\n❌ No commands recognized")
-    
+
     print("\n" + "=" * 60)
     print("HELP")
     print("=" * 60)
@@ -106,7 +106,7 @@ def main():
     print("\nCase insensitive:")
     print("  'wx', 'WX', 'Wx' all work")
     print("  'UK', 'uk', 'Uk' all work")
-    
+
 
 if __name__ == "__main__":
     main()

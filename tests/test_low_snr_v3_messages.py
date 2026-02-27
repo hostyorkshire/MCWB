@@ -68,7 +68,7 @@ def test_low_snr_v3_messages():
     assert len(sent_messages) == 1, f"Expected 1 response, got {len(sent_messages)}"
     assert sent_messages[0]["channel_idx"] == 0, f"Expected channel_idx=0, got {sent_messages[0]['channel_idx']}"
     assert "Leeds" in sent_messages[0]["text"], "Expected weather response for Leeds"
-    print(f"✓ Bot correctly responded on channel_idx=0")
+    print("✓ Bot correctly responded on channel_idx=0")
     print(f"✓ Response contains: {sent_messages[0]['text'][:50]}...\n")
 
     # Test Case 2: V3 format with SNR=1, channel_idx=1
@@ -85,7 +85,7 @@ def test_low_snr_v3_messages():
     assert len(sent_messages) == 1, f"Expected 1 response, got {len(sent_messages)}"
     assert sent_messages[0]["channel_idx"] == 1, f"Expected channel_idx=1, got {sent_messages[0]['channel_idx']}"
     assert "London" in sent_messages[0]["text"], "Expected weather response for London"
-    print(f"✓ Bot correctly responded on channel_idx=1")
+    print("✓ Bot correctly responded on channel_idx=1")
     print(f"✓ Response contains: {sent_messages[0]['text'][:50]}...\n")
 
     # Test Case 3: V3 format with SNR=5, channel_idx=2
@@ -102,7 +102,7 @@ def test_low_snr_v3_messages():
     assert len(sent_messages) == 1, f"Expected 1 response, got {len(sent_messages)}"
     assert sent_messages[0]["channel_idx"] == 2, f"Expected channel_idx=2, got {sent_messages[0]['channel_idx']}"
     assert "York" in sent_messages[0]["text"], "Expected weather response for York"
-    print(f"✓ Bot correctly responded on channel_idx=2")
+    print("✓ Bot correctly responded on channel_idx=2")
     print(f"✓ Response contains: {sent_messages[0]['text'][:50]}...\n")
 
     # Test Case 4: V3 format with SNR=7 (edge case), channel_idx=3
@@ -115,7 +115,7 @@ def test_low_snr_v3_messages():
     assert len(sent_messages) == 1, f"Expected 1 response, got {len(sent_messages)}"
     assert sent_messages[0]["channel_idx"] == 3, f"Expected channel_idx=3, got {sent_messages[0]['channel_idx']}"
     assert "Manchester" in sent_messages[0]["text"], "Expected weather response for Manchester"
-    print(f"✓ Bot correctly responded on channel_idx=3\n")
+    print("✓ Bot correctly responded on channel_idx=3\n")
 
     print("=" * 80)
     print("✅ ALL TESTS PASSED!")
@@ -150,8 +150,8 @@ def test_high_snr_still_works():
     bot._dispatch(payload)
 
     assert len(sent_messages) == 1, f"Expected 1 response, got {len(sent_messages)}"
-    assert sent_messages[0]["channel_idx"] == 1, f"Expected channel_idx=1"
-    print(f"✓ High SNR messages still work correctly\n")
+    assert sent_messages[0]["channel_idx"] == 1, "Expected channel_idx=1"
+    print("✓ High SNR messages still work correctly\n")
 
 
 def main():

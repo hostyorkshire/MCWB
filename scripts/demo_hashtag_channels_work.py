@@ -147,7 +147,7 @@ def test_hashtag_channels():
                             )
                             all_passed = False
             else:
-                print(f"  ❌ Bot did NOT respond")
+                print("  ❌ Bot did NOT respond")
                 all_passed = False
 
         except Exception as e:

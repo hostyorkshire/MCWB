@@ -71,7 +71,7 @@ def test_expired_channels_removed():
     fresh_timestamp = time.time()
     mesh._active_channels[0] = fresh_timestamp  # public channel
 
-    print(f"  Set up 2 expired channels (73 hours old) and 1 fresh channel")
+    print("  Set up 2 expired channels (73 hours old) and 1 fresh channel")
 
     # Get active channels - should trigger cleanup
     channels = mesh.get_active_channels()
@@ -208,7 +208,7 @@ def test_cleanup_on_get_and_save():
     mesh._active_channels[1] = old_timestamp  # Should be removed
     mesh._active_channels[2] = fresh_timestamp  # Should remain
 
-    print(f"  Set up 1 expired and 1 fresh channel")
+    print("  Set up 1 expired and 1 fresh channel")
     print(f"  Before cleanup: {len(mesh._active_channels)} channels")
 
     # Trigger cleanup via get_active_channels
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("CHANNEL EXPIRATION TESTS (72-hour TTL)")
     print("=" * 60)
-    print("\nThese tests verify that channels expire after 72 hours of")
+    print("\nThese tests verify that channels expire after 72 hours o")
     print("inactivity, preventing the dashboard from showing stale channels.")
 
     all_passed = True

@@ -65,7 +65,7 @@ def test_accepts_all_channels():
                 f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 0, got {processed_messages[0]['reply_to_channel_idx']}"
             )
     else:
-        print(f"❌ FAIL: Message on channel_idx 0 was REJECTED (should be accepted)")
+        print("❌ FAIL: Message on channel_idx 0 was REJECTED (should be accepted)")
         bot.stop()
         return False
     print()
@@ -84,7 +84,7 @@ def test_accepts_all_channels():
                 f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 1, got {processed_messages[0]['reply_to_channel_idx']}"
             )
     else:
-        print(f"❌ FAIL: Message on channel_idx 1 was REJECTED (should be accepted)")
+        print("❌ FAIL: Message on channel_idx 1 was REJECTED (should be accepted)")
         bot.stop()
         return False
     print()
@@ -103,7 +103,7 @@ def test_accepts_all_channels():
                 f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 2, got {processed_messages[0]['reply_to_channel_idx']}"
             )
     else:
-        print(f"❌ FAIL: Message on channel_idx 2 was REJECTED (should be accepted)")
+        print("❌ FAIL: Message on channel_idx 2 was REJECTED (should be accepted)")
         bot.stop()
         return False
     print()
@@ -122,7 +122,7 @@ def test_accepts_all_channels():
                 f"   ⚠️  WARNING: Reply channel_idx mismatch! Expected 5, got {processed_messages[0]['reply_to_channel_idx']}"
             )
     else:
-        print(f"❌ FAIL: Message on channel_idx 5 was REJECTED (should be accepted)")
+        print("❌ FAIL: Message on channel_idx 5 was REJECTED (should be accepted)")
         bot.stop()
         return False
     print()

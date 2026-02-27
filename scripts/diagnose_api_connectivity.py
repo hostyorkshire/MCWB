@@ -31,7 +31,7 @@ def test_dns_resolution(hostname):
     print(f"\n{'='*70}")
     print(f"TEST 1: DNS Resolution for {hostname}")
     print('='*70)
-    
+
     try:
         ip_address = socket.gethostbyname(hostname)
         print(f"✅ PASS: {hostname} resolves to {ip_address}")
@@ -39,10 +39,10 @@ def test_dns_resolution(hostname):
     except socket.gaierror as e:
         print(f"❌ FAIL: Cannot resolve {hostname}")
         print(f"   Error: {e}")
-        print(f"   Possible causes:")
-        print(f"   - No internet connection")
-        print(f"   - DNS server not configured")
-        print(f"   - /etc/resolv.conf issues (Linux)")
+        print("   Possible causes:")
+        print("   - No internet connection")
+        print("   - DNS server not configured")
+        print("   - /etc/resolv.conf issues (Linux)")
         return False
 
 
@@ -51,29 +51,29 @@ def test_tcp_connection(hostname, port=443):
     print(f"\n{'='*70}")
     print(f"TEST 2: TCP Connection to {hostname}:{port}")
     print('='*70)
-    
+
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10)
         result = sock.connect_ex((hostname, port))
         sock.close()
-        
+
         if result == 0:
             print(f"✅ PASS: Can connect to {hostname}:{port}")
             return True
         else:
             print(f"❌ FAIL: Cannot connect to {hostname}:{port}")
             print(f"   Error code: {result}")
-            print(f"   Possible causes:")
+            print("   Possible causes:")
             print(f"   - Firewall blocking port {port}")
-            print(f"   - Host is down")
-            print(f"   - Network routing issues")
+            print("   - Host is down")
+            print("   - Network routing issues")
             return False
     except socket.timeout:
         print(f"❌ FAIL: Connection timeout to {hostname}:{port}")
-        print(f"   Possible causes:")
-        print(f"   - Network is very slow")
-        print(f"   - Firewall silently dropping packets")
+        print("   Possible causes:")
+        print("   - Network is very slow")
+        print("   - Firewall silently dropping packets")
         return False
     except Exception as e:
         print(f"❌ FAIL: Error connecting to {hostname}:{port}")
@@ -86,54 +86,54 @@ def test_http_request(url, params=None):
     print(f"\n{'='*70}")
     print(f"TEST 3: HTTP Request to {url}")
     print('='*70)
-    
+
     if params:
         print(f"Parameters: {params}")
-    
+
     try:
         start_time = time.time()
         response = requests.get(url, params=params, timeout=10)
         elapsed = time.time() - start_time
-        
+
         print(f"✅ HTTP Status: {response.status_code}")
         print(f"⏱️  Response time: {elapsed:.2f} seconds")
-        
+
         if response.status_code == 200:
-            print(f"✅ PASS: Request successful")
+            print("✅ PASS: Request successful")
             return True, response
         else:
-            print(f"⚠️  WARNING: Non-200 status code")
+            print("⚠️  WARNING: Non-200 status code")
             print(f"   Response: {response.text[:200]}")
             return False, response
-            
+
     except requests.exceptions.Timeout:
-        print(f"❌ FAIL: Request timeout (>10 seconds)")
-        print(f"   Possible causes:")
-        print(f"   - API is very slow")
-        print(f"   - Network congestion")
-        print(f"   - Proxy/firewall delaying traffic")
+        print("❌ FAIL: Request timeout (>10 seconds)")
+        print("   Possible causes:")
+        print("   - API is very slow")
+        print("   - Network congestion")
+        print("   - Proxy/firewall delaying traffic")
         return False, None
-        
+
     except requests.exceptions.ConnectionError as e:
-        print(f"❌ FAIL: Connection error")
+        print("❌ FAIL: Connection error")
         print(f"   Error: {e}")
-        print(f"   Possible causes:")
-        print(f"   - Cannot reach API server")
-        print(f"   - SSL/TLS issues")
-        print(f"   - Network down")
+        print("   Possible causes:")
+        print("   - Cannot reach API server")
+        print("   - SSL/TLS issues")
+        print("   - Network down")
         return False, None
-        
+
     except requests.exceptions.SSLError as e:
-        print(f"❌ FAIL: SSL/TLS error")
+        print("❌ FAIL: SSL/TLS error")
         print(f"   Error: {e}")
-        print(f"   Possible causes:")
-        print(f"   - Certificate verification failed")
-        print(f"   - Outdated SSL libraries")
-        print(f"   - Corporate proxy intercepting HTTPS")
+        print("   Possible causes:")
+        print("   - Certificate verification failed")
+        print("   - Outdated SSL libraries")
+        print("   - Corporate proxy intercepting HTTPS")
         return False, None
-        
+
     except Exception as e:
-        print(f"❌ FAIL: Unexpected error")
+        print("❌ FAIL: Unexpected error")
         print(f"   Error type: {type(e).__name__}")
         print(f"   Error: {e}")
         return False, None
@@ -144,7 +144,7 @@ def test_geocoding_api(location, country=None):
     print(f"\n{'='*70}")
     print(f"TEST 4: Geocoding API for '{location}'" + (f" in {country}" if country else ""))
     print('='*70)
-    
+
     url = "https://geocoding-api.open-meteo.com/v1/search"
     params = {
         "name": location,
@@ -152,18 +152,18 @@ def test_geocoding_api(location, country=None):
         "language": "en",
         "format": "json"
     }
-    
+
     if country:
         params["country"] = country
-    
+
     success, response = test_http_request(url, params)
-    
+
     if success and response:
         try:
             data = response.json()
             if "results" in data and data["results"]:
                 result = data["results"][0]
-                print(f"\n✅ Location found:")
+                print("\n✅ Location found:")
                 print(f"   Name: {result.get('name')}")
                 print(f"   Country: {result.get('country')} ({result.get('country_code')})")
                 print(f"   Coordinates: {result.get('latitude')}, {result.get('longitude')}")
@@ -175,7 +175,7 @@ def test_geocoding_api(location, country=None):
             print(f"\n❌ Error parsing response: {e}")
             print(f"   Response: {response.text[:200]}")
             return False
-    
+
     return False
 
 
@@ -184,7 +184,7 @@ def test_weather_api(lat=53.9599, lon=-1.0873):
     print(f"\n{'='*70}")
     print(f"TEST 5: Weather API for coordinates ({lat}, {lon})")
     print('='*70)
-    
+
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
@@ -192,26 +192,26 @@ def test_weather_api(lat=53.9599, lon=-1.0873):
         "current": "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m",
         "timezone": "auto"
     }
-    
+
     success, response = test_http_request(url, params)
-    
+
     if success and response:
         try:
             data = response.json()
             if "current" in data:
                 current = data["current"]
-                print(f"\n✅ Weather data received:")
+                print("\n✅ Weather data received:")
                 print(f"   Temperature: {current.get('temperature_2m')}°C")
                 print(f"   Humidity: {current.get('relative_humidity_2m')}%")
                 print(f"   Wind: {current.get('wind_speed_10m')} km/h")
                 return True
             else:
-                print(f"\n⚠️  No current weather data in response")
+                print("\n⚠️  No current weather data in response")
                 return False
         except Exception as e:
             print(f"\n❌ Error parsing response: {e}")
             return False
-    
+
     return False
 
 
@@ -229,54 +229,54 @@ def main():
         default="UK",
         help="Country code for geocoding test (default: UK)"
     )
-    
+
     args = parser.parse_args()
-    
+
     print("╔" + "="*68 + "╗")
     print("║" + " "*15 + "API Connectivity Diagnostic Tool" + " "*20 + "║")
     print("╚" + "="*68 + "╝")
-    
+
     results = []
-    
+
     # Test 1: DNS resolution for geocoding API
     results.append(("DNS (geocoding)", test_dns_resolution("geocoding-api.open-meteo.com")))
-    
+
     # Test 2: DNS resolution for weather API
     results.append(("DNS (weather)", test_dns_resolution("api.open-meteo.com")))
-    
+
     # Test 3: TCP connection to geocoding API
     results.append(("TCP Connection", test_tcp_connection("geocoding-api.open-meteo.com", 443)))
-    
+
     # Test 4: Geocoding API request
     results.append(("Geocoding API", test_geocoding_api(args.location, args.country)))
-    
+
     # Test 5: Weather API request
     results.append(("Weather API", test_weather_api()))
-    
+
     # Summary
     print(f"\n{'='*70}")
     print("DIAGNOSTIC SUMMARY")
     print('='*70)
-    
+
     for test_name, passed in results:
         status = "✅ PASS" if passed else "❌ FAIL"
         print(f"{status}: {test_name}")
-    
+
     total_tests = len(results)
     passed_tests = sum(1 for _, passed in results if passed)
-    
+
     print(f"\nResults: {passed_tests}/{total_tests} tests passed")
-    
+
     print(f"\n{'='*70}")
     print("DIAGNOSIS")
     print('='*70)
-    
+
     if passed_tests == total_tests:
         print("✅ All tests passed!")
         print("   The bot should be able to fetch weather data successfully.")
         print("   If you're still seeing errors, they may be intermittent.")
-        
-    elif results[0][1] == False or results[1][1] == False:
+
+    elif not results[0][1] or not results[1][1]:
         print("❌ DNS Resolution Failed")
         print("   The system cannot resolve API hostnames to IP addresses.")
         print()
@@ -287,10 +287,10 @@ def main():
         print()
         print("   SOLUTIONS:")
         print("   • Check internet connection: ping 8.8.8.8")
-        print("   • Check DNS: cat /etc/resolv.conf")
-        print("   • Try Google DNS: echo 'nameserver 8.8.8.8' >> /etc/resolv.conf")
-        
-    elif results[2][1] == False:
+        print("   • Check DNS: cat /etc/resolv.con")
+        print("   • Try Google DNS: echo 'nameserver 8.8.8.8' >> /etc/resolv.con")
+
+    elif not results[2][1]:
         print("❌ TCP Connection Failed")
         print("   DNS works, but cannot establish connection to API.")
         print()
@@ -303,8 +303,8 @@ def main():
         print("   • Check firewall rules: sudo iptables -L")
         print("   • Test with curl: curl -v https://api.open-meteo.com")
         print("   • Check if proxy needed: echo $https_proxy")
-        
-    elif results[3][1] == False:
+
+    elif not results[3][1]:
         print("❌ Geocoding API Failed")
         print("   Network connection works, but geocoding API has issues.")
         print()
@@ -317,8 +317,8 @@ def main():
         print("   • Wait a few minutes and try again")
         print("   • Check API status: https://status.open-meteo.com")
         print("   • Update CA certificates: sudo apt-get install ca-certificates")
-        
-    elif results[4][1] == False:
+
+    elif not results[4][1]:
         print("❌ Weather API Failed")
         print("   Geocoding works, but weather forecast API has issues.")
         print()
@@ -329,14 +329,14 @@ def main():
         print("   SOLUTIONS:")
         print("   • Check if both APIs work: compare test results")
         print("   • Wait and retry")
-        
+
     else:
         print("⚠️  Partial Success")
         print("   Some tests passed, some failed.")
         print("   Review individual test results above for details.")
-    
+
     print()
-    
+
     return 0 if passed_tests == total_tests else 1
 
 

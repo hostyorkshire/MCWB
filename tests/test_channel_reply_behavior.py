@@ -79,9 +79,9 @@ def test_channel_reply_behavior():
     bot.mesh.receive_message(msg2)
 
     if len(processed) > 0:
-        print(f"✅ PASS: Message from channel_idx 1 was processed")
+        print("✅ PASS: Message from channel_idx 1 was processed")
         if len(sent_messages) > 0 and sent_messages[0]["channel_idx"] == 1:
-            print(f"✅ PASS: Bot replied on channel_idx 1 (where message came from)\n")
+            print("✅ PASS: Bot replied on channel_idx 1 (where message came from)\n")
         else:
             print(
                 f"❌ FAIL: Bot did not reply on channel_idx 1 (got: {sent_messages[0] if sent_messages else 'no message'})\n"
@@ -100,9 +100,9 @@ def test_channel_reply_behavior():
     bot.mesh.receive_message(msg3)
 
     if len(processed) > 0:
-        print(f"✅ PASS: Message from 'weather' channel was processed")
+        print("✅ PASS: Message from 'weather' channel was processed")
         if len(sent_messages) > 0 and sent_messages[0]["channel_idx"] == 1:
-            print(f"✅ PASS: Bot replied on channel_idx 1 (where message came from)\n")
+            print("✅ PASS: Bot replied on channel_idx 1 (where message came from)\n")
         else:
             print(
                 f"❌ FAIL: Bot did not reply on channel_idx 1 (got: {sent_messages[0] if sent_messages else 'no message'})\n"

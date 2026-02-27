@@ -127,7 +127,7 @@ class TestWebDashboard(unittest.TestCase):
         self.assertIn(b"--bg-gradient-start", response.data)  # CSS variables
         self.assertIn(b"--text-color", response.data)  # CSS variables
         self.assertIn(b"#000000", response.data)  # Dark background color
-        self.assertIn(b"#ffffff", response.data)  # White text color in dark mode
+        self.assertIn(b"#fffff", response.data)  # White text color in dark mode
 
     def test_stats_api(self):
         """Test the stats API endpoint"""

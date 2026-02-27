@@ -92,7 +92,7 @@ def integration_test():
         # Verify messages
         if len(calls) >= 2:
             print("✅ Bot sent weather and outlook automatically")
-            
+
             # Check second message is outlook
             second_msg = calls[1][0][0]
             if b"3-day" in second_msg:

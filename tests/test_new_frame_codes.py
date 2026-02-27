@@ -71,7 +71,7 @@ def test_push_base_0x80():
     unhandled_logs = [log for log in log_output if "Unhandled frame code" in log]
     assert len(unhandled_logs) == 0, f"Expected no 'Unhandled frame code' error for 0x80, but got: {unhandled_logs}"
 
-    print(f"✓ PUSH_BASE (0x80) handled correctly without errors")
+    print("✓ PUSH_BASE (0x80) handled correctly without errors")
     print()
 
     return True
@@ -115,7 +115,7 @@ def test_push_no_more_msgs_0x8a():
     unhandled_logs = [log for log in log_output if "Unhandled frame code" in log]
     assert len(unhandled_logs) == 0, f"Expected no 'Unhandled frame code' error for 0x8a, but got: {unhandled_logs}"
 
-    print(f"✓ PUSH_NO_MORE_MSGS (0x8a) handled correctly without errors")
+    print("✓ PUSH_NO_MORE_MSGS (0x8a) handled correctly without errors")
     print()
 
     return True
@@ -164,8 +164,8 @@ def test_push_contact_msg_v3_0x90():
     contact_logs = [log for log in log_output if "contact message" in log.lower()]
     assert len(contact_logs) > 0, "Expected log message about ignoring contact message"
 
-    print(f"✓ PUSH_CONTACT_MSG_V3 (0x90) handled correctly")
-    print(f"✓ Contact message properly logged as ignored")
+    print("✓ PUSH_CONTACT_MSG_V3 (0x90) handled correctly")
+    print("✓ Contact message properly logged as ignored")
     print()
 
     return True

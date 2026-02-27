@@ -51,7 +51,7 @@ def test_zero_config_multiple_channels():
         print("Bot Configuration:")
         print(f"  weather_channel_idx: {bot.weather_channel_idx}")
         print(f"  allowed_channel_idx: {bot.allowed_channel_idx}")
-        print(f"  → Accepts messages from: ALL CHANNELS")
+        print("  → Accepts messages from: ALL CHANNELS")
         print()
 
         # Track what channel the bot responds on
@@ -87,8 +87,8 @@ def test_zero_config_multiple_channels():
 
         assert len(sent_messages) == 1, "Bot should send one response"
         assert sent_messages[0] == 1, f"Bot should reply on channel_idx=1, got {sent_messages[0]}"
-        print(f"   ✓ Bot received request on channel_idx=1")
-        print(f"   ✓ Bot replied on channel_idx=1")
+        print("   ✓ Bot received request on channel_idx=1")
+        print("   ✓ Bot replied on channel_idx=1")
         print()
 
         # User B: has #weather on channel_idx=2
@@ -99,8 +99,8 @@ def test_zero_config_multiple_channels():
 
         assert len(sent_messages) == 1, "Bot should send one response"
         assert sent_messages[0] == 2, f"Bot should reply on channel_idx=2, got {sent_messages[0]}"
-        print(f"   ✓ Bot received request on channel_idx=2")
-        print(f"   ✓ Bot replied on channel_idx=2")
+        print("   ✓ Bot received request on channel_idx=2")
+        print("   ✓ Bot replied on channel_idx=2")
         print()
 
         # User C: has #weather on channel_idx=3
@@ -111,8 +111,8 @@ def test_zero_config_multiple_channels():
 
         assert len(sent_messages) == 1, "Bot should send one response"
         assert sent_messages[0] == 3, f"Bot should reply on channel_idx=3, got {sent_messages[0]}"
-        print(f"   ✓ Bot received request on channel_idx=3")
-        print(f"   ✓ Bot replied on channel_idx=3")
+        print("   ✓ Bot received request on channel_idx=3")
+        print("   ✓ Bot replied on channel_idx=3")
         print()
 
         print("=" * 70)

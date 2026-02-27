@@ -75,9 +75,9 @@ def view_log(log_type, lines=None, follow=False, errors_only=False, grep=None):
     try:
         if follow:
             # Use tail -f to follow the log
-            cmd = ["tail", "-f", str(log_path)]
+            cmd = ["tail", "-", str(log_path)]
             if lines:
-                cmd = ["tail", "-f", "-n", str(lines), str(log_path)]
+                cmd = ["tail", "-", "-n", str(lines), str(log_path)]
             print(f"Following log: {log_path}")
             print("Press Ctrl+C to stop")
             print("-" * 70)
@@ -172,7 +172,7 @@ Examples:
 
     parser.add_argument("-n", "--lines", type=int, help="Number of lines to show (from end of log)")
 
-    parser.add_argument("-f", "--follow", action="store_true", help="Follow log in real-time (like tail -f)")
+    parser.add_argument("-", "--follow", action="store_true", help="Follow log in real-time (like tail -f)")
 
     parser.add_argument("--errors", action="store_true", help="Show only ERROR and CRITICAL messages")
 

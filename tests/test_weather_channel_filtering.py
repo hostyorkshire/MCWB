@@ -46,7 +46,7 @@ def test_channel_filtering():
 
     # Verify the mapping
     assert mesh._channel_map["weather"] == 1, "Expected 'weather' to map to channel_idx 1"
-    print(f"✓ Channel 'weather' mapped to channel_idx 1")
+    print("✓ Channel 'weather' mapped to channel_idx 1")
     print()
 
     # Test 1: Binary-protocol message on channel_idx 0 (no channel name) should be ACCEPTED
@@ -66,7 +66,7 @@ def test_channel_filtering():
         print("✅ PASS: Binary message on channel_idx 0 was ACCEPTED (as expected)")
         print("  (Binary-protocol messages are not filtered by channel_idx)")
     else:
-        print(f"❌ FAIL: Binary message on channel_idx 0 was REJECTED (should be accepted)")
+        print("❌ FAIL: Binary message on channel_idx 0 was REJECTED (should be accepted)")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -86,7 +86,7 @@ def test_channel_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Binary message on channel_idx 1 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Binary message on channel_idx 1 was not processed")
+        print("❌ FAIL: Binary message on channel_idx 1 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -108,7 +108,7 @@ def test_channel_filtering():
         print("✅ PASS: Binary message on channel_idx 2 was ACCEPTED (as expected)")
         print("  (Binary-protocol messages are not filtered by channel_idx)")
     else:
-        print(f"❌ FAIL: Binary message on channel_idx 2 was REJECTED (should be accepted)")
+        print("❌ FAIL: Binary message on channel_idx 2 was REJECTED (should be accepted)")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -128,7 +128,7 @@ def test_channel_filtering():
     if len(received_messages) == 0:
         print("✅ PASS: Named message on channel 'news' was REJECTED (as expected)")
     else:
-        print(f"❌ FAIL: Named message on channel 'news' was ACCEPTED (should be rejected)")
+        print("❌ FAIL: Named message on channel 'news' was ACCEPTED (should be rejected)")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -148,7 +148,7 @@ def test_channel_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Named message on channel 'weather' was ACCEPTED")
     else:
-        print(f"❌ FAIL: Named message on channel 'weather' was not processed")
+        print("❌ FAIL: Named message on channel 'weather' was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -193,7 +193,7 @@ def test_no_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 0 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel_idx 0 was not processed")
+        print("❌ FAIL: Message on channel_idx 0 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -207,7 +207,7 @@ def test_no_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 1 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel_idx 1 was not processed")
+        print("❌ FAIL: Message on channel_idx 1 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()

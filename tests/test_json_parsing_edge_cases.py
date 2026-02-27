@@ -69,7 +69,7 @@ def test_malformed_json_lines():
     assert len(received) == 1, f"Expected 1 valid message, got {len(received)}"
     assert received[0].content == "test content"
     print(f"✓ Valid message correctly parsed: '{received[0].content}'")
-    print(f"✓ All malformed inputs were safely ignored")
+    print("✓ All malformed inputs were safely ignored")
     print()
 
 
@@ -116,7 +116,7 @@ def test_json_with_control_characters_before_brace():
 
     # Both messages should be received (control chars are filtered out)
     assert len(received) == 2, f"Expected 2 valid messages, got {len(received)}"
-    print(f"✓ Both messages received after control character filtering")
+    print("✓ Both messages received after control character filtering")
     print()
 
 
@@ -152,7 +152,7 @@ def test_empty_json_object():
     # This should not crash, just log errors
     mesh._listen_loop()
 
-    print(f"✓ Empty JSON objects handled without crashing")
+    print("✓ Empty JSON objects handled without crashing")
     print()
 
 

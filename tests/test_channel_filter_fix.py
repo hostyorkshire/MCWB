@@ -43,7 +43,7 @@ def test_with_channel_filtering():
 
     # Set channel filter to 'weather'
     mesh.set_channel_filter("weather")
-    print(f"✓ Channel filter set to 'weather'")
+    print("✓ Channel filter set to 'weather'")
     print()
 
     # Test 1: Named-channel message NOT in filter should be REJECTED
@@ -57,7 +57,7 @@ def test_with_channel_filtering():
     if len(received_messages) == 0:
         print("✅ PASS: Message on channel 'news' was REJECTED (as expected)")
     else:
-        print(f"❌ FAIL: Message on channel 'news' was ACCEPTED (should be rejected)")
+        print("❌ FAIL: Message on channel 'news' was ACCEPTED (should be rejected)")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -73,7 +73,7 @@ def test_with_channel_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel 'weather' was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel 'weather' was not processed")
+        print("❌ FAIL: Message on channel 'weather' was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -145,7 +145,7 @@ def test_without_channel_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 0 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel_idx 0 was not processed")
+        print("❌ FAIL: Message on channel_idx 0 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -159,7 +159,7 @@ def test_without_channel_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 1 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel_idx 1 was not processed")
+        print("❌ FAIL: Message on channel_idx 1 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
@@ -175,7 +175,7 @@ def test_without_channel_filtering():
     if len(received_messages) == 1:
         print("✅ PASS: Message on channel_idx 2 was ACCEPTED")
     else:
-        print(f"❌ FAIL: Message on channel_idx 2 was not processed")
+        print("❌ FAIL: Message on channel_idx 2 was not processed")
         print(f"  Received: {received_messages}")
         return False
     print()
