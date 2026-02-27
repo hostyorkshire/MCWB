@@ -39,6 +39,7 @@ except ImportError:
 STATE_FILE = "/var/tmp/mcwb_state.txt"  # State file for reboot detection (persists across reboots)
 REBOOT_NOTIFY_MESSAGE = "MCWBv2 weather bot has restarted and is now online."
 ANNOUNCE_TIMESTAMP_FILE = Path("logs/.last_announce")  # Timestamp file for periodic announcements
+WEATHER_CHANNEL_FILE = Path("logs/.last_weather_channel")  # Persisted weather channel index for announcements
 
 # ---------------------------------------------------------------------------
 # MeshCore companion radio binary protocol constants
@@ -156,13 +157,27 @@ class WeatherBot:
         # Set up logging
         self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
         # channel_idx used for periodic announcements and weather responses
-        # If weather_channel_idx is specified, use it; otherwise use first received message's channel
+        # Priority order:
+        # 1. Explicitly configured weather_channel_idx (command line argument)
+        # 2. Persisted weather channel from previous auto-detection
+        # 3. Default to channel 0
         self.weather_channel_idx = weather_channel_idx
-        self._announce_channel_idx = weather_channel_idx if weather_channel_idx is not None else 0
-        self.announce_channel = announce_channel
         # Track channel_idx to channel name mapping for auto-detection
         self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
         self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
+        
+        if weather_channel_idx is not None:
+            self._announce_channel_idx = weather_channel_idx
+        else:
+            # Try to load persisted weather channel from previous session
+            persisted_channel = self._get_persisted_weather_channel()
+            if persisted_channel is not None:
+                self._announce_channel_idx = persisted_channel
+                self._weather_channel_detected = True  # Mark as detected since we loaded it
+                self.logger.info(f"Loaded persisted weather channel index: {persisted_channel}")
+            else:
+                self._announce_channel_idx = 0  # Default to channel 0 if nothing persisted
+        self.announce_channel = announce_channel
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
         self.country = country
         # Channel verification mode - shows diagnostic info about encrypted messages
@@ -587,6 +602,8 @@ class WeatherBot:
                     if self.weather_channel_idx is None:
                         self._announce_channel_idx = channel_idx
                         self.logger.info(f"Announcements will be sent to detected #weather channel (channel_idx={channel_idx})")
+                        # Persist the detected channel for future restarts
+                        self._save_weather_channel(channel_idx)
                 return
 
     def _handle_channel_message(self, text: str, channel_idx: int):
@@ -636,6 +653,8 @@ class WeatherBot:
                 self.logger.info(msg)
             self._announce_channel_idx = channel_idx
             self.logger.info(f"Announcements will be sent to channel_idx={channel_idx} (detected from weather requests)")
+            # Persist the detected channel for future restarts
+            self._save_weather_channel(channel_idx)
         elif self.weather_channel_idx is None and not self._weather_channel_detected:
             # Fallback: remember this channel only if no weather channel detected yet
             self._announce_channel_idx = channel_idx
@@ -854,6 +873,31 @@ class WeatherBot:
             self._log(f"Saved last announcement time to {ANNOUNCE_TIMESTAMP_FILE}")
         except IOError as e:
             self._log(f"Could not save last announce time: {e}")
+
+    def _get_persisted_weather_channel(self):
+        """Read the persisted weather channel index from file. Returns None if file doesn't exist."""
+        try:
+            if WEATHER_CHANNEL_FILE.exists():
+                with open(WEATHER_CHANNEL_FILE, "r") as f:
+                    channel_idx = int(f.read().strip())
+                    self._log(f"Loaded persisted weather channel index: {channel_idx}")
+                    return channel_idx
+        except (IOError, ValueError) as e:
+            self._log(f"Could not read persisted weather channel: {e}")
+        return None
+
+    def _save_weather_channel(self, channel_idx):
+        """Save the detected weather channel index to file for persistence across restarts."""
+        try:
+            # Ensure logs directory exists
+            WEATHER_CHANNEL_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(WEATHER_CHANNEL_FILE, "w") as f:
+                f.write(str(channel_idx))
+                f.flush()  # Explicitly flush to ensure data is written
+                os.fsync(f.fileno())  # Force write to disk
+            self._log(f"Saved weather channel index {channel_idx} to {WEATHER_CHANNEL_FILE}")
+        except IOError as e:
+            self._log(f"Could not save weather channel: {e}")
 
     # ------------------------------------------------------------------
     # Weather data

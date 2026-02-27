@@ -42,6 +42,7 @@ Thumbs.db
 logs/*.log
 logs/*.log.*
 logs/.last_announce
+logs/.last_weather_channel
 logs/stats.json
 logs/stats.json.bak
 logs/channels.json
