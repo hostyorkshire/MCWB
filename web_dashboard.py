@@ -62,7 +62,7 @@ CORS(app, resources={
     r"/api/*": {
         "origins": [
             "https://wx.intergalactic.it.com",  # Production cPanel site
-            "http://wx.intergalactic.it.com",   # Allow HTTP variant  
+            "http://wx.intergalactic.it.com",   # Allow HTTP variant
             "*"                                  # Allow all (for dev & tunnel flexibility)
         ],
         "methods": ["GET", "POST", "OPTIONS"],
@@ -81,17 +81,17 @@ stats = StatsTracker()
 def initialize_channels_file():
     """Initialize channels.json file if it doesn't exist"""
     channels_file = LOGS_DIR / "channels.json"
-    
+
     if not channels_file.exists():
         # Create the logs directory if it doesn't exist
         LOGS_DIR.mkdir(parents=True, exist_ok=True)
-        
+
         # Create empty channels file with proper structure
         initial_data = {
             "channels": [],
             "last_updated": datetime.now().isoformat()
         }
-        
+
         try:
             with open(channels_file, "w") as f:
                 json.dump(initial_data, f, indent=2)
@@ -237,7 +237,7 @@ def api_stats_reset():
 @app.route("/api/logs/reset", methods=["POST"])
 def api_logs_reset():
     """Clear all log files
-    
+
     Clears the following log files:
     - weather_bot.log (Bot Log)
     - weather_bot_error.log (Bot Errors)
@@ -251,17 +251,17 @@ def api_logs_reset():
             "meshcore.log",
             "meshcore_error.log",
         ]
-        
+
         cleared_count = 0
         for log_file in log_files:
             log_path = LOGS_DIR / log_file
             if log_path.exists():
                 # Clear the file by opening in write mode and immediately closing
                 # This preserves the file but removes its content
-                with open(log_path, "w", encoding="utf-8") as f:
+                with open(log_path, "w", encoding="utf-8"):
                     pass
                 cleared_count += 1
-        
+
         return jsonify({
             "success": True,
             "message": f"Successfully cleared {cleared_count} log file(s)",

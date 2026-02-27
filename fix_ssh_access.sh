@@ -177,7 +177,7 @@ echo "  1) Allow SSH (port 22) - RECOMMENDED"
 echo "  2) Disable firewall completely"
 echo "  0) Cancel (no changes)"
 echo ""
-read -p "Enter choice (0, 1, or 2): " -n 1 choice
+read -r -p "Enter choice (0, 1, or 2): " -n 1 choice
 echo ""
 echo ""
 

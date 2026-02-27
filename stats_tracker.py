@@ -79,16 +79,16 @@ class StatsTracker:
                 # Initialize recent_users list if it doesn't exist (for backward compatibility)
                 if "recent_users" not in self.stats:
                     self.stats["recent_users"] = []
-                
+
                 # Add user with timestamp
                 user_entry = {
                     "user": user,
                     "timestamp": now.isoformat(),
                 }
-                
+
                 # Add to beginning of list
                 self.stats["recent_users"].insert(0, user_entry)
-                
+
                 # Keep only last MAX_RECENT_USERS users
                 self.stats["recent_users"] = self.stats["recent_users"][:self.MAX_RECENT_USERS]
 
@@ -154,7 +154,7 @@ class StatsTracker:
             # Initialize recent_users if it doesn't exist (for backward compatibility)
             if "recent_users" not in self.stats:
                 self.stats["recent_users"] = []
-            
+
             return self.stats["recent_users"][:limit]
 
     def reset_stats(self):

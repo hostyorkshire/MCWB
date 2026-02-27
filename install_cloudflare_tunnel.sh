@@ -56,7 +56,7 @@ if command -v cloudflared &> /dev/null; then
     CURRENT_VERSION=$(cloudflared --version | head -1)
     echo -e "${GREEN}✓ cloudflared is already installed: $CURRENT_VERSION${NC}"
     echo ""
-    read -p "Do you want to reinstall/update cloudflared? (y/N): " -n 1 -r
+    read -r -p "Do you want to reinstall/update cloudflared? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo "Skipping cloudflared installation..."
@@ -98,7 +98,7 @@ if ! pgrep -f "web_dashboard.py" > /dev/null; then
     echo "  OR"
     echo "  python3 web_dashboard.py --host 0.0.0.0"
     echo ""
-    read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+    read -r -p "Do you want to continue anyway? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 0
@@ -109,7 +109,6 @@ fi
 echo ""
 
 # Create config directory
-MCWB_DIR="$HOME/MCWB"
 TUNNEL_CONFIG_DIR="$HOME/.cloudflared"
 mkdir -p "$TUNNEL_CONFIG_DIR"
 
@@ -123,7 +122,7 @@ echo ""
 echo -e "${YELLOW}IMPORTANT: You need a Cloudflare account (free)${NC}"
 echo "If you don't have one, sign up at: https://dash.cloudflare.com/sign-up"
 echo ""
-read -p "Press Enter to start authentication..."
+read -r -p "Press Enter to start authentication..."
 
 # Authenticate with Cloudflare
 echo ""
@@ -144,7 +143,7 @@ echo -e "${BLUE}Creating tunnel: $TUNNEL_NAME${NC}"
 # Check if tunnel already exists
 if cloudflared tunnel list 2>/dev/null | grep -q "$TUNNEL_NAME"; then
     echo -e "${YELLOW}⚠ Tunnel '$TUNNEL_NAME' already exists${NC}"
-    read -p "Do you want to delete and recreate it? (y/N): " -n 1 -r
+    read -r -p "Do you want to delete and recreate it? (y/N): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         cloudflared tunnel delete -f "$TUNNEL_NAME" || true
@@ -245,13 +244,13 @@ echo "  1. Register a free domain (e.g., freenom.com, afraid.org)"
 echo "  2. Add it to Cloudflare (free plan works)"
 echo "  3. Update your domain's nameservers to Cloudflare's"
 echo ""
-read -p "Do you have a domain ready in Cloudflare? (y/N): " -n 1 -r
+read -r -p "Do you have a domain ready in Cloudflare? (y/N): " -n 1 -r
 echo
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Enter your domain or subdomain (e.g., dashboard.yourdomain.com):"
-    read -p "> " TUNNEL_DOMAIN
+    read -r -p "> " TUNNEL_DOMAIN
     
     if [ -n "$TUNNEL_DOMAIN" ]; then
         echo ""
