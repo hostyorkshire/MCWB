@@ -108,6 +108,7 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location.\n\nHelp? https://tinyurl.com/wxbot"
+RADIO_INITIALIZATION_DELAY = 2  # seconds to wait for companion radio to fully initialize after listener starts
 
 
 # ---------------------------------------------------------------------------
@@ -1271,7 +1272,7 @@ class WeatherBot:
 
         # Give the companion radio a moment to fully initialize and drain messages
         # This prevents race conditions where announcements might be lost
-        time.sleep(2)
+        time.sleep(RADIO_INITIALIZATION_DELAY)
 
         if self.weather_channel_idx is not None:
             msg = f"MCWB running. Weather channel configured as channel_idx={self.weather_channel_idx}."
