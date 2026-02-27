@@ -127,6 +127,7 @@ def test_case_insensitive():
 def test_word_boundaries():
     """Test that word boundaries are respected"""
     bot = WeatherBot(port=None, debug=False)
+    bot.mesh.start()
     
     # These should all detect 'weather' or 'wx' due to word boundaries
     test_cases_should_match = [
@@ -142,6 +143,7 @@ def test_word_boundaries():
         bot._detect_channel_name(test_msg, 1)
         assert bot._weather_channel_detected, f"Should detect weather in: {test_msg}"
     
+    bot.mesh.stop()
     print("✓ Test passed: word boundaries work correctly")
 
 

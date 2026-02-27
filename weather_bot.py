@@ -592,13 +592,13 @@ class WeatherBot:
         # This matches:
         # - "#weather" or "#wx" (with hashtag, ensuring word boundary at end)
         # - "weather" or "wx" as standalone words (with word boundaries on both sides)
-        # - "weather channel" phrase
+        # - "weather channel" phrase (with word boundaries)
         weather_patterns = [
-            r'#weather\b',      # hashtag weather (word boundary at end only)
-            r'#wx\b',           # hashtag wx (word boundary at end only)
-            r'\bweather\b',     # standalone word "weather"
-            r'\bwx\b',          # standalone word "wx"
-            r'weather\s+channel'  # phrase "weather channel"
+            r'#weather\b',           # hashtag weather (word boundary at end only)
+            r'#wx\b',                # hashtag wx (word boundary at end only)
+            r'\bweather\b',          # standalone word "weather"
+            r'\bwx\b',               # standalone word "wx"
+            r'\bweather\s+channel\b' # phrase "weather channel" (word boundaries on both ends)
         ]
         
         for pattern in weather_patterns:
