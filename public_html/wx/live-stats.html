@@ -631,7 +631,7 @@
                             datasets: [{
                                 data: data.channels.map(() => 1), // Equal distribution for active channels
                                 backgroundColor: colors.slice(0, data.channels.length),
-                                borderColor: colors.slice(0, data.channels.length).map(c => c),
+                                borderColor: colors.slice(0, data.channels.length),
                                 borderWidth: 2
                             }]
                         },
@@ -742,7 +742,7 @@
                             datasets: [{
                                 data: data.users.map(() => 1), // Equal distribution for recent users
                                 backgroundColor: colors.slice(0, data.users.length),
-                                borderColor: colors.slice(0, data.users.length).map(c => c),
+                                borderColor: colors.slice(0, data.users.length),
                                 borderWidth: 2
                             }]
                         },
@@ -1110,9 +1110,13 @@
                     if (data.tunnel_name) {
                         const nameCard = document.createElement('div');
                         nameCard.className = 'stat-card';
+                        // Show tunnel URL if available and tunnel name looks generic
+                        const displayName = data.tunnel_url && data.tunnel_name && data.tunnel_name.toUpperCase() === 'NAME' 
+                            ? data.tunnel_url 
+                            : data.tunnel_name;
                         nameCard.innerHTML = `
-                            <div class="stat-label">Tunnel Name</div>
-                            <div class="stat-value" style="font-size: 1.2rem;">${data.tunnel_name}</div>
+                            <div class="stat-label">Tunnel ${data.tunnel_url && data.tunnel_name.toUpperCase() === 'NAME' ? 'URL' : 'Name'}</div>
+                            <div class="stat-value" style="font-size: 1.2rem;">${displayName}</div>
                         `;
                         statsGrid.appendChild(nameCard);
                     }
