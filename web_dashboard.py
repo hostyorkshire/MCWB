@@ -418,12 +418,11 @@ def api_cloudflare_status():
                             # e.g., "bot.intergalactic.it.com" -> "BOT"
                             # Remove protocol if present (case-insensitive)
                             url_lower = tunnel_url.lower()
+                            url_without_protocol = tunnel_url
                             if url_lower.startswith('https://'):
-                                url_without_protocol = tunnel_url[8:]
+                                url_without_protocol = tunnel_url[len('https://'):]
                             elif url_lower.startswith('http://'):
-                                url_without_protocol = tunnel_url[7:]
-                            else:
-                                url_without_protocol = tunnel_url
+                                url_without_protocol = tunnel_url[len('http://'):]
                             
                             # Remove port and path if present
                             hostname = url_without_protocol.split('/')[0].split(':')[0]
@@ -433,8 +432,8 @@ def api_cloudflare_status():
                             elif hostname:
                                 # If no dots, use the whole hostname
                                 tunnel_name = hostname.upper()
-                        except Exception:
-                            # If parsing fails for any reason, leave tunnel_name as None
+                        except (AttributeError, IndexError, ValueError):
+                            # If parsing fails, leave tunnel_name as None
                             pass
                 except IOError:
                     pass
