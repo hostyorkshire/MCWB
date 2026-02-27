@@ -156,3 +156,18 @@ class StatsTracker:
                 self.stats["recent_users"] = []
             
             return self.stats["recent_users"][:limit]
+
+    def reset_stats(self):
+        """Reset all statistics to zero"""
+        with self.lock:
+            self.stats = {
+                "total_requests": 0,
+                "total_errors": 0,
+                "locations": {},
+                "hourly_requests": {},
+                "daily_requests": {},
+                "error_types": {},
+                "last_updated": None,
+                "recent_users": [],
+            }
+            self._save_stats()
