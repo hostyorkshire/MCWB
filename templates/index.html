@@ -1121,6 +1121,24 @@
                         badge.appendChild(content);
                         channelsDiv.appendChild(badge);
                     });
+                    
+                    // Add help note if there are unnamed channels
+                    const hasUnnamedChannels = data.channels.some(ch => ch.name && ch.name.includes('(unnamed)'));
+                    if (hasUnnamedChannels) {
+                        const helpNote = document.createElement('div');
+                        helpNote.className = 'loading';
+                        helpNote.style.cssText = 'text-align: left; padding: 15px; margin-top: 15px; font-size: 0.85em; background: rgba(234, 179, 8, 0.1); border-left: 3px solid #eab308;';
+                        helpNote.innerHTML = `
+                            <strong>ℹ️ Note:</strong> Channels marked as "(unnamed)" don't have configured names in the bot.
+                            <br><br>
+                            <strong>To fix:</strong> Restart the bot with the <code>--channel</code> parameter specifying your channel names:
+                            <br>
+                            <code style="color: var(--accent-color); display: block; margin-top: 5px; padding: 5px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                            python3 weather_bot.py --channel weather,alerts
+                            </code>
+                        `;
+                        channelsDiv.appendChild(helpNote);
+                    }
                 } else {
                     channelsDiv.innerHTML = `
                         <div class="loading" style="text-align: left; padding: 20px; line-height: 1.8;">
