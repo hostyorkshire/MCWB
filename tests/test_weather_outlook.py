@@ -227,11 +227,18 @@ def test_outlook_includes_country_code():
     print("\nOutlook without country:")
     print(response_no_country)
 
-    if "Unknown City 3-day:" in response_no_country and ", " not in response_no_country.split('\n')[0]:
-        print("✅ PASS: Outlook without country code shows city name only")
-    else:
-        print("❌ FAIL: Outlook without country code has unexpected format")
+    # Check that city name is present
+    if "Unknown City 3-day:" not in response_no_country:
+        print("❌ FAIL: Outlook missing city name")
         return False
+    
+    # Check that no comma is present in the header (first line)
+    first_line = response_no_country.split('\n')[0]
+    if ", " in first_line:
+        print("❌ FAIL: Outlook without country code should not have comma")
+        return False
+    
+    print("✅ PASS: Outlook without country code shows city name only")
 
     return True
 

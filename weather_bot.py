@@ -1056,7 +1056,9 @@ class WeatherBot:
     def format_outlook_response(self, location_data: dict, outlook_data: dict) -> str:
         """Format a concise outlook response from pre-fetched location and outlook data."""
         name = location_data.get("name", "Unknown")
-        country = location_data.get("country_code", location_data.get("country", ""))
+        # Prefer 'country_code' (ISO code like 'GB', 'US') over 'country' (full name)
+        # to keep the message concise and match the weather response format
+        country = location_data.get("country_code") or location_data.get("country", "")
         loc_str = f"{name}, {country}" if country else name
 
         daily = outlook_data.get("daily", {})
