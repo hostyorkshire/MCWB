@@ -196,7 +196,16 @@ else
         # Get script directory to find requirements.txt
         SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
         cd "$SCRIPT_DIR" || exit 1
-        pip3 install --user -r requirements.txt
+        
+        # Check if venv exists, if not create it
+        if [ ! -d "venv" ]; then
+            echo "Creating virtual environment..."
+            python3 -m venv venv
+        fi
+        
+        # Install dependencies in venv
+        echo "Installing dependencies in virtual environment..."
+        ./venv/bin/pip install -r requirements.txt
         echo -e "${GREEN}✓${NC} Dependencies installed"
         FIXES_APPLIED=$((FIXES_APPLIED + 1))
         echo ""

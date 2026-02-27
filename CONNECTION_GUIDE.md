@@ -262,8 +262,15 @@ python3 -c "import flask, flask_cors; print('Dependencies OK')"
 
 **If this fails:**
 ```bash
-pip3 install --user -r requirements.txt
-sudo systemctl restart mcwb-dashboard
+cd ~/MCWB
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+# Install dependencies in venv
+./venv/bin/pip install -r requirements.txt
+# Reinstall service to use the venv
+./install_dashboard_service.sh
 ```
 
 ### Check 8: Port Already in Use
@@ -303,11 +310,8 @@ sudo systemctl disable mcwb-dashboard
 sudo rm /etc/systemd/system/mcwb-dashboard.service
 sudo systemctl daemon-reload
 
-# Reinstall dependencies
+# Reinstall dependencies and service (this will handle venv automatically)
 cd ~/MCWB
-pip3 install --user -r requirements.txt
-
-# Reinstall service (this will configure everything correctly)
 ./install_dashboard_service.sh
 ```
 

@@ -80,8 +80,15 @@ Open a web browser on any device on your local network and go to the URL from St
 Install the required dependencies:
 
 ```bash
+# Create and activate a virtual environment (recommended for newer systems)
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), using a virtual environment is required due to PEP 668 to prevent conflicts with system packages.
 
 ### Running the Dashboard
 
@@ -447,15 +454,21 @@ If the service logs show `ModuleNotFoundError` or `ImportError`:
 # Check if dependencies are installed
 python3 -c "import flask, flask_cors; print('✅ Dependencies OK')" 2>&1
 
-# If error, install dependencies
-pip3 install --user -r requirements.txt
+# If error, create/use virtual environment and install dependencies
+cd ~/MCWB
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+./venv/bin/pip install -r requirements.txt
 
-# Restart service
-sudo systemctl restart mcwb-dashboard
+# Reinstall the service to use the venv
+./install_dashboard_service.sh
 
 # Check logs to verify it started
 sudo journalctl -u mcwb-dashboard -n 20
 ```
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), using `pip3 install --user` may fail with "externally-managed-environment" error due to PEP 668. The automated installer (`install_dashboard_service.sh`) handles virtual environment setup automatically.
 
 **Issue 8: Service Configuration Mismatch**
 
@@ -543,18 +556,25 @@ This error occurs when Python packages (Flask, flask-cors) are not installed.
 - Running `python3 web_dashboard.py` manually shows "ERROR: Required dependencies not installed"
 - Service logs show `ModuleNotFoundError: No module named 'flask'`
 
-**Solution:** Install the required dependencies:
+**Solution:** The automated installer handles dependency installation:
 ```bash
 cd ~/MCWB
-pip3 install --user -r requirements.txt
-```
-
-If the service still doesn't start after installing dependencies, try reinstalling the service:
-```bash
 ./install_dashboard_service.sh
 ```
 
-**Note:** Python 3 automatically includes user site-packages in its search path, so packages installed with `pip3 install --user` will be available to the service.
+The installer will create a virtual environment and install dependencies automatically. If you want to install manually:
+
+```bash
+cd ~/MCWB
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+# Install dependencies in venv
+./venv/bin/pip install -r requirements.txt
+```
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), using `pip3 install --user` will fail with "externally-managed-environment" error due to PEP 668. Always use a virtual environment or the automated installer.
 
 **4. Path does not exist:**
 
@@ -565,8 +585,10 @@ ls /home/pi/MCWB/web_dashboard.py
 # Or if installed elsewhere:
 ls /home/weatherbot/MCWB/web_dashboard.py
 
-# Check Python path
+# Check Python path (or venv Python if using venv)
 which python3
+# If using venv:
+ls ~/MCWB/venv/bin/python3
 ```
 
 **5. View detailed error logs:**
@@ -584,24 +606,30 @@ sudo journalctl -u mcwb-dashboard.service | grep -i "permission\|denied\|error"
 
 ### Dependencies Not Installed
 
-If you get an error like `ModuleNotFoundError: No module named 'flask'`, you need to install the required dependencies:
+If you get an error like `ModuleNotFoundError: No module named 'flask'`, you need to install the required dependencies.
 
-```bash
-pip3 install --user -r requirements.txt
-```
-
-Or install manually:
-```bash
-pip3 install --user flask>=2.3.2 flask-cors>=4.0.0
-```
-
-**Note:** If you recently pulled the latest code, you may need to reinstall dependencies as new packages may have been added.
-
-**Systemd Service Note:** When you install dependencies with `pip3 install --user`, Python 3 automatically includes the user site-packages directory in its search path, so the systemd service will be able to find them. If you're still having import issues after installing dependencies, try reinstalling the service:
+**Recommended approach (using automated installer):**
 ```bash
 cd ~/MCWB
 ./install_dashboard_service.sh
 ```
+
+The installer automatically creates a virtual environment and installs all dependencies.
+
+**Manual installation:**
+```bash
+cd ~/MCWB
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+# Install dependencies in venv
+./venv/bin/pip install -r requirements.txt
+# Reinstall service to use the venv
+./install_dashboard_service.sh
+```
+
+**Note:** On newer systems (Debian 12+, Ubuntu 23.04+), using `pip3 install --user` will fail with "externally-managed-environment" error due to PEP 668. Always use a virtual environment or the automated installer.
 
 ### Port Already in Use
 
