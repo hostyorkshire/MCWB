@@ -8,7 +8,6 @@ Uses the free Open-Meteo API (no API key required).
 
 import argparse
 import os
-import random
 import re
 import sys
 import threading
@@ -109,7 +108,6 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location.\n\nHelp? https://tinyurl.com/wxbot"
-<<<<<<< copilot/improve-open-meto-api-reliability
 
 
 # ---------------------------------------------------------------------------
@@ -117,26 +115,26 @@ ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply typ
 # ---------------------------------------------------------------------------
 def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwargs):
     """Execute an API request with exponential backoff retry logic.
-    
+
     Args:
         func: The function to call (e.g., requests.get)
         *args: Positional arguments to pass to func
         max_retries: Maximum number of retry attempts (default: 3)
         initial_timeout: Initial timeout value in seconds (default: 10)
         **kwargs: Keyword arguments to pass to func (except timeout)
-    
+
     Returns:
         Response object from successful request
-        
+
     Raises:
         RequestException: If all retries are exhausted
     """
     last_exception = None
-    
+
     for attempt in range(max_retries):
         # Increase timeout with each retry: 10s, 15s, 20s
         timeout = initial_timeout + (attempt * 5)
-        
+
         try:
             # Add timeout to kwargs
             kwargs['timeout'] = timeout
@@ -152,16 +150,13 @@ def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwa
             else:
                 # Final attempt failed, raise the exception
                 raise RequestException(f"API request failed after {max_retries} attempts: {e}") from e
-        except RequestException as e:
+        except RequestException:
             # Non-retryable errors (e.g., HTTPError 4xx) - raise immediately
             raise
-    
+
     # Should not reach here, but just in case
     if last_exception:
         raise RequestException(f"API request failed after {max_retries} attempts") from last_exception
-=======
->>>>>>> main
-
 
 
 class WeatherBot:
@@ -183,7 +178,7 @@ class WeatherBot:
         verify_channels=False,
     ):
         """Initialize the weather bot.
-        
+
         Args:
             port: Serial port (e.g., /dev/ttyUSB0). Auto-detects if None.
             baud: Baud rate (default: 115200)
@@ -217,7 +212,7 @@ class WeatherBot:
         # Track channel_idx to channel name mapping for auto-detection
         self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
         self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
-        
+
         if weather_channel_idx is not None:
             self._announce_channel_idx = weather_channel_idx
         else:
@@ -400,7 +395,7 @@ class WeatherBot:
         # This is consistent with mesh.send_message() behavior.
         self.mesh._active_channels[channel_idx] = time.time()
         self.mesh.save_active_channels()
-        
+
         ts = int(time.time()).to_bytes(4, "little")
         payload = bytes([_CMD_SEND_CHAN_MSG, 0, channel_idx]) + ts + text.encode("utf-8")
         self._send_cmd(payload)
@@ -628,10 +623,10 @@ class WeatherBot:
     def _detect_channel_name(self, text: str, channel_idx: int):
         """
         Attempt to detect channel name from message text.
-        
+
         Some MeshCore firmware versions include channel hashtags in messages.
         This method checks for channel indicators and maps them to channel_idx.
-        
+
         Args:
             text: Raw message text that may contain channel indicators
             channel_idx: Numeric channel index from the protocol
@@ -639,20 +634,20 @@ class WeatherBot:
         # Check if text contains channel hashtag patterns like "#weather", "#alerts", etc.
         # Common patterns: "#weather", "#wx", "weather", "wx", "weather channel", etc.
         text_lower = text.lower()
-        
+
         # Look for weather channel indicators using regex for word boundaries
         # This matches:
         # - "#weather" or "#wx" (with hashtag, not preceded by word chars, with word boundary at end)
         # - "weather" or "wx" as standalone words (with word boundaries on both sides)
         # - "weather channel" phrase (with word boundaries)
         weather_patterns = [
-            r'(?<!\w)#weather\b',    # hashtag weather (not preceded by word char, word boundary at end)
-            r'(?<!\w)#wx\b',         # hashtag wx (not preceded by word char, word boundary at end)
-            r'\bweather\b',          # standalone word "weather"
-            r'\bwx\b',               # standalone word "wx"
-            r'\bweather\s+channel\b' # phrase "weather channel" (word boundaries on both ends)
+            r'(?<!\w)#weather\b',     # hashtag weather (not preceded by word char, word boundary at end)
+            r'(?<!\w)#wx\b',          # hashtag wx (not preceded by word char, word boundary at end)
+            r'\bweather\b',           # standalone word "weather"
+            r'\bwx\b',                # standalone word "wx"
+            r'\bweather\s+channel\b'  # phrase "weather channel" (word boundaries on both ends)
         ]
-        
+
         for pattern in weather_patterns:
             if re.search(pattern, text_lower):
                 if channel_idx not in self._channel_idx_to_name:
@@ -703,7 +698,7 @@ class WeatherBot:
 
         # Parse command once for efficiency
         location, country = self._parse_command(content)
-        
+
         # Auto-detect weather channel: If weather commands are received on a channel,
         # remember it as the weather channel for announcements
         if location and not self._weather_channel_detected and self.weather_channel_idx is None:
@@ -793,7 +788,7 @@ class WeatherBot:
         - "wx York USA" -> ("York", "US")
         - "wx York FR" -> ("York", "FR")
         - "wx York, UK" -> ("York, UK", None)  # Explicit format, no extraction
-        
+
         Channel indicators like "#weather", "#wx", "on #weather" are automatically filtered out.
         """
         # Remove channel indicators before parsing
@@ -803,7 +798,7 @@ class WeatherBot:
         # Matches: "on #<channel>" (with/without space), "#<channel>", "on weather channel", "weather channel"
         text_cleaned = re.sub(r'(?:on\s*#(?:weather|wx)|on\s+weather\s+channel|#(?:weather|wx)|weather\s+channel)\s*', '', text_cleaned, flags=re.IGNORECASE)
         text_cleaned = text_cleaned.strip()
-        
+
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
         if not m:
             return None, None
@@ -967,54 +962,54 @@ class WeatherBot:
     @staticmethod
     def _is_uk_postcode(text: str) -> bool:
         """Check if the text looks like a UK postcode.
-        
+
         Matches full postcodes (e.g., S1 2HH) and partial postcodes (e.g., S1, S71).
-        UK postcode format: 
+        UK postcode format:
         - Outward code: 1-2 letters + 1-2 digits + optional letter
         - Inward code: 1 digit + 2 letters (optional for partial)
-        
+
         Examples:
         - Full: S1 2HH, SW1A 1AA, M1 1AE
         - Partial: S1, S71, SW1A
         """
         # Remove extra whitespace and convert to uppercase
         text = text.strip().upper()
-        
+
         # Full postcode pattern: outward + space + inward
         # Outward: 1-2 letters, 1-2 digits, optional letter
         # Inward: 1 digit, 2 letters
         full_postcode = re.match(r'^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$', text)
         if full_postcode:
             return True
-        
+
         # Partial postcode pattern: just the outward code
         # This handles formats like S1, S71, SW1A (first part of postcode)
         partial_postcode = re.match(r'^[A-Z]{1,2}\d{1,2}[A-Z]?$', text)
         if partial_postcode:
             return True
-        
+
         return False
 
     def geocode_postcode(self, postcode: str):
         """Geocode a UK postcode using postcodes.io API.
-        
+
         Returns a dict with latitude, longitude, and location name, or None if not found.
-        
+
         Args:
             postcode: UK postcode (full or partial, e.g., "S1 2HH" or "S71")
-        
+
         Returns:
             dict with keys: latitude, longitude, name, country_code, postcode
             or None if postcode not found
         """
         # Clean up postcode: remove extra spaces, convert to uppercase
         postcode = postcode.strip().upper().replace(" ", "")
-        
+
         try:
             # Try exact postcode lookup first with retry logic
             url = f"https://api.postcodes.io/postcodes/{postcode}"
             response = api_request_with_retry(requests.get, url)
-            
+
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") == 200 and data.get("result"):
@@ -1023,11 +1018,11 @@ class WeatherBot:
                     # Use admin_district (e.g., "Sheffield") as the primary name
                     # Fall back to parish, then postcode itself
                     location_name = (
-                        result.get("admin_district") or 
-                        result.get("parish") or 
+                        result.get("admin_district") or
+                        result.get("parish") or
                         result.get("postcode", postcode)
                     )
-                    
+
                     return {
                         "latitude": result["latitude"],
                         "longitude": result["longitude"],
@@ -1035,12 +1030,12 @@ class WeatherBot:
                         "country_code": "GB",
                         "postcode": result.get("postcode", postcode),
                     }
-            
+
             # If exact lookup failed, try partial postcode (outward code only) with retry logic
             # This handles cases like "S71" where we want the general area
             url = f"https://api.postcodes.io/outcodes/{postcode}"
             response = api_request_with_retry(requests.get, url)
-            
+
             if response.status_code == 200:
                 data = response.json()
                 if data.get("status") == 200 and data.get("result"):
@@ -1051,7 +1046,7 @@ class WeatherBot:
                         location_name = admin_district[0] if admin_district else postcode
                     else:
                         location_name = admin_district if admin_district else postcode
-                    
+
                     return {
                         "latitude": result["latitude"],
                         "longitude": result["longitude"],
@@ -1059,14 +1054,14 @@ class WeatherBot:
                         "country_code": "GB",
                         "postcode": result.get("outcode", postcode),
                     }
-                    
+
         except (ConnectionError, Timeout, RequestException) as e:
             self.logger.error(f"Network error geocoding postcode '{postcode}': {e}")
             self.error_logger.error(f"Network error geocoding postcode: {e}", exc_info=True)
         except Exception as e:
             self.logger.error(f"Error geocoding postcode '{postcode}': {e}")
             self.error_logger.error(f"Error geocoding postcode: {e}", exc_info=True)
-        
+
         return None
 
     def geocode_location(self, location: str, country_override: str = None):
@@ -1077,7 +1072,7 @@ class WeatherBot:
             location: City/location name or UK postcode to geocode
             country_override: Optional country code to filter results (e.g., "GB", "US").
                             Takes precedence over self.country if provided.
-        
+
         Raises:
             requests.exceptions.RequestException: On network or API errors
         """
@@ -1087,14 +1082,14 @@ class WeatherBot:
             if postcode_result:
                 return postcode_result
             # If postcode lookup failed, fall through to regular geocoding
-        
+
         # Per-query country override takes precedence over bot's default country
         country = country_override if country_override is not None else self.country
-        
+
         # Call Open-Meteo geocoding API
         url = "https://geocoding-api.open-meteo.com/v1/search"
         params = {"name": location, "count": 10, "language": "en", "format": "json"}
-        
+
         try:
             response = api_request_with_retry(requests.get, url, params=params)
             response.raise_for_status()
@@ -1102,7 +1097,7 @@ class WeatherBot:
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Geocoding API error for '{location}': {e}")
             raise
-        
+
         if "results" not in geo or not geo["results"]:
             return None
         results = geo["results"]
@@ -1115,7 +1110,7 @@ class WeatherBot:
     def get_weather(self, lat: float, lon: float) -> dict:
         """Fetch current weather for the given coordinates.  Returns the raw
         Open-Meteo response dict (with a ``"current"`` key).
-        
+
         Raises:
             requests.exceptions.RequestException: On network or API errors
         """
@@ -1246,7 +1241,6 @@ class WeatherBot:
             self.error_logger.error(f"Error getting weather for {location}: {e}")
             return f"Weather error: {e}"
 
-
     # ------------------------------------------------------------------
     # Main run loop
     # ------------------------------------------------------------------
@@ -1274,7 +1268,6 @@ class WeatherBot:
 
         # Drain any messages queued while the bot was offline
         self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
-
 
         if self.weather_channel_idx is not None:
             msg = f"MCWB running. Weather channel configured as channel_idx={self.weather_channel_idx}."
@@ -1322,7 +1315,7 @@ class WeatherBot:
                 announce_info += " (configured)"
             else:
                 announce_info += " (default, will auto-detect)"
-            
+
             self._send_channel_msg(ANNOUNCE_MESSAGE, self._announce_channel_idx)
             last_announce = current_time
             self._save_last_announce_time(last_announce)
