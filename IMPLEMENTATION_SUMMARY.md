@@ -54,7 +54,7 @@ Successfully implemented Cloudflare Tunnel integration to connect the static web
    - Testing and verification steps
    - Common issues and solutions
 
-4. **`website/img/emoji/1f3e0.svg`**
+4. **`public_html/wx/img/emoji/1f3e0.svg`**
    - House emoji icon for UI
 
 ### Modified Files
@@ -63,14 +63,14 @@ Successfully implemented Cloudflare Tunnel integration to connect the static web
    - Added wx.intergalactic.it.com to allowed origins
    - Added comments explaining wildcard use
 
-2. **`website/js/dashboard.js`** 
+2. **`public_html/wx/js/dashboard.js`** 
    - Added TUNNEL_URL configuration
    - Implemented auto-detection (Tunnel > Local > Demo)
    - Added live data fetching functions
    - Connection status detection
    - Maintains demo mode compatibility
 
-3. **`website/dashboard.html`**
+3. **`public_html/wx/dashboard.html`**
    - Updated demo mode warning
    - Added Cloudflare Tunnel setup instructions
    - Reorganized remote access options
@@ -119,7 +119,7 @@ cd ~/MCWB
 ```
 
 **Step 2: Update Website Configuration**
-Edit `website/js/dashboard.js`:
+Edit `public_html/wx/js/dashboard.js`:
 ```javascript
 const TUNNEL_URL = 'https://your-tunnel-url.yourdomain.com';
 ```
@@ -130,7 +130,7 @@ const TUNNEL_URL = 'https://your-tunnel-url.yourdomain.com';
 
 ### Configuration Details
 
-The tunnel URL can be set in `website/js/dashboard.js`:
+The tunnel URL can be set in `public_html/wx/js/dashboard.js`:
 ```javascript
 // Configuration priority:
 // 1. TUNNEL_URL (if set) - Cloudflare Tunnel
