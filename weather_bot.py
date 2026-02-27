@@ -204,27 +204,10 @@ class WeatherBot:
         self._running = False
         # Set up logging
         self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
-        # channel_idx used for periodic announcements and weather responses
-        # Priority order:
-        # 1. Explicitly configured weather_channel_idx (command line argument)
-        # 2. Persisted weather channel from previous auto-detection
-        # 3. Default to channel 0
         self.weather_channel_idx = weather_channel_idx
         # Track channel_idx to channel name mapping for auto-detection
         self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
         self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
-
-        if weather_channel_idx is not None:
-            self._announce_channel_idx = weather_channel_idx
-        else:
-            # Try to load persisted weather channel from previous session
-            persisted_channel = self._get_persisted_weather_channel()
-            if persisted_channel is not None:
-                self._announce_channel_idx = persisted_channel
-                self._weather_channel_detected = True  # Mark as detected since we loaded it
-                self.logger.info(f"Loaded persisted weather channel index: {persisted_channel}")
-            else:
-                self._announce_channel_idx = 0  # Default to channel 0 if nothing persisted
         self.announce_channel = announce_channel
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
         self.country = country
@@ -244,6 +227,8 @@ class WeatherBot:
         # Initialize stats tracker
         self.stats = StatsTracker()
         # MeshCore integration for public message-handling API
+        # Created before channel selection so that _active_channels (loaded from
+        # channels.json on MeshCore init) are available for channel selection below.
         self.mesh = MeshCore(node_id=node_id or "MCWB", debug=debug, serial_port=self.port, baud_rate=self.baud)
         # Register this bot as the text message handler so that binary-protocol
         # frames dispatched by meshcore._parse_binary_frame reach handle_message.
@@ -253,6 +238,34 @@ class WeatherBot:
         # of this filter – see meshcore.receive_message for details.
         if self.channels:
             self.mesh.set_channel_filter(self.channels)
+
+        # channel_idx used for periodic announcements and weather responses
+        # Priority order:
+        # 1. Explicitly configured weather_channel_idx (command line argument)
+        # 2. Radio's most recently active channel (from mesh._active_channels loaded on startup)
+        # 3. Persisted weather channel from previous auto-detection
+        # 4. Default to channel 0
+        if weather_channel_idx is not None:
+            self._announce_channel_idx = weather_channel_idx
+            self.logger.info(f"Using configured weather channel: channel_idx={weather_channel_idx}")
+        else:
+            radio_channel = self._get_radio_active_channel()
+            if radio_channel is not None:
+                self._announce_channel_idx = radio_channel
+                self._weather_channel_detected = True
+                self.logger.info(
+                    f"Using radio's most recently active channel: channel_idx={radio_channel}"
+                )
+            else:
+                # Try to load persisted weather channel from previous session
+                persisted_channel = self._get_persisted_weather_channel()
+                if persisted_channel is not None:
+                    self._announce_channel_idx = persisted_channel
+                    self._weather_channel_detected = True  # Mark as detected since we loaded it
+                    self.logger.info(f"Loaded persisted weather channel index: {persisted_channel}")
+                else:
+                    self._announce_channel_idx = 0  # Default to channel 0 if nothing persisted
+                    self.logger.info("No channel configured or detected, defaulting to channel_idx=0")
 
     # ------------------------------------------------------------------
     # Reboot notification
@@ -942,6 +955,38 @@ class WeatherBot:
         except (IOError, ValueError) as e:
             self._log(f"Could not read persisted weather channel: {e}")
         return None
+
+    def _get_radio_active_channel(self):
+        """Query the radio's active channels and return the most recently used non-default channel.
+
+        Reads from mesh._active_channels which is populated on startup from channels.json
+        (loaded by MeshCore.__init__) and updated as messages are received/sent.
+
+        Prefers non-zero channels as channel 0 is the generic default channel.
+
+        Returns:
+            Channel index (int) of the most recently active non-default channel,
+            or None if no non-default active channels exist.
+        """
+        try:
+            active = self.mesh._active_channels
+            if not active:
+                self.logger.info("Radio has no active channels recorded")
+                return None
+            # Prefer non-zero channels (channel 0 is the generic default)
+            non_zero = {idx: ts for idx, ts in active.items() if idx != 0}
+            if non_zero:
+                most_recent = max(non_zero, key=lambda idx: non_zero[idx])
+                self.logger.info(
+                    f"Radio active channels: {dict(sorted(active.items()))} — "
+                    f"most recently active non-default: channel_idx={most_recent}"
+                )
+                return most_recent
+            self.logger.info("Radio has only default channel (channel_idx=0) active")
+            return None
+        except Exception as e:
+            self.logger.warning(f"Could not query radio active channels: {e}")
+            return None
 
     def _save_weather_channel(self, channel_idx):
         """Save the detected weather channel index to file for persistence across restarts."""
