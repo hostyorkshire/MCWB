@@ -126,25 +126,23 @@ def test_case_insensitive():
 
 def test_word_boundaries():
     """Test that word boundaries are respected"""
-    bot = WeatherBot(port=None, debug=False)
-    bot.mesh.start()
-    
-    # These should all detect 'weather' or 'wx' due to word boundaries
-    test_cases_should_match = [
-        "Posted to weather",
-        "Join wx discussion",
-        "The weather is here",
-        "Use wx command",
-    ]
-    
-    for test_msg in test_cases_should_match:
-        bot._channel_idx_to_name.clear()
-        bot._weather_channel_detected = False
-        bot._detect_channel_name(test_msg, 1)
-        assert bot._weather_channel_detected, f"Should detect weather in: {test_msg}"
-    
-    bot.mesh.stop()
-    print("✓ Test passed: word boundaries work correctly")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # These should all detect 'weather' or 'wx' due to word boundaries
+        test_cases_should_match = [
+            "Posted to weather",
+            "Join wx discussion",
+            "The weather is here",
+            "Use wx command",
+        ]
+        
+        for test_msg in test_cases_should_match:
+            bot = WeatherBot(port=None, debug=False)
+            bot.mesh.start()
+            bot._detect_channel_name(test_msg, 1)
+            assert bot._weather_channel_detected, f"Should detect weather in: {test_msg}"
+            bot.mesh.stop()
+        
+        print("✓ Test passed: word boundaries work correctly")
 
 
 if __name__ == "__main__":
