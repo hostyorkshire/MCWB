@@ -110,9 +110,9 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200 --announce -d
 ```
 
 The announcement message is:
-> "Hello this is the WX BoT. To get a weather update simply type WX and your location.
+> "Hello this is the WX Bot. To get a weather update simply type WX and your location.
 > 
-> Help? https://tinyurl.com/wxbot"
+> Need help? See commands & more https://tinyurl.com/wxbot"
 
 It is sent immediately on startup and then repeated every 3 hours on whichever channel users are active on.
 

@@ -427,7 +427,7 @@ The announcement message is:
 ```
 Hello this is the WX Bot. To get a weather update simply type WX and your location.
 
-Help? https://tinyurl.com/wxbot
+Need help? See commands & more https://tinyurl.com/wxbot
 ```
 
 ### Example: Raspberry Pi Service Setup
