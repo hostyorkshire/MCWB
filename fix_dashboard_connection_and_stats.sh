@@ -15,7 +15,6 @@ echo ""
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Get current IP
@@ -34,7 +33,7 @@ if ! systemctl list-unit-files | grep -q "mcwb-dashboard.service"; then
     echo -e "${RED}✗ Dashboard service is NOT installed${NC}"
     echo ""
     echo "Installing dashboard service..."
-    cd ~/MCWB
+    cd ~/MCWB || exit
     ./install_dashboard_service.sh
     echo ""
 fi
@@ -220,14 +219,16 @@ if [ -f "$CHANNELS_FILE" ]; then
         echo -e "${RED}✗ Channels file is corrupted${NC}"
         echo "Backing up and recreating..."
         mv "$CHANNELS_FILE" "${CHANNELS_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
-        echo '{"channels":[],"last_updated":"'$(date -Iseconds)'"}' > "$CHANNELS_FILE"
+        CURRENT_DATE=$(date -Iseconds)
+        echo "{\"channels\":[],\"last_updated\":\"${CURRENT_DATE}\"}" > "$CHANNELS_FILE"
         echo -e "${GREEN}✓ Channels file recreated${NC}"
     fi
 else
     echo -e "${YELLOW}⚠ Channels file does not exist${NC}"
     echo "Creating channels file..."
     mkdir -p "$(dirname "$CHANNELS_FILE")"
-    echo '{"channels":[],"last_updated":"'$(date -Iseconds)'"}' > "$CHANNELS_FILE"
+    CURRENT_DATE=$(date -Iseconds)
+    echo "{\"channels\":[],\"last_updated\":\"${CURRENT_DATE}\"}" > "$CHANNELS_FILE"
     echo -e "${GREEN}✓ Channels file created${NC}"
 fi
 echo ""
