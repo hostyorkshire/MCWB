@@ -796,7 +796,10 @@
         <div class="log-viewer">
             <div class="status-header">
                 <h2 class="status-title">Log Viewer</h2>
-                <button class="refresh-btn" onclick="refreshLogs()"><img src="/static/img/emoji/1f504.svg" alt="🔄" class="emoji-icon"> Refresh</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="refresh-btn" onclick="refreshLogs()"><img src="/static/img/emoji/1f504.svg" alt="🔄" class="emoji-icon"> Refresh</button>
+                    <button class="refresh-btn" onclick="resetLogs()" style="background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444;"><img src="/static/img/emoji/1f5d1.svg" alt="🗑️" class="emoji-icon"> Reset Logs</button>
+                </div>
             </div>
             <div class="log-tabs">
                 <div class="log-tab active" data-log="bot" onclick="switchLog('bot')">Bot Log</div>
@@ -1415,6 +1418,36 @@
             } catch (error) {
                 console.error('Error resetting stats:', error);
                 alert('Failed to reset statistics. Please try again.');
+            }
+        }
+
+        // Reset logs
+        async function resetLogs() {
+            if (!confirm('Are you sure you want to clear all logs? This will clear:\n\n• Bot Log\n• Bot Errors\n• MeshCore\n• MeshCore Errors\n\nThis action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/logs/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    alert(`Logs have been cleared successfully!\n${result.message}`);
+                    // Reload current log to show cleared state
+                    await loadLog(currentLog);
+                } else {
+                    alert('Failed to clear logs: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error clearing logs:', error);
+                alert('Failed to clear logs. Please try again.');
             }
         }
 
