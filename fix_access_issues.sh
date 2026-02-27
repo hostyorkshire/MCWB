@@ -157,7 +157,7 @@ read -p "Would you like to attempt automatic fixes? [Y/n] " -n 1 -r REPLY
 echo ""
 echo ""
 
-if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
+if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ -n $REPLY ]]; then
     echo "No changes made. To fix manually:"
     if [ "$SSH_ISSUE" = true ]; then
         echo "   SSH: Run ./fix_ssh_access.sh"

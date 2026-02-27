@@ -228,7 +228,7 @@ echo ""
 echo "[8/8] Final connectivity test..."
 sleep 2
 if command -v curl >/dev/null 2>&1; then
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${LOCAL_IP}:5000 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://${LOCAL_IP}:5000" 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" = "200" ]; then
         echo -e "${GREEN}✓${NC} Dashboard is accessible from network (HTTP 200)"
     else

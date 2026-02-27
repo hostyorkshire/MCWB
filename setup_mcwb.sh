@@ -6,13 +6,12 @@
 # that needs to gracefully handle command failures (e.g., stopping non-existent services)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+cd "$SCRIPT_DIR" || exit
 
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Function to display the main menu
@@ -260,7 +259,7 @@ start_stop_services() {
     echo "  0) Back to main menu"
     echo ""
     echo -n "Enter your choice [0-9]: "
-    read -n 1 choice
+    read -r -n 1 choice
     echo ""
     echo ""
     
@@ -306,7 +305,7 @@ view_logs() {
     echo "  0) Back to main menu"
     echo ""
     echo -n "Enter your choice [0-5]: "
-    read -n 1 choice
+    read -r -n 1 choice
     echo ""
     echo ""
     
@@ -365,7 +364,7 @@ uninstall_services() {
     echo "  0) Back to main menu"
     echo ""
     echo -n "Enter your choice [0-3]: "
-    read -n 1 choice
+    read -r -n 1 choice
     echo ""
     echo ""
     
@@ -439,7 +438,7 @@ configure_firewall() {
     echo "  0) Back to main menu"
     echo ""
     echo -n "Enter your choice [0-5]: "
-    read -n 1 choice
+    read -r -n 1 choice
     echo ""
     echo ""
     
@@ -536,7 +535,7 @@ main() {
     
     while true; do
         show_menu
-        read -n 1 choice
+        read -r -n 1 choice
         echo ""
         
         case $choice in
