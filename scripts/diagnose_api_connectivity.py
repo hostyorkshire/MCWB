@@ -287,8 +287,8 @@ def main():
         print()
         print("   SOLUTIONS:")
         print("   • Check internet connection: ping 8.8.8.8")
-        print("   • Check DNS: cat /etc/resolv.con")
-        print("   • Try Google DNS: echo 'nameserver 8.8.8.8' >> /etc/resolv.con")
+        print("   • Check DNS: cat /etc/resolv.conf")
+        print("   • Try Google DNS: echo 'nameserver 8.8.8.8' >> /etc/resolv.conf")
 
     elif not results[2][1]:
         print("❌ TCP Connection Failed")

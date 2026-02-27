@@ -231,7 +231,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("CHANNEL EXPIRATION TESTS (72-hour TTL)")
     print("=" * 60)
-    print("\nThese tests verify that channels expire after 72 hours o")
+    print("\nThese tests verify that channels expire after 72 hours of")
     print("inactivity, preventing the dashboard from showing stale channels.")
 
     all_passed = True

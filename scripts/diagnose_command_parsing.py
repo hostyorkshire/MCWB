@@ -16,7 +16,7 @@ def diagnose_command(command: str):
     """Parse and display how a command is interpreted."""
     bot = WeatherBot(debug=False, country=None)
 
-    print("\nCommand: \"{command}\"")
+    print(f"\nCommand: \"{command}\"")
     print("-" * 60)
 
     location, country = bot._parse_command(command)
@@ -27,16 +27,16 @@ def diagnose_command(command: str):
         return False
 
     print("✅ RECOGNIZED as weather command")
-    print("   Location: \"{location}\"")
+    print(f"   Location: \"{location}\"")
     print(f"   Country:  {country if country else '(not specified)'}")
 
     # Show what would be sent to the API
     if country:
-        print("\n   API will search for: \"{location}\" in country \"{country}\"")
+        print(f"\n   API will search for: \"{location}\" in country \"{country}\"")
         print("   URL: https://geocoding-api.open-meteo.com/v1/search")
         print(f"        ?name={location}&country={country}")
     else:
-        print("\n   API will search for: \"{location}\" (global search)")
+        print(f"\n   API will search for: \"{location}\" (global search)")
         print("   URL: https://geocoding-api.open-meteo.com/v1/search")
         print(f"        ?name={location}")
 
