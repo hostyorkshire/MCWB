@@ -161,22 +161,43 @@ def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwa
 
 
 class LEDController:
-    """Control the three front-panel LEDs on the Heltec WiFi LoRa 32 V2.
+    """Control LEDs for visual activity indication on ESP32 LoRa boards.
 
     LED colour assignments (verify GPIO pins against your board):
-      Blue  (GPIO25) – heartbeat: blinks periodically while the bot is running
-      Green (GPIO26) – RX: flashes when a weather request is received
-      Red   (GPIO27) – TX: flashes when a response is being sent
+      Blue  – heartbeat: blinks periodically while the bot is running
+      Green – RX: flashes when a weather request is received
+      Red   – TX: flashes when a response is being sent
 
     MeshCore firmware does not currently expose GPIO-write commands over the
     companion-radio serial protocol, so this implementation uses a debug-log
     fallback that keeps the structure ready for future GPIO command support.
+    
+    Board Variants:
+      - heltec-v2: Heltec WiFi LoRa 32 V2 (Blue=GPIO25 only)
+        Only the blue LED on GPIO25 is available. GPIO26/27 are used by LoRa hardware.
+      - dollatek: DollaTek ESP32 SX1276 Wireless Bridge (Blue=GPIO25 only)
+        Only the blue LED on GPIO25 is available. GPIO26/27 are used by LoRa hardware.
+      - custom: User-specified GPIO pins via command-line arguments
     """
 
-    # Default GPIO pin assignments for the three front-panel LEDs on Heltec v2
+    # Board variant presets
+    BOARD_VARIANTS = {
+        "heltec-v2": {
+            "blue": 25,    # Onboard LED
+            "green": None,  # GPIO26 is used for LoRa DIO0, not available for LED
+            "red": None,    # GPIO27 is used for LoRa MOSI, not available for LED
+        },
+        "dollatek": {
+            "blue": 25,    # Only LED available on DollaTek board
+            "green": None,  # GPIO26 is used for LoRa DIO0, not available
+            "red": None,    # GPIO27 is used for LoRa MOSI, not available
+        },
+    }
+
+    # Default GPIO pin assignments
     DEFAULT_BLUE_PIN = 25   # Heartbeat (onboard blue LED)
-    DEFAULT_GREEN_PIN = 26  # RX indicator
-    DEFAULT_RED_PIN = 27    # TX indicator
+    DEFAULT_GREEN_PIN = None  # Disabled by default (conflicts with LoRa DIO0 on most boards)
+    DEFAULT_RED_PIN = None    # Disabled by default (conflicts with LoRa MOSI on most boards)
 
     HEARTBEAT_INTERVAL = 2.0  # seconds between blue LED blinks
     HEARTBEAT_ON_TIME = 0.1   # seconds the blue LED stays on per blink
@@ -192,6 +213,8 @@ class LEDController:
 
     def _flash_pin(self, pin, colour, duration):
         """Flash a single LED pin for *duration* seconds (log-only fallback)."""
+        if pin is None:
+            return  # LED not available on this board
         self.bot.logger.debug(f"LED {colour} GPIO{pin} ON  ({duration}s)")
         time.sleep(duration)
         self.bot.logger.debug(f"LED {colour} GPIO{pin} OFF")
@@ -225,7 +248,7 @@ class LEDController:
 
     def start_heartbeat(self):
         """Start the blue-LED heartbeat background thread."""
-        if not self.enabled:
+        if not self.enabled or self.blue_pin is None:
             return
         self._heartbeat_stop.clear()
         self._heartbeat_thread = threading.Thread(
@@ -262,6 +285,10 @@ class WeatherBot:
         node_id=None,
         verify_channels=False,
         enable_leds=False,
+        led_board_variant=None,
+        led_blue_pin=None,
+        led_green_pin=None,
+        led_red_pin=None,
     ):
         """Initialize the weather bot.
 
@@ -279,6 +306,10 @@ class WeatherBot:
             node_id: Node ID for MeshCore (default: "MCWB")
             verify_channels: Show diagnostic info about encrypted messages
             enable_leds: Enable LED flashing for visual activity indication
+            led_board_variant: Board variant preset (e.g., "dollatek", "heltec-v2")
+            led_blue_pin: GPIO pin for blue LED (overrides board variant)
+            led_green_pin: GPIO pin for green LED (overrides board variant)
+            led_red_pin: GPIO pin for red LED (overrides board variant)
         """
         self.port = port
         self.baud = baud
@@ -290,8 +321,48 @@ class WeatherBot:
         self._running = False
         # Set up logging
         self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
+        
+        # Determine LED pin configuration
+        blue_pin = led_blue_pin
+        green_pin = led_green_pin
+        red_pin = led_red_pin
+        
+        # Apply board variant preset if specified
+        if led_board_variant and led_board_variant in LEDController.BOARD_VARIANTS:
+            variant = LEDController.BOARD_VARIANTS[led_board_variant]
+            # Only use variant defaults if pins not explicitly set
+            if blue_pin is None:
+                blue_pin = variant["blue"]
+            if green_pin is None:
+                green_pin = variant["green"]
+            if red_pin is None:
+                red_pin = variant["red"]
+            self.logger.info(f"Using LED board variant: {led_board_variant}")
+        elif led_board_variant:
+            self.logger.warning(f"Unknown LED board variant '{led_board_variant}', using defaults")
+        
         # LED controller for visual activity indication (log-only if GPIO not available)
-        self.led_controller = LEDController(self, enabled=enable_leds)
+        self.led_controller = LEDController(
+            self, 
+            enabled=enable_leds,
+            blue_pin=blue_pin,
+            green_pin=green_pin,
+            red_pin=red_pin
+        )
+        
+        if enable_leds:
+            led_config = []
+            if blue_pin is not None:
+                led_config.append(f"Blue=GPIO{blue_pin}")
+            if green_pin is not None:
+                led_config.append(f"Green=GPIO{green_pin}")
+            if red_pin is not None:
+                led_config.append(f"Red=GPIO{red_pin}")
+            if led_config:
+                self.logger.info(f"LED indicators enabled: {', '.join(led_config)}")
+            else:
+                self.logger.warning("LED indicators enabled but no pins configured")
+        
         self.weather_channel_idx = weather_channel_idx
         # Track channel_idx to channel name mapping for auto-detection
         self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
@@ -1574,9 +1645,31 @@ def main():
     parser.add_argument(
         "--enable-leds",
         action="store_true",
-        help="Enable LED flashing on the three Heltec v2 front-panel LEDs (GPIO25/26/27) "
-        "for visual activity indication (requires GPIO support in MeshCore firmware; "
+        help="Enable LED flashing for visual activity indication "
+        "(requires GPIO support in MeshCore firmware; "
         "falls back to debug logging if not available)",
+    )
+    parser.add_argument(
+        "--led-board-variant",
+        choices=["dollatek", "heltec-v2"],
+        help="LED board variant preset. 'dollatek' = DollaTek ESP32 SX1276 Wireless Bridge (single LED on GPIO25). "
+        "'heltec-v2' = Heltec WiFi LoRa 32 V2 (LED on GPIO25 only, GPIO26/27 disabled due to LoRa conflicts). "
+        "Use with --enable-leds.",
+    )
+    parser.add_argument(
+        "--led-blue-pin",
+        type=int,
+        help="GPIO pin for blue LED (heartbeat). Overrides board variant setting.",
+    )
+    parser.add_argument(
+        "--led-green-pin",
+        type=int,
+        help="GPIO pin for green LED (RX indicator). Overrides board variant setting.",
+    )
+    parser.add_argument(
+        "--led-red-pin",
+        type=int,
+        help="GPIO pin for red LED (TX indicator). Overrides board variant setting.",
     )
 
     args = parser.parse_args()
@@ -1594,6 +1687,10 @@ def main():
         channel=args.channel,
         verify_channels=args.verify_channels,
         enable_leds=args.enable_leds,
+        led_board_variant=args.led_board_variant,
+        led_blue_pin=args.led_blue_pin,
+        led_green_pin=args.led_green_pin,
+        led_red_pin=args.led_red_pin,
     )
 
     # If location specified, just do a lookup and exit
