@@ -411,6 +411,34 @@ def api_cloudflare_status():
             if tunnel_url_file.exists():
                 try:
                     tunnel_url = tunnel_url_file.read_text().strip()
+                    # Auto-generate tunnel name from URL if not already set
+                    if tunnel_url and not tunnel_name:
+                        try:
+                            # Extract first part of URL (before first dot) and convert to uppercase
+                            # e.g., "bot.intergalactic.it.com" -> "BOT"
+                            # Remove protocol if present (case-insensitive)
+                            https_prefix = 'https://'
+                            http_prefix = 'http://'
+                            url_lower = tunnel_url.lower()
+                            url_without_protocol = tunnel_url
+                            if url_lower.startswith(https_prefix):
+                                url_without_protocol = tunnel_url[len(https_prefix):]
+                            elif url_lower.startswith(http_prefix):
+                                url_without_protocol = tunnel_url[len(http_prefix):]
+                            
+                            # Remove port and path if present
+                            url_part = url_without_protocol.split('/')[0]
+                            hostname = url_part.split(':')[0]
+                            
+                            if hostname and '.' in hostname:
+                                first_part = hostname.split('.')[0]
+                                tunnel_name = first_part.upper()
+                            elif hostname:
+                                # If no dots, use the whole hostname
+                                tunnel_name = hostname.upper()
+                        except (AttributeError, IndexError, ValueError):
+                            # If parsing fails, leave tunnel_name as None
+                            pass
                 except IOError:
                     pass
         

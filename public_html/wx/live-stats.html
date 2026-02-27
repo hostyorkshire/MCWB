@@ -794,14 +794,6 @@
                     }
                     
                     widget.appendChild(statsGrid);
-                    
-                    if (data.tunnel_url) {
-                        const urlInfo = document.createElement('p');
-                        urlInfo.style.marginTop = '1rem';
-                        urlInfo.style.textAlign = 'center';
-                        urlInfo.innerHTML = `<strong>Tunnel URL:</strong> <code>${data.tunnel_url}</code>`;
-                        widget.appendChild(urlInfo);
-                    }
                 }
                 
                 const lastUpdated = document.createElement('p');
