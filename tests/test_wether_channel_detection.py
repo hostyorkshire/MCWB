@@ -14,10 +14,12 @@ from weather_bot import WeatherBot
 
 def test_wether_channel_detection_from_hashtag():
     """Test that bot detects #wether hashtag in messages"""
+    # Clean up any persisted channel from previous tests
+    if os.path.exists("logs/.last_weather_channel"):
+        os.remove("logs/.last_weather_channel")
+    
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create weather bot without explicit channel configuration
-        # Use a custom logs directory to avoid persistence from other tests
-        os.environ['MCWB_LOGS_DIR'] = tmpdir
         bot = WeatherBot(port=None, announce=True, debug=False)
         bot.mesh.start()
         
@@ -40,6 +42,10 @@ def test_wether_channel_detection_from_hashtag():
 
 def test_wether_case_insensitive():
     """Test that #wether detection is case-insensitive"""
+    # Clean up any persisted channel from previous tests
+    if os.path.exists("logs/.last_weather_channel"):
+        os.remove("logs/.last_weather_channel")
+    
     with tempfile.TemporaryDirectory() as tmpdir:
         bot = WeatherBot(port=None, announce=True, debug=False)
         bot.mesh.start()
@@ -57,6 +63,10 @@ def test_wether_case_insensitive():
 
 def test_wether_in_wx_command():
     """Test that 'wx' command works when #wether is mentioned"""
+    # Clean up any persisted channel from previous tests
+    if os.path.exists("logs/.last_weather_channel"):
+        os.remove("logs/.last_weather_channel")
+    
     with tempfile.TemporaryDirectory() as tmpdir:
         bot = WeatherBot(port=None, announce=True, debug=False)
         bot.mesh.start()
@@ -81,12 +91,14 @@ def test_wether_pattern_in_parse_command():
     """Test that #wether is properly stripped from commands"""
     bot = WeatherBot(port=None, debug=False)
     
-    # Test various formats
+    # Test various formats including edge cases
     test_cases = [
         ("wx #wether London", "London"),
         ("wx on #wether London", "London"),
         ("weather #wether York", "York"),
         ("#wether wx Manchester", "Manchester"),
+        ("on#wether wx London", "London"),  # No space after 'on'
+        ("weather channel wx York", "York"),  # 'weather channel' at start
     ]
     
     for input_text, expected_location in test_cases:
@@ -98,6 +110,10 @@ def test_wether_pattern_in_parse_command():
 
 def test_wether_coexists_with_weather():
     """Test that #wether detection doesn't break #weather detection"""
+    # Clean up any persisted channel from previous tests
+    if os.path.exists("logs/.last_weather_channel"):
+        os.remove("logs/.last_weather_channel")
+    
     with tempfile.TemporaryDirectory() as tmpdir:
         bot1 = WeatherBot(port=None, announce=True, debug=False)
         bot1.mesh.start()
@@ -108,6 +124,10 @@ def test_wether_coexists_with_weather():
         assert bot1._announce_channel_idx == 1, "Should use channel 1"
         
         bot1.mesh.stop()
+        
+        # Clean up persisted channel before next test
+        if os.path.exists("logs/.last_weather_channel"):
+            os.remove("logs/.last_weather_channel")
         
         # Create a new bot and detect #wether on channel 2
         bot2 = WeatherBot(port=None, announce=True, debug=False)

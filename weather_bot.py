@@ -737,8 +737,8 @@ class WeatherBot:
         # Common patterns: "on #weather", "#weather", "#wx", "#wether", "weather channel"
         text_cleaned = text.strip()
         # Combined regex for better performance: matches "on #weather", "#weather", "#wx", "#wether", "weather channel"
-        # Pattern handles: "on #<channel>", "#<channel>", or "weather channel" followed by optional whitespace
-        text_cleaned = re.sub(r'(?:(?:on\s+)?#(?:weather|wx|wether)\s*)|(?:\s+weather\s+channel\b)', '', text_cleaned, flags=re.IGNORECASE)
+        # Pattern handles: "on #<channel>" (with or without space), "#<channel>", or "weather channel"
+        text_cleaned = re.sub(r'(?:on\s*)?#(?:weather|wx|wether)\s*|weather\s+channel\s*', '', text_cleaned, flags=re.IGNORECASE)
         text_cleaned = text_cleaned.strip()
         
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
