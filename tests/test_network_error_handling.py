@@ -31,7 +31,7 @@ def test_connection_error_handling():
         )
 
         result = bot._get_weather("London")
-        expected_msg = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
+        expected_msg = "Sorry, I didn't get that due to network problems. But don't worry, hit me with it again!"
 
         assert result == expected_msg, f"Expected: {expected_msg}, Got: {result}"
         print(f"✓ ConnectionError returns user-friendly message")
@@ -93,7 +93,7 @@ def test_network_error_after_geocoding():
         ]
 
         result = bot._get_weather("York")
-        expected_msg = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
+        expected_msg = "Sorry, I didn't get that due to network problems. But don't worry, hit me with it again!"
 
         assert result == expected_msg, f"Expected: {expected_msg}, Got: {result}"
         print(f"✓ Network error during weather fetch returns user-friendly message")

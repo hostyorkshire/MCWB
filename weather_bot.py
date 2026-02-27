@@ -1238,7 +1238,7 @@ class WeatherBot:
             if isinstance(e, requests.exceptions.HTTPError):
                 return f"Weather service error: {e}"
             # All other RequestException errors are network-related
-            return "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
+            return "Sorry, I didn't get that due to network problems. But don't worry, hit me with it again!"
         except Exception as e:
             self.error_logger.error(f"Error getting weather for {location}: {e}")
             return f"Weather error: {e}"
