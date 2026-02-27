@@ -53,7 +53,10 @@ if [ -z "$VIRTUAL_ENV" ]; then
         else
             echo "⚠️  Dependencies not installed in venv"
             echo "   Installing dependencies in virtual environment..."
-            ./venv/bin/pip install -r requirements.txt
+            if ! ./venv/bin/pip install -r requirements.txt; then
+                echo "❌ Failed to install dependencies"
+                exit 1
+            fi
             USE_VENV=true
             PYTHON_PATH="$INSTALL_DIR/venv/bin/python3"
         fi
