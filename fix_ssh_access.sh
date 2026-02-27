@@ -158,7 +158,8 @@ echo "Option 2: Disable firewall completely"
 echo "   This will disable all firewall protection."
 echo ""
 
-echo "Would you like to fix this now? (y/n) " -r
+read -p "Would you like to fix this now? (y/n) " -n 1 -r REPLY
+echo ""
 echo ""
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then

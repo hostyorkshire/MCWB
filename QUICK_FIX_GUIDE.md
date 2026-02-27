@@ -1,6 +1,33 @@
 # QUICK FIX GUIDE
 
-This guide provides fast solutions for the two most common issues.
+This guide provides fast solutions for the most common issues.
+
+## 🚨 EMERGENCY: Can't SSH Into Pi AND/OR Can't See Dashboard
+
+### Symptom
+- Cannot SSH into your Raspberry Pi
+- Cannot access dashboard at http://[your-pi-ip]:5000
+- One or both services not working
+
+### Ultra-Quick Fix (Handles Both Issues)
+```bash
+cd ~/MCWB
+./fix_access_issues.sh
+```
+
+This master script will:
+- ✅ Diagnose SSH access issues (firewall, service status)
+- ✅ Diagnose dashboard issues (service, firewall, dependencies)
+- ✅ Automatically fix both problems with one command
+- ✅ Provide clear status and next steps
+
+**This is the fastest way to restore access!** It runs comprehensive checks and fixes everything automatically.
+
+### Individual Issue Scripts
+
+If you only have one specific issue, you can use these targeted scripts:
+
+---
 
 ## Issue 1: Dashboard URL Not Working (e.g., http://192.168.1.109:5000)
 
