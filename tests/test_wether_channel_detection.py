@@ -99,6 +99,7 @@ def test_wether_pattern_in_parse_command():
         ("#wether wx Manchester", "Manchester"),
         ("on#wether wx London", "London"),  # No space after 'on'
         ("weather channel wx York", "York"),  # 'weather channel' at start
+        ("on weather channel wx Leeds", "Leeds"),  # 'on weather channel' pattern
     ]
     
     for input_text, expected_location in test_cases:

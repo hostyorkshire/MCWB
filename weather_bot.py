@@ -734,11 +734,11 @@ class WeatherBot:
         Channel indicators like "#weather", "#wx", "on #weather" are automatically filtered out.
         """
         # Remove channel indicators before parsing
-        # Common patterns: "on #weather", "#weather", "#wx", "#wether", "weather channel"
+        # Common patterns: "on #weather", "#weather", "#wx", "#wether", "weather channel", "on weather channel"
         text_cleaned = text.strip()
-        # Combined regex for better performance: matches "on #weather", "#weather", "#wx", "#wether", "weather channel"
-        # Pattern handles: "on #<channel>" (with or without space), "#<channel>", or "weather channel"
-        text_cleaned = re.sub(r'(?:on\s*)?#(?:weather|wx|wether)\s*|weather\s+channel\s*', '', text_cleaned, flags=re.IGNORECASE)
+        # Combined regex for better performance
+        # Matches: "on #<channel>" (with/without space), "#<channel>", "on weather channel", "weather channel"
+        text_cleaned = re.sub(r'(?:on\s*#(?:weather|wx|wether)|on\s+weather\s+channel|#(?:weather|wx|wether)|weather\s+channel)\s*', '', text_cleaned, flags=re.IGNORECASE)
         text_cleaned = text_cleaned.strip()
         
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
