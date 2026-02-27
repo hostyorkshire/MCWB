@@ -2,12 +2,14 @@
 
 This guide provides fast solutions for the two most common issues.
 
-## Issue 1: Dashboard URL Not Working (http://192.168.1.109:5000)
+## Issue 1: Dashboard URL Not Working (e.g., http://192.168.1.109:5000)
 
 ### Symptom
 - Dashboard **was working** before on that IP and port
 - Now the URL doesn't open in browser
 - You just get "can't connect" or similar error
+
+**Note:** The IP address 192.168.1.109 is just an example. Your dashboard may be on a different IP address.
 
 ### Quick Fix
 ```bash

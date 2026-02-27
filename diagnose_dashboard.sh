@@ -2,7 +2,7 @@
 # Diagnostic script to identify and fix dashboard connectivity issues
 # Run this if you cannot access the dashboard at http://192.168.1.109:5000
 
-set -e
+# Note: No 'set -e' here - we want to continue through all checks even if some fail
 
 echo "========================================================================"
 echo "MCWB Dashboard Connectivity Diagnostic"
@@ -190,10 +190,13 @@ else
     echo -e "${RED}✗${NC} Required Python packages are missing"
     ISSUES_FOUND=$((ISSUES_FOUND + 1))
     echo ""
-    read -r -p "Install Python dependencies? [Y/n] " -n 1
+    read -r -p "Install Python dependencies? [Y/n] "
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-        pip3 install --user flask flask-cors
+        # Get script directory to find requirements.txt
+        SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+        cd "$SCRIPT_DIR" || exit 1
+        pip3 install --user -r requirements.txt
         echo -e "${GREEN}✓${NC} Dependencies installed"
         FIXES_APPLIED=$((FIXES_APPLIED + 1))
         echo ""

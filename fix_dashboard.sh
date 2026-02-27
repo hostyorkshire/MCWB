@@ -94,10 +94,12 @@ else
                 echo "❌ ISSUE FOUND: Missing Python dependencies"
                 echo ""
                 echo "FIX: Install dependencies and restart:"
-                read -r -p "Install dependencies now? [Y/n] " -n 1
+                read -r -p "Install dependencies now? [Y/n] "
                 echo ""
                 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-                    cd ~/MCWB || exit 1
+                    # Get script directory to find requirements.txt
+                    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+                    cd "$SCRIPT_DIR" || exit 1
                     pip3 install --user -r requirements.txt
                     echo ""
                     echo "Restarting service..."
