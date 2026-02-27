@@ -2,6 +2,14 @@
 
 A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time.
 
+## 🔓 No Login or Authentication Required
+
+**Important:** The dashboard does NOT have a login system. Simply navigate to the dashboard URL in your web browser to access it instantly - no username or password needed!
+
+If you're experiencing "cannot login" issues, you're actually facing a **connectivity problem** (cannot connect/access). See the [Troubleshooting Connection Issues](#troubleshooting-connection-issues) section below.
+
+---
+
 ## 🚀 Super Quick Start (3 Simple Steps)
 
 **Can't connect to your dashboard?** Follow these steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.

@@ -2,6 +2,14 @@
 
 **Can't connect to your Web Dashboard?** This guide will get you connected in 5 minutes.
 
+## 🔓 IMPORTANT: No Login Required!
+
+**There is NO login, username, or password for the dashboard.** Simply open the URL in your web browser and you're in!
+
+If you're seeing "cannot login" or similar messages, you're actually experiencing a **connectivity issue** (cannot connect/access), not a login problem. Follow the steps below to fix connectivity.
+
+---
+
 ## 🎛️ NEW: Unified Service Manager
 
 **The easiest way to set up everything:**

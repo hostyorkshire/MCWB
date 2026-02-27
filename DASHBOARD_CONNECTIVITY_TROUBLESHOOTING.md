@@ -1,5 +1,13 @@
 # Dashboard Connectivity Troubleshooting
 
+## 🔓 First: Understand There's NO Login System
+
+**The dashboard does NOT have any login, username, or password!** You simply open the URL in your browser and it loads instantly.
+
+When people say "I cannot login," they actually mean "I cannot connect to" or "I cannot access" the dashboard. This is a **connectivity issue**, not a login issue.
+
+---
+
 ## Issue: Cannot Access Dashboard at 192.168.1.109:5000
 
 If you're unable to connect to your web dashboard, follow these diagnostic steps **in order**:
