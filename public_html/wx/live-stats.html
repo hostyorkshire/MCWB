@@ -102,6 +102,135 @@
             60% { content: '..'; }
             80%, 100% { content: '...'; }
         }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-card {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .channel-list, .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .channel-item, .user-item {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s ease;
+        }
+
+        .channel-item:hover, .user-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .channel-name, .user-name {
+            font-weight: bold;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .channel-time, .user-time {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .chart-bar {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chart-label {
+            min-width: 120px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .chart-bar-fill {
+            flex: 1;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            height: 30px;
+            border-radius: 4px;
+            position: relative;
+            transition: width 0.3s ease;
+        }
+
+        .chart-value {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-online {
+            background-color: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .status-offline {
+            background-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -143,20 +272,56 @@
     <main>
         <div class="content-wrapper">
             <h1>Live Stats</h1>
-            <p>Real-time weather data from the bot's API endpoint.</p>
+            <p>Real-time statistics from the MeshCore Weather Bot. Data refreshes automatically every 30 seconds.</p>
 
             <div class="info-box">
                 <h3><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> Live Data Feed</h3>
-                <p>This page displays live weather statistics fetched from the bot's API endpoint. The data refreshes automatically every 5 minutes.</p>
+                <p>This page displays live statistics from the bot as users send commands. Watch the data update in real-time!</p>
             </div>
 
-            <div id="weather-container">
-                <div class="loading">Loading weather data</div>
+            <!-- Bot Status Overview -->
+            <div id="status-container">
+                <div class="loading">Loading bot status</div>
+            </div>
+
+            <!-- Usage Statistics -->
+            <div id="stats-container">
+                <div class="loading">Loading usage statistics</div>
+            </div>
+
+            <!-- Active Channels -->
+            <div id="channels-container">
+                <div class="loading">Loading active channels</div>
+            </div>
+
+            <!-- Recent Users -->
+            <div id="users-container">
+                <div class="loading">Loading recent users</div>
+            </div>
+
+            <!-- Daily Requests -->
+            <div id="daily-container">
+                <div class="loading">Loading daily requests</div>
+            </div>
+
+            <!-- Hourly Requests -->
+            <div id="hourly-container">
+                <div class="loading">Loading hourly requests</div>
+            </div>
+
+            <!-- Top Locations -->
+            <div id="locations-container">
+                <div class="loading">Loading top locations</div>
+            </div>
+
+            <!-- Cloudflare Tunnel Status -->
+            <div id="cloudflare-container">
+                <div class="loading">Loading Cloudflare tunnel status</div>
             </div>
 
             <div class="info-box">
                 <h3><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"> Configuration</h3>
-                <p>The widget automatically fetches data from: <code>https://bot.intergalactic.it.com/api/data</code></p>
+                <p>The widget automatically fetches data from: <code>https://bot.intergalactic.it.com/api/</code></p>
                 <p style="margin-top: 1rem;">To use your own API endpoint, modify the <code>apiUrl</code> parameter in the JavaScript code below.</p>
             </div>
         </div>
@@ -175,106 +340,499 @@
 
     <script src="js/main.js"></script>
     <script>
-        // Modern approach with better error handling
-        class WeatherWidget {
-            constructor(apiUrl, containerId) {
-                this.apiUrl = apiUrl;
-                this.container = document.getElementById(containerId);
-                this.refreshInterval = 300000; // 5 minutes
-                this.intervalId = null;
+        // API base URL
+        const API_BASE_URL = 'https://bot.intergalactic.it.com/api';
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+
+        // Utility function to format timestamps
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Never';
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleString();
+            } catch (e) {
+                return timestamp;
             }
+        }
 
-            async fetchData() {
-                try {
-                    const response = await fetch(this.apiUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    this.render(data);
-                } catch (error) {
-                    this.renderError(error);
-                }
+        // Utility function to format relative time
+        function formatRelativeTime(timestamp) {
+            if (!timestamp) return 'Never';
+            try {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} min ago`;
+                
+                const diffHours = Math.floor(diffMins / 60);
+                if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                
+                const diffDays = Math.floor(diffHours / 24);
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } catch (e) {
+                return timestamp;
             }
+        }
 
-            render(data) {
-                // Create elements safely to prevent XSS
+        // Fetch and render bot status
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/data`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('status-container');
                 const widget = document.createElement('div');
                 widget.className = 'weather-widget';
                 
                 const heading = document.createElement('h3');
-                heading.textContent = 'Live Weather Data';
+                heading.innerHTML = '🤖 Bot Status';
                 widget.appendChild(heading);
                 
-                const weatherInfo = document.createElement('div');
-                weatherInfo.className = 'weather-info';
+                const statsGrid = document.createElement('div');
+                statsGrid.className = 'stats-grid';
                 
-                Object.entries(data).forEach(([key, value]) => {
-                    const item = document.createElement('div');
-                    item.className = 'weather-item';
-                    
-                    const keyDiv = document.createElement('div');
-                    keyDiv.className = 'weather-item-key';
-                    keyDiv.textContent = key.replace(/_/g, ' ');
-                    item.appendChild(keyDiv);
-                    
-                    const valueDiv = document.createElement('div');
-                    valueDiv.className = 'weather-item-value';
-                    valueDiv.textContent = String(value);
-                    item.appendChild(valueDiv);
-                    
-                    weatherInfo.appendChild(item);
+                const statusCard = document.createElement('div');
+                statusCard.className = 'stat-card';
+                statusCard.innerHTML = `
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value"><span class="status-indicator status-${data.status === 'running' ? 'online' : 'offline'}"></span>${data.status || 'Unknown'}</div>
+                `;
+                statsGrid.appendChild(statusCard);
+                
+                const lastUpdateCard = document.createElement('div');
+                lastUpdateCard.className = 'stat-card';
+                lastUpdateCard.innerHTML = `
+                    <div class="stat-label">Last Updated</div>
+                    <div class="stat-value" style="font-size: 1.2rem;">${formatRelativeTime(data.last_updated)}</div>
+                `;
+                statsGrid.appendChild(lastUpdateCard);
+                
+                widget.appendChild(statsGrid);
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('status-container', 'Bot Status', error);
+            }
+        }
+
+        // Fetch and render usage statistics
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('stats-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '📊 Usage Statistics';
+                widget.appendChild(heading);
+                
+                const statsGrid = document.createElement('div');
+                statsGrid.className = 'stats-grid';
+                
+                const cards = [
+                    { label: 'Total Requests', value: data.total_requests || 0 },
+                    { label: 'Total Errors', value: data.total_errors || 0 },
+                    { label: 'Success Rate', value: `${data.success_rate || 0}%` }
+                ];
+                
+                cards.forEach(card => {
+                    const statCard = document.createElement('div');
+                    statCard.className = 'stat-card';
+                    statCard.innerHTML = `
+                        <div class="stat-label">${card.label}</div>
+                        <div class="stat-value">${card.value}</div>
+                    `;
+                    statsGrid.appendChild(statCard);
                 });
                 
-                widget.appendChild(weatherInfo);
+                widget.appendChild(statsGrid);
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('stats-container', 'Usage Statistics', error);
+            }
+        }
+
+        // Fetch and render active channels
+        async function fetchChannels() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/channels`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('channels-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '📻 Active Channels';
+                widget.appendChild(heading);
+                
+                if (!data.channels || data.channels.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = 'No active channels yet. Send a command to the bot to see channels appear here!';
+                    widget.appendChild(emptyState);
+                } else {
+                    const channelList = document.createElement('ul');
+                    channelList.className = 'channel-list';
+                    
+                    data.channels.forEach(channel => {
+                        const item = document.createElement('li');
+                        item.className = 'channel-item';
+                        item.innerHTML = `
+                            <span class="channel-name">${channel.name}</span>
+                            <span class="channel-time">${formatRelativeTime(channel.last_used)}</span>
+                        `;
+                        channelList.appendChild(item);
+                    });
+                    
+                    widget.appendChild(channelList);
+                }
+                
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('channels-container', 'Active Channels', error);
+            }
+        }
+
+        // Fetch and render recent users
+        async function fetchRecentUsers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/recent_users`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('users-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '👥 Recent Users';
+                widget.appendChild(heading);
+                
+                if (!data.users || data.users.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = 'No users yet. Send a weather command to appear here!';
+                    widget.appendChild(emptyState);
+                } else {
+                    const userList = document.createElement('ul');
+                    userList.className = 'user-list';
+                    
+                    data.users.forEach(user => {
+                        const item = document.createElement('li');
+                        item.className = 'user-item';
+                        item.innerHTML = `
+                            <span class="user-name">${user.user}</span>
+                            <span class="user-time">${formatRelativeTime(user.timestamp)}</span>
+                        `;
+                        userList.appendChild(item);
+                    });
+                    
+                    widget.appendChild(userList);
+                }
+                
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('users-container', 'Recent Users', error);
+            }
+        }
+
+        // Fetch and render daily requests
+        async function fetchDailyRequests() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/daily`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('daily-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '📅 Daily Requests (Last 7 Days)';
+                widget.appendChild(heading);
+                
+                if (!data || data.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = 'No request data available yet.';
+                    widget.appendChild(emptyState);
+                } else {
+                    const maxCount = Math.max(...data.map(d => d.count), 1);
+                    
+                    data.forEach(day => {
+                        const barContainer = document.createElement('div');
+                        barContainer.className = 'chart-bar';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'chart-label';
+                        label.textContent = day.date;
+                        barContainer.appendChild(label);
+                        
+                        const barWrapper = document.createElement('div');
+                        barWrapper.style.flex = '1';
+                        barWrapper.style.position = 'relative';
+                        
+                        const bar = document.createElement('div');
+                        bar.className = 'chart-bar-fill';
+                        bar.style.width = `${(day.count / maxCount) * 100}%`;
+                        bar.innerHTML = `<span class="chart-value">${day.count}</span>`;
+                        
+                        barWrapper.appendChild(bar);
+                        barContainer.appendChild(barWrapper);
+                        widget.appendChild(barContainer);
+                    });
+                }
+                
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('daily-container', 'Daily Requests', error);
+            }
+        }
+
+        // Fetch and render hourly requests
+        async function fetchHourlyRequests() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/hourly`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('hourly-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '⏰ Hourly Requests (Last 24 Hours)';
+                widget.appendChild(heading);
+                
+                if (!data || data.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = 'No hourly data available yet.';
+                    widget.appendChild(emptyState);
+                } else {
+                    const maxCount = Math.max(...data.map(d => d.count), 1);
+                    
+                    // Show only last 12 hours for better readability
+                    const recentData = data.slice(-12);
+                    
+                    recentData.forEach(hour => {
+                        const barContainer = document.createElement('div');
+                        barContainer.className = 'chart-bar';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'chart-label';
+                        // Format hour for display
+                        const hourParts = hour.hour.split(' ');
+                        label.textContent = hourParts.length > 1 ? hourParts[1] : hour.hour;
+                        barContainer.appendChild(label);
+                        
+                        const barWrapper = document.createElement('div');
+                        barWrapper.style.flex = '1';
+                        barWrapper.style.position = 'relative';
+                        
+                        const bar = document.createElement('div');
+                        bar.className = 'chart-bar-fill';
+                        bar.style.width = `${(hour.count / maxCount) * 100}%`;
+                        bar.innerHTML = `<span class="chart-value">${hour.count}</span>`;
+                        
+                        barWrapper.appendChild(bar);
+                        barContainer.appendChild(barWrapper);
+                        widget.appendChild(barContainer);
+                    });
+                }
+                
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('hourly-container', 'Hourly Requests', error);
+            }
+        }
+
+        // Fetch and render top locations
+        async function fetchTopLocations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/locations`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('locations-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '🌍 Top Requested Locations';
+                widget.appendChild(heading);
+                
+                if (!data || data.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = 'No location data available yet.';
+                    widget.appendChild(emptyState);
+                } else {
+                    const maxCount = Math.max(...data.map(d => d.count), 1);
+                    
+                    data.forEach(loc => {
+                        const barContainer = document.createElement('div');
+                        barContainer.className = 'chart-bar';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'chart-label';
+                        label.textContent = loc.location;
+                        barContainer.appendChild(label);
+                        
+                        const barWrapper = document.createElement('div');
+                        barWrapper.style.flex = '1';
+                        barWrapper.style.position = 'relative';
+                        
+                        const bar = document.createElement('div');
+                        bar.className = 'chart-bar-fill';
+                        bar.style.width = `${(loc.count / maxCount) * 100}%`;
+                        bar.innerHTML = `<span class="chart-value">${loc.count}</span>`;
+                        
+                        barWrapper.appendChild(bar);
+                        barContainer.appendChild(barWrapper);
+                        widget.appendChild(barContainer);
+                    });
+                }
+                
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('locations-container', 'Top Locations', error);
+            }
+        }
+
+        // Fetch and render Cloudflare tunnel status
+        async function fetchCloudflareStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cloudflare/status`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('cloudflare-container');
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.innerHTML = '☁️ Cloudflare Tunnel Status';
+                widget.appendChild(heading);
+                
+                if (!data.installed) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = data.message || 'Cloudflare Tunnel is not installed';
+                    widget.appendChild(emptyState);
+                } else {
+                    const statsGrid = document.createElement('div');
+                    statsGrid.className = 'stats-grid';
+                    
+                    const statusCard = document.createElement('div');
+                    statusCard.className = 'stat-card';
+                    statusCard.innerHTML = `
+                        <div class="stat-label">Connection Status</div>
+                        <div class="stat-value" style="font-size: 1.5rem;">
+                            <span class="status-indicator status-${data.connected ? 'online' : 'offline'}"></span>
+                            ${data.connected ? 'Connected' : 'Disconnected'}
+                        </div>
+                    `;
+                    statsGrid.appendChild(statusCard);
+                    
+                    if (data.tunnel_name) {
+                        const nameCard = document.createElement('div');
+                        nameCard.className = 'stat-card';
+                        nameCard.innerHTML = `
+                            <div class="stat-label">Tunnel Name</div>
+                            <div class="stat-value" style="font-size: 1.2rem;">${data.tunnel_name}</div>
+                        `;
+                        statsGrid.appendChild(nameCard);
+                    }
+                    
+                    if (data.connections !== undefined) {
+                        const connCard = document.createElement('div');
+                        connCard.className = 'stat-card';
+                        connCard.innerHTML = `
+                            <div class="stat-label">Active Connections</div>
+                            <div class="stat-value">${data.connections}</div>
+                        `;
+                        statsGrid.appendChild(connCard);
+                    }
+                    
+                    if (data.uptime) {
+                        const uptimeCard = document.createElement('div');
+                        uptimeCard.className = 'stat-card';
+                        uptimeCard.innerHTML = `
+                            <div class="stat-label">Uptime</div>
+                            <div class="stat-value" style="font-size: 1.5rem;">${data.uptime}</div>
+                        `;
+                        statsGrid.appendChild(uptimeCard);
+                    }
+                    
+                    widget.appendChild(statsGrid);
+                    
+                    if (data.tunnel_url) {
+                        const urlInfo = document.createElement('p');
+                        urlInfo.style.marginTop = '1rem';
+                        urlInfo.style.textAlign = 'center';
+                        urlInfo.innerHTML = `<strong>Tunnel URL:</strong> <code>${data.tunnel_url}</code>`;
+                        widget.appendChild(urlInfo);
+                    }
+                }
                 
                 const lastUpdated = document.createElement('p');
                 lastUpdated.className = 'last-updated';
                 lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
                 widget.appendChild(lastUpdated);
                 
-                this.container.replaceChildren(widget);
-            }
-
-            renderError(error) {
-                // Create error elements safely to prevent XSS
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error';
-                
-                const errorPara = document.createElement('p');
-                errorPara.textContent = '⚠️ Unable to fetch weather data';
-                errorDiv.appendChild(errorPara);
-                
-                const errorSmall = document.createElement('small');
-                errorSmall.textContent = error.message;
-                errorDiv.appendChild(errorSmall);
-                
-                this.container.replaceChildren(errorDiv);
-            }
-
-            start() {
-                this.fetchData();
-                this.intervalId = setInterval(() => this.fetchData(), this.refreshInterval);
-            }
-
-            stop() {
-                if (this.intervalId) {
-                    clearInterval(this.intervalId);
-                    this.intervalId = null;
-                }
+                container.replaceChildren(widget);
+            } catch (error) {
+                renderError('cloudflare-container', 'Cloudflare Tunnel Status', error);
             }
         }
 
-        // Initialize the widget
-        const widget = new WeatherWidget('https://bot.intergalactic.it.com/api/data', 'weather-container');
-        widget.start();
+        // Render error message
+        function renderError(containerId, title, error) {
+            const container = document.getElementById(containerId);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `
+                <p>⚠️ Unable to fetch ${title}</p>
+                <small>${error.message}</small>
+            `;
+            container.replaceChildren(errorDiv);
+        }
+
+        // Fetch all data
+        function fetchAllData() {
+            fetchStatus();
+            fetchStats();
+            fetchChannels();
+            fetchRecentUsers();
+            fetchDailyRequests();
+            fetchHourlyRequests();
+            fetchTopLocations();
+            fetchCloudflareStatus();
+        }
+
+        // Initialize on page load
+        fetchAllData();
+        
+        // Refresh data periodically
+        setInterval(fetchAllData, REFRESH_INTERVAL);
     </script>
 </body>
 </html>
