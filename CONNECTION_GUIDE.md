@@ -337,4 +337,4 @@ The dashboard will display the connection URL when it starts. Press Ctrl+C to st
 
 - Full documentation: [WEB_DASHBOARD.md](WEB_DASHBOARD.md)
 - General troubleshooting: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- Open an issue: https://github.com/yourusername/MCWB/issues
+- Open an issue: https://github.com/hostyorkshire/MCWB/issues

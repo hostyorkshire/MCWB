@@ -22,7 +22,7 @@ sudo apt-get install -y python3 python3-pip git
 ### 3. Clone Repository
 ```bash
 cd ~
-git clone https://github.com/yourusername/MCWB.git
+git clone https://github.com/hostyorkshire/MCWB.git
 cd MCWB
 ```
 

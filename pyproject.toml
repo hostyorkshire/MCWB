@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
 authors = [
-    {name = "yourusername"}
+    {name = "hostyorkshire"}
 ]
 keywords = ["meshtastic", "meshcore", "weather", "lora", "mesh-network", "raspberry-pi"]
 classifiers = [
@@ -33,10 +33,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/MCWB"
+Homepage = "https://github.com/hostyorkshire/MCWB"
 Documentation = "https://mcwb.netlify.app"
-Repository = "https://github.com/yourusername/MCWB"
-Issues = "https://github.com/yourusername/MCWB/issues"
+Repository = "https://github.com/hostyorkshire/MCWB"
+Issues = "https://github.com/hostyorkshire/MCWB/issues"
 
 [tool.black]
 line-length = 120
