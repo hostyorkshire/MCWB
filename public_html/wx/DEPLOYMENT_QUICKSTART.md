@@ -10,7 +10,7 @@
    - Go to repository Settings → Pages
    - Source: Deploy from a branch
    - Branch: `main` (or your branch)
-   - Folder: `/website`
+   - Folder: `/public_html/wx`
    - Click Save
 
 3. **Access your site:**
@@ -28,19 +28,19 @@
 6. Configure build settings (should auto-detect from netlify.toml):
    - Base directory: (leave empty)
    - Build command: (leave empty)
-   - Publish directory: `website`
+   - Publish directory: `public_html/wx`
 7. Click "Deploy site"
 8. Your site is live and will automatically update on every git push!
 
 **Drag & Drop (Manual deployment - no auto-updates):**
 1. Go to: https://app.netlify.com/drop
-2. Drag the entire `website` folder
+2. Drag the entire `public_html/wx` folder
 3. Your site is live instantly! (Note: You'll need to manually redeploy for updates)
 
 **CLI Deployment:**
 ```bash
 npm install -g netlify-cli
-cd website
+cd public_html/wx
 netlify deploy --prod
 ```
 
@@ -49,10 +49,10 @@ netlify deploy --prod
 **Copy to web server:**
 ```bash
 # Via rsync
-rsync -avz website/ user@yourserver.com:/var/www/html/mcwb/
+rsync -avz public_html/wx/ user@yourserver.com:/var/www/html/mcwb/
 
 # Via SCP
-scp -r website/* user@yourserver.com:/var/www/html/mcwb/
+scp -r public_html/wx/* user@yourserver.com:/var/www/html/mcwb/
 ```
 
 **Basic Apache config:**
@@ -77,7 +77,7 @@ server {
 ### Option 4: Test Locally First
 
 ```bash
-cd website
+cd public_html/wx
 python3 -m http.server 8000
 # Open: http://localhost:8000
 ```
@@ -85,7 +85,7 @@ python3 -m http.server 8000
 ## Custom Domain Setup
 
 ### With GitHub Pages:
-1. Add `CNAME` file to website folder with your domain
+1. Add `CNAME` file to public_html/wx folder with your domain
 2. Add DNS record: `CNAME` → `yourusername.github.io`
 
 ### With Netlify:

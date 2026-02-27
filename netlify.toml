@@ -4,7 +4,7 @@
 [build]
   # The website directory contains all the static HTML/CSS/JS files
   # No build command needed as this is a pure static site
-  publish = "website"
+  publish = "public_html/wx"
 
 # Redirect rules (optional)
 # Uncomment if you want to enable redirects

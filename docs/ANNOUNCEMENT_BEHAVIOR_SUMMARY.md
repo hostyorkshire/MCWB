@@ -75,9 +75,9 @@ python3 weather_bot.py --announce --weather-channel-idx 2
 1. **README.md** - Emphasized that bot ALWAYS announces on boot
 2. **docs/ANNOUNCEMENT_VERIFICATION.md** - Updated to clarify startup vs periodic behavior
 3. **scripts/demo_announcement_persistence.py** - Updated to show correct behavior
-4. **website/commands.html** - Clarified announcement occurs on startup and periodically
-5. **website/features.html** - Updated feature description
-6. **website/index.html** - Updated feature list
+4. **public_html/wx/commands.html** - Clarified announcement occurs on startup and periodically
+5. **public_html/wx/features.html** - Updated feature description
+6. **public_html/wx/index.html** - Updated feature list
 7. **weather_bot.py** - Updated docstrings and help text
 
 ### No Code Changes Required

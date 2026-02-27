@@ -146,7 +146,7 @@ python3 web_dashboard.py --help
 
 ## Remote Access and Static Website Integration
 
-The MCWB project includes a static documentation website (in the `website/` folder) that includes a Live Dashboard page. This page can connect to your running Web Dashboard API to display real-time data.
+The MCWB project includes a static documentation website (in the `public_html/wx/` folder) that includes a Live Dashboard page. This page can connect to your running Web Dashboard API to display real-time data.
 
 ### Accessing Dashboard from Static Website
 

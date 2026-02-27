@@ -36,7 +36,7 @@ Example tunnel URL: `https://mcwb-dashboard.yourdomain.com`
    ```bash
    # On your development machine
    # Adjust path if your repo is installed elsewhere
-   cd ~/MCWB/website/js
+   cd ~/MCWB/public_html/wx/js
    nano dashboard.js  # or use your preferred editor
    ```
 
@@ -80,7 +80,7 @@ Example tunnel URL: `https://mcwb-dashboard.yourdomain.com`
 
 ```bash
 # Commit your changes
-git add website/js/dashboard.js
+git add public_html/wx/js/dashboard.js
 git commit -m "Configure Cloudflare Tunnel URL for live dashboard"
 git push
 
