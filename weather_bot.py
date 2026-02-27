@@ -162,6 +162,10 @@ class WeatherBot:
         # 2. Persisted weather channel from previous auto-detection
         # 3. Default to channel 0
         self.weather_channel_idx = weather_channel_idx
+        # Track channel_idx to channel name mapping for auto-detection
+        self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
+        self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
+        
         if weather_channel_idx is not None:
             self._announce_channel_idx = weather_channel_idx
         else:
@@ -174,9 +178,6 @@ class WeatherBot:
             else:
                 self._announce_channel_idx = 0  # Default to channel 0 if nothing persisted
         self.announce_channel = announce_channel
-        # Track channel_idx to channel name mapping for auto-detection
-        self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")
-        self._weather_channel_detected = False  # Flag to track if #weather channel has been detected
         # Country code for filtering geocoding results (e.g., "GB", "US", "FR")
         self.country = country
         # Channel verification mode - shows diagnostic info about encrypted messages
