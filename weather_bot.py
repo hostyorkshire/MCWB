@@ -655,9 +655,6 @@ class WeatherBot:
             self.logger.info(f"Announcements will be sent to channel_idx={channel_idx} (detected from weather requests)")
             # Persist the detected channel for future restarts
             self._save_weather_channel(channel_idx)
-        elif self.weather_channel_idx is None and not self._weather_channel_detected:
-            # Fallback: remember this channel only if no weather channel detected yet
-            self._announce_channel_idx = channel_idx
 
         # Process weather command if found
         if location:
