@@ -55,7 +55,21 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Enable CORS for all routes to allow static website to fetch data
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+# Note: Wildcard ('*') is used for maximum flexibility during development and
+# to support any Cloudflare Tunnel subdomain. For production-only deployments,
+# remove '*' and list only specific origins for better security.
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://wx.intergalactic.it.com",  # Production cPanel site
+            "http://wx.intergalactic.it.com",   # Allow HTTP variant  
+            "*"                                  # Allow all (for dev & tunnel flexibility)
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Accept"],
+        "supports_credentials": False
+    }
+})
 
 # Get the logs directory
 LOGS_DIR = Path(__file__).parent / "logs"
