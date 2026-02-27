@@ -362,6 +362,10 @@
                 const date = new Date(timestamp);
                 const now = new Date();
                 const diffMs = now - date;
+                
+                // Handle future timestamps or negative differences
+                if (diffMs < 0) return 'Just now';
+                
                 const diffMins = Math.floor(diffMs / 60000);
                 
                 if (diffMins < 1) return 'Just now';
@@ -588,7 +592,9 @@
                         
                         const bar = document.createElement('div');
                         bar.className = 'chart-bar-fill';
-                        bar.style.width = `${(day.count / maxCount) * 100}%`;
+                        // Show minimum width of 5% for zero counts to indicate presence
+                        const barWidth = day.count === 0 ? 5 : (day.count / maxCount) * 100;
+                        bar.style.width = `${barWidth}%`;
                         bar.innerHTML = `<span class="chart-value">${day.count}</span>`;
                         
                         barWrapper.appendChild(bar);
@@ -616,7 +622,7 @@
                 widget.className = 'weather-widget';
                 
                 const heading = document.createElement('h3');
-                heading.innerHTML = '⏰ Hourly Requests (Last 24 Hours)';
+                heading.innerHTML = '⏰ Hourly Requests (Last 12 Hours)';
                 widget.appendChild(heading);
                 
                 if (!data || data.length === 0) {
@@ -636,7 +642,8 @@
                         
                         const label = document.createElement('div');
                         label.className = 'chart-label';
-                        // Format hour for display
+                        // Format hour for display - expects format "YYYY-MM-DD HH:MM"
+                        // Extract just the time portion (HH:MM) after the space
                         const hourParts = hour.hour.split(' ');
                         label.textContent = hourParts.length > 1 ? hourParts[1] : hour.hour;
                         barContainer.appendChild(label);
@@ -647,7 +654,9 @@
                         
                         const bar = document.createElement('div');
                         bar.className = 'chart-bar-fill';
-                        bar.style.width = `${(hour.count / maxCount) * 100}%`;
+                        // Show minimum width of 5% for zero counts to indicate presence
+                        const barWidth = hour.count === 0 ? 5 : (hour.count / maxCount) * 100;
+                        bar.style.width = `${barWidth}%`;
                         bar.innerHTML = `<span class="chart-value">${hour.count}</span>`;
                         
                         barWrapper.appendChild(bar);
@@ -701,7 +710,9 @@
                         
                         const bar = document.createElement('div');
                         bar.className = 'chart-bar-fill';
-                        bar.style.width = `${(loc.count / maxCount) * 100}%`;
+                        // Show minimum width of 5% for zero counts to indicate presence
+                        const barWidth = loc.count === 0 ? 5 : (loc.count / maxCount) * 100;
+                        bar.style.width = `${barWidth}%`;
                         bar.innerHTML = `<span class="chart-value">${loc.count}</span>`;
                         
                         barWrapper.appendChild(bar);
