@@ -175,7 +175,7 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 # Restrict bot to only respond on channel index 1
 python3 weather_bot.py --channel-idx 1
 
-# Enable periodic announcements every 3 hours
+# Enable periodic announcements every 6 hours
 python3 weather_bot.py --announce
 ```
 

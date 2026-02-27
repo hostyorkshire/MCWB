@@ -9,11 +9,11 @@ The Weather Bot correctly broadcasts announcements on the channel where users ar
 ## Default Configuration
 
 - **Channel**: Adapts to first received message (or channel 0 if no messages)
-- **Interval**: Every 3 hours (10,800 seconds) for periodic announcements
+- **Interval**: Every 6 hours (21,600 seconds) for periodic announcements
 - **Message**: "Hello this is the WX BoT. To get a weather update simply type WX and your location."
 - **Behavior**: 
   - **ALWAYS** sends announcement on startup (if --announce flag is used)
-  - Repeats every 3 hours while running (periodic announcements)
+  - Repeats every 6 hours while running (periodic announcements)
   - Automatically uses the channel where users send commands
   - Timestamp tracking only applies to periodic announcements, NOT startup
 

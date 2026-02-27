@@ -121,7 +121,7 @@ sudo journalctl -u weather_bot -n 50 | grep -i usb
 ## Common Use Cases Documented
 
 1. **Basic headless operation** - Start on boot, run forever
-2. **With periodic announcements** - Send weather updates every 3 hours
+2. **With periodic announcements** - Send weather updates every 6 hours
 3. **Debug mode** - Troubleshooting with verbose logging
 4. **Channel-specific operation** - Restrict to one channel index
 5. **Custom installation paths** - Non-default directories

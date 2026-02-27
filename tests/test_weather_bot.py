@@ -247,7 +247,7 @@ def test_announcement():
     from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE
 
     # Verify constants
-    assert ANNOUNCE_INTERVAL == 3 * 60 * 60, "ANNOUNCE_INTERVAL should be 3 hours"
+    assert ANNOUNCE_INTERVAL == 6 * 60 * 60, "ANNOUNCE_INTERVAL should be 6 hours"
     assert "WX" in ANNOUNCE_MESSAGE, "Announcement should mention WX command"
     print(f"  Announcement message: {ANNOUNCE_MESSAGE}")
     print(f"  Announcement interval: {ANNOUNCE_INTERVAL}s ({ANNOUNCE_INTERVAL // 3600}h)")

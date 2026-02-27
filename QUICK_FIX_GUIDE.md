@@ -85,7 +85,7 @@ cd ~/MCWB
 ```
 
 The service file now includes:
-- `--announce` - Sends announcement on every startup + every 3 hours
+- `--announce` - Sends announcement on every startup + every 6 hours
 - `--reboot-notify` - Sends notification when bot restarts after reboot/crash
 
 **Step 2: Verify it worked**

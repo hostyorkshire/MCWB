@@ -99,7 +99,7 @@ User3 on #alerts channel:  "wx York"      → Gets reply on #alerts
 
 ### Enable Periodic Announcements
 
-The bot can broadcast a welcome/help message every 3 hours so users know it is active:
+The bot can broadcast a welcome/help message every 6 hours so users know it is active:
 
 ```bash
 # Run with announcements enabled
@@ -114,7 +114,7 @@ The announcement message is:
 > 
 > Need help? See commands & more https://tinyurl.com/wxbot"
 
-It is sent immediately on startup and then repeated every 3 hours on whichever channel users are active on.
+It is sent immediately on startup and then repeated every 6 hours on whichever channel users are active on.
 
 #### Announce on a specific channel only
 

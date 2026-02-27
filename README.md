@@ -331,7 +331,7 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 # Enable debug output (shows all protocol frames)
 python3 weather_bot.py -d
 
-# Enable periodic announcements every 3 hours
+# Enable periodic announcements every 6 hours
 python3 weather_bot.py --announce
 
 
@@ -360,7 +360,7 @@ python3 weather_bot.py --weather-channel-idx 2 --announce
   -p PORT, --port PORT    Serial port (e.g. /dev/ttyUSB0). Auto-detects if omitted.
   -b BAUD, --baud BAUD    Baud rate (default: 115200)
   -d, --debug             Enable debug output
-  -a, --announce          Send periodic announcements every 3 hours
+  -a, --announce          Send periodic announcements every 6 hours
   -r, --reboot-notify     Send notification on reboot/restart (useful for detecting power loss or crashes)
   -c CHANNEL_IDX, --channel-idx CHANNEL_IDX
                           Only respond to messages from this channel index (e.g., 1 for #weather)
@@ -383,7 +383,7 @@ The bot can send periodic announcements to let users know it's online and how to
 When you enable announcements with the `--announce` flag:
 
 - The bot **ALWAYS announces on every startup/reboot** to let users know it's operational
-- After startup, the bot announces every **3 hours** during normal operation
+- After startup, the bot announces every **6 hours** during normal operation
 - Announcement timestamps are persisted to disk (`logs/.last_announce`) for tracking periodic announcements only
 - **No code prevents re-announcing** - the bot will announce on every boot, regardless of how recently it last announced
 
