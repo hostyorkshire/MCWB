@@ -73,7 +73,7 @@ def demonstrate_behavior():
         # Simulate message from problem statement
         msg = MeshCoreMessage(sender="M3UXC", content="wx Brighton", message_type="text", channel=None, channel_idx=0)
 
-        print(f"Incoming message:")
+        print("Incoming message:")
         print(f"  Sender: {msg.sender}")
         print(f"  Content: {msg.content}")
         print(f"  Channel: {msg.channel}")

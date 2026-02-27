@@ -43,7 +43,7 @@ def test_single_channel():
 
     # Verify message was sent to the correct channel
     assert len(sent_messages) == 1, f"Expected 1 message, got {len(sent_messages)}"
-    assert sent_messages[0]["channel"] == "weather", f"Expected 'weather' channel"
+    assert sent_messages[0]["channel"] == "weather", "Expected 'weather' channel"
     print("✓ Message sent to 'weather' channel")
     print()
 

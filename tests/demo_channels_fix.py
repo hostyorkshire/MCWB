@@ -65,7 +65,7 @@ def main():
 
         print(f"   ✓ File created: {channels_file}")
         print(f"   ✓ Channels in file: {len(data['channels'])}")
-        print(f"   ✓ Dashboard will display:")
+        print("   ✓ Dashboard will display:")
 
         display_channels = []
         for ch in data["channels"]:

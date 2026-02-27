@@ -36,9 +36,9 @@ def test_announcement_goes_to_weather_channel():
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(old_time)
 
-    print(f"  Configured weather_channel_idx: 1")
+    print("  Configured weather_channel_idx: 1")
     print(f"  Internal _announce_channel_idx: {bot._announce_channel_idx}")
-    print(f"  Simulated last announcement: 5 hours ago")
+    print("  Simulated last announcement: 5 hours ago")
 
     # Track all messages sent with their channel indices
     sent_messages = []
@@ -67,8 +67,8 @@ def test_announcement_goes_to_weather_channel():
     assert announcement["channel_idx"] == 1, f"Announcement should be sent to channel_idx=1, but was sent to {announcement['channel_idx']}"
     assert announcement["msg"] == ANNOUNCE_MESSAGE, "Announcement should contain correct message"
 
-    print(f"  ✓ Announcement sent to correct channel (channel_idx=1)")
-    print(f"  ✓ Announcement message is correct")
+    print("  ✓ Announcement sent to correct channel (channel_idx=1)")
+    print("  ✓ Announcement message is correct")
 
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
@@ -93,8 +93,8 @@ def test_announcement_channel_not_default():
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=2)
     bot._save_last_announce_time(old_time)
 
-    print(f"  Configured weather_channel_idx: 2")
-    print(f"  Testing that announcement does NOT go to channel_idx=0")
+    print("  Configured weather_channel_idx: 2")
+    print("  Testing that announcement does NOT go to channel_idx=0")
 
     # Track all messages sent
     sent_messages = []
@@ -120,8 +120,8 @@ def test_announcement_channel_not_default():
     assert announcement["channel_idx"] == 2, f"Announcement should be sent to channel_idx=2, got {announcement['channel_idx']}"
     assert announcement["channel_idx"] != 0, "Announcement should NOT be sent to default channel (idx=0)"
 
-    print(f"  ✓ Announcement sent to channel_idx=2 (NOT default)")
-    print(f"  ✓ Default channel (idx=0) correctly avoided")
+    print("  ✓ Announcement sent to channel_idx=2 (NOT default)")
+    print("  ✓ Default channel (idx=0) correctly avoided")
 
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
@@ -174,8 +174,8 @@ def test_announcement_channel_defaults_to_zero_when_not_configured():
 
     assert announcement["channel_idx"] == 0, f"Announcement should default to channel_idx=0, got {announcement['channel_idx']}"
 
-    print(f"  ✓ Without configuration, announcement defaults to channel_idx=0")
-    print(f"  ⚠️  WARNING: This may not be the #weather channel!")
+    print("  ✓ Without configuration, announcement defaults to channel_idx=0")
+    print("  ⚠️  WARNING: This may not be the #weather channel!")
 
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):

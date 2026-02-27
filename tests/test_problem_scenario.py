@@ -91,9 +91,9 @@ def test_problem_statement_scenario():
     assert (
         sent_responses[0]["channel_idx"] == 1
     ), f"Bot should respond on channel_idx=1, got {sent_responses[0]['channel_idx']}"
-    print(f"\n✅ SUCCESS: Bot correctly parsed channel_idx=1 (not 51)")
-    print(f"✅ SUCCESS: Bot recognized 'WX Leeds' command and responded")
-    print(f"✅ SUCCESS: Response sent on correct channel_idx=1")
+    print("\n✅ SUCCESS: Bot correctly parsed channel_idx=1 (not 51)")
+    print("✅ SUCCESS: Bot recognized 'WX Leeds' command and responded")
+    print("✅ SUCCESS: Response sent on correct channel_idx=1")
 
     print("\n" + "-" * 80)
     print("TEST CASE 2: Message with SNR=49 on channel_idx=2")
@@ -116,9 +116,9 @@ def test_problem_statement_scenario():
     assert (
         sent_responses[0]["channel_idx"] == 2
     ), f"Bot should respond on channel_idx=2, got {sent_responses[0]['channel_idx']}"
-    print(f"\n✅ SUCCESS: Bot correctly parsed channel_idx=2 (not 49)")
-    print(f"✅ SUCCESS: Bot recognized 'weather Manchester' command and responded")
-    print(f"✅ SUCCESS: Response sent on correct channel_idx=2")
+    print("\n✅ SUCCESS: Bot correctly parsed channel_idx=2 (not 49)")
+    print("✅ SUCCESS: Bot recognized 'weather Manchester' command and responded")
+    print("✅ SUCCESS: Response sent on correct channel_idx=2")
 
     print("\n" + "=" * 80)
     print("🎉 PROBLEM STATEMENT SCENARIO FIXED!")

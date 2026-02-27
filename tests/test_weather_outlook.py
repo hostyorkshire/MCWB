@@ -150,7 +150,7 @@ def test_outlook_format():
         print("✅ PASS: Response includes country code (York, GB)")
     else:
         print("❌ FAIL: Response missing country code")
-        print(f"   Expected 'York, GB 3-day:' in response")
+        print("   Expected 'York, GB 3-day:' in response")
         return False
 
     # Check that dates are shortened
@@ -217,13 +217,13 @@ def test_outlook_includes_country_code():
     if "Unknown City 3-day:" not in response_no_country:
         print("❌ FAIL: Outlook missing city name")
         return False
-    
+
     # Check that no comma is present in the header (first line)
     first_line = response_no_country.split('\n')[0]
     if ", " in first_line:
         print("❌ FAIL: Outlook without country code should not have comma")
         return False
-    
+
     print("✅ PASS: Outlook without country code shows city name only")
 
     return True

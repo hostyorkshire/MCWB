@@ -28,7 +28,7 @@ bot1 = WeatherBot(node_id="demo_bot", debug=False, announce=True)
 print(f"  ➜ Bot initialized with _announce_channel_idx = {bot1._announce_channel_idx}")
 print(f"  ➜ Weather channel detected = {bot1._weather_channel_detected}")
 print(f"  ➜ Will announce on channel_idx = {bot1._announce_channel_idx}")
-print(f"  ℹ  This is the default behavior - announces on channel 0")
+print("  ℹ  This is the default behavior - announces on channel 0")
 
 # Scenario 2: Simulate auto-detection
 print("\n" + "=" * 80)
@@ -39,7 +39,7 @@ bot1._detect_channel_name("Received on #weather channel", 1)
 print(f"  ➜ Auto-detected weather channel: channel_idx = {bot1._announce_channel_idx}")
 print(f"  ➜ Weather channel detected = {bot1._weather_channel_detected}")
 print(f"  ➜ Channel persisted to: {WEATHER_CHANNEL_FILE}")
-print(f"  ℹ  Bot now knows #weather is on channel_idx 1")
+print("  ℹ  Bot now knows #weather is on channel_idx 1")
 
 # Scenario 3: Bot restart - loads persisted channel
 print("\n" + "=" * 80)
@@ -50,8 +50,8 @@ bot2 = WeatherBot(node_id="demo_bot", debug=False, announce=True)
 print(f"  ➜ Bot initialized with _announce_channel_idx = {bot2._announce_channel_idx}")
 print(f"  ➜ Weather channel detected = {bot2._weather_channel_detected}")
 print(f"  ➜ Will announce on channel_idx = {bot2._announce_channel_idx}")
-print(f"  ✓ SUCCESS! Bot loaded persisted channel and will announce on channel_idx 1")
-print(f"  ℹ  Startup announcement will now go to #weather channel!")
+print("  ✓ SUCCESS! Bot loaded persisted channel and will announce on channel_idx 1")
+print("  ℹ  Startup announcement will now go to #weather channel!")
 
 # Scenario 4: Explicit configuration overrides
 print("\n" + "=" * 80)
@@ -61,7 +61,7 @@ print("  Starting bot with explicit --weather-channel-idx=5")
 bot3 = WeatherBot(node_id="demo_bot", debug=False, announce=True, weather_channel_idx=5)
 print(f"  ➜ Bot initialized with _announce_channel_idx = {bot3._announce_channel_idx}")
 print(f"  ➜ Will announce on channel_idx = {bot3._announce_channel_idx}")
-print(f"  ✓ Explicit config overrides persisted channel (as expected)")
+print("  ✓ Explicit config overrides persisted channel (as expected)")
 
 # Clean up
 if WEATHER_CHANNEL_FILE.exists():

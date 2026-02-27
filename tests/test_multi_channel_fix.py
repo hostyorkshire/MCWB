@@ -132,7 +132,7 @@ def test_multi_channel_messages():
     # The bot will reinterpret this as V3 format with channel_idx from byte 4
     # This is acceptable - bot tries to make sense of ambiguous data
     print(f"  Reinterpreted as V3: channel_idx={channel_idx}, text='{text}'")
-    print(f"✓ Bot handles ambiguous messages by trying alternate formats")
+    print("✓ Bot handles ambiguous messages by trying alternate formats")
 
     # Test Case 5: Empty message should be rejected
     print("\n=== Test 5: Empty message (should be rejected) ===")
@@ -156,7 +156,7 @@ def test_multi_channel_messages():
     channel_idx, text = bot._parse_channel_message(empty_payload)
     assert channel_idx is None, "Empty message should be rejected"
     assert text is None, "Empty message should return None"
-    print(f"✓ Correctly rejected empty message")
+    print("✓ Correctly rejected empty message")
 
     print("\n" + "=" * 50)
     print("✅ ALL TESTS PASSED!")

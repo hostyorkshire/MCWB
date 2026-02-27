@@ -36,22 +36,22 @@ def check_state():
 def simulate_bot_start(run_number):
     """Simulate a bot startup"""
     print_header(f"Simulated Bot Start #{run_number}")
-    
+
     print("\n1. Checking for previous state...")
     is_reboot = check_state()
-    
+
     print("\n2. Bot initialization...")
     if is_reboot:
-        print(f"   ⚠️  REBOOT DETECTED!")
+        print("   ⚠️  REBOOT DETECTED!")
         print(f"   📤 Would send notification: '{REBOOT_NOTIFY_MESSAGE}'")
     else:
         print("   ✓ First run - no reboot notification needed")
-    
+
     print("\n3. Marking bot as running...")
     with open(STATE_FILE, 'w') as f:
         f.write(f"{int(time.time())}\n")
-    print(f"   ✓ State file created/updated")
-    
+    print("   ✓ State file created/updated")
+
     print("\n4. Bot is now running normally...")
     print("   (Press Ctrl+C to simulate crash/power loss)")
 
@@ -63,54 +63,54 @@ def main():
 This demonstration shows how the reboot notification feature works:
 
 - On FIRST RUN: No state file exists, so no notification is sent
-- On RESTART: State file exists, indicating a previous run, so a 
+- On RESTART: State file exists, indicating a previous run, so a
   notification is sent to alert users that the bot has restarted
-  
+
 This is useful for detecting:
   • Power losses
   • System crashes
   • Service restarts
   • Unexpected reboots
 
-The state file is stored at: /var/tmp/mcwb_state.txt
+The state file is stored at: {STATE_FILE}
 (This location persists across system reboots)
     """.format(STATE_FILE=STATE_FILE))
-    
+
     # Clean up any existing state
     if os.path.exists(STATE_FILE):
-        print(f"\nCleaning up existing state file for clean demo...")
+        print("\nCleaning up existing state file for clean demo...")
         os.remove(STATE_FILE)
-    
+
     input("\nPress Enter to simulate FIRST RUN...")
     simulate_bot_start(1)
-    
+
     input("\n\nPress Enter to simulate RESTART (power restored after crash)...")
     simulate_bot_start(2)
-    
+
     input("\n\nPress Enter to simulate ANOTHER RESTART...")
     simulate_bot_start(3)
-    
+
     print_header("DEMONSTRATION COMPLETE")
     print("""
 Summary:
   ✓ Run #1: First run - No notification sent
   ✓ Run #2: Restart detected - Notification would be sent
   ✓ Run #3: Another restart detected - Notification would be sent
-  
+
 In a real deployment with --reboot-notify flag:
   • Each restart after the first would trigger a LoRa mesh message
   • Users on the mesh network would see the restart notification
   • This helps with monitoring remote/unattended installations
-  
+
 To enable in your bot, add the --reboot-notify flag:
   python3 weather_bot.py --reboot-notify
     """)
-    
+
     # Clean up
     if os.path.exists(STATE_FILE):
-        print(f"\nCleaning up state file...")
+        print("\nCleaning up state file...")
         os.remove(STATE_FILE)
-    
+
     print("\n✓ Demo complete!")
 
 

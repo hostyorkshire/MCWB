@@ -74,7 +74,7 @@ def test_send_over_lora():
     assert text == "wx York", f"Message text mismatch: expected 'wx York', got '{text}'"
     print("✓ send_message writes binary CMD_SEND_CHANNEL_TXT_MSG frame to serial port")
     print(f"  Frame (hex): {written_bytes.hex()}")
-    print(f"  Channel 'weather' mapped to channel_idx=1")
+    print("  Channel 'weather' mapped to channel_idx=1")
 
     # Check the second call (CMD_SYNC_NEXT_MSG)
     sync_bytes = mock_serial.write.call_args_list[1][0][0]
@@ -484,7 +484,7 @@ def test_receive_binary_channel_message():
     assert len(received) == 1, f"Expected 1 message, got {len(received)}"
     assert received[0].sender == "Tim Bristol", f"Expected sender 'Tim Bristol', got '{received[0].sender}'"
     assert received[0].content == "wx London", f"Expected content 'wx London', got '{received[0].content}'"
-    print(f"✓ Binary CHANNEL_MSG_RECV frame parsed correctly")
+    print("✓ Binary CHANNEL_MSG_RECV frame parsed correctly")
     print(f"  sender='{received[0].sender}', content='{received[0].content}'")
     print()
 
@@ -527,7 +527,7 @@ def test_receive_binary_channel_message_no_sender_prefix():
 
     assert len(received) == 1, f"Expected 1 message, got {len(received)}"
     assert received[0].content == "wx York", f"Expected 'wx York', got '{received[0].content}'"
-    print(f"✓ Binary channel message without sender prefix handled correctly")
+    print("✓ Binary channel message without sender prefix handled correctly")
     print(f"  content='{received[0].content}'")
     print()
 

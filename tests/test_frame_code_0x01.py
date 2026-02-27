@@ -57,7 +57,7 @@ def test_frame_code_0x01():
     # This might include additional data similar to what was sent
     frame = create_frame(0x01, SAMPLE_APP_START_DATA)
 
-    print(f"Sending frame with code 0x01 (CMD_APP_START)...")
+    print("Sending frame with code 0x01 (CMD_APP_START)...")
     print(f"Frame bytes: {frame.hex()}")
 
     # Parse the frame - should not raise any exception
@@ -140,7 +140,7 @@ def test_no_unhandled_error_logged():
 
     # Check that "unhandled frame code" does NOT appear in the output
     if "unhandled frame code" in output.lower():
-        print(f"✗ FAILED: 'unhandled frame code' found in output:")
+        print("✗ FAILED: 'unhandled frame code' found in output:")
         print(f"  {output}")
         return False
 
@@ -187,7 +187,7 @@ def test_app_start_during_init():
     if "unhandled frame code" not in output.lower():
         print("✓ No 'unhandled frame code' error")
     else:
-        print(f"✗ FAILED: Found 'unhandled frame code' in output")
+        print("✗ FAILED: Found 'unhandled frame code' in output")
         return False
 
     print()

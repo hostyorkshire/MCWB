@@ -25,7 +25,7 @@ def test_api_retry_on_timeout():
     print("=" * 70)
 
     mock_func = MagicMock()
-    
+
     # First two calls timeout, third succeeds
     mock_func.side_effect = [
         Timeout("Request timed out"),
@@ -39,13 +39,13 @@ def test_api_retry_on_timeout():
 
     # Should have been called 3 times (2 failures + 1 success)
     assert mock_func.call_count == 3, f"Expected 3 calls, got {mock_func.call_count}"
-    
+
     # Should have waited: 1s + 2s = 3s between retries (plus some overhead)
     assert elapsed >= 3.0, f"Expected at least 3s wait time, got {elapsed:.2f}s"
-    
+
     # Should succeed on third attempt
     assert result.status_code == 200
-    
+
     print(f"✅ PASS: Retried {mock_func.call_count} times, waited {elapsed:.2f}s")
     print()
 
@@ -57,7 +57,7 @@ def test_api_retry_on_connection_error():
     print("=" * 70)
 
     mock_func = MagicMock()
-    
+
     # First call fails, second succeeds
     mock_func.side_effect = [
         ConnectionError("Cannot reach server"),
@@ -68,8 +68,8 @@ def test_api_retry_on_connection_error():
 
     assert mock_func.call_count == 2, f"Expected 2 calls, got {mock_func.call_count}"
     assert result.status_code == 200
-    
-    print(f"✅ PASS: Recovered from connection error on retry")
+
+    print("✅ PASS: Recovered from connection error on retry")
     print()
 
 
@@ -80,7 +80,7 @@ def test_api_retry_exhaustion():
     print("=" * 70)
 
     mock_func = MagicMock()
-    
+
     # All attempts timeout
     mock_func.side_effect = Timeout("Request timed out")
 
@@ -101,15 +101,16 @@ def test_api_retry_timeout_progression():
     print("=" * 70)
 
     mock_func = MagicMock()
-    
+
     # Capture the timeout values passed to the function
     timeouts = []
+
     def capture_timeout(*args, **kwargs):
         timeouts.append(kwargs.get('timeout'))
         if len(timeouts) < 3:
             raise Timeout("Request timed out")
         return MagicMock(status_code=200)
-    
+
     mock_func.side_effect = capture_timeout
 
     result = api_request_with_retry(mock_func, "test_url", max_retries=3, initial_timeout=10)
@@ -119,7 +120,7 @@ def test_api_retry_timeout_progression():
     assert timeouts[0] == 10, f"First timeout should be 10s, got {timeouts[0]}s"
     assert timeouts[1] == 15, f"Second timeout should be 15s, got {timeouts[1]}s"
     assert timeouts[2] == 20, f"Third timeout should be 20s, got {timeouts[2]}s"
-    
+
     print(f"✅ PASS: Timeouts increased: {timeouts[0]}s → {timeouts[1]}s → {timeouts[2]}s")
     print()
 
@@ -143,7 +144,7 @@ def test_weather_bot_uses_retry():
         try:
             result = bot.geocode_location("York")
             assert mock_retry.called, "geocode_location should use api_request_with_retry"
-            print(f"✅ PASS: geocode_location uses retry logic")
+            print("✅ PASS: geocode_location uses retry logic")
         except Exception as e:
             print(f"⚠️  Note: {e}")
 
@@ -157,7 +158,7 @@ def test_weather_bot_uses_retry():
 
         result = bot.get_weather(53.9, -1.1)
         assert mock_retry.called, "get_weather should use api_request_with_retry"
-        print(f"✅ PASS: get_weather uses retry logic")
+        print("✅ PASS: get_weather uses retry logic")
 
     # Test get_outlook with retry
     with patch("weather_bot.api_request_with_retry") as mock_retry:
@@ -169,7 +170,7 @@ def test_weather_bot_uses_retry():
 
         result = bot.get_outlook(53.9, -1.1)
         assert mock_retry.called, "get_outlook should use api_request_with_retry"
-        print(f"✅ PASS: get_outlook uses retry logic")
+        print("✅ PASS: get_outlook uses retry logic")
 
     print()
 
@@ -181,7 +182,7 @@ def test_non_retryable_errors():
     print("=" * 70)
 
     mock_func = MagicMock()
-    
+
     # HTTP error should not be retried
     http_error = requests.exceptions.HTTPError("404 Not Found")
     mock_func.side_effect = RequestException("404 Not Found")
@@ -192,7 +193,7 @@ def test_non_retryable_errors():
     except RequestException:
         # Should only try once for non-retryable errors
         assert mock_func.call_count == 1, f"Expected 1 call for non-retryable error, got {mock_func.call_count}"
-        print(f"✅ PASS: Non-retryable error raised immediately (1 attempt)")
+        print("✅ PASS: Non-retryable error raised immediately (1 attempt)")
         print()
 
 

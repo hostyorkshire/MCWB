@@ -94,7 +94,7 @@ def test_weather_channel():
             success = True
         else:
             print("❌ FAILED!")
-            print(f"  Expected: channel_idx=0")
+            print("  Expected: channel_idx=0")
             print(f"  Got: channel_idx={sent['channel_idx']}")
             success = False
 

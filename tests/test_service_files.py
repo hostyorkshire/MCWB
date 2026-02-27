@@ -71,7 +71,7 @@ def test_service_files_no_html_entities():
         # Verify the file is valid UTF-8
         try:
             content.encode("utf-8")
-            print(f"  ✓ File is valid UTF-8")
+            print("  ✓ File is valid UTF-8")
         except UnicodeEncodeError as e:
             error_msg = f"  ❌ File contains invalid UTF-8: {e}"
             print(error_msg)
