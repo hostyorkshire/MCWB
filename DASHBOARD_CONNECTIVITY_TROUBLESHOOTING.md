@@ -349,7 +349,7 @@ Look for:
 
 ## Getting Help
 
-If you're still stuck, open an issue at https://github.com/yourusername/MCWB/issues with:
+If you're still stuck, open an issue at https://github.com/hostyorkshire/MCWB/issues with:
 
 1. Output of `sudo systemctl status mcwb-dashboard`
 2. Output of `sudo journalctl -u mcwb-dashboard -n 100`

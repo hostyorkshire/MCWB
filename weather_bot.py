@@ -171,7 +171,7 @@ class LEDController:
     MeshCore firmware does not currently expose GPIO-write commands over the
     companion-radio serial protocol, so this implementation uses a debug-log
     fallback that keeps the structure ready for future GPIO command support.
-    
+
     Board Variants:
       - heltec-v2: Heltec WiFi LoRa 32 V2 (Blue=GPIO25 only)
         Only the blue LED on GPIO25 is available. GPIO26/27 are used by LoRa hardware.
@@ -321,12 +321,12 @@ class WeatherBot:
         self._running = False
         # Set up logging
         self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
-        
+
         # Determine LED pin configuration
         blue_pin = led_blue_pin
         green_pin = led_green_pin
         red_pin = led_red_pin
-        
+
         # Apply board variant preset if specified
         if led_board_variant and led_board_variant in LEDController.BOARD_VARIANTS:
             variant = LEDController.BOARD_VARIANTS[led_board_variant]
@@ -340,16 +340,16 @@ class WeatherBot:
             self.logger.info(f"Using LED board variant: {led_board_variant}")
         elif led_board_variant:
             self.logger.warning(f"Unknown LED board variant '{led_board_variant}', using defaults")
-        
+
         # LED controller for visual activity indication (log-only if GPIO not available)
         self.led_controller = LEDController(
-            self, 
+            self,
             enabled=enable_leds,
             blue_pin=blue_pin,
             green_pin=green_pin,
             red_pin=red_pin
         )
-        
+
         if enable_leds:
             led_config = []
             if blue_pin is not None:
@@ -362,7 +362,7 @@ class WeatherBot:
                 self.logger.info(f"LED indicators enabled: {', '.join(led_config)}")
             else:
                 self.logger.warning("LED indicators enabled but no pins configured")
-        
+
         self.weather_channel_idx = weather_channel_idx
         # Track channel_idx to channel name mapping for auto-detection
         self._channel_idx_to_name = {}  # Maps channel_idx -> channel_name (e.g., 1 -> "weather")

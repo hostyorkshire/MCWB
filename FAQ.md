@@ -360,7 +360,7 @@ sudo systemctl restart weather_bot  # Restart to apply
 
 ### Getting Help
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/MCWB/issues)
+- **Issues:** [GitHub Issues](https://github.com/hostyorkshire/MCWB/issues)
 - **Documentation:** Check the guides listed above
 - **Logs:** Always check logs when troubleshooting: `sudo journalctl -u weather_bot -n 50`
 
@@ -370,5 +370,5 @@ sudo systemctl restart weather_bot  # Restart to apply
 
 If your question isn't answered here:
 1. Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-2. Search existing [GitHub Issues](https://github.com/yourusername/MCWB/issues)
+2. Search existing [GitHub Issues](https://github.com/hostyorkshire/MCWB/issues)
 3. Open a new issue with details about your setup and the problem

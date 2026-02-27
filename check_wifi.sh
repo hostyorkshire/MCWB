@@ -215,7 +215,9 @@ DNS_SERVERS=$(grep "^nameserver" /etc/resolv.conf 2>/dev/null | awk '{print $2}'
 
 if [ -n "$DNS_SERVERS" ]; then
     echo "   Configured DNS servers:"
-    echo "$DNS_SERVERS" | sed 's/^/   - /'
+    while IFS= read -r line; do
+        echo "   - $line"
+    done <<< "$DNS_SERVERS"
     echo ""
     
     # Test DNS resolution

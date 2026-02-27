@@ -203,7 +203,7 @@ sudo systemctl status mcwb-dashboard weather_bot
    sudo journalctl -u mcwb-dashboard -n 100 > ~/dashboard_logs.txt
    ```
 
-3. Open issue at https://github.com/yourusername/MCWB/issues
+3. Open issue at https://github.com/hostyorkshire/MCWB/issues
    - Attach both files
    - Include your Raspberry Pi model and OS version
 

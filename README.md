@@ -304,7 +304,7 @@ python3 weather_bot.py --port /dev/ttyUSB0 --baud 115200
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/MCWB.git
+git clone https://github.com/hostyorkshire/MCWB.git
 cd MCWB
 
 # Create and activate a virtual environment (recommended)
