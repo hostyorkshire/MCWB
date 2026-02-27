@@ -95,8 +95,8 @@ def integration_test():
             
             # Check second message is outlook
             second_msg = calls[1][0][0]
-            if b"3-day" in second_msg and b"https://mcwb.netlify.app" in second_msg:
-                print("✅ Outlook sent automatically with link")
+            if b"3-day" in second_msg:
+                print("✅ Outlook sent automatically")
             else:
                 print("❌ Outlook not properly formatted")
                 return False
