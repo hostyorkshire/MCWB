@@ -76,7 +76,7 @@ def test_network_error_after_geocoding():
 
     bot = WeatherBot(debug=False)
 
-    # Mock successful geocoding but failed weather fetch
+    # Mock successful geocoding but failed weather fetch (with retries)
     with patch("weather_bot.requests.get") as mock_get:
         # First call (geocoding) succeeds
         geocoding_response = MagicMock()
@@ -84,8 +84,13 @@ def test_network_error_after_geocoding():
             "results": [{"name": "York", "country": "UK", "latitude": 53.9, "longitude": -1.1}]
         }
 
-        # Second call (weather) fails
-        mock_get.side_effect = [geocoding_response, requests.exceptions.ConnectionError("Network error")]
+        # Weather fetch will be retried 3 times, all fail with ConnectionError
+        mock_get.side_effect = [
+            geocoding_response,
+            requests.exceptions.ConnectionError("Network error"),
+            requests.exceptions.ConnectionError("Network error"),
+            requests.exceptions.ConnectionError("Network error"),
+        ]
 
         result = bot._get_weather("York")
         expected_msg = "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"

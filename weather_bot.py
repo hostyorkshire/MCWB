@@ -108,7 +108,7 @@ WEATHER_CODES = {
 }
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
-ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location."
+ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location.\n\nHelp? https://tinyurl.com/wxbot"
 
 
 # ---------------------------------------------------------------------------
@@ -1232,15 +1232,16 @@ class WeatherBot:
             self.stats.record_request(location_name, user=user)
 
             return self.format_weather_response(r, wx)
-        except requests.exceptions.Timeout:
-            return "Weather service timeout. Please try again in a moment."
-        except requests.exceptions.ConnectionError:
-            return "Cannot connect to weather service. Check your network connection."
-        except requests.exceptions.HTTPError as e:
-            return f"Weather service error: {e}"
+        except requests.exceptions.RequestException as e:
+            # Handle network errors (timeout, connection issues, etc.) with user-friendly message
+            # Check if it's an HTTP error (4xx/5xx) which we should report differently
+            if isinstance(e, requests.exceptions.HTTPError):
+                return f"Weather service error: {e}"
+            # All other RequestException errors are network-related
+            return "Sorry, I didn't get that due to network problems. But don't worry hit me with it again!"
         except Exception as e:
             self.error_logger.error(f"Error getting weather for {location}: {e}")
-            return f"Error getting weather: {e}"
+            return f"Weather error: {e}"
 
 
     # ------------------------------------------------------------------
