@@ -239,8 +239,7 @@
                 lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
                 widget.appendChild(lastUpdated);
                 
-                this.container.innerHTML = '';
-                this.container.appendChild(widget);
+                this.container.replaceChildren(widget);
             }
 
             renderError(error) {
@@ -256,8 +255,7 @@
                 errorSmall.textContent = error.message;
                 errorDiv.appendChild(errorSmall);
                 
-                this.container.innerHTML = '';
-                this.container.appendChild(errorDiv);
+                this.container.replaceChildren(errorDiv);
             }
 
             start() {
