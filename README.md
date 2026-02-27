@@ -622,6 +622,22 @@ sudo systemctl start weather_bot
 
 **📡 Remote SSH Access:** See [SSH_REMOTE_ACCESS.md](SSH_REMOTE_ACCESS.md) for comprehensive instructions on accessing your Raspberry Pi remotely when deployed in remote locations, including VPN setup, port forwarding, and security best practices.
 
+## LED Activity Indicators
+
+The bot can use the three front-panel LEDs on the Heltec WiFi LoRa 32 V2 to provide visual feedback:
+
+```bash
+python3 weather_bot.py --enable-leds
+```
+
+| Colour | GPIO  | Behaviour |
+|--------|-------|-----------|
+| Blue   | GPIO25 | Heartbeat – blinks every 2 s while the bot is running |
+| Green  | GPIO26 | RX – flashes when a weather request is received |
+| Red    | GPIO27 | TX – flashes each time a response is sent to the mesh |
+
+**Note**: This feature requires GPIO command support in your MeshCore firmware version. If your firmware doesn't support GPIO commands, LED events are recorded in the debug log only (use `--debug` to see them). The bot continues to operate normally in either case.
+
 ## Troubleshooting
 
 ### No serial port found
