@@ -204,29 +204,60 @@
             }
 
             render(data) {
-                this.container.innerHTML = `
-                    <div class="weather-widget">
-                        <h3>Live Weather Data</h3>
-                        <div class="weather-info">
-                            ${Object.entries(data).map(([key, value]) => `
-                                <div class="weather-item">
-                                    <div class="weather-item-key">${key.replace(/_/g, ' ')}</div>
-                                    <div class="weather-item-value">${value}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <p class="last-updated">Last updated: ${new Date().toLocaleString()}</p>
-                    </div>
-                `;
+                // Create elements safely to prevent XSS
+                const widget = document.createElement('div');
+                widget.className = 'weather-widget';
+                
+                const heading = document.createElement('h3');
+                heading.textContent = 'Live Weather Data';
+                widget.appendChild(heading);
+                
+                const weatherInfo = document.createElement('div');
+                weatherInfo.className = 'weather-info';
+                
+                Object.entries(data).forEach(([key, value]) => {
+                    const item = document.createElement('div');
+                    item.className = 'weather-item';
+                    
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'weather-item-key';
+                    keyDiv.textContent = key.replace(/_/g, ' ');
+                    item.appendChild(keyDiv);
+                    
+                    const valueDiv = document.createElement('div');
+                    valueDiv.className = 'weather-item-value';
+                    valueDiv.textContent = String(value);
+                    item.appendChild(valueDiv);
+                    
+                    weatherInfo.appendChild(item);
+                });
+                
+                widget.appendChild(weatherInfo);
+                
+                const lastUpdated = document.createElement('p');
+                lastUpdated.className = 'last-updated';
+                lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
+                widget.appendChild(lastUpdated);
+                
+                this.container.innerHTML = '';
+                this.container.appendChild(widget);
             }
 
             renderError(error) {
-                this.container.innerHTML = `
-                    <div class="error">
-                        <p>⚠️ Unable to fetch weather data</p>
-                        <small>${error.message}</small>
-                    </div>
-                `;
+                // Create error elements safely to prevent XSS
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                
+                const errorPara = document.createElement('p');
+                errorPara.textContent = '⚠️ Unable to fetch weather data';
+                errorDiv.appendChild(errorPara);
+                
+                const errorSmall = document.createElement('small');
+                errorSmall.textContent = error.message;
+                errorDiv.appendChild(errorSmall);
+                
+                this.container.innerHTML = '';
+                this.container.appendChild(errorDiv);
             }
 
             start() {

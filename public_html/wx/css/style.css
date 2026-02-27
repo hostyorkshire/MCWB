@@ -444,6 +444,18 @@ tr:hover {
     border-color: var(--accent-primary);
 }
 
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(239, 68, 68, 0.3);
+}
+
 /* Footer */
 footer {
     background: var(--bg-tertiary);
