@@ -585,23 +585,35 @@ class WeatherBot:
             channel_idx: Numeric channel index from the protocol
         """
         # Check if text contains channel hashtag patterns like "#weather", "#alerts", etc.
-        # Common patterns: "#weather", "#wx", "#wether" (typo variant), "weather channel", etc.
+        # Common patterns: "#weather", "#wx", "weather", "wx", "weather channel", etc.
         text_lower = text.lower()
         
-        # Look for #weather or similar indicators
-        weather_patterns = ["#weather", "#wx", "#wether", "weather channel"]
+        # Look for weather channel indicators using regex for word boundaries
+        # This matches:
+        # - "#weather" or "#wx" (with hashtag)
+        # - "weather" or "wx" as standalone words (with word boundaries)
+        # - "weather channel" phrase
+        import re
+        weather_patterns = [
+            r'#weather\b',      # hashtag weather
+            r'#wx\b',           # hashtag wx
+            r'\bweather\b',     # standalone word "weather"
+            r'\bwx\b',          # standalone word "wx"
+            r'weather\s+channel'  # phrase "weather channel"
+        ]
+        
         for pattern in weather_patterns:
-            if pattern in text_lower:
+            if re.search(pattern, text_lower):
                 if channel_idx not in self._channel_idx_to_name:
                     self._channel_idx_to_name[channel_idx] = "weather"
                     self._weather_channel_detected = True
-                    msg = f"Auto-detected #weather channel on channel_idx={channel_idx}"
+                    msg = f"Auto-detected weather channel on channel_idx={channel_idx}"
                     print(msg)
                     self.logger.info(msg)
                     # Update announcement channel to use detected weather channel
                     if self.weather_channel_idx is None:
                         self._announce_channel_idx = channel_idx
-                        self.logger.info(f"Announcements will be sent to detected #weather channel (channel_idx={channel_idx})")
+                        self.logger.info(f"Announcements will be sent to detected weather channel (channel_idx={channel_idx})")
                         # Persist the detected channel for future restarts
                         self._save_weather_channel(channel_idx)
                 return
@@ -734,11 +746,11 @@ class WeatherBot:
         Channel indicators like "#weather", "#wx", "on #weather" are automatically filtered out.
         """
         # Remove channel indicators before parsing
-        # Common patterns: "on #weather", "#weather", "#wx", "#wether", "weather channel", "on weather channel"
+        # Common patterns: "on #weather", "#weather", "#wx", "weather channel"
         text_cleaned = text.strip()
         # Combined regex for better performance
         # Matches: "on #<channel>" (with/without space), "#<channel>", "on weather channel", "weather channel"
-        text_cleaned = re.sub(r'(?:on\s*#(?:weather|wx|wether)|on\s+weather\s+channel|#(?:weather|wx|wether)|weather\s+channel)\s*', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = re.sub(r'(?:on\s*#(?:weather|wx)|on\s+weather\s+channel|#(?:weather|wx)|weather\s+channel)\s*', '', text_cleaned, flags=re.IGNORECASE)
         text_cleaned = text_cleaned.strip()
         
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
