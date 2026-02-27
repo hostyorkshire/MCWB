@@ -86,6 +86,16 @@ sudo raspi-config
 # Enter your WiFi SSID and password
 
 # If DNS is the issue (most common for "could not resolve host")
+# For systems using systemd-resolved (most modern systems):
+sudo nano /etc/systemd/resolved.conf
+# Uncomment and set: DNS=8.8.8.8 1.1.1.1
+sudo systemctl restart systemd-resolved
+
+# For systems using NetworkManager:
+sudo nmcli connection modify "Your-WiFi-Name" ipv4.dns "8.8.8.8 1.1.1.1"
+sudo nmcli connection up "Your-WiFi-Name"
+
+# For legacy systems or quick temporary fix:
 sudo bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
 sudo bash -c 'echo "nameserver 1.1.1.1" >> /etc/resolv.conf'
 
