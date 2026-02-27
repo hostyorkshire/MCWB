@@ -104,10 +104,10 @@ Upload to your web server via FTP, SFTP, or rsync:
 
 ```bash
 # Example: rsync to your server
-rsync -avz website/ user@yourserver.com:/var/www/html/mcwb/
+rsync -avz public_html/wx/ user@yourserver.com:/var/www/html/mcwb/
 
 # Example: SCP
-scp -r website/* user@yourserver.com:/var/www/html/mcwb/
+scp -r public_html/wx/* user@yourserver.com:/var/www/html/mcwb/
 ```
 
 **Web Server Configuration:**
@@ -176,7 +176,7 @@ npx http-server -p 8000
 ## File Structure
 
 ```
-website/
+public_html/wx/
 ├── index.html              # Homepage
 ├── getting-started.html    # Quick start guide
 ├── installation.html       # Installation guide
@@ -198,7 +198,7 @@ website/
 
 ### Change Colors
 
-Edit `website/css/style.css` and modify the color variables:
+Edit `public_html/wx/css/style.css` and modify the color variables:
 
 ```css
 :root {

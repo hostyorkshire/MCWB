@@ -39,7 +39,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 
 **🌐 NEW: Cloudflare Tunnel Integration** - Connect your static website to your local bot without port forwarding! Perfect for cPanel-hosted sites. See [CLOUDFLARE_TUNNEL_SETUP.md](CLOUDFLARE_TUNNEL_SETUP.md) and [CPANEL_DEPLOYMENT_GUIDE.md](CPANEL_DEPLOYMENT_GUIDE.md) for setup instructions.
 
-**📚 Documentation Website** - Complete wiki-style documentation website available at https://mcwb.netlify.app/. See [NETLIFY_DEPLOYMENT.md](NETLIFY_DEPLOYMENT.md) for automatic deployment setup from GitHub.
+**📚 Documentation Website** - Complete wiki-style documentation website available at https://wx.intergalactic.it.com/
 
 ## Overview
 
@@ -137,7 +137,7 @@ London, GB 3-day:
 02-25: Cloudy 8-15°C
 02-26: Rain 9-16°C
 02-27: Overcast 7-14°C
-https://mcwb.netlify.app
+https://wx.intergalactic.it.com
 ```
 
 The outlook includes the country code (e.g., "London, GB" or "York, US") to avoid confusion when cities have the same name in different countries.
@@ -193,7 +193,7 @@ python3 weather_bot.py
 
 MCWB includes a beautiful dark-themed web interface for monitoring your bot in real-time!
 
-**🔒 NEW: HTTPS Support** - Run your dashboard with HTTPS for secure connections from Netlify or other HTTPS sites! See [HTTPS_SETUP.md](HTTPS_SETUP.md) for setup instructions.
+**🔒 NEW: HTTPS Support** - Run your dashboard with HTTPS for secure connections from HTTPS sites! See [HTTPS_SETUP.md](HTTPS_SETUP.md) for setup instructions.
 
 ### 🚀 Quick Start (Recommended for Raspberry Pi)
 
@@ -237,7 +237,7 @@ pip install -r requirements.txt
 # Start the dashboard (HTTP)
 python3 web_dashboard.py
 
-# OR start with HTTPS (recommended for Netlify access)
+# OR start with HTTPS (recommended for HTTPS access)
 python3 web_dashboard.py --ssl
 ```
 

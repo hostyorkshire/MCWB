@@ -39,7 +39,7 @@ cd ~/MCWB
 
 ### Update Static Website
 
-**File to edit:** `website/js/dashboard.js`
+**File to edit:** `public_html/wx/js/dashboard.js`
 
 **Line 18:** Set your tunnel URL
 
@@ -208,7 +208,7 @@ ingress:
 ```
 
 ### Website Config
-**Location:** `website/js/dashboard.js` (line 18)
+**Location:** `public_html/wx/js/dashboard.js` (line 18)
 
 ```javascript
 const TUNNEL_URL = 'https://your-tunnel-url.com';
@@ -273,7 +273,7 @@ Upload the updated `dashboard.js` file
 
 If bot moves to different IP (not 192.168.1.109):
 
-**File:** `website/js/dashboard.js` (line 21)
+**File:** `public_html/wx/js/dashboard.js` (line 21)
 ```javascript
 const LOCAL_URL = 'http://NEW_IP:5000';
 ```

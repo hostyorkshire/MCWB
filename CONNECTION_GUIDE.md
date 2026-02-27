@@ -109,7 +109,7 @@ On any device connected to the same network (laptop, phone, tablet):
 
 ### Bonus: Connect Your Static Website
 
-If you've deployed the MCWB static website (from the `website/` folder), you can connect it to your live dashboard:
+If you've deployed the MCWB static website (from the `public_html/wx/` folder), you can connect it to your live dashboard:
 
 1. Go to your static website's Live Dashboard page
 2. Look for "Configure Custom API URL"

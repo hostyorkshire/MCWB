@@ -240,7 +240,7 @@ Your static website is hosted at **wx.intergalactic.it.com** on cPanel. After se
 
 ### Option 1: Hardcode the URL (Simple)
 
-Edit `website/js/dashboard.js`:
+Edit `public_html/wx/js/dashboard.js`:
 
 ```javascript
 // Configuration for Cloudflare Tunnel
@@ -324,7 +324,7 @@ If you prefer FTP:
 # Example using lftp
 lftp -u your-username ftp.intergalactic.it.com
 cd public_html/wx  # Or wherever wx.intergalactic.it.com is hosted
-put website/js/dashboard.js
+put public_html/wx/js/dashboard.js
 quit
 ```
 
@@ -555,7 +555,7 @@ sudo systemctl restart cloudflared-mcwb.service
 This means the website is not connecting to your tunnel.
 
 **Solutions:**
-1. **Verify tunnel URL** in website/js/dashboard.js
+1. **Verify tunnel URL** in public_html/wx/js/dashboard.js
 2. **Check tunnel is running**
    ```bash
    sudo systemctl status cloudflared-mcwb.service

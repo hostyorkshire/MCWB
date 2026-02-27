@@ -160,7 +160,7 @@ The dashboard already has CORS enabled. If you still see CORS errors:
 
 ## Updating the Static Website
 
-If you change your Raspberry Pi's IP address, update the hardcoded URL in `website/js/dashboard.js`:
+If you change your Raspberry Pi's IP address, update the hardcoded URL in `public_html/wx/js/dashboard.js`:
 
 ```javascript
 const HARDCODED_API_URL = 'https://YOUR_NEW_IP:5000';

@@ -315,7 +315,7 @@ echo ""
 if [ -f "$TUNNEL_CONFIG_DIR/tunnel_url.txt" ]; then
     TUNNEL_URL=$(cat "$TUNNEL_CONFIG_DIR/tunnel_url.txt")
     echo "1. Update your static website (wx.intergalactic.it.com):"
-    echo "   - Edit website/js/dashboard.js"
+    echo "   - Edit public_html/wx/js/dashboard.js"
     echo "   - Set: const TUNNEL_URL = 'https://$TUNNEL_URL';"
     echo "   - Upload to cPanel hosting"
     echo ""
