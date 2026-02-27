@@ -10,6 +10,10 @@ Type=simple
 User=pi
 # Change paths if you installed to a different location
 WorkingDirectory=/home/pi/MCWB
+# Command to run the weather bot with announcements enabled
+# --announce: Send announcements on every startup and periodically every 3 hours
+# --reboot-notify: Send notification when bot restarts after reboot/crash
+ExecStart=/usr/bin/python3 /home/pi/MCWB/weather_bot.py --baud 115200 --announce --reboot-notify
 
 # Automatically restart if the bot crashes
 Restart=on-failure

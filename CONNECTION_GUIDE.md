@@ -120,6 +120,37 @@ Now your website will show **real-time live data** from your Raspberry Pi! 🎉
 
 ## Still Can't Connect?
 
+### ⚡ Dashboard Was Working Before But Stopped?
+
+If your dashboard was working at http://192.168.1.109:5000 before but suddenly stopped:
+
+**Quick Fix (Recommended):**
+```bash
+cd ~/MCWB
+./fix_dashboard.sh
+```
+
+This script will:
+- Check if the service is running
+- Restart it if needed
+- Fix common issues (dependencies, permissions)
+- Get you back online in seconds
+
+**Full Diagnostics:**
+```bash
+cd ~/MCWB
+./diagnose_dashboard.sh
+```
+
+This runs a comprehensive 8-step diagnostic covering:
+- Service status and configuration
+- Network connectivity
+- Firewall settings
+- Python dependencies
+- And more...
+
+---
+
 ### Common Issue: Dashboard Not Starting After Reboot
 
 If your dashboard was working before but stopped working after rebooting your Pi, the service might be starting before the network is fully online.
