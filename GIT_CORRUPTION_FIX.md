@@ -191,7 +191,7 @@ After fixing the corruption:
 4. ✅ Always shutdown properly
 5. ✅ Make regular backups
 
-## 🔍 Additional Resources
+## 🔍 Further Reading and External Documentation
 
 - [Git Documentation - Recovering from Repository Corruption](https://git-scm.com/book/en/v2/Git-Internals-Maintenance-and-Data-Recovery)
 - [Raspberry Pi SD Card Best Practices](https://www.raspberrypi.org/documentation/configuration/sd-cards.md)
