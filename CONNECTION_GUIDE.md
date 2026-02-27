@@ -57,6 +57,48 @@ cd ~/MCWB
 
 Write down that URL! That's where you'll connect.
 
+## Step 1.5: Reserve a Static IP (HIGHLY RECOMMENDED!)
+
+**Why do this?** Your Raspberry Pi's IP address can change when your router reboots. Reserving a static IP ensures your dashboard URL never changes!
+
+**How to reserve an IP:**
+
+1. **Access your router's admin panel**
+   - Usually at http://192.168.1.1 or http://192.168.0.1
+   - Login with your router admin credentials
+
+2. **Find DHCP Settings**
+   - Look under: Advanced → Network → LAN Settings
+   - Different routers use different names:
+     - "DHCP Reservation"
+     - "Static DHCP"
+     - "Address Reservation"
+     - "MAC Address Binding"
+
+3. **Find your Raspberry Pi**
+   - Look in the list of connected devices
+   - Find by hostname (e.g., "raspberrypi") or MAC address
+
+4. **Reserve the IP**
+   - Assign the current IP (e.g., 192.168.1.109) to always be used by this device
+   - Save the settings
+
+5. **Done!** Your dashboard URL will never change.
+
+**Common router interfaces:**
+- **TP-Link:** Advanced → Network → DHCP Server → Address Reservation
+- **Netgear:** Advanced → Setup → LAN Setup → Address Reservation
+- **Asus:** LAN → DHCP Server → Manual Assignment
+- **Linksys:** Connectivity → Local Network → DHCP Reservations
+
+**Benefits:**
+- ✅ Bookmark the dashboard URL once - works forever
+- ✅ Perfect for static website integration
+- ✅ Easier remote access setup
+- ✅ Simpler management and troubleshooting
+
+---
+
 ## Step 2: Open the Dashboard
 
 On any device connected to the same network (laptop, phone, tablet):

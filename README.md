@@ -202,6 +202,10 @@ This script will:
 
 The installer will display your connection URL, like: `http://192.168.1.109:5000`
 
+**⭐ HIGHLY RECOMMENDED: Reserve a Static IP in Your Router**
+
+After installation, reserve a static IP for your Raspberry Pi in your router's DHCP settings. This ensures your dashboard URL never changes, making it perfect for bookmarking and website integration. See [CONNECTION_GUIDE.md](CONNECTION_GUIDE.md#step-15-reserve-a-static-ip-highly-recommended) for detailed instructions.
+
 **✨ Important:** Once installed as a service, the dashboard starts automatically on every reboot. You **don't need to activate the virtual environment manually** - the service handles this automatically using the venv's Python interpreter.
 
 **For HTTPS:** After installation, see [HTTPS_SETUP.md](HTTPS_SETUP.md) to enable SSL.

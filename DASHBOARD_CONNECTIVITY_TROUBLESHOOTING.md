@@ -165,7 +165,27 @@ hostname -I
 
 Use the **first IP address** shown (e.g., `192.168.1.109`) in your browser.
 
-**Pro Tip:** Set a static IP in your router's DHCP settings to prevent this.
+**⭐ HIGHLY RECOMMENDED: Reserve a Static IP**
+
+Prevent IP address changes by reserving a static IP in your router:
+
+1. Access router admin panel (usually http://192.168.1.1 or http://192.168.0.1)
+2. Navigate to DHCP Settings (look for "DHCP Reservation" or "Static DHCP")
+3. Find your Raspberry Pi in the connected devices list
+4. Reserve/assign the current IP address to this device permanently
+5. Save and optionally reboot your Pi
+
+**Common router locations:**
+- **TP-Link:** Advanced → Network → DHCP Server → Address Reservation
+- **Netgear:** Advanced → Setup → LAN Setup → Address Reservation
+- **Asus:** LAN → DHCP Server → Manual Assignment
+- **Linksys:** Connectivity → Local Network → DHCP Reservations
+
+**Why reserve an IP:**
+- Dashboard URL never changes - bookmark it once!
+- Essential for website integration - set API URL once and forget
+- Simplifies remote access, troubleshooting, and management
+- No hunting for IP after router reboots
 
 ### Problem 5: Firewall Blocking Port
 
