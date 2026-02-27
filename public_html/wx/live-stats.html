@@ -181,6 +181,7 @@
                 this.apiUrl = apiUrl;
                 this.container = document.getElementById(containerId);
                 this.refreshInterval = 300000; // 5 minutes
+                this.intervalId = null;
             }
 
             async fetchData() {
@@ -260,7 +261,14 @@
 
             start() {
                 this.fetchData();
-                setInterval(() => this.fetchData(), this.refreshInterval);
+                this.intervalId = setInterval(() => this.fetchData(), this.refreshInterval);
+            }
+
+            stop() {
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
             }
         }
 
