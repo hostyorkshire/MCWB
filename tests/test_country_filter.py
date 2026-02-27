@@ -129,10 +129,13 @@ def test_no_country_filter_when_not_configured():
         print(result)
         print()
 
-main
+        # Verify we got a valid result (since country=None defaults to GB now)
+        if result and "Paris" in result:
+            print("✅ PASS: Got weather result for Paris")
+            return True
+        else:
+            print("❌ FAIL: Didn't get expected weather result")
             return False
-
-        return True
 
 
 def test_country_filter_with_us():

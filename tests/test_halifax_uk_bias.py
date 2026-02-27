@@ -24,10 +24,10 @@ def test_halifax_defaults_to_uk():
 
     # Bot with default country (should be GB)
     bot = WeatherBot(debug=False)
-    
+
     # Verify the default
     assert bot.country == "GB", f"Expected default country GB, got {bot.country}"
-    print(f"✅ Bot defaults to country=GB")
+    print("✅ Bot defaults to country=GB")
     print()
 
     with patch("weather_bot.requests.get") as mock_get:
@@ -82,7 +82,7 @@ def test_halifax_defaults_to_uk():
             return True
         else:
             print("❌ FAIL: Halifax didn't return GB location")
-            print(f"   Expected 'Halifax, GB' in result")
+            print("   Expected 'Halifax, GB' in result")
             return False
 
 
