@@ -671,9 +671,12 @@ class WeatherBot:
                 print(f"Response:\n{response}\n", flush=True)
                 self.logger.info(f"Response: {response}")
                 self._send_channel_msg(response, channel_idx)
+                print(f"✓ First message (current weather) sent to channel_idx={channel_idx}", flush=True)
+                self.logger.info(f"First message (current weather) sent to channel_idx={channel_idx}")
 
                 # Add delay to allow first message to be transmitted before sending outlook
-                time.sleep(0.5)
+                # Increased delay from 0.5s to 2.0s to reduce risk of first message being missed
+                time.sleep(2.0)
 
                 # Automatically send outlook after weather response
                 outlook_log_msg = f"Sending outlook for '{safe_location}' to {safe_sender}"
@@ -684,6 +687,8 @@ class WeatherBot:
                 print(f"Outlook Response:\n{outlook_response}\n", flush=True)
                 self.logger.info(f"Outlook Response: {outlook_response}")
                 self._send_channel_msg(outlook_response, channel_idx)
+                print(f"✓ Second message (outlook) sent to channel_idx={channel_idx}", flush=True)
+                self.logger.info(f"Second message (outlook) sent to channel_idx={channel_idx}")
 
             except (ConnectionError, Timeout, RequestException) as e:
                 # Handle network-related errors with user-friendly message
@@ -1051,6 +1056,10 @@ class WeatherBot:
     def format_outlook_response(self, location_data: dict, outlook_data: dict) -> str:
         """Format a concise outlook response from pre-fetched location and outlook data."""
         name = location_data.get("name", "Unknown")
+        # Prefer 'country_code' (ISO code like 'GB', 'US') over 'country' (full name)
+        # to keep the message concise and match the weather response format
+        country = location_data.get("country_code") or location_data.get("country", "")
+        loc_str = f"{name}, {country}" if country else name
 
         daily = outlook_data.get("daily", {})
         times = daily.get("time", [])
@@ -1058,7 +1067,7 @@ class WeatherBot:
         temp_min = daily.get("temperature_2m_min", [])
         weather_codes = daily.get("weather_code", [])
 
-        lines = [f"{name} 3-day:"]
+        lines = [f"{loc_str} 3-day:"]
 
         # Only show 3 days to keep message short
         for i in range(min(3, len(times))):

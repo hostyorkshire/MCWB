@@ -121,12 +121,14 @@ Wind: 18 km/h at 230°
 After sending the current weather, the bot **automatically sends** a concise 3-day forecast:
 
 ```
-London 3-day:
+London, GB 3-day:
 02-25: Cloudy 8-15°C
 02-26: Rain 9-16°C
 02-27: Overcast 7-14°C
 https://mcwb.netlify.app
 ```
+
+The outlook includes the country code (e.g., "London, GB" or "York, US") to avoid confusion when cities have the same name in different countries.
 
 See [docs/WEATHER_OUTLOOK_FEATURE.md](docs/WEATHER_OUTLOOK_FEATURE.md) for complete documentation.
 
