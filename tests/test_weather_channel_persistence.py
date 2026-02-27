@@ -9,9 +9,13 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from weather_bot import ANNOUNCE_MESSAGE, WEATHER_CHANNEL_FILE, WeatherBot
+
+# Path to the active channels JSON file used by MeshCore
+CHANNELS_FILE = Path(__file__).parent.parent / "logs" / "channels.json"
 
 
 def test_weather_channel_persistence():
@@ -45,14 +49,16 @@ def test_weather_channel_persistence():
 
 
 def test_startup_with_persisted_channel():
-    """Test that bot uses persisted channel on startup"""
+    """Test that bot uses persisted channel on startup when no radio active channels exist"""
     print("=" * 70)
     print("TEST 2: Startup with Persisted Channel")
     print("=" * 70)
 
-    # Clean up
+    # Clean up both persistence files so radio active channels don't interfere
     if WEATHER_CHANNEL_FILE.exists():
         os.remove(WEATHER_CHANNEL_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
 
     # First session: detect weather channel on channel_idx=3
     bot1 = WeatherBot(node_id="test_bot", debug=False, announce=True)
@@ -73,18 +79,22 @@ def test_startup_with_persisted_channel():
     # Clean up
     if WEATHER_CHANNEL_FILE.exists():
         os.remove(WEATHER_CHANNEL_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
     print()
 
 
 def test_startup_announcement_uses_persisted_channel():
-    """Test that startup announcement goes to persisted weather channel"""
+    """Test that startup announcement goes to persisted weather channel when no radio active channels exist"""
     print("=" * 70)
     print("TEST 3: Startup Announcement Uses Persisted Channel")
     print("=" * 70)
 
-    # Clean up
+    # Clean up both persistence files so radio active channels don't interfere
     if WEATHER_CHANNEL_FILE.exists():
         os.remove(WEATHER_CHANNEL_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
 
     # Simulate persisted channel from previous session
     persisted_channel = 2
@@ -121,6 +131,8 @@ def test_startup_announcement_uses_persisted_channel():
     # Clean up
     if WEATHER_CHANNEL_FILE.exists():
         os.remove(WEATHER_CHANNEL_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
     print()
 
 
@@ -157,14 +169,16 @@ def test_explicit_config_overrides_persisted():
 
 
 def test_no_persistence_file_defaults_to_zero():
-    """Test that bot defaults to channel 0 when no persistence file exists"""
+    """Test that bot defaults to channel 0 when no persistence files exist"""
     print("=" * 70)
     print("TEST 5: No Persistence File - Default to Channel 0")
     print("=" * 70)
 
-    # Clean up
+    # Clean up both persistence files
     if WEATHER_CHANNEL_FILE.exists():
         os.remove(WEATHER_CHANNEL_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
@@ -176,6 +190,8 @@ def test_no_persistence_file_defaults_to_zero():
     # Clean up
     if WEATHER_CHANNEL_FILE.exists():
         os.remove(WEATHER_CHANNEL_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
     print()
 
 

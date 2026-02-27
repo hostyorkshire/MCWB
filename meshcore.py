@@ -226,6 +226,10 @@ class MeshCore:
         self._serial = None
         self._listener_thread = None
 
+        # Load previously active channels from file so they are available on startup
+        # This enables channel selection before any messages are received
+        self.load_active_channels()
+
     # Maximum length for logged content to prevent log spam
     _MAX_LOG_LENGTH = 200
 
@@ -1044,6 +1048,41 @@ class MeshCore:
                 }
             )
         return channels
+
+    def load_active_channels(self, filename: str = None):
+        """
+        Load previously active channels from a JSON file into _active_channels.
+
+        This restores channel activity state across restarts, making active channels
+        available immediately on startup without waiting for incoming messages.
+
+        Args:
+            filename: Path to load the channels data from (default: <script_dir>/logs/channels.json)
+        """
+        import json
+        import os
+        from pathlib import Path
+
+        # Use absolute path based on script location to avoid working directory issues
+        if filename is None:
+            filename = str(Path(__file__).parent / "logs" / "channels.json")
+
+        if not os.path.exists(filename):
+            return
+
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+            channels = data.get("channels", [])
+            for ch in channels:
+                channel_idx = ch.get("channel_idx")
+                last_used = ch.get("last_used")
+                if channel_idx is not None and last_used is not None:
+                    self._active_channels[int(channel_idx)] = float(last_used)
+            if self.debug:
+                self.log(f"Loaded {len(self._active_channels)} active channel(s) from {filename}")
+        except (IOError, OSError, json.JSONDecodeError, ValueError, KeyError, TypeError) as e:
+            self.error_logger.error(f"Failed to load active channels from {filename}: {e}")
 
     def save_active_channels(self, filename: str = None):
         """

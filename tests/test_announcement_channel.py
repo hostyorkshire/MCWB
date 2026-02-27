@@ -10,9 +10,13 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import time
+from pathlib import Path
 from unittest.mock import patch
 
 from weather_bot import ANNOUNCE_INTERVAL, ANNOUNCE_MESSAGE, ANNOUNCE_TIMESTAMP_FILE, WeatherBot
+
+# Path to the active channels JSON file used by MeshCore
+CHANNELS_FILE = Path(__file__).parent.parent / "logs" / "channels.json"
 
 
 def test_announcement_goes_to_weather_channel():
@@ -126,14 +130,16 @@ def test_announcement_channel_not_default():
 
 
 def test_announcement_channel_defaults_to_zero_when_not_configured():
-    """Test that when weather_channel_idx is not configured, announcements default to channel_idx=0"""
+    """Test that when weather_channel_idx is not configured and no channel history exists, announcements default to channel_idx=0"""
     print("=" * 70)
     print("TEST: Announcement Defaults to Channel 0 When Not Configured")
     print("=" * 70)
 
-    # Clean up any existing timestamp file
+    # Clean up any existing timestamp and channel files
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
 
     # Simulate old announcement
     old_time = time.time() - (5 * 60 * 60)
@@ -174,6 +180,8 @@ def test_announcement_channel_defaults_to_zero_when_not_configured():
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
+    if CHANNELS_FILE.exists():
+        os.remove(CHANNELS_FILE)
     print()
 
 
