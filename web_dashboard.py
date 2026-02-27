@@ -416,8 +416,15 @@ def api_cloudflare_status():
                         try:
                             # Extract first part of URL (before first dot) and convert to uppercase
                             # e.g., "bot.intergalactic.it.com" -> "BOT"
-                            # Remove protocol if present
-                            url_without_protocol = tunnel_url.replace('https://', '').replace('http://', '')
+                            # Remove protocol if present (case-insensitive)
+                            url_lower = tunnel_url.lower()
+                            if url_lower.startswith('https://'):
+                                url_without_protocol = tunnel_url[8:]
+                            elif url_lower.startswith('http://'):
+                                url_without_protocol = tunnel_url[7:]
+                            else:
+                                url_without_protocol = tunnel_url
+                            
                             # Remove port and path if present
                             hostname = url_without_protocol.split('/')[0].split(':')[0]
                             if hostname and '.' in hostname:
@@ -426,8 +433,8 @@ def api_cloudflare_status():
                             elif hostname:
                                 # If no dots, use the whole hostname
                                 tunnel_name = hostname.upper()
-                        except (ValueError, IndexError):
-                            # If parsing fails, leave tunnel_name as None
+                        except Exception:
+                            # If parsing fails for any reason, leave tunnel_name as None
                             pass
                 except IOError:
                     pass
