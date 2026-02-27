@@ -141,6 +141,20 @@ class TestWebDashboard(unittest.TestCase):
         self.assertIn("success_rate", data)
         self.assertIn("last_updated", data)
 
+    def test_data_api(self):
+        """Test the data API endpoint for live stats widget"""
+        response = self.client.get("/api/data")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, "application/json")
+
+        data = response.get_json()
+        self.assertIn("total_requests", data)
+        self.assertIn("total_errors", data)
+        self.assertIn("success_rate", data)
+        self.assertIn("last_updated", data)
+        self.assertIn("status", data)
+        self.assertEqual(data["status"], "running")
+
     def test_stats_hourly_api(self):
         """Test the hourly stats API endpoint"""
         response = self.client.get("/api/stats/hourly")

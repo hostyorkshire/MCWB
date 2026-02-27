@@ -198,6 +198,23 @@ def api_stats():
     )
 
 
+@app.route("/api/data")
+def api_data():
+    """Get current weather/bot data for live stats widget"""
+    stats_data = stats.get_stats()
+
+    return jsonify({
+        "total_requests": stats_data.get("total_requests", 0),
+        "total_errors": stats_data.get("total_errors", 0),
+        "success_rate": calculate_success_rate(
+            stats_data.get("total_requests", 0),
+            stats_data.get("total_errors", 0)
+        ),
+        "last_updated": stats_data.get("last_updated"),
+        "status": "running"
+    })
+
+
 @app.route("/api/stats/hourly")
 def api_stats_hourly():
     """Get hourly request statistics"""
