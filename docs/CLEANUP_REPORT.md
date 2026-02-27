@@ -178,13 +178,13 @@ All required packages installed and working:
 - ✅ Security headers configured (X-Frame-Options, etc.)
 - ✅ Static site deployment (no build process needed)
 - ✅ Ready for automatic deployment from GitHub
-- ✅ **Website URL:** https://wx.intergalactic.it.com/
+- ✅ **Website URL:** https://weather.example.com/
 
 **Deployment Process:**
 1. Push to GitHub repository (completed)
 2. Netlify automatically detects changes
 3. Deploys from /website directory
-4. Site goes live at wx.intergalactic.it.com
+4. Site goes live at weather.example.com
 
 ---
 

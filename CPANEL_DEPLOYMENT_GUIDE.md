@@ -1,12 +1,12 @@
-# Deploying Live Dashboard to wx.intergalactic.it.com
+# Deploying Live Dashboard to weather.example.com
 
-Quick guide for connecting the static website at **wx.intergalactic.it.com** to your bot running on **192.168.1.109**.
+Quick guide for connecting the static website at **weather.example.com** to your bot running on **192.168.1.100**.
 
 ## Overview
 
 ```
 Static Website                Cloudflare            Raspberry Pi
-(wx.intergalactic.it.com) →  (Tunnel) →  (192.168.1.109:5000)
+(weather.example.com) →  (Tunnel) →  (192.168.1.100:5000)
 [cPanel Hosting]                          [Local Bot Dashboard]
 ```
 
@@ -58,8 +58,8 @@ Example tunnel URL: `https://mcwb-dashboard.yourdomain.com`
 
 1. Log in to cPanel: https://intergalactic.it.com/cpanel (or your cPanel URL)
 2. Navigate to **File Manager**
-3. Go to the directory where `wx.intergalactic.it.com` is hosted
-   - Usually `public_html/wx/` or `public_html/wx.intergalactic.it.com/`
+3. Go to the directory where `weather.example.com` is hosted
+   - Usually `public_html/wx/` or `public_html/weather.example.com/`
 4. Navigate to `js/` folder
 5. Click **Upload**
 6. Upload the modified `dashboard.js` file
@@ -97,7 +97,7 @@ git push
 
 2. **Visit your dashboard:**
    ```
-   https://wx.intergalactic.it.com/dashboard.html
+   https://weather.example.com/dashboard.html
    ```
 
 3. **Check for live connection:**
@@ -136,7 +136,7 @@ curl https://mcwb-dashboard.yourdomain.com/api/status
 **Check 3: Verify dashboard.js was uploaded**
 ```bash
 # From browser, visit:
-https://wx.intergalactic.it.com/js/dashboard.js
+https://weather.example.com/js/dashboard.js
 
 # Press Ctrl+F and search for your tunnel URL
 # It should be there on line 15
@@ -148,7 +148,7 @@ https://wx.intergalactic.it.com/js/dashboard.js
 
 ### Problem: CORS Errors in Browser Console
 
-The web dashboard is already configured to allow requests from `wx.intergalactic.it.com`.
+The web dashboard is already configured to allow requests from `weather.example.com`.
 
 If you see CORS errors:
 
@@ -240,9 +240,9 @@ sudo journalctl -u cloudflared-mcwb.service -f
 
 ### Current Setup
 - ✅ Traffic encrypted via HTTPS (Cloudflare provides valid SSL certificate)
-- ✅ Local IP (192.168.1.109) never exposed publicly
+- ✅ Local IP (192.168.1.100) never exposed publicly
 - ✅ No inbound ports opened on your router
-- ✅ CORS configured to allow wx.intergalactic.it.com
+- ✅ CORS configured to allow weather.example.com
 - ⚠️ Dashboard has no authentication (anyone with URL can access)
 
 ### Recommendations
@@ -313,13 +313,13 @@ If you're still having issues:
 ## Summary
 
 ✅ **What we accomplished:**
-- Installed Cloudflare Tunnel on Raspberry Pi (192.168.1.109)
+- Installed Cloudflare Tunnel on Raspberry Pi (192.168.1.100)
 - Created secure HTTPS endpoint for your bot dashboard
-- Updated wx.intergalactic.it.com to display live data
+- Updated weather.example.com to display live data
 - No port forwarding or router configuration needed
 
 ✅ **Your users can now:**
-- Visit https://wx.intergalactic.it.com/dashboard.html
+- Visit https://weather.example.com/dashboard.html
 - See real-time bot data from anywhere in the world
 - View statistics, logs, and active channels
 - Access securely via HTTPS with valid certificate

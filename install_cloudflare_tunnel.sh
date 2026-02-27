@@ -19,7 +19,7 @@ echo "  Cloudflare Tunnel Setup for MCWB Dashboard"
 echo "================================================================"
 echo ""
 echo "This script will install and configure Cloudflare Tunnel to"
-echo "securely expose your local dashboard (192.168.1.109:5000) to"
+echo "securely expose your local dashboard (192.168.1.100:5000) to"
 echo "the internet without port forwarding."
 echo ""
 
@@ -313,7 +313,7 @@ echo ""
 
 if [ -f "$TUNNEL_CONFIG_DIR/tunnel_url.txt" ]; then
     TUNNEL_URL=$(cat "$TUNNEL_CONFIG_DIR/tunnel_url.txt")
-    echo "1. Update your static website (wx.intergalactic.it.com):"
+    echo "1. Update your static website (weather.example.com):"
     echo "   - Edit public_html/wx/js/dashboard.js"
     echo "   - Set: const TUNNEL_URL = 'https://$TUNNEL_URL';"
     echo "   - Upload to cPanel hosting"

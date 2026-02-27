@@ -128,7 +128,7 @@ This document summarizes the comprehensive code quality check and cleanup perfor
 - ✅ Publish directory set to "website"
 - ✅ Security headers configured
 - ✅ Static site deployment (no build step needed)
-- ✅ Documentation site available at https://wx.intergalactic.it.com/
+- ✅ Documentation site available at https://weather.example.com/
 
 ## Files Changed in This Cleanup
 

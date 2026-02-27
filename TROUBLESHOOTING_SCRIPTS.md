@@ -141,7 +141,7 @@ If scripts don't resolve your issue:
 
 1. Save the output: `./diagnose_dashboard.sh > diagnostic_output.txt`
 2. Check service logs: `sudo journalctl -u mcwb-dashboard -n 100 > service_logs.txt`
-3. Open an issue at https://github.com/hostyorkshire/MCWB/issues
+3. Open an issue at https://github.com/yourusername/MCWB/issues
 4. Include both output files
 
 ---

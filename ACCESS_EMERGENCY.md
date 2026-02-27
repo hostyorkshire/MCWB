@@ -96,14 +96,14 @@ If you **cannot** physically access the Pi:
 From another computer on the same network:
 ```bash
 ssh your_username@your-pi-ip
-# Example: ssh pi@192.168.1.109
+# Example: ssh pi@192.168.1.100
 ```
 
 ### Test Dashboard Access
 Open in your web browser:
 ```
 http://your-pi-ip:5000
-# Example: http://192.168.1.109:5000
+# Example: http://192.168.1.100:5000
 ```
 
 **Note:** Use `http://` NOT `https://` by default

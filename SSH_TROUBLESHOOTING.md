@@ -8,17 +8,17 @@ If you can **ping** your Raspberry Pi but **cannot SSH** into it, this guide wil
 
 ```bash
 # Ping works:
-$ ping 192.168.1.109
-64 bytes from 192.168.1.109: icmp_seq=1 ttl=64 time=124 ms
+$ ping 192.168.1.100
+64 bytes from 192.168.1.100: icmp_seq=1 ttl=64 time=124 ms
 ^C
 
 # But SSH fails:
-$ ssh weatherbot@192.168.1.109
-ssh: connect to host 192.168.1.109 port 22: Connection refused
+$ ssh weatherbot@192.168.1.100
+ssh: connect to host 192.168.1.100 port 22: Connection refused
 # OR
-ssh: connect to host 192.168.1.109 port 22: Connection timed out
+ssh: connect to host 192.168.1.100 port 22: Connection timed out
 # OR
-ssh: connect to host 192.168.1.109 port 22: No route to host
+ssh: connect to host 192.168.1.100 port 22: No route to host
 ```
 
 ---
@@ -101,7 +101,7 @@ sudo ufw status
 sudo ufw disable
 
 # Then SSH in remotely and properly configure it:
-ssh user@192.168.1.109
+ssh user@192.168.1.100
 sudo ufw allow 22/tcp
 sudo ufw enable
 ```
@@ -170,7 +170,7 @@ If SSH is configured to use a non-standard port:
 sudo grep "^Port" /etc/ssh/sshd_config
 
 # If it shows a different port (e.g., 2222), connect with:
-ssh -p 2222 user@192.168.1.109
+ssh -p 2222 user@192.168.1.100
 ```
 
 ---
@@ -243,13 +243,13 @@ Keep notes of:
 
 ```bash
 # Test SSH connection
-ssh user@192.168.1.109
+ssh user@192.168.1.100
 
 # Test with verbose output (for debugging)
-ssh -v user@192.168.1.109
+ssh -v user@192.168.1.100
 
 # Test specific port
-ssh -p 22 user@192.168.1.109
+ssh -p 22 user@192.168.1.100
 ```
 
 ### Test from Remote Network
@@ -277,7 +277,7 @@ ssh user@yourbot.duckdns.org
 | `Connection timed out` | Wrong IP address OR firewall blocking | Verify IP; check firewall |
 | `No route to host` | Network issue OR firewall | Check network; check firewall |
 | `Permission denied` | Wrong password OR SSH keys issue | Check credentials; check SSH config |
-| `Host key verification failed` | SSH key changed (Pi was reinstalled) | Remove old key: `ssh-keygen -R 192.168.1.109` |
+| `Host key verification failed` | SSH key changed (Pi was reinstalled) | Remove old key: `ssh-keygen -R 192.168.1.100` |
 
 ---
 
@@ -289,10 +289,10 @@ ssh user@yourbot.duckdns.org
 # From another device on the same network:
 
 # Test if port 22 is open (should return "Connected")
-nc -zv 192.168.1.109 22
+nc -zv 192.168.1.100 22
 
 # Or use nmap
-nmap -p 22 192.168.1.109
+nmap -p 22 192.168.1.100
 ```
 
 ### Check from the Pi Itself
@@ -362,7 +362,7 @@ sudo tail -f /var/log/auth.log
 
 3. **Get detailed SSH connection info:**
    ```bash
-   ssh -vvv user@192.168.1.109
+   ssh -vvv user@192.168.1.100
    ```
 
 4. **Review documentation:**
@@ -380,7 +380,7 @@ Once SSH access is restored:
    ```bash
    # See SSH_REMOTE_ACCESS.md for detailed instructions
    ssh-keygen -t ed25519
-   ssh-copy-id user@192.168.1.109
+   ssh-copy-id user@192.168.1.100
    ```
 
 2. **Properly configure the firewall** (in the right order!)

@@ -29,14 +29,14 @@ If you only have one specific issue, you can use these targeted scripts:
 
 ---
 
-## Issue 1: Dashboard URL Not Working (e.g., http://192.168.1.109:5000)
+## Issue 1: Dashboard URL Not Working (e.g., http://192.168.1.100:5000)
 
 ### Symptom
 - Dashboard **was working** before on that IP and port
 - Now the URL doesn't open in browser
 - You just get "can't connect" or similar error
 
-**Note:** The IP address 192.168.1.109 is just an example. Your dashboard may be on a different IP address.
+**Note:** The IP address 192.168.1.100 is just an example. Your dashboard may be on a different IP address.
 
 ### Quick Fix
 ```bash
@@ -155,7 +155,7 @@ sudo systemctl status mcwb-dashboard weather_bot
 ## Prevention Tips
 
 ### For Dashboard
-1. **Reserve static IP** in your router (e.g., 192.168.1.109)
+1. **Reserve static IP** in your router (e.g., 192.168.1.100)
    - Prevents IP changes after router reboots
    - See CONNECTION_GUIDE.md Step 1.5
 
@@ -203,7 +203,7 @@ sudo systemctl status mcwb-dashboard weather_bot
    sudo journalctl -u mcwb-dashboard -n 100 > ~/dashboard_logs.txt
    ```
 
-3. Open issue at https://github.com/hostyorkshire/MCWB/issues
+3. Open issue at https://github.com/yourusername/MCWB/issues
    - Attach both files
    - Include your Raspberry Pi model and OS version
 

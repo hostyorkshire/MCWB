@@ -650,9 +650,9 @@ sudo nano /etc/ssmtp/ssmtp.conf
 
 Example configuration for Gmail:
 ```ini
-root=your_email@gmail.com
+root=your.email@example.com
 mailhub=smtp.gmail.com:587
-AuthUser=your_email@gmail.com
+AuthUser=your.email@example.com
 AuthPass=your_app_password
 UseSTARTTLS=YES
 ```
@@ -665,7 +665,7 @@ nano ~/check_bot.sh
 ```bash
 #!/bin/bash
 if ! systemctl is-active --quiet weather_bot; then
-    echo "Weather bot is down!" | mail -s "Alert: Bot Down" your_email@gmail.com
+    echo "Weather bot is down!" | mail -s "Alert: Bot Down" your.email@example.com
 fi
 ```
 

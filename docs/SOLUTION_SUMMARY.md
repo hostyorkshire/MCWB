@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-"the bot is not workin. See log." - User hostyorkshire
+"the bot is not workin. See log." - User yourusername
 
 The user reported that the weather bot wasn't working when configured with `--channel weather`.
 

@@ -11,14 +11,14 @@ let isLiveMode = false;
 // After setting up Cloudflare Tunnel, replace the URL below with your tunnel URL
 // Example: const TUNNEL_URL = 'https://mcwb-dashboard.yourdomain.com';
 // 
-// For the cPanel-hosted site at wx.intergalactic.it.com:
-// Set this to your Cloudflare Tunnel URL that points to your bot at 192.168.1.109:5000
+// For the cPanel-hosted site at weather.example.com:
+// Set this to your Cloudflare Tunnel URL that points to your bot at 192.168.1.100:5000
 // Leave empty to run in demo mode only
 
 const TUNNEL_URL = ''; // Set your Cloudflare Tunnel URL here (e.g., 'https://mcwb-dashboard.yourdomain.com')
 
 // Alternative: Local network URL (if accessing from local network)
-const LOCAL_URL = 'http://192.168.1.109:5000';
+const LOCAL_URL = 'http://192.168.1.100:5000';
 
 // ============================================================================
 

@@ -10,7 +10,7 @@ When people say "I cannot login," they actually mean "I cannot connect to" or "I
 
 ## ⚡ Quick Fix: Dashboard Was Working Before But Stopped
 
-**If your dashboard was working before (e.g., at http://192.168.1.109:5000) and suddenly stopped:**
+**If your dashboard was working before (e.g., at http://192.168.1.100:5000) and suddenly stopped:**
 
 ### Option 1: Quick Fix Script (Fastest)
 ```bash
@@ -43,7 +43,7 @@ Both scripts will automatically offer to fix issues they find.
 
 ---
 
-## Issue: Cannot Access Dashboard at 192.168.1.109:5000
+## Issue: Cannot Access Dashboard at 192.168.1.100:5000
 
 If you're unable to connect to your web dashboard, follow these diagnostic steps **in order**:
 
@@ -55,8 +55,8 @@ If you're unable to connect to your web dashboard, follow these diagnostic steps
 
 **Quick Fix:** Change your URL from `https://` to `http://`
 
-❌ **Wrong:**  `https://192.168.1.109:5000`  
-✅ **Correct:** `http://192.168.1.109:5000`
+❌ **Wrong:**  `https://192.168.1.100:5000`  
+✅ **Correct:** `http://192.168.1.100:5000`
 
 **Why this happens:**
 - The dashboard runs in **HTTP mode** by default (not HTTPS/SSL)
@@ -64,7 +64,7 @@ If you're unable to connect to your web dashboard, follow these diagnostic steps
 - If you previously visited the URL with HTTPS, the browser might cache it
 
 **Solutions:**
-1. **Use HTTP** - Type `http://192.168.1.109:5000` explicitly in the address bar
+1. **Use HTTP** - Type `http://192.168.1.100:5000` explicitly in the address bar
 2. **Clear browser cache** - Clear cache/cookies for the IP address
 3. **Try incognito/private mode** - This bypasses cached HTTPS redirects
 4. **Enable HTTPS on server** - If you need HTTPS, see below
@@ -76,7 +76,7 @@ If you need HTTPS (for example, to connect from a Netlify-hosted website), follo
 ```bash
 # 1. Generate SSL certificate (replace IP with yours)
 cd ~/MCWB
-python3 generate_ssl_cert.py --hostname 192.168.1.109
+python3 generate_ssl_cert.py --hostname 192.168.1.100
 
 # 2. Update the service to use SSL
 sudo nano /etc/systemd/system/mcwb-dashboard.service
@@ -90,7 +90,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart mcwb-dashboard
 
 # 5. Now connect with HTTPS
-# https://192.168.1.109:5000
+# https://192.168.1.100:5000
 ```
 
 **Note:** Self-signed certificates will show a browser warning. Click "Advanced" → "Proceed" to continue.
@@ -204,7 +204,7 @@ cd ~/MCWB
 hostname -I
 ```
 
-Use the **first IP address** shown (e.g., `192.168.1.109`) in your browser.
+Use the **first IP address** shown (e.g., `192.168.1.100`) in your browser.
 
 **⭐ HIGHLY RECOMMENDED: Reserve a Static IP**
 
@@ -326,7 +326,7 @@ sudo netstat -tlnp | grep "0.0.0.0:5000"
 hostname -I
 
 # 5. Test from another device (replace with your IP)
-curl http://192.168.1.109:5000
+curl http://192.168.1.100:5000
 ```
 
 ## Still Not Working?
@@ -349,7 +349,7 @@ Look for:
 
 ## Getting Help
 
-If you're still stuck, open an issue at https://github.com/hostyorkshire/MCWB/issues with:
+If you're still stuck, open an issue at https://github.com/yourusername/MCWB/issues with:
 
 1. Output of `sudo systemctl status mcwb-dashboard`
 2. Output of `sudo journalctl -u mcwb-dashboard -n 100`

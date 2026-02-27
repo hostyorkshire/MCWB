@@ -90,7 +90,7 @@ York, US 3-day:
 02-25: Rain 55-70°F
 02-26: Cloudy 58-73°F
 02-27: Clear 52-68°F
-https://wx.intergalactic.it.com
+https://weather.example.com
 ```
 
 Note: Both messages now clearly show "York, US" so users know they're getting the forecast for York, Pennsylvania, not York, England.

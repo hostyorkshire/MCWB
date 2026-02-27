@@ -27,7 +27,7 @@ except ImportError:
     sys.exit(1)
 
 
-def generate_self_signed_cert(cert_file="cert.pem", key_file="key.pem", hostname="192.168.1.109"):
+def generate_self_signed_cert(cert_file="cert.pem", key_file="key.pem", hostname="192.168.1.100"):
     """Generate a self-signed certificate for local use"""
 
     print("=" * 70)
@@ -137,8 +137,8 @@ if __name__ == "__main__":
     parser.add_argument("--key", default="key.pem", help="Private key file path (default: key.pem)")
     parser.add_argument(
         "--hostname",
-        default="192.168.1.109",
-        help="Hostname or IP address for the certificate (default: 192.168.1.109)",
+        default="192.168.1.100",
+        help="Hostname or IP address for the certificate (default: 192.168.1.100)",
     )
 
     args = parser.parse_args()

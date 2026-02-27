@@ -6,8 +6,8 @@ This guide helps you troubleshoot common issues with the MeshCore Weather Bot.
 
 ### Symptoms
 
-- ✅ Ping works: `ping 192.168.1.109` succeeds
-- ❌ SSH fails: `ssh user@192.168.1.109` connection refused or times out
+- ✅ Ping works: `ping 192.168.1.100` succeeds
+- ❌ SSH fails: `ssh user@192.168.1.100` connection refused or times out
 
 ### Cause
 
