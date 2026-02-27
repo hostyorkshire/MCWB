@@ -2,8 +2,14 @@
 
 Lightweight Python3 weather bot for MeshCore mesh networks.
 
+## 🚨 Having Issues?
+
+- **Dashboard URL not working?** → See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) - Fast solutions for connectivity issues
+- **Bot not announcing on boot?** → See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) - Fix announcement problems in 2 steps
+
 ## 📖 Quick Links
 
+- **⚡ [QUICK FIX GUIDE](QUICK_FIX_GUIDE.md)** - Fast solutions for common issues
 - **❓ [FAQ](FAQ.md)** - Common questions & quick answers (including boot setup scripts!)
 - **🚀 [Quick Start](QUICKSTART_SIMPLE.md)** - Get started in minutes
 - **🍓 [Raspberry Pi Setup](RASPBERRY_PI_SETUP.md)** - Auto-start on boot guide
@@ -202,6 +208,10 @@ This script will:
 
 The installer will display your connection URL, like: `http://192.168.1.109:5000`
 
+**⭐ HIGHLY RECOMMENDED: Reserve a Static IP in Your Router**
+
+After installation, reserve a static IP for your Raspberry Pi in your router's DHCP settings. This ensures your dashboard URL never changes, making it perfect for bookmarking and website integration. See [CONNECTION_GUIDE.md](CONNECTION_GUIDE.md#step-15-reserve-a-static-ip-highly-recommended) for detailed instructions.
+
 **✨ Important:** Once installed as a service, the dashboard starts automatically on every reboot. You **don't need to activate the virtual environment manually** - the service handles this automatically using the venv's Python interpreter.
 
 **For HTTPS:** After installation, see [HTTPS_SETUP.md](HTTPS_SETUP.md) to enable SSL.
@@ -229,7 +239,10 @@ python3 web_dashboard.py --ssl
 
 The dashboard will display the connection URL when it starts.
 
-**Can't connect?** See [DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md](DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md) for a comprehensive step-by-step guide, or the [Troubleshooting Connection Issues](WEB_DASHBOARD.md#troubleshooting-connection-issues) section in WEB_DASHBOARD.md.
+**Can't connect?** 
+- **Quick fix (if it worked before):** Run `./fix_dashboard.sh` to quickly restore functionality
+- **Full diagnostics:** Run `./diagnose_dashboard.sh` to identify and fix issues
+- **Manual troubleshooting:** See [DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md](DASHBOARD_CONNECTIVITY_TROUBLESHOOTING.md)
 
 ![Dark Theme Dashboard](https://github.com/user-attachments/assets/514e2c7d-0c52-4708-b0fc-ab571c9069f6)
 

@@ -2,6 +2,14 @@
 
 **Can't connect to your Web Dashboard?** This guide will get you connected in 5 minutes.
 
+## 🔓 IMPORTANT: No Login Required!
+
+**There is NO login, username, or password for the dashboard.** Simply open the URL in your web browser and you're in!
+
+If you're seeing "cannot login" or similar messages, you're actually experiencing a **connectivity issue** (cannot connect/access), not a login problem. Follow the steps below to fix connectivity.
+
+---
+
 ## 🎛️ NEW: Unified Service Manager
 
 **The easiest way to set up everything:**
@@ -49,6 +57,48 @@ cd ~/MCWB
 
 Write down that URL! That's where you'll connect.
 
+## Step 1.5: Reserve a Static IP (HIGHLY RECOMMENDED!)
+
+**Why do this?** Your Raspberry Pi's IP address can change when your router reboots. Reserving a static IP ensures your dashboard URL never changes!
+
+**How to reserve an IP:**
+
+1. **Access your router's admin panel**
+   - Usually at http://192.168.1.1 or http://192.168.0.1
+   - Login with your router admin credentials
+
+2. **Find DHCP Settings**
+   - Look under: Advanced → Network → LAN Settings
+   - Different routers use different names:
+     - "DHCP Reservation"
+     - "Static DHCP"
+     - "Address Reservation"
+     - "MAC Address Binding"
+
+3. **Find your Raspberry Pi**
+   - Look in the list of connected devices
+   - Find by hostname (e.g., "raspberrypi") or MAC address
+
+4. **Reserve the IP**
+   - Assign the current IP (e.g., 192.168.1.109) to always be used by this device
+   - Save the settings
+
+5. **Done!** Your dashboard URL will never change.
+
+**Common router interfaces:**
+- **TP-Link:** Advanced → Network → DHCP Server → Address Reservation
+- **Netgear:** Advanced → Setup → LAN Setup → Address Reservation
+- **Asus:** LAN → DHCP Server → Manual Assignment
+- **Linksys:** Connectivity → Local Network → DHCP Reservations
+
+**Benefits:**
+- ✅ Bookmark the dashboard URL once - works forever
+- ✅ Perfect for static website integration
+- ✅ Easier remote access setup
+- ✅ Simpler management and troubleshooting
+
+---
+
 ## Step 2: Open the Dashboard
 
 On any device connected to the same network (laptop, phone, tablet):
@@ -69,6 +119,37 @@ If you've deployed the MCWB static website (from the `website/` folder), you can
 Now your website will show **real-time live data** from your Raspberry Pi! 🎉
 
 ## Still Can't Connect?
+
+### ⚡ Dashboard Was Working Before But Stopped?
+
+If your dashboard was working at http://192.168.1.109:5000 before but suddenly stopped:
+
+**Quick Fix (Recommended):**
+```bash
+cd ~/MCWB
+./fix_dashboard.sh
+```
+
+This script will:
+- Check if the service is running
+- Restart it if needed
+- Fix common issues (dependencies, permissions)
+- Get you back online in seconds
+
+**Full Diagnostics:**
+```bash
+cd ~/MCWB
+./diagnose_dashboard.sh
+```
+
+This runs a comprehensive 8-step diagnostic covering:
+- Service status and configuration
+- Network connectivity
+- Firewall settings
+- Python dependencies
+- And more...
+
+---
 
 ### Common Issue: Dashboard Not Starting After Reboot
 

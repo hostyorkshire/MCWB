@@ -309,6 +309,8 @@ def main():
     protocol = "https" if args.ssl else "http"
 
     print()
+    print("🔓 NO LOGIN REQUIRED - Just open the URL in your browser!")
+    print()
     print("🌐 Dashboard will be accessible at:")
     print(f"   • Local:   {protocol}://localhost:{args.port}")
     if args.host == "0.0.0.0" and local_ip:
@@ -337,6 +339,12 @@ def main():
             print()
             print("💡 To enable HTTPS (secure connection), use: --ssl")
             print("   (You'll need to generate SSL certificates first)")
+            print()
+            print("🔧 Can't connect? Common fixes:")
+            print(f"   1. Make sure you use HTTP (not HTTPS): http://{local_ip}:{args.port}")
+            print("   2. Check firewall: sudo ufw allow 5000/tcp")
+            print("   3. Verify IP address: hostname -I")
+            print("   4. Test locally first: curl http://localhost:5000")
     elif args.host == "127.0.0.1":
         print()
         print("ℹ️  Dashboard restricted to localhost only")

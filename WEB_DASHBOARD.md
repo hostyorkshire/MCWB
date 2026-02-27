@@ -2,6 +2,14 @@
 
 A dark-themed web interface for monitoring the MeshCore Weather Bot in real-time.
 
+## 🔓 No Login or Authentication Required
+
+**Important:** The dashboard does NOT have a login system. Simply navigate to the dashboard URL in your web browser to access it instantly - no username or password needed!
+
+If you're experiencing "cannot login" issues, you're actually facing a **connectivity problem** (cannot connect/access). See the [Troubleshooting Connection Issues](#troubleshooting-connection-issues) section below.
+
+---
+
 ## 🚀 Super Quick Start (3 Simple Steps)
 
 **Can't connect to your dashboard?** Follow these steps or see the [Simple Connection Guide](CONNECTION_GUIDE.md) for detailed troubleshooting.
@@ -363,7 +371,29 @@ hostname -I | awk '{print $1}'
 # Example: http://192.168.1.109:5000
 ```
 
-**💡 Pro Tip:** Reserve a static IP for your Raspberry Pi in your router's DHCP settings. This way, the IP address won't change and you can always use the same URL. This is especially useful for website integration!
+**⭐ HIGHLY RECOMMENDED: Reserve a Static IP Address**
+
+To avoid IP address changes and ensure consistent access to your dashboard:
+
+1. **Access your router's admin panel** (usually at http://192.168.1.1 or http://192.168.0.1)
+2. **Find DHCP Settings** (may be under Advanced, LAN Settings, or Network Settings)
+3. **Look for "DHCP Reservation," "Static DHCP," or "Address Reservation"**
+4. **Find your Raspberry Pi** in the list of connected devices (look for hostname like "raspberrypi")
+5. **Reserve/assign a static IP** (e.g., 192.168.1.109)
+6. **Save the settings** and optionally reboot your Raspberry Pi
+
+**Benefits of reserving an IP:**
+- ✅ Dashboard URL never changes - bookmark it once and you're done!
+- ✅ Perfect for website integration - set the API URL once and forget it
+- ✅ Easier remote access setup (VPN, port forwarding)
+- ✅ Simpler troubleshooting - always know where your Pi is on the network
+- ✅ No need to find the IP after every router reboot
+
+**Example router interfaces:**
+- **TP-Link:** Advanced → Network → DHCP Server → Address Reservation
+- **Netgear:** Advanced → Setup → LAN Setup → Address Reservation
+- **Asus:** LAN → DHCP Server → Manual Assignment
+- **Linksys:** Connectivity → Local Network → DHCP Reservations
 
 **Issue 5: Service Running but Can't Connect**
 
