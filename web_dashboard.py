@@ -210,6 +210,16 @@ def api_stats_recent_users():
     return jsonify({"users": recent_users})
 
 
+@app.route("/api/stats/reset", methods=["POST"])
+def api_stats_reset():
+    """Reset all statistics"""
+    try:
+        stats.reset_stats()
+        return jsonify({"success": True, "message": "Statistics reset successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/channels")
 def api_channels():
     """Get active channels from the LORA meshcore radio"""
@@ -238,8 +248,10 @@ def api_channels():
                     # Channel 0 is the default/public channel
                     display_name = "#public"
                 else:
-                    # Unknown named channel - show as index
-                    display_name = f"#channel{ch.get('channel_idx')}"
+                    # Unknown named channel - show as index with indicator
+                    # Note: MeshCore firmware only sends channel indices (0-7), not names.
+                    # Channel names must be configured in the bot via --channel parameter.
+                    display_name = f"#channel{ch.get('channel_idx')} (unnamed)"
 
                 # Format timestamp for display
                 last_used_str = None
