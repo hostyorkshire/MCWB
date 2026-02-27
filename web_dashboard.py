@@ -411,6 +411,14 @@ def api_cloudflare_status():
             if tunnel_url_file.exists():
                 try:
                     tunnel_url = tunnel_url_file.read_text().strip()
+                    # Auto-generate tunnel name from URL if not already set
+                    if tunnel_url and not tunnel_name:
+                        # Extract first part of URL (before first dot) and convert to uppercase
+                        # e.g., "bot.intergalactic.it.com" -> "BOT"
+                        # Remove protocol if present
+                        url_without_protocol = tunnel_url.replace('https://', '').replace('http://', '')
+                        first_part = url_without_protocol.split('.')[0]
+                        tunnel_name = first_part.upper()
                 except IOError:
                     pass
         
