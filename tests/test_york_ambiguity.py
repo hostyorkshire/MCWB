@@ -14,17 +14,21 @@ from weather_bot import WeatherBot
 
 
 def test_york_ambiguity_without_filter():
-    """Demonstrate the problem: York without country filter might return wrong city"""
+    """Demonstrate the default behavior: York with default GB filter returns UK city"""
     print("=" * 70)
-    print("SCENARIO 1: Query 'York' without country filter")
+    print("SCENARIO 1: Query 'York' with default GB filter")
     print("=" * 70)
-    print("Problem: User in UK queries 'York', but gets York, Pennsylvania USA")
+    print("Default behavior: User queries 'York', bot defaults to GB and returns York, UK")
     print()
 
+    # Bot now defaults to GB when country=None
     bot = WeatherBot(debug=False, country=None)
+    
+    # Verify the default
+    assert bot.country == "GB", f"Expected default country GB, got {bot.country}"
 
     with patch("weather_bot.requests.get") as mock_get:
-        # Simulate API returning York, USA (first match without country filter)
+        # Simulate API returning multiple Yorks, with GB result in the list
         geocoding_response = MagicMock()
         geocoding_response.json.return_value = {
             "results": [
@@ -34,20 +38,27 @@ def test_york_ambiguity_without_filter():
                     "country_code": "US",
                     "latitude": 39.9626,
                     "longitude": -76.7277,
-                }
+                },
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                },
             ]
         }
 
         weather_response = MagicMock()
         weather_response.json.return_value = {
             "current": {
-                "temperature_2m": 22.5,
-                "apparent_temperature": 21.2,
-                "relative_humidity_2m": 60,
-                "wind_speed_10m": 8.0,
-                "wind_direction_10m": 180,
+                "temperature_2m": 12.5,
+                "apparent_temperature": 10.8,
+                "relative_humidity_2m": 75,
+                "wind_speed_10m": 15.0,
+                "wind_direction_10m": 220,
                 "precipitation": 0.0,
-                "weather_code": 0,
+                "weather_code": 2,
             }
         }
 
@@ -58,7 +69,12 @@ def test_york_ambiguity_without_filter():
         print("API Response:")
         print(result)
         print()
-        print("⚠️  User in UK gets weather for York, US (wrong city!)")
+        
+        # Verify it returns GB result
+        if "GB" in result:
+            print("✅ User in UK gets correct weather for York, UK by default")
+        else:
+            print("⚠️  Unexpected result")
         print()
 
 
@@ -181,11 +197,12 @@ if __name__ == "__main__":
     print("=" * 70)
     print("SUMMARY")
     print("=" * 70)
+    print("✅ Bot now defaults to GB country filter for UK users")
     print("✅ Country filter solves the ambiguous city name problem")
-    print("✅ Bot operator can configure default country with --country flag")
+    print("✅ Bot operator can configure different default country with --country flag")
     print("✅ Users can still query other locations by being explicit")
     print()
     print("Usage examples:")
-    print("  python3 weather_bot.py --country GB  # For UK deployments")
+    print("  python3 weather_bot.py               # Defaults to GB (UK)")
     print("  python3 weather_bot.py --country US  # For US deployments")
-    print("  python3 weather_bot.py               # No filter (global)")
+    print("  python3 weather_bot.py --country FR  # For French deployments")

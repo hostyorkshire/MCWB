@@ -133,7 +133,7 @@ def test_weather_request_with_uk():
     print("TEST: Weather Request with UK")
     print("=" * 70)
 
-    bot = WeatherBot(debug=False, country=None)  # No default country
+    bot = WeatherBot(debug=False, country=None)  # Will default to GB
 
     with patch("weather_bot.requests.get") as mock_get:
         # API returns multiple results; GB result is second
