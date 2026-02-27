@@ -167,7 +167,7 @@ class StatsTracker:
                 "hourly_requests": {},
                 "daily_requests": {},
                 "error_types": {},
-                "last_updated": None,
+                "last_updated": datetime.now().isoformat(),
                 "recent_users": [],
             }
             self._save_stats()
