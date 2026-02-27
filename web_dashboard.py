@@ -78,6 +78,55 @@ LOGS_DIR = Path(__file__).parent / "logs"
 stats = StatsTracker()
 
 
+def make_error_response(error_message, error_code="UNKNOWN_ERROR", status_code=500, details=None):
+    """Create a standardized error response for API endpoints.
+    
+    Args:
+        error_message: Human-readable error message
+        error_code: Machine-readable error code (e.g., "INVALID_CHANNEL", "FILE_NOT_FOUND")
+        status_code: HTTP status code (default: 500)
+        details: Optional additional details (dict)
+    
+    Returns:
+        Flask JSON response with error information
+    """
+    response = {
+        "success": False,
+        "error": error_message,
+        "error_code": error_code,
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    if details:
+        response["details"] = details
+    
+    return jsonify(response), status_code
+
+
+def make_success_response(message=None, data=None):
+    """Create a standardized success response for API endpoints.
+    
+    Args:
+        message: Optional success message
+        data: Optional data payload (dict)
+    
+    Returns:
+        Flask JSON response with success information
+    """
+    response = {
+        "success": True,
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    if message:
+        response["message"] = message
+    
+    if data:
+        response.update(data)
+    
+    return jsonify(response)
+
+
 def initialize_channels_file():
     """Initialize channels.json file if it doesn't exist"""
     channels_file = LOGS_DIR / "channels.json"
@@ -173,7 +222,15 @@ def api_logs(log_type):
     }
 
     if log_type not in log_map:
-        return jsonify({"error": "Invalid log type"}), 400
+        return make_error_response(
+            error_message=f"Invalid log type: '{log_type}'",
+            error_code="INVALID_LOG_TYPE",
+            status_code=400,
+            details={
+                "valid_log_types": list(log_map.keys()),
+                "tip": "Use one of: bot, bot_error, meshcore, meshcore_error"
+            }
+        )
 
     lines = read_log_file(log_map[log_type], lines=100)
     return jsonify({"log_type": log_type, "lines": lines, "count": len(lines)})
@@ -246,9 +303,13 @@ def api_stats_reset():
     """Reset all statistics"""
     try:
         stats.reset_stats()
-        return jsonify({"success": True, "message": "Statistics reset successfully"})
+        return make_success_response(message="Statistics reset successfully")
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return make_error_response(
+            error_message=f"Failed to reset statistics: {str(e)}",
+            error_code="STATS_RESET_FAILED",
+            status_code=500
+        )
 
 
 @app.route("/api/logs/reset", methods=["POST"])
@@ -279,13 +340,16 @@ def api_logs_reset():
                     pass
                 cleared_count += 1
 
-        return jsonify({
-            "success": True,
-            "message": f"Successfully cleared {cleared_count} log file(s)",
-            "cleared_count": cleared_count
-        })
+        return make_success_response(
+            message=f"Successfully cleared {cleared_count} log file(s)",
+            data={"cleared_count": cleared_count}
+        )
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return make_error_response(
+            error_message=f"Failed to clear log files: {str(e)}",
+            error_code="LOG_CLEAR_FAILED",
+            status_code=500
+        )
 
 
 @app.route("/api/channels")
@@ -294,7 +358,15 @@ def api_channels():
     channels_file = Path(__file__).parent / "logs" / "channels.json"
 
     if not channels_file.exists():
-        return jsonify({"channels": [], "last_updated": None})
+        return make_error_response(
+            error_message="Channels file not found",
+            error_code="CHANNELS_FILE_NOT_FOUND",
+            status_code=404,
+            details={
+                "file_path": str(channels_file),
+                "tip": "The bot needs to receive at least one message to detect channels. Ensure the bot is running and connected to your radio."
+            }
+        )
 
     try:
         import json
@@ -307,19 +379,25 @@ def api_channels():
             for ch in data.get("channels", []):
                 channel_name = ch.get("channel_name")
                 last_used = ch.get("last_used")
+                channel_idx = ch.get("channel_idx")
+
+                # Validate channel_idx
+                if channel_idx is not None and not (0 <= channel_idx <= 7):
+                    # Skip invalid channel indices
+                    continue
 
                 # Format display name
                 if channel_name:
                     # Add # prefix for display (e.g., "weather" -> "#weather")
                     display_name = f"#{channel_name}"
-                elif ch.get("channel_idx") == 0:
+                elif channel_idx == 0:
                     # Channel 0 is the default/public channel
                     display_name = "#public"
                 else:
                     # Unknown named channel - show as index with indicator
                     # Note: MeshCore firmware only sends channel indices (0-7), not names.
                     # Channel names must be configured in the bot via --channel parameter.
-                    display_name = f"#channel{ch.get('channel_idx')} (unnamed)"
+                    display_name = f"#channel{channel_idx} (unnamed)"
 
                 # Format timestamp for display
                 last_used_str = None
@@ -335,8 +413,26 @@ def api_channels():
                 )
 
             return jsonify({"channels": formatted_channels, "last_updated": data.get("last_updated")})
-    except (json.JSONDecodeError, IOError):
-        return jsonify({"channels": [], "last_updated": None})
+    except json.JSONDecodeError as e:
+        return make_error_response(
+            error_message="Failed to parse channels file",
+            error_code="CHANNELS_FILE_CORRUPT",
+            status_code=500,
+            details={
+                "parse_error": str(e),
+                "tip": "The channels.json file may be corrupted. Try restarting the bot."
+            }
+        )
+    except IOError as e:
+        return make_error_response(
+            error_message="Failed to read channels file",
+            error_code="CHANNELS_FILE_READ_ERROR",
+            status_code=500,
+            details={
+                "io_error": str(e),
+                "tip": "Check file permissions on logs/channels.json"
+            }
+        )
 
 
 @app.route("/api/cloudflare/status")

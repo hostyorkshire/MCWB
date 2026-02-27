@@ -2,26 +2,61 @@
 
 // Theme Management
 function initTheme() {
-    // Check for saved theme preference or default to 'dark'
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButton(savedTheme);
+    try {
+        // Check for saved theme preference or default to 'dark'
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        
+        // Validate theme value
+        if (savedTheme !== 'dark' && savedTheme !== 'light') {
+            console.warn(`Invalid theme value '${savedTheme}', defaulting to 'dark'`);
+            localStorage.setItem('theme', 'dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+            updateThemeButton('dark');
+            return;
+        }
+        
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeButton(savedTheme);
+    } catch (error) {
+        console.error('Failed to initialize theme:', error);
+        // Fallback to dark theme if localStorage fails
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeButton('dark');
+    }
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeButton(newTheme);
+    try {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        
+        // Try to save to localStorage, but don't fail if it's not available
+        try {
+            localStorage.setItem('theme', newTheme);
+        } catch (storageError) {
+            console.warn('Failed to save theme preference:', storageError);
+            // Show a non-intrusive notification
+            console.info('Theme changed but could not be saved. Your browser may have localStorage disabled.');
+        }
+        
+        updateThemeButton(newTheme);
+    } catch (error) {
+        console.error('Failed to toggle theme:', error);
+    }
 }
 
 function updateThemeButton(theme) {
-    const icon = document.getElementById('theme-icon');
-    const text = document.getElementById('theme-text');
-    
-    if (icon && text) {
+    try {
+        const icon = document.getElementById('theme-icon');
+        const text = document.getElementById('theme-text');
+        
+        if (!icon || !text) {
+            console.error('Theme button elements not found');
+            return;
+        }
+        
         if (theme === 'dark') {
             icon.innerHTML = '<img src="img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
             text.textContent = 'Light Mode';
@@ -29,6 +64,8 @@ function updateThemeButton(theme) {
             icon.innerHTML = '<img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
             text.textContent = 'Dark Mode';
         }
+    } catch (error) {
+        console.error('Failed to update theme button:', error);
     }
 }
 

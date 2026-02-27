@@ -316,11 +316,14 @@ class WeatherBot:
         self.debug = debug
         self.announce = announce or (announce_channel is not None)
         self.reboot_notify = reboot_notify
-        self.allowed_channel_idx = allowed_channel_idx
         self._ser = None
         self._running = False
         # Set up logging
         self.logger, self.error_logger = get_weather_bot_logger(debug=debug)
+        
+        # Validate channel parameters at startup
+        self._validate_channel_parameters(allowed_channel_idx, weather_channel_idx, channel)
+        self.allowed_channel_idx = allowed_channel_idx
 
         # Determine LED pin configuration
         blue_pin = led_blue_pin
@@ -426,6 +429,89 @@ class WeatherBot:
                 else:
                     self._announce_channel_idx = 0  # Default to channel 0 if nothing persisted
                     self.logger.info("No channel configured or detected, defaulting to channel_idx=0")
+
+    # ------------------------------------------------------------------
+    # Configuration validation
+    # ------------------------------------------------------------------
+
+    def _validate_channel_parameters(self, allowed_channel_idx, weather_channel_idx, channel):
+        """Validate channel configuration parameters at startup.
+        
+        Args:
+            allowed_channel_idx: Channel index for filtering incoming messages (0-7)
+            weather_channel_idx: Channel index for announcements (0-7)
+            channel: Comma-separated channel names
+            
+        Raises:
+            ValueError: If channel indices are out of valid range
+        """
+        # Validate allowed_channel_idx (for filtering incoming messages)
+        if allowed_channel_idx is not None:
+            if not isinstance(allowed_channel_idx, int):
+                error_msg = f"Invalid channel index type: {type(allowed_channel_idx).__name__}. Expected integer (0-{_MAX_VALID_CHANNEL_IDX})."
+                self.logger.error(error_msg)
+                print(f"❌ ERROR: {error_msg}")
+                raise ValueError(error_msg)
+            
+            if not (0 <= allowed_channel_idx <= _MAX_VALID_CHANNEL_IDX):
+                error_msg = (
+                    f"Invalid channel index: {allowed_channel_idx}. "
+                    f"Channel index must be between 0 and {_MAX_VALID_CHANNEL_IDX}.\n"
+                    f"  Valid channel indices: 0, 1, 2, 3, 4, 5, 6, 7\n"
+                    f"  Your value: {allowed_channel_idx}\n"
+                    f"  Tip: Check your --channel-idx parameter value."
+                )
+                self.logger.error(error_msg)
+                print(f"❌ ERROR: {error_msg}")
+                raise ValueError(error_msg)
+            
+            self.logger.info(f"✓ Validated channel index filter: channel_idx={allowed_channel_idx}")
+        
+        # Validate weather_channel_idx (for announcements)
+        if weather_channel_idx is not None:
+            if not isinstance(weather_channel_idx, int):
+                error_msg = f"Invalid weather channel index type: {type(weather_channel_idx).__name__}. Expected integer (0-{_MAX_VALID_CHANNEL_IDX})."
+                self.logger.error(error_msg)
+                print(f"❌ ERROR: {error_msg}")
+                raise ValueError(error_msg)
+            
+            if not (0 <= weather_channel_idx <= _MAX_VALID_CHANNEL_IDX):
+                error_msg = (
+                    f"Invalid weather channel index: {weather_channel_idx}. "
+                    f"Channel index must be between 0 and {_MAX_VALID_CHANNEL_IDX}.\n"
+                    f"  Valid channel indices: 0, 1, 2, 3, 4, 5, 6, 7\n"
+                    f"  Your value: {weather_channel_idx}\n"
+                    f"  Tip: Check your --weather-channel-idx parameter value."
+                )
+                self.logger.error(error_msg)
+                print(f"❌ ERROR: {error_msg}")
+                raise ValueError(error_msg)
+            
+            self.logger.info(f"✓ Validated weather channel index: channel_idx={weather_channel_idx}")
+        
+        # Validate channel names (warn if empty names provided)
+        if channel:
+            channel_list = [ch.strip() for ch in channel.split(",") if ch.strip()]
+            if not channel_list:
+                warning_msg = (
+                    "⚠️  WARNING: --channel parameter provided but contains no valid channel names.\n"
+                    "  The bot will respond on ALL channels by default.\n"
+                    "  Tip: Use --channel 'weather' or --channel 'weather,alerts' to specify channel names."
+                )
+                self.logger.warning(warning_msg)
+                print(warning_msg)
+            else:
+                self.logger.info(f"✓ Validated channel names: {', '.join(channel_list)}")
+                # Check for suspicious channel names
+                for ch_name in channel_list:
+                    if ch_name.startswith('#'):
+                        warning_msg = (
+                            f"⚠️  WARNING: Channel name '{ch_name}' starts with '#'.\n"
+                            f"  Channel names should NOT include the '#' prefix.\n"
+                            f"  Use '{ch_name[1:]}' instead of '{ch_name}'."
+                        )
+                        self.logger.warning(warning_msg)
+                        print(warning_msg)
 
     # ------------------------------------------------------------------
     # Reboot notification

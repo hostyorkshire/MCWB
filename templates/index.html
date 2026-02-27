@@ -922,34 +922,73 @@
 
         // Theme management
         function initTheme() {
-            // Check for saved theme preference or default to 'dark'
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeButton(savedTheme);
+            try {
+                // Check for saved theme preference or default to 'dark'
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                
+                // Validate theme value
+                if (savedTheme !== 'dark' && savedTheme !== 'light') {
+                    console.warn(`Invalid theme value '${savedTheme}', defaulting to 'dark'`);
+                    localStorage.setItem('theme', 'dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    updateThemeButton('dark');
+                    return;
+                }
+                
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                updateThemeButton(savedTheme);
+            } catch (error) {
+                console.error('Failed to initialize theme:', error);
+                // Fallback to dark theme if localStorage fails
+                document.documentElement.setAttribute('data-theme', 'dark');
+                updateThemeButton('dark');
+            }
         }
 
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeButton(newTheme);
-            
-            // Refresh stats to update chart colors
-            loadStats();
+            try {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                // Try to save to localStorage, but don't fail if it's not available
+                try {
+                    localStorage.setItem('theme', newTheme);
+                } catch (storageError) {
+                    console.warn('Failed to save theme preference:', storageError);
+                    alert('⚠️ Theme changed but could not be saved. Your browser may have localStorage disabled.');
+                }
+                
+                updateThemeButton(newTheme);
+                
+                // Refresh stats to update chart colors
+                loadStats();
+            } catch (error) {
+                console.error('Failed to toggle theme:', error);
+                alert('❌ Failed to change theme. Please try refreshing the page.');
+            }
         }
 
         function updateThemeButton(theme) {
-            const icon = document.getElementById('theme-icon');
-            const text = document.getElementById('theme-text');
-            
-            if (theme === 'dark') {
-                icon.innerHTML = '<img src="/static/img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
-                text.textContent = 'Light Mode';
-            } else {
-                icon.innerHTML = '<img src="/static/img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
-                text.textContent = 'Dark Mode';
+            try {
+                const icon = document.getElementById('theme-icon');
+                const text = document.getElementById('theme-text');
+                
+                if (!icon || !text) {
+                    console.error('Theme button elements not found');
+                    return;
+                }
+                
+                if (theme === 'dark') {
+                    icon.innerHTML = '<img src="/static/img/emoji/2600.svg" alt="☀️" class="emoji-icon">';
+                    text.textContent = 'Light Mode';
+                } else {
+                    icon.innerHTML = '<img src="/static/img/emoji/1f319.svg" alt="🌙" class="emoji-icon">';
+                    text.textContent = 'Dark Mode';
+                }
+            } catch (error) {
+                console.error('Failed to update theme button:', error);
             }
         }
 
