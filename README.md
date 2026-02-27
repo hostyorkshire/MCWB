@@ -624,19 +624,85 @@ sudo systemctl start weather_bot
 
 ## LED Activity Indicators
 
-The bot can use the three front-panel LEDs on the Heltec WiFi LoRa 32 V2 to provide visual feedback:
+The bot supports LED indicators for visual feedback on compatible ESP32 LoRa boards.
 
+### Quick Start
+
+**For DollaTek ESP32 SX1276 Wireless Bridge:**
 ```bash
-python3 weather_bot.py --enable-leds
+python3 weather_bot.py --enable-leds --led-board-variant dollatek
 ```
+
+**For Heltec WiFi LoRa 32 V2:**
+```bash
+python3 weather_bot.py --enable-leds --led-board-variant heltec-v2
+```
+
+**For custom GPIO pins:**
+```bash
+python3 weather_bot.py --enable-leds --led-blue-pin 25 --led-green-pin 4 --led-red-pin 5
+```
+
+### Supported Board Variants
+
+#### DollaTek ESP32 SX1276 Wireless Bridge
+The DollaTek board has a single onboard LED:
 
 | Colour | GPIO  | Behaviour |
 |--------|-------|-----------|
 | Blue   | GPIO25 | Heartbeat – blinks every 2 s while the bot is running |
-| Green  | GPIO26 | RX – flashes when a weather request is received |
-| Red    | GPIO27 | TX – flashes each time a response is sent to the mesh |
 
-**Note**: This feature requires GPIO command support in your MeshCore firmware version. If your firmware doesn't support GPIO commands, LED events are recorded in the debug log only (use `--debug` to see them). The bot continues to operate normally in either case.
+Use with: `--enable-leds --led-board-variant dollatek`
+
+**Note**: This board only has one LED available. Green and Red indicators are not available because:
+- GPIO26 is used for LoRa DIO0 (interrupt pin)
+- GPIO27 is not connected to an LED on this board
+
+#### Heltec WiFi LoRa 32 V2
+The Heltec V2 board has one onboard LED:
+
+| Colour | GPIO  | Behaviour |
+|--------|-------|-----------|
+| Blue   | GPIO25 | Heartbeat – blinks every 2 s while the bot is running |
+
+Use with: `--enable-leds --led-board-variant heltec-v2`
+
+**Note**: Earlier documentation incorrectly suggested GPIO26/27 for additional LEDs. These pins conflict with LoRa operation:
+- GPIO26 is used for LoRa DIO0 (interrupt pin) and cannot be used for LEDs
+- GPIO27 may be used for LoRa MOSI or other functions depending on board revision
+
+### Custom GPIO Configuration
+
+If your board has LEDs on different GPIO pins, you can specify them manually:
+
+```bash
+python3 weather_bot.py --enable-leds \
+  --led-blue-pin 25 \
+  --led-green-pin 4 \
+  --led-red-pin 5
+```
+
+Available LEDs:
+- **Blue LED**: Heartbeat indicator (blinks every 2 seconds while running)
+- **Green LED**: RX indicator (flashes when a weather request is received)
+- **Red LED**: TX indicator (flashes when a response is sent)
+
+Set any pin to `-1` or omit it to disable that specific LED.
+
+### Technical Notes
+
+**GPIO Compatibility:**
+- This feature requires GPIO command support in your MeshCore firmware version
+- If GPIO commands are not supported, LED events are logged in debug mode (`--debug`)
+- The bot continues to operate normally regardless of GPIO support
+- Avoid using GPIO pins that conflict with your board's LoRa, SPI, or I2C functions
+
+**Common GPIO Pin Conflicts:**
+- **GPIO26**: Often used for LoRa DIO0 (do not use for LEDs)
+- **GPIO6-11**: Reserved for SPI flash (do not use)
+- **GPIO34-39**: Input-only pins (cannot drive LEDs)
+
+Always verify your board's pinout before configuring custom GPIO pins.
 
 ## Troubleshooting
 
