@@ -6,7 +6,9 @@ Dark-themed web interface for monitoring the MeshCore Weather Bot
 
 import json
 import socket
+import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Check for required dependencies before importing
@@ -320,6 +322,141 @@ def api_channels():
             return jsonify({"channels": formatted_channels, "last_updated": data.get("last_updated")})
     except (json.JSONDecodeError, IOError):
         return jsonify({"channels": [], "last_updated": None})
+
+
+@app.route("/api/cloudflare/status")
+def api_cloudflare_status():
+    """Get Cloudflare Tunnel status and statistics"""
+    try:
+        # Check if cloudflared is installed
+        cloudflared_path = next(
+            (path for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"] 
+             if Path(path).exists()), 
+            None
+        )
+        
+        if not cloudflared_path:
+            return jsonify({
+                "installed": False,
+                "connected": False,
+                "message": "Cloudflare Tunnel (cloudflared) is not installed"
+            })
+        
+        # Check if cloudflared service is running
+        service_running = False
+        service_status = "inactive"
+        try:
+            result = subprocess.run(
+                ["systemctl", "is-active", "cloudflared-mcwb.service"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            service_status = result.stdout.strip()
+            service_running = (service_status == "active")
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            pass
+        
+        # Get tunnel info
+        tunnel_name = None
+        tunnel_id = None
+        tunnel_url = None
+        connections = 0
+        
+        if service_running:
+            try:
+                # Get tunnel list
+                result = subprocess.run(
+                    [cloudflared_path, "tunnel", "list"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if result.returncode == 0:
+                    lines = result.stdout.strip().split('\n')
+                    # Skip header line and parse tunnel info
+                    for line in lines[1:]:
+                        if line.strip():
+                            parts = line.split()
+                            if len(parts) >= 3:
+                                tunnel_id = parts[0]
+                                tunnel_name = parts[1]
+                                # Parse connections (format: "X/4" or similar)
+                                if len(parts) >= 4 and '/' in parts[3]:
+                                    connections = int(parts[3].split('/')[0])
+                                break
+            except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
+                pass
+            
+            # Try to read tunnel URL from saved config
+            tunnel_url_file = Path.home() / ".cloudflared" / "tunnel_url.txt"
+            if tunnel_url_file.exists():
+                try:
+                    tunnel_url = tunnel_url_file.read_text().strip()
+                except IOError:
+                    pass
+        
+        # Get service uptime if running
+        uptime = None
+        if service_running:
+            try:
+                result = subprocess.run(
+                    ["systemctl", "show", "cloudflared-mcwb.service", "--property=ActiveEnterTimestampMonotonic"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    timestamp_line = result.stdout.strip()
+                    if "=" in timestamp_line:
+                        # ActiveEnterTimestampMonotonic gives microseconds since boot
+                        timestamp_str = timestamp_line.split("=", 1)[1]
+                        if timestamp_str and timestamp_str.isdigit():
+                            # Get current monotonic time
+                            import time
+                            current_monotonic = int(time.clock_gettime(time.CLOCK_MONOTONIC) * 1000000)
+                            start_monotonic = int(timestamp_str)
+                            uptime_seconds = (current_monotonic - start_monotonic) / 1000000
+                            uptime = format_uptime(uptime_seconds)
+            except (subprocess.TimeoutExpired, FileNotFoundError, ValueError, AttributeError):
+                pass
+        
+        return jsonify({
+            "installed": True,
+            "connected": service_running,
+            "service_status": service_status,
+            "tunnel_name": tunnel_name,
+            "tunnel_id": tunnel_id,
+            "tunnel_url": tunnel_url,
+            "connections": connections,
+            "uptime": uptime,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "installed": False,
+            "connected": False,
+            "error": str(e)
+        }), 500
+
+
+def format_uptime(seconds):
+    """Format uptime in seconds to human-readable string"""
+    if seconds < 60:
+        return f"{int(seconds)}s"
+    elif seconds < 3600:
+        minutes = int(seconds / 60)
+        return f"{minutes}m"
+    elif seconds < 86400:
+        hours = int(seconds / 3600)
+        minutes = int((seconds % 3600) / 60)
+        return f"{hours}h {minutes}m"
+    else:
+        days = int(seconds / 86400)
+        hours = int((seconds % 86400) / 3600)
+        return f"{days}d {hours}h"
 
 
 def calculate_success_rate(total, errors):
