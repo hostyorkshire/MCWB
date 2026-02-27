@@ -23,7 +23,7 @@ def test_york_ambiguity_without_filter():
 
     # Bot now defaults to GB when country=None
     bot = WeatherBot(debug=False, country=None)
-    
+
     # Verify the default
     assert bot.country == "GB", f"Expected default country GB, got {bot.country}"
 
@@ -69,7 +69,7 @@ def test_york_ambiguity_without_filter():
         print("API Response:")
         print(result)
         print()
-        
+
         # Verify it returns GB result
         if "GB" in result:
             print("✅ User in UK gets correct weather for York, UK by default")
