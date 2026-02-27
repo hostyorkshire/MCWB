@@ -24,6 +24,7 @@ Lightweight Python3 weather bot for MeshCore mesh networks.
 - **⚡ [QUICK FIX GUIDE](QUICK_FIX_GUIDE.md)** - Fast solutions for common issues
 - **❓ [FAQ](FAQ.md)** - Common questions & quick answers (including boot setup scripts!)
 - **🚀 [Quick Start](QUICKSTART_SIMPLE.md)** - Get started in minutes
+- **📟 [DollaTek Board Setup](DOLLATEK_SETUP.md)** - DollaTek ESP32 SX1276 Wireless Bridge configuration
 - **🍓 [Raspberry Pi Setup](RASPBERRY_PI_SETUP.md)** - Auto-start on boot guide
 - **🌐 [Web Dashboard](WEB_DASHBOARD.md)** - Monitor your bot with a web interface
 - **🐛 [Troubleshooting](TROUBLESHOOTING.md)** - Problem-solving guide
@@ -170,9 +171,11 @@ See [docs/WEATHER_OUTLOOK_FEATURE.md](docs/WEATHER_OUTLOOK_FEATURE.md) for compl
 ## LoRa Radio Hardware
 
 MCWB connects to a **MeshCore companion radio** over USB serial.
-The companion radio is a LoRa-based device (e.g. a T-Beam, LILYGO LoRa32, or
+The companion radio is a LoRa-based device (e.g. a T-Beam, LILYGO LoRa32, DollaTek ESP32 SX1276, Heltec WiFi LoRa 32, or
 similar ESP32/LoRa board) running the
 [MeshCore firmware](https://github.com/ripplebiz/MeshCore).
+
+**📟 Using a DollaTek ESP32 SX1276 Wireless Bridge?** See the [DollaTek Setup Guide](DOLLATEK_SETUP.md) for board-specific configuration instructions, including LED indicator setup.
 
 ```
 Raspberry Pi / PC
