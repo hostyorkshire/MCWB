@@ -95,7 +95,7 @@ def test_announcement_on_recent_restart():
 
 
 def test_announcement_on_old_restart():
-    """Test that bot announces on startup if last announcement was > 3 hours ago"""
+    """Test that bot announces on startup if last announcement was > 6 hours ago"""
     print("=" * 70)
     print("TEST 3: Announce on Old Restart")
     print("=" * 70)
@@ -104,25 +104,25 @@ def test_announcement_on_old_restart():
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
 
-    # Simulate an old announcement (4 hours ago)
-    old_time = time.time() - (4 * 60 * 60)  # 4 hours ago
+    # Simulate an old announcement (8 hours ago)
+    old_time = time.time() - (8 * 60 * 60)  # 8 hours ago
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(old_time)
-    print(f"  Simulated last announcement: 4 hours ago")
+    print(f"  Simulated last announcement: 8 hours ago")
 
     # Check if announcement should be made using helper
     last_announce = bot._get_last_announce_time()
     should_announce = should_announce_on_startup(bot, last_announce)
 
-    # SHOULD announce (4 hours > 3 hours)
-    assert should_announce, "Should announce after 3 hours"
-    print(f"  ✓ Announcement will be sent (4 hours > 3 hours)")
+    # SHOULD announce (8 hours > 6 hours)
+    assert should_announce, "Should announce after 6 hours"
+    print(f"  ✓ Announcement will be sent (8 hours > 6 hours)")
 
     # Verify time calculation
     time_since_last_announce = time.time() - last_announce
     hours_since = time_since_last_announce / 3600
     print(f"  ✓ Time since last announce: {hours_since:.2f} hours")
-    assert time_since_last_announce >= ANNOUNCE_INTERVAL, "Should be more than 3 hours"
+    assert time_since_last_announce >= ANNOUNCE_INTERVAL, "Should be more than 6 hours"
 
     # Clean up
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):

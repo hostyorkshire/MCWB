@@ -994,7 +994,7 @@ If the service randomly stops:
 
 ### Running with Announcements (Enabled by Default)
 
-**Note:** As of the latest version, periodic weather announcements every 3 hours are **enabled by default** when using the installer scripts.
+**Note:** As of the latest version, periodic weather announcements every 6 hours are **enabled by default** when using the installer scripts.
 
 If you installed manually and want to enable announcements:
 

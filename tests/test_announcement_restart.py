@@ -38,7 +38,7 @@ def simulate_startup_announcement_logic(bot):
 
 
 def test_startup_with_recent_announcement():
-    """Test full startup sequence when announcement was made recently (< 3 hours)"""
+    """Test full startup sequence when announcement was made recently (< 6 hours)"""
     print("=" * 70)
     print("TEST: Full Startup with Recent Announcement")
     print("=" * 70)
@@ -84,7 +84,7 @@ def test_startup_with_recent_announcement():
 
 
 def test_startup_with_old_announcement():
-    """Test full startup sequence when announcement was made long ago (> 3 hours)"""
+    """Test full startup sequence when announcement was made long ago (> 6 hours)"""
     print("=" * 70)
     print("TEST: Full Startup with Old Announcement")
     print("=" * 70)
@@ -93,13 +93,13 @@ def test_startup_with_old_announcement():
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
 
-    # Simulate old announcement (5 hours ago)
-    old_time = time.time() - (5 * 60 * 60)  # 5 hours ago
+    # Simulate old announcement (8 hours ago)
+    old_time = time.time() - (8 * 60 * 60)  # 8 hours ago
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
     bot._save_last_announce_time(old_time)
 
-    print(f"  Simulated last announcement: 5 hours ago")
+    print(f"  Simulated last announcement: 8 hours ago")
     print(f"  Starting bot with announcements enabled...")
 
     # Mock serial connection and _send_channel_msg to avoid hardware dependency
@@ -121,7 +121,7 @@ def test_startup_with_old_announcement():
     # SHOULD have sent announcement
     assert announced, "Should announce on startup"
     assert len(sent_announcements) == 1, f"Should announce on startup (sent {len(sent_announcements)})"
-    print(f"  ✓ Announcement sent on startup (5 hours > 3 hours)")
+    print(f"  ✓ Announcement sent on startup (8 hours > 6 hours)")
 
     # Verify timestamp was saved
     new_timestamp = bot._get_last_announce_time()

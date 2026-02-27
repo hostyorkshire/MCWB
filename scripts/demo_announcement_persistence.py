@@ -91,7 +91,7 @@ def demonstrate_feature():
 
     if bot3.announce:
         print(f"  ✓ Bot WILL ALWAYS announce on startup")
-        print(f"  ℹ️ Next periodic announcement will occur immediately (>3 hours passed)")
+        print(f"  ℹ️ Next periodic announcement will occur immediately (>6 hours passed)")
     else:
         print(f"  ✗ Announcements disabled (--announce flag not set)")
 

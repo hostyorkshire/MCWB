@@ -34,7 +34,7 @@ if self.announce:
 
 **Location:** `weather_bot.py` lines 1151-1154
 
-After startup, the bot checks every second if 3 hours have passed since the last announcement:
+After startup, the bot checks every second if 6 hours have passed since the last announcement:
 
 ```python
 if self.announce and (time.time() - last_announce >= ANNOUNCE_INTERVAL):
@@ -44,7 +44,7 @@ if self.announce and (time.time() - last_announce >= ANNOUNCE_INTERVAL):
 ```
 
 **Key Points:**
-- Periodic announcements (every 3 hours) do check the timestamp
+- Periodic announcements (every 6 hours) do check the timestamp
 - This prevents spam during normal operation
 - Startup announcements bypass this check entirely
 

@@ -51,7 +51,7 @@ sudo systemctl restart weather_bot
    - Controls WHERE periodic announcements are sent (by channel index number)
    - Does NOT affect which channels the bot listens to
    - Does NOT affect where responses are sent
-   - Only affects bot-initiated announcements every 3 hours
+   - Only affects bot-initiated announcements every 6 hours
    - If not specified, bot uses the channel where it receives messages
 
 2. **`--channel`** (default: none/disabled - accepts all channels)
@@ -77,7 +77,7 @@ python3 weather_bot.py --port auto --baud 115200 --channel weather -d
 User on channel 0 sends "wx London" → Bot replies on channel 0
 User on channel 1 sends "wx York"   → Bot replies on channel 1
 User on channel 2 sends "wx Leeds"  → Bot replies on channel 2
-Every 3 hours                       → Bot announces on wxtest channel
+Every 6 hours                       → Bot announces on wxtest channel
 ```
 
 #### With Channel Filter (--channel weather):
@@ -86,7 +86,7 @@ Every 3 hours                       → Bot announces on wxtest channel
 User on channel 0 sends "wx London" → Bot IGNORES (not on 'weather' channel)
 User on channel 1 sends "wx York"   → Bot IGNORES (not on 'weather' channel)
 User on 'weather' channel           → Bot replies on 'weather' channel
-Every 3 hours                       → Bot announces on wxtest channel
+Every 6 hours                       → Bot announces on wxtest channel
 ```
 
 ### Testing
@@ -188,7 +188,7 @@ If the bot is configured correctly but still not responding on other channels:
 - ✅ Bot will reply on the same channel_idx where query came from
 
 **The `--announce-channel` parameter:**
-- Only affects periodic announcements (every 3 hours)
+- Only affects periodic announcements (every 6 hours)
 - Does NOT affect which channels bot listens to
 - Does NOT affect where responses are sent
 - Safe to use with any value or default (wxtest)

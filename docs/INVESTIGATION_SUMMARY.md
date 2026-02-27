@@ -52,7 +52,7 @@ The original log from the problem statement shows successful announcement:
 ## How It Works
 
 1. **On Startup**: Bot immediately sends announcement to 'wxtest' channel
-2. **Periodic**: Repeats announcement every 3 hours (10,800 seconds)
+2. **Periodic**: Repeats announcement every 6 hours (21,600 seconds)
 3. **Channel Mapping**: 'wxtest' is mapped to channel_idx 1 by MeshCore
 4. **Transmission**: Message sent via LoRa radio to all devices monitoring channel_idx 1
 
@@ -101,7 +101,7 @@ python3 diagnose_announcement.py
 
 ## Conclusion
 
-**No code changes are required.** The Weather Bot is correctly configured and functioning to broadcast announcements to the #wxtest MeshCore channel every 3 hours, with an immediate announcement on startup.
+**No code changes are required.** The Weather Bot is correctly configured and functioning to broadcast announcements to the #wxtest MeshCore channel every 6 hours, with an immediate announcement on startup.
 
 The announcement feature is working exactly as specified in the requirements.
 

@@ -61,8 +61,8 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 CORS(app, resources={
     r"/api/*": {
         "origins": [
-            "https://weather.example.com",  # Production cPanel site
-            "http://weather.example.com",   # Allow HTTP variant
+            "https://wx.intergalactic.it.com",  # Production cPanel site
+            "http://wx.intergalactic.it.com",   # Allow HTTP variant
             "*"                                  # Allow all (for dev & tunnel flexibility)
         ],
         "methods": ["GET", "POST", "OPTIONS"],
