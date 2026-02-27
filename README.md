@@ -418,6 +418,8 @@ python3 weather_bot.py --announce --weather-channel-idx 2
 The announcement message is:
 ```
 Hello this is the WX Bot. To get a weather update simply type WX and your location.
+
+Help? https://tinyurl.com/wxbot
 ```
 
 ### Example: Raspberry Pi Service Setup

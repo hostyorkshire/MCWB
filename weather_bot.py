@@ -109,6 +109,7 @@ WEATHER_CODES = {
 
 ANNOUNCE_INTERVAL = 3 * 60 * 60  # seconds between periodic announcements
 ANNOUNCE_MESSAGE = "Hello this is the WX Bot. To get a weather update simply type WX and your location.\n\nHelp? https://tinyurl.com/wxbot"
+<<<<<<< copilot/improve-open-meto-api-reliability
 
 
 # ---------------------------------------------------------------------------
@@ -158,6 +159,8 @@ def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwa
     # Should not reach here, but just in case
     if last_exception:
         raise RequestException(f"API request failed after {max_retries} attempts") from last_exception
+=======
+>>>>>>> main
 
 
 
