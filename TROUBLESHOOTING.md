@@ -31,6 +31,88 @@ sudo ufw reload
 
 ---
 
+## 🚨 Critical Issue: WiFi Not Working / Cannot Resolve Host
+
+### Symptoms
+
+- ❌ `git pull` fails with "could not resolve host"
+- ❌ Cannot access the internet from your Raspberry Pi
+- ❌ Network commands time out or fail
+- ❌ Bot cannot reach weather API
+
+### Cause
+
+**WiFi connection lost or DNS not working.** Common causes include:
+- WiFi interface is down
+- Not connected to any WiFi network
+- No IP address assigned
+- DNS servers not configured
+- Router/gateway unreachable
+
+### Quick Diagnostic
+
+**If you have physical access (keyboard/monitor):**
+
+```bash
+# Run the WiFi diagnostic script
+cd ~/MCWB
+./check_wifi.sh
+```
+
+This script will check:
+1. WiFi adapter status
+2. Connection status and signal strength
+3. IP address assignment
+4. Gateway (router) connectivity
+5. Internet connectivity
+6. DNS resolution
+7. Network configuration
+
+### Quick Fix
+
+**Most common fixes:**
+
+```bash
+# Restart WiFi interface
+sudo ip link set wlan0 down
+sudo ip link set wlan0 up
+
+# Restart networking service
+sudo systemctl restart networking
+
+# Reconfigure WiFi
+sudo raspi-config
+# Select 'System Options' → 'Wireless LAN'
+# Enter your WiFi SSID and password
+
+# If DNS is the issue (most common for "could not resolve host")
+sudo bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
+sudo bash -c 'echo "nameserver 1.1.1.1" >> /etc/resolv.conf'
+
+# Reboot as last resort
+sudo reboot
+```
+
+### Testing After Fix
+
+```bash
+# Test basic connectivity
+ping -c 3 8.8.8.8
+
+# Test DNS resolution
+ping -c 3 github.com
+
+# Test GitHub specifically
+curl -I https://github.com
+
+# Run full diagnostic again
+./check_wifi.sh
+```
+
+**See also:** [API_CONNECTIVITY_TROUBLESHOOTING.md](API_CONNECTIVITY_TROUBLESHOOTING.md) for detailed network troubleshooting.
+
+---
+
 ## Issue: "externally-managed-environment" Error During Installation
 
 ### Symptoms
