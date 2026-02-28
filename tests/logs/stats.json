@@ -1,0 +1,24 @@
+{
+  "total_requests": 2,
+  "total_errors": 1,
+  "locations": {
+    "Barnsley": 1,
+    "TestCity": 1
+  },
+  "hourly_requests": {
+    "2026-02-28 00:00": 2
+  },
+  "daily_requests": {
+    "2026-02-28": 2
+  },
+  "error_types": {
+    "outlook_api_error": 1
+  },
+  "last_updated": "2026-02-28T00:00:54.181614",
+  "recent_users": [
+    {
+      "user": "UserA",
+      "timestamp": "2026-02-28T00:00:52.161128"
+    }
+  ]
+}
