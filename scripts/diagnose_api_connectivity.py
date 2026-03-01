@@ -13,10 +13,11 @@ Usage:
     python3 diagnose_api_connectivity.py
     python3 diagnose_api_connectivity.py --location York --country UK
 """
-import sys
-import socket
-import time
+
 import argparse
+import socket
+import sys
+import time
 
 try:
     import requests
@@ -30,7 +31,7 @@ def test_dns_resolution(hostname):
     """Test if we can resolve the hostname to an IP address."""
     print(f"\n{'='*70}")
     print(f"TEST 1: DNS Resolution for {hostname}")
-    print('='*70)
+    print("=" * 70)
 
     try:
         ip_address = socket.gethostbyname(hostname)
@@ -50,7 +51,7 @@ def test_tcp_connection(hostname, port=443):
     """Test if we can establish a TCP connection to the host."""
     print(f"\n{'='*70}")
     print(f"TEST 2: TCP Connection to {hostname}:{port}")
-    print('='*70)
+    print("=" * 70)
 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -85,7 +86,7 @@ def test_http_request(url, params=None):
     """Test if we can make an HTTP request and get a response."""
     print(f"\n{'='*70}")
     print(f"TEST 3: HTTP Request to {url}")
-    print('='*70)
+    print("=" * 70)
 
     if params:
         print(f"Parameters: {params}")
@@ -143,15 +144,10 @@ def test_geocoding_api(location, country=None):
     """Test the geocoding API specifically."""
     print(f"\n{'='*70}")
     print(f"TEST 4: Geocoding API for '{location}'" + (f" in {country}" if country else ""))
-    print('='*70)
+    print("=" * 70)
 
     url = "https://geocoding-api.open-meteo.com/v1/search"
-    params = {
-        "name": location,
-        "count": 1,
-        "language": "en",
-        "format": "json"
-    }
+    params = {"name": location, "count": 1, "language": "en", "format": "json"}
 
     if country:
         params["country"] = country
@@ -183,14 +179,14 @@ def test_weather_api(lat=53.9599, lon=-1.0873):
     """Test the weather forecast API."""
     print(f"\n{'='*70}")
     print(f"TEST 5: Weather API for coordinates ({lat}, {lon})")
-    print('='*70)
+    print("=" * 70)
 
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
         "longitude": lon,
         "current": "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m",
-        "timezone": "auto"
+        "timezone": "auto",
     }
 
     success, response = test_http_request(url, params)
@@ -216,25 +212,15 @@ def test_weather_api(lat=53.9599, lon=-1.0873):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Diagnose API connectivity issues for the weather bot"
-    )
-    parser.add_argument(
-        "--location",
-        default="York",
-        help="Location to test geocoding with (default: York)"
-    )
-    parser.add_argument(
-        "--country",
-        default="UK",
-        help="Country code for geocoding test (default: UK)"
-    )
+    parser = argparse.ArgumentParser(description="Diagnose API connectivity issues for the weather bot")
+    parser.add_argument("--location", default="York", help="Location to test geocoding with (default: York)")
+    parser.add_argument("--country", default="UK", help="Country code for geocoding test (default: UK)")
 
     args = parser.parse_args()
 
-    print("╔" + "="*68 + "╗")
-    print("║" + " "*15 + "API Connectivity Diagnostic Tool" + " "*20 + "║")
-    print("╚" + "="*68 + "╝")
+    print("╔" + "=" * 68 + "╗")
+    print("║" + " " * 15 + "API Connectivity Diagnostic Tool" + " " * 20 + "║")
+    print("╚" + "=" * 68 + "╝")
 
     results = []
 
@@ -256,7 +242,7 @@ def main():
     # Summary
     print(f"\n{'='*70}")
     print("DIAGNOSTIC SUMMARY")
-    print('='*70)
+    print("=" * 70)
 
     for test_name, passed in results:
         status = "✅ PASS" if passed else "❌ FAIL"
@@ -269,7 +255,7 @@ def main():
 
     print(f"\n{'='*70}")
     print("DIAGNOSIS")
-    print('='*70)
+    print("=" * 70)
 
     if passed_tests == total_tests:
         print("✅ All tests passed!")

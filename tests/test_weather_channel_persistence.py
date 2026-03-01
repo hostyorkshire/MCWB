@@ -70,8 +70,9 @@ def test_startup_with_persisted_channel():
     bot2 = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
     # Verify that bot2 loaded the persisted channel
-    assert bot2._announce_channel_idx == detected_channel, \
-        f"Bot should load persisted channel {detected_channel}, but got {bot2._announce_channel_idx}"
+    assert (
+        bot2._announce_channel_idx == detected_channel
+    ), f"Bot should load persisted channel {detected_channel}, but got {bot2._announce_channel_idx}"
     assert bot2._weather_channel_detected is True, "Bot should mark channel as detected"
     print(f"  Session 2: Loaded persisted channel_idx={bot2._announce_channel_idx}")
     print("  ✓ Bot will announce on correct channel after restart")
@@ -112,9 +113,9 @@ def test_startup_announcement_uses_persisted_channel():
         if msg == ANNOUNCE_MESSAGE:
             sent_announcements.append({"msg": msg, "channel_idx": channel_idx})
 
-    with patch.object(bot, "_connect", return_value=True), \
-         patch.object(bot, "_send_cmd"), \
-         patch.object(bot, "_send_channel_msg", side_effect=mock_send_channel_msg):
+    with patch.object(bot, "_connect", return_value=True), patch.object(bot, "_send_cmd"), patch.object(
+        bot, "_send_channel_msg", side_effect=mock_send_channel_msg
+    ):
 
         # Simulate startup announcement (from run() method)
         bot._running = True
@@ -124,8 +125,9 @@ def test_startup_announcement_uses_persisted_channel():
 
     # Verify announcement went to persisted channel
     assert len(sent_announcements) == 1, f"Should send one announcement, got {len(sent_announcements)}"
-    assert sent_announcements[0]["channel_idx"] == persisted_channel, \
-        f"Announcement should go to channel {persisted_channel}, got {sent_announcements[0]['channel_idx']}"
+    assert (
+        sent_announcements[0]["channel_idx"] == persisted_channel
+    ), f"Announcement should go to channel {persisted_channel}, got {sent_announcements[0]['channel_idx']}"
     print(f"  ✓ Startup announcement sent to persisted channel_idx={persisted_channel}")
 
     # Clean up
@@ -157,8 +159,9 @@ def test_explicit_config_overrides_persisted():
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=explicit_channel)
 
     # Verify explicit config takes precedence
-    assert bot._announce_channel_idx == explicit_channel, \
-        f"Explicit config should override persisted channel, expected {explicit_channel}, got {bot._announce_channel_idx}"
+    assert (
+        bot._announce_channel_idx == explicit_channel
+    ), f"Explicit config should override persisted channel, expected {explicit_channel}, got {bot._announce_channel_idx}"
     print(f"  Explicit config: channel_idx={explicit_channel}")
     print("  ✓ Explicit config takes precedence over persisted channel")
 
@@ -183,8 +186,7 @@ def test_no_persistence_file_defaults_to_zero():
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
     # Verify defaults to channel 0
-    assert bot._announce_channel_idx == 0, \
-        f"Should default to channel 0, got {bot._announce_channel_idx}"
+    assert bot._announce_channel_idx == 0, f"Should default to channel 0, got {bot._announce_channel_idx}"
     print("  ✓ Bot defaults to channel_idx=0 (first startup)")
 
     # Clean up
@@ -214,8 +216,7 @@ def test_auto_detection_persists_channel():
     # Verify channel was persisted
     assert WEATHER_CHANNEL_FILE.exists(), "Weather channel should be persisted after detection"
     loaded = bot._get_persisted_weather_channel()
-    assert loaded == detected_channel, \
-        f"Persisted channel should be {detected_channel}, got {loaded}"
+    assert loaded == detected_channel, f"Persisted channel should be {detected_channel}, got {loaded}"
     print(f"  ✓ Auto-detected channel_idx={detected_channel} was persisted")
 
     # Clean up

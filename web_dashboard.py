@@ -58,18 +58,21 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 # Note: Wildcard ('*') is used for maximum flexibility during development and
 # to support any Cloudflare Tunnel subdomain. For production-only deployments,
 # remove '*' and list only specific origins for better security.
-CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "https://wx.intergalactic.it.com",  # Production cPanel site
-            "http://wx.intergalactic.it.com",   # Allow HTTP variant
-            "*"                                  # Allow all (for dev & tunnel flexibility)
-        ],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Accept"],
-        "supports_credentials": False
-    }
-})
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": [
+                "https://wx.intergalactic.it.com",  # Production cPanel site
+                "http://wx.intergalactic.it.com",  # Allow HTTP variant
+                "*",  # Allow all (for dev & tunnel flexibility)
+            ],
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Accept"],
+            "supports_credentials": False,
+        }
+    },
+)
 
 # Get the logs directory
 LOGS_DIR = Path(__file__).parent / "logs"
@@ -87,10 +90,7 @@ def initialize_channels_file():
         LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
         # Create empty channels file with proper structure
-        initial_data = {
-            "channels": [],
-            "last_updated": datetime.now().isoformat()
-        }
+        initial_data = {"channels": [], "last_updated": datetime.now().isoformat()}
 
         try:
             with open(channels_file, "w") as f:
@@ -201,16 +201,17 @@ def api_data():
     """Get current weather/bot data for live stats widget"""
     stats_data = stats.get_stats()
 
-    return jsonify({
-        "total_requests": stats_data.get("total_requests", 0),
-        "total_errors": stats_data.get("total_errors", 0),
-        "success_rate": calculate_success_rate(
-            stats_data.get("total_requests", 0),
-            stats_data.get("total_errors", 0)
-        ),
-        "last_updated": stats_data.get("last_updated"),
-        "status": "running"
-    })
+    return jsonify(
+        {
+            "total_requests": stats_data.get("total_requests", 0),
+            "total_errors": stats_data.get("total_errors", 0),
+            "success_rate": calculate_success_rate(
+                stats_data.get("total_requests", 0), stats_data.get("total_errors", 0)
+            ),
+            "last_updated": stats_data.get("last_updated"),
+            "status": "running",
+        }
+    )
 
 
 @app.route("/api/stats/hourly")
@@ -279,11 +280,13 @@ def api_logs_reset():
                     pass
                 cleared_count += 1
 
-        return jsonify({
-            "success": True,
-            "message": f"Successfully cleared {cleared_count} log file(s)",
-            "cleared_count": cleared_count
-        })
+        return jsonify(
+            {
+                "success": True,
+                "message": f"Successfully cleared {cleared_count} log file(s)",
+                "cleared_count": cleared_count,
+            }
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -343,30 +346,23 @@ def api_cloudflare_status():
     try:
         # Check if cloudflared is installed
         cloudflared_path = next(
-            (path for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"]
-             if Path(path).exists()),
-            None
+            (path for path in ["/usr/local/bin/cloudflared", "/usr/bin/cloudflared"] if Path(path).exists()), None
         )
 
         if not cloudflared_path:
-            return jsonify({
-                "installed": False,
-                "connected": False,
-                "message": "Cloudflare Tunnel (cloudflared) is not installed"
-            })
+            return jsonify(
+                {"installed": False, "connected": False, "message": "Cloudflare Tunnel (cloudflared) is not installed"}
+            )
 
         # Check if cloudflared service is running
         service_running = False
         service_status = "inactive"
         try:
             result = subprocess.run(
-                ["systemctl", "is-active", "cloudflared-mcwb.service"],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["systemctl", "is-active", "cloudflared-mcwb.service"], capture_output=True, text=True, timeout=5
             )
             service_status = result.stdout.strip()
-            service_running = (service_status == "active")
+            service_running = service_status == "active"
         except (subprocess.TimeoutExpired, FileNotFoundError):
             pass
 
@@ -380,14 +376,11 @@ def api_cloudflare_status():
             try:
                 # Get tunnel list
                 result = subprocess.run(
-                    [cloudflared_path, "tunnel", "list"],
-                    capture_output=True,
-                    text=True,
-                    timeout=10
+                    [cloudflared_path, "tunnel", "list"], capture_output=True, text=True, timeout=10
                 )
 
                 if result.returncode == 0:
-                    lines = result.stdout.strip().split('\n')
+                    lines = result.stdout.strip().split("\n")
                     # Skip header line and parse tunnel info
                     for line in lines[1:]:
                         if line.strip():
@@ -396,8 +389,8 @@ def api_cloudflare_status():
                                 tunnel_id = parts[0]
                                 tunnel_name = parts[1]
                                 # Parse connections (format: "X/4" or similar)
-                                if len(parts) >= 4 and '/' in parts[3]:
-                                    connections = int(parts[3].split('/')[0])
+                                if len(parts) >= 4 and "/" in parts[3]:
+                                    connections = int(parts[3].split("/")[0])
                                 break
             except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
                 pass
@@ -413,21 +406,21 @@ def api_cloudflare_status():
                             # Extract first part of URL (before first dot) and convert to uppercase
                             # e.g., "bot.intergalactic.it.com" -> "BOT"
                             # Remove protocol if present (case-insensitive)
-                            https_prefix = 'https://'
-                            http_prefix = 'http://'
+                            https_prefix = "https://"
+                            http_prefix = "http://"
                             url_lower = tunnel_url.lower()
                             url_without_protocol = tunnel_url
                             if url_lower.startswith(https_prefix):
-                                url_without_protocol = tunnel_url[len(https_prefix):]
+                                url_without_protocol = tunnel_url[len(https_prefix) :]
                             elif url_lower.startswith(http_prefix):
-                                url_without_protocol = tunnel_url[len(http_prefix):]
+                                url_without_protocol = tunnel_url[len(http_prefix) :]
 
                             # Remove port and path if present
-                            url_part = url_without_protocol.split('/')[0]
-                            hostname = url_part.split(':')[0]
+                            url_part = url_without_protocol.split("/")[0]
+                            hostname = url_part.split(":")[0]
 
-                            if hostname and '.' in hostname:
-                                first_part = hostname.split('.')[0]
+                            if hostname and "." in hostname:
+                                first_part = hostname.split(".")[0]
                                 tunnel_name = first_part.upper()
                             elif hostname:
                                 # If no dots, use the whole hostname
@@ -446,7 +439,7 @@ def api_cloudflare_status():
                     ["systemctl", "show", "cloudflared-mcwb.service", "--property=ActiveEnterTimestampMonotonic"],
                     capture_output=True,
                     text=True,
-                    timeout=5
+                    timeout=5,
                 )
                 if result.returncode == 0:
                     timestamp_line = result.stdout.strip()
@@ -456,6 +449,7 @@ def api_cloudflare_status():
                         if timestamp_str and timestamp_str.isdigit():
                             # Get current monotonic time
                             import time
+
                             current_monotonic = int(time.clock_gettime(time.CLOCK_MONOTONIC) * 1000000)
                             start_monotonic = int(timestamp_str)
                             uptime_seconds = (current_monotonic - start_monotonic) / 1000000
@@ -463,24 +457,22 @@ def api_cloudflare_status():
             except (subprocess.TimeoutExpired, FileNotFoundError, ValueError, AttributeError):
                 pass
 
-        return jsonify({
-            "installed": True,
-            "connected": service_running,
-            "service_status": service_status,
-            "tunnel_name": tunnel_name,
-            "tunnel_id": tunnel_id,
-            "tunnel_url": tunnel_url,
-            "connections": connections,
-            "uptime": uptime,
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
+        return jsonify(
+            {
+                "installed": True,
+                "connected": service_running,
+                "service_status": service_status,
+                "tunnel_name": tunnel_name,
+                "tunnel_id": tunnel_id,
+                "tunnel_url": tunnel_url,
+                "connections": connections,
+                "uptime": uptime,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
 
     except Exception as e:
-        return jsonify({
-            "installed": False,
-            "connected": False,
-            "error": str(e)
-        }), 500
+        return jsonify({"installed": False, "connected": False, "error": str(e)}), 500
 
 
 def format_uptime(seconds):

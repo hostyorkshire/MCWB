@@ -10,10 +10,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock  # noqa: E402
 
-from weather_bot import WeatherBot
-
+from weather_bot import WeatherBot  # noqa: E402
 
 def simulate_frame_codes():
     """Simulate receiving the problematic frame codes"""

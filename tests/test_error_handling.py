@@ -3,13 +3,16 @@
 Test improved error handling for network issues.
 Demonstrates better user-facing error messages when the weather service is unreachable.
 """
+
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import Mock, patch
+
 import requests
+
 from weather_bot import WeatherBot
 
 
@@ -23,9 +26,9 @@ def test_timeout_error():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.Timeout()
-        result = bot._get_weather('York', 'UK')
+        result = bot._get_weather("York", "UK")
 
     print(f"User sees: {result}")
     print()
@@ -50,9 +53,9 @@ def test_connection_error():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_get.side_effect = requests.exceptions.ConnectionError()
-        result = bot._get_weather('York', 'USA')
+        result = bot._get_weather("York", "USA")
 
     print(f"User sees: {result}")
     print()
@@ -77,12 +80,12 @@ def test_http_error():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError()
         mock_response.status_code = 503
         mock_get.return_value = mock_response
-        result = bot._get_weather('Paris', 'FR')
+        result = bot._get_weather("Paris", "FR")
 
     print(f"User sees: {result}")
     print()
@@ -107,12 +110,12 @@ def test_location_not_found_with_country():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_response = Mock()
         mock_response.raise_for_status = Mock()
-        mock_response.json.return_value = {'results': []}
+        mock_response.json.return_value = {"results": []}
         mock_get.return_value = mock_response
-        result = bot._get_weather('Fakeville', 'UK')
+        result = bot._get_weather("Fakeville", "UK")
 
     print(f"User sees: {result}")
     print()
@@ -143,12 +146,12 @@ def test_location_not_found_without_country():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         mock_response = Mock()
         mock_response.raise_for_status = Mock()
-        mock_response.json.return_value = {'results': []}
+        mock_response.json.return_value = {"results": []}
         mock_get.return_value = mock_response
-        result = bot._get_weather('Fakeville')
+        result = bot._get_weather("Fakeville")
 
     print(f"User sees: {result}")
     print()
@@ -179,35 +182,37 @@ def test_success_case_unchanged():
 
     bot = WeatherBot(debug=False, country=None)
 
-    with patch('weather_bot.requests.get') as mock_get:
+    with patch("weather_bot.requests.get") as mock_get:
         geo_response = Mock()
         geo_response.raise_for_status = Mock()
         geo_response.json.return_value = {
-            'results': [{
-                'name': 'York',
-                'country': 'United Kingdom',
-                'country_code': 'GB',
-                'latitude': 53.9599,
-                'longitude': -1.0873
-            }]
+            "results": [
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                }
+            ]
         }
 
         weather_response = Mock()
         weather_response.raise_for_status = Mock()
         weather_response.json.return_value = {
-            'current': {
-                'temperature_2m': 12.5,
-                'apparent_temperature': 10.8,
-                'relative_humidity_2m': 75,
-                'wind_speed_10m': 15.0,
-                'wind_direction_10m': 220,
-                'precipitation': 0.0,
-                'weather_code': 2
+            "current": {
+                "temperature_2m": 12.5,
+                "apparent_temperature": 10.8,
+                "relative_humidity_2m": 75,
+                "wind_speed_10m": 15.0,
+                "wind_direction_10m": 220,
+                "precipitation": 0.0,
+                "weather_code": 2,
             }
         }
 
         mock_get.side_effect = [geo_response, weather_response]
-        result = bot._get_weather('York', 'UK')
+        result = bot._get_weather("York", "UK")
 
     print("User sees:")
     print(result)

@@ -11,6 +11,7 @@ import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from unittest.mock import MagicMock, patch
+
 from weather_bot import ANNOUNCE_MESSAGE, WEATHER_CHANNEL_FILE, WeatherBot
 
 
@@ -105,5 +106,6 @@ if __name__ == "__main__":
     except AssertionError as e:
         print(f"\n❌ TEST FAILED: {e}\n")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

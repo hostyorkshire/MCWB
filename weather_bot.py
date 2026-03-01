@@ -138,14 +138,14 @@ def api_request_with_retry(func, *args, max_retries=3, initial_timeout=10, **kwa
 
         try:
             # Add timeout to kwargs
-            kwargs['timeout'] = timeout
+            kwargs["timeout"] = timeout
             response = func(*args, **kwargs)
             return response
         except (Timeout, ConnectionError) as e:
             last_exception = e
             if attempt < max_retries - 1:
                 # Exponential backoff: wait 1s, 2s, 4s between retries
-                wait_time = 2 ** attempt
+                wait_time = 2**attempt
                 time.sleep(wait_time)
                 continue
             else:
@@ -183,24 +183,24 @@ class LEDController:
     # Board variant presets
     BOARD_VARIANTS = {
         "heltec-v2": {
-            "blue": 25,    # Onboard LED
+            "blue": 25,  # Onboard LED
             "green": None,  # GPIO26 is used for LoRa DIO0, not available for LED
-            "red": None,    # GPIO27 is used for LoRa MOSI, not available for LED
+            "red": None,  # GPIO27 is used for LoRa MOSI, not available for LED
         },
         "dollatek": {
-            "blue": 25,    # Only LED available on DollaTek board
+            "blue": 25,  # Only LED available on DollaTek board
             "green": None,  # GPIO26 is used for LoRa DIO0, not available
-            "red": None,    # GPIO27 is used for LoRa MOSI, not available
+            "red": None,  # GPIO27 is used for LoRa MOSI, not available
         },
     }
 
     # Default GPIO pin assignments
-    DEFAULT_BLUE_PIN = 25   # Heartbeat (onboard blue LED)
+    DEFAULT_BLUE_PIN = 25  # Heartbeat (onboard blue LED)
     DEFAULT_GREEN_PIN = None  # Disabled by default (conflicts with LoRa DIO0 on most boards)
-    DEFAULT_RED_PIN = None    # Disabled by default (conflicts with LoRa MOSI on most boards)
+    DEFAULT_RED_PIN = None  # Disabled by default (conflicts with LoRa MOSI on most boards)
 
     HEARTBEAT_INTERVAL = 2.0  # seconds between blue LED blinks
-    HEARTBEAT_ON_TIME = 0.1   # seconds the blue LED stays on per blink
+    HEARTBEAT_ON_TIME = 0.1  # seconds the blue LED stays on per blink
 
     def __init__(self, bot, enabled=True, blue_pin=None, green_pin=None, red_pin=None):
         self.bot = bot
@@ -251,13 +251,9 @@ class LEDController:
         if not self.enabled or self.blue_pin is None:
             return
         self._heartbeat_stop.clear()
-        self._heartbeat_thread = threading.Thread(
-            target=self._heartbeat_loop, daemon=True, name="mcwb-led-heartbeat"
-        )
+        self._heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True, name="mcwb-led-heartbeat")
         self._heartbeat_thread.start()
-        self.bot.logger.debug(
-            f"LED heartbeat started (blue GPIO{self.blue_pin}, interval={self.HEARTBEAT_INTERVAL}s)"
-        )
+        self.bot.logger.debug(f"LED heartbeat started (blue GPIO{self.blue_pin}, interval={self.HEARTBEAT_INTERVAL}s)")
 
     def stop_heartbeat(self):
         """Stop the blue-LED heartbeat background thread."""
@@ -343,11 +339,7 @@ class WeatherBot:
 
         # LED controller for visual activity indication (log-only if GPIO not available)
         self.led_controller = LEDController(
-            self,
-            enabled=enable_leds,
-            blue_pin=blue_pin,
-            green_pin=green_pin,
-            red_pin=red_pin
+            self, enabled=enable_leds, blue_pin=blue_pin, green_pin=green_pin, red_pin=red_pin
         )
 
         if enable_leds:
@@ -413,9 +405,7 @@ class WeatherBot:
             if radio_channel is not None:
                 self._announce_channel_idx = radio_channel
                 self._weather_channel_detected = True
-                self.logger.info(
-                    f"Using radio's most recently active channel: channel_idx={radio_channel}"
-                )
+                self.logger.info(f"Using radio's most recently active channel: channel_idx={radio_channel}")
             else:
                 # Try to load persisted weather channel from previous session
                 persisted_channel = self._get_persisted_weather_channel()
@@ -768,7 +758,9 @@ class WeatherBot:
                 text = payload[11:].decode("utf-8", "ignore")
                 self._handle_channel_message(text, channel_idx)
             else:
-                self._log(f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted")
+                self._log(
+                    f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted"
+                )
             self._send_cmd(bytes([_CMD_SYNC_NEXT_MSG]))
 
         elif code == _RESP_NO_MORE_MSGS:
@@ -815,11 +807,11 @@ class WeatherBot:
         # - "weather" or "wx" as standalone words (with word boundaries on both sides)
         # - "weather channel" phrase (with word boundaries)
         weather_patterns = [
-            r'(?<!\w)#weather\b',     # hashtag weather (not preceded by word char, word boundary at end)
-            r'(?<!\w)#wx\b',          # hashtag wx (not preceded by word char, word boundary at end)
-            r'\bweather\b',           # standalone word "weather"
-            r'\bwx\b',                # standalone word "wx"
-            r'\bweather\s+channel\b'  # phrase "weather channel" (word boundaries on both ends)
+            r"(?<!\w)#weather\b",  # hashtag weather (not preceded by word char, word boundary at end)
+            r"(?<!\w)#wx\b",  # hashtag wx (not preceded by word char, word boundary at end)
+            r"\bweather\b",  # standalone word "weather"
+            r"\bwx\b",  # standalone word "wx"
+            r"\bweather\s+channel\b",  # phrase "weather channel" (word boundaries on both ends)
         ]
 
         for pattern in weather_patterns:
@@ -833,7 +825,9 @@ class WeatherBot:
                     # Update announcement channel to use detected weather channel
                     if self.weather_channel_idx is None:
                         self._announce_channel_idx = channel_idx
-                        self.logger.info(f"Announcements will be sent to detected weather channel (channel_idx={channel_idx})")
+                        self.logger.info(
+                            f"Announcements will be sent to detected weather channel (channel_idx={channel_idx})"
+                        )
                         # Persist the detected channel for future restarts
                         self._save_weather_channel(channel_idx)
                 return
@@ -884,7 +878,9 @@ class WeatherBot:
                 print(msg)
                 self.logger.info(msg)
             self._announce_channel_idx = channel_idx
-            self.logger.info(f"Announcements will be sent to channel_idx={channel_idx} (detected from weather requests)")
+            self.logger.info(
+                f"Announcements will be sent to channel_idx={channel_idx} (detected from weather requests)"
+            )
             # Persist the detected channel for future restarts
             self._save_weather_channel(channel_idx)
 
@@ -977,7 +973,12 @@ class WeatherBot:
         text_cleaned = text.strip()
         # Combined regex for better performance
         # Matches: "on #<channel>" (with/without space), "#<channel>", "on weather channel", "weather channel"
-        text_cleaned = re.sub(r'(?:on\s*#(?:weather|wx)|on\s+weather\s+channel|#(?:weather|wx)|weather\s+channel)\s*', '', text_cleaned, flags=re.IGNORECASE)
+        text_cleaned = re.sub(
+            r"(?:on\s*#(?:weather|wx)|on\s+weather\s+channel|#(?:weather|wx)|weather\s+channel)\s*",
+            "",
+            text_cleaned,
+            flags=re.IGNORECASE,
+        )
         text_cleaned = text_cleaned.strip()
 
         m = re.match(r"^(?:wx|weather)\s+(.+)$", text_cleaned, re.IGNORECASE)
@@ -1191,13 +1192,13 @@ class WeatherBot:
         # Full postcode pattern: outward + space + inward
         # Outward: 1-2 letters, 1-2 digits, optional letter
         # Inward: 1 digit, 2 letters
-        full_postcode = re.match(r'^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$', text)
+        full_postcode = re.match(r"^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2}$", text)
         if full_postcode:
             return True
 
         # Partial postcode pattern: just the outward code
         # This handles formats like S1, S71, SW1A (first part of postcode)
-        partial_postcode = re.match(r'^[A-Z]{1,2}\d{1,2}[A-Z]?$', text)
+        partial_postcode = re.match(r"^[A-Z]{1,2}\d{1,2}[A-Z]?$", text)
         if partial_postcode:
             return True
 
@@ -1231,9 +1232,7 @@ class WeatherBot:
                     # Use admin_district (e.g., "Sheffield") as the primary name
                     # Fall back to parish, then postcode itself
                     location_name = (
-                        result.get("admin_district") or
-                        result.get("parish") or
-                        result.get("postcode", postcode)
+                        result.get("admin_district") or result.get("parish") or result.get("postcode", postcode)
                     )
 
                     return {
@@ -1605,7 +1604,12 @@ def main():
     parser.add_argument("-p", "--port", help="Serial port (e.g. /dev/ttyUSB0). Auto-detects if omitted.")
     parser.add_argument("-b", "--baud", type=int, default=115200, help="Baud rate (default: 115200)")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
-    parser.add_argument("-a", "--announce", action="store_true", help="Send announcements on every startup and periodically every 6 hours")
+    parser.add_argument(
+        "-a",
+        "--announce",
+        action="store_true",
+        help="Send announcements on every startup and periodically every 6 hours",
+    )
     parser.add_argument("-r", "--reboot-notify", action="store_true", help="Send notification on reboot/restart")
     parser.add_argument(
         "-c",

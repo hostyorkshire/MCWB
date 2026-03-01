@@ -7,8 +7,9 @@ import os
 import sys
 import time
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-from weather_bot import WeatherBot, STATE_FILE, REBOOT_NOTIFY_MESSAGE
+from unittest.mock import MagicMock, Mock, patch
+
+from weather_bot import REBOOT_NOTIFY_MESSAGE, STATE_FILE, WeatherBot
 
 
 class TestRebootNotification(unittest.TestCase):
@@ -53,7 +54,7 @@ class TestRebootNotification(unittest.TestCase):
         bot = WeatherBot(debug=False, reboot_notify=True)
 
         # Mock the send method
-        with patch.object(bot, '_send_channel_msg') as mock_send:
+        with patch.object(bot, "_send_channel_msg") as mock_send:
             bot._send_reboot_notification()
             # Should not send notification on first run
             mock_send.assert_not_called()
@@ -67,7 +68,7 @@ class TestRebootNotification(unittest.TestCase):
         # Second run - should send notification
         bot2 = WeatherBot(debug=False, reboot_notify=True, weather_channel_idx=1)
 
-        with patch.object(bot2, '_send_channel_msg') as mock_send:
+        with patch.object(bot2, "_send_channel_msg") as mock_send:
             bot2._send_reboot_notification()
             # Should send notification on restart
             mock_send.assert_called_once_with(REBOOT_NOTIFY_MESSAGE, 1)
@@ -81,7 +82,7 @@ class TestRebootNotification(unittest.TestCase):
         # Second run without reboot_notify flag
         bot2 = WeatherBot(debug=False, reboot_notify=False)
 
-        with patch.object(bot2, '_send_channel_msg') as mock_send:
+        with patch.object(bot2, "_send_channel_msg") as mock_send:
             bot2._send_reboot_notification()
             # Should not send notification when disabled
             mock_send.assert_not_called()
@@ -92,7 +93,7 @@ class TestRebootNotification(unittest.TestCase):
         bot._mark_running()
 
         # Read state file
-        with open(STATE_FILE, 'r') as f:
+        with open(STATE_FILE, "r") as f:
             content = f.read().strip()
 
         # Should be a valid timestamp
@@ -111,7 +112,7 @@ class TestRebootNotification(unittest.TestCase):
 
         # Test with weather_channel_idx
         bot2 = WeatherBot(debug=False, reboot_notify=True, weather_channel_idx=5)
-        with patch.object(bot2, '_send_channel_msg') as mock_send:
+        with patch.object(bot2, "_send_channel_msg") as mock_send:
             bot2._send_reboot_notification()
             mock_send.assert_called_once_with(REBOOT_NOTIFY_MESSAGE, 5)
 
