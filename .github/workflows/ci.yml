@@ -1,0 +1,144 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -r requirements.txt
+
+      - name: Run flake8 (strict)
+        run: |
+          echo "Running Flake8 style checker..."
+          flake8 . --statistics --count
+
+      - name: Run black (check only)
+        run: |
+          echo "Checking code formatting with Black..."
+          black --check --line-length=120 .
+
+      - name: Run isort (check only)
+        run: |
+          echo "Checking import ordering with isort..."
+          isort --check-only --profile=black --line-length=120 .
+
+      - name: Run pylint
+        run: |
+          echo "Running Pylint code quality analysis..."
+          pylint --rcfile=.pylintrc *.py --fail-under=9.0 || true
+
+      - name: Run mypy
+        # '|| true' allows gradual adoption of strict type checking
+        run: |
+          echo "Running MyPy type checker..."
+          mypy . --config-file=pyproject.toml || true
+
+      - name: Run bandit security scanner
+        run: |
+          echo "Running Bandit security scanner..."
+          bandit -r . -c pyproject.toml -f json -o bandit-report.json || true
+
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 30
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-mock
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=. --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+          pip install -r requirements.txt
+
+      - name: Run Bandit security linter
+        # '|| true' prevents blocking the pipeline while addressing security findings
+        run: bandit -r . -f json -o bandit-report.json || true
+
+      - name: Check dependencies with Safety
+        # '|| true' prevents blocking the pipeline; review safety output for findings
+        run: safety check --json || true
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Docker build
+        run: docker build -t mcwb:test .
