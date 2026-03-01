@@ -767,6 +767,38 @@ no account or API key required.
 UK postcode geocoding is provided by the free [Postcodes.io API](https://postcodes.io) –
 no account or API key required.
 
+## Code Style
+
+This project uses automated code formatting and linting tools:
+
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **flake8**: Style checking
+- **pylint**: Code quality analysis
+
+### Auto-format your code:
+
+```bash
+# Install dev dependencies
+pip install -r requirements-dev.txt
+
+# Format code
+black . --line-length=120
+isort . --profile=black --line-length=120
+
+# Check for linting issues
+flake8 .
+```
+
+### Pre-commit Hook (Optional)
+
+Install pre-commit hooks to automatically format code before commits:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
 ## License
 
 MIT License – see LICENSE file for details.

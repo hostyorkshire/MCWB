@@ -58,3 +58,20 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 120
+
+[tool.pylint.messages_control]
+disable = ["C0111", "C0103", "R0913"]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv"]
+skips = ["B104"]
+
