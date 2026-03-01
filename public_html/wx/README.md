@@ -73,7 +73,7 @@ Upload the entire `website` folder to any static web hosting service:
 1. Go to: https://app.netlify.com/
 2. Click "Add new site" → "Import an existing project"
 3. Choose "Deploy with GitHub" and authorize Netlify
-4. Select the `yourusername/MCWB` repository
+4. Select the `hostyorkshire/MCWB` repository
 5. Configure build settings (auto-detected from netlify.toml):
    - Base directory: (leave empty)
    - Build command: (leave empty)
@@ -280,11 +280,11 @@ To update the website:
 ## Support
 
 For issues or questions about the bot itself, see:
-- [MCWB GitHub Repository](https://github.com/yourusername/MCWB)
-- [Issue Tracker](https://github.com/yourusername/MCWB/issues)
+- [MCWB GitHub Repository](https://github.com/hostyorkshire/MCWB)
+- [Issue Tracker](https://github.com/hostyorkshire/MCWB/issues)
 
 ## License
 
 Same as MCWB project - MIT License
 
-See the main repository [LICENSE](https://github.com/yourusername/MCWB/blob/main/LICENSE) file for details.
+See the main repository [LICENSE](https://github.com/hostyorkshire/MCWB/blob/main/LICENSE) file for details.

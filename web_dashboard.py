@@ -63,8 +63,8 @@ CORS(
     resources={
         r"/api/*": {
             "origins": [
-                "https://wx.intergalactic.it.com",  # Production cPanel site
-                "http://wx.intergalactic.it.com",  # Allow HTTP variant
+                "https://weather.example.com",  # Example production site (replace with your domain)
+                "http://weather.example.com",  # Allow HTTP variant (replace with your domain)
                 "*",  # Allow all (for dev & tunnel flexibility)
             ],
             "methods": ["GET", "POST", "OPTIONS"],
