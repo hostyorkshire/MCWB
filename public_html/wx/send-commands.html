@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Weather Commands - Meshcore Weather Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Learn how to send weather commands to the bot using the MeshCore app">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <h1><span class="logo"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"></span> Meshcore Weather Bot</h1>
+                <p>Welcome to WX BoT, an intelligent meshcore weather bot</p>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                <span id="theme-icon"><img src="img/emoji/1f319.svg" alt="🌙" class="emoji-icon"></span>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-container">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="send-commands.html" class="active">Send Weather Commands</a></li>
+                <li><a href="getting-started.html">Getting Started</a></li>
+                <li><a href="installation.html">Installation</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="commands.html">Commands</a></li>
+                <li><a href="channels.html">Channels</a></li>
+                <li><a href="dashboard.html">Live Dashboard</a></li>
+                <li><a href="live-stats.html">Live Stats</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                <li><a href="api.html">API</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h1><img src="img/emoji/1f4f1.svg" alt="📱" class="emoji-icon"> Send Weather Commands</h1>
+            <p>Want weather updates on your MeshCore network? Here's how to use the bot!</p>
+
+            <div class="info-box success">
+                <h3><img src="img/emoji/2728.svg" alt="✨" class="emoji-icon"> No Installation Needed!</h3>
+                <p>You don't need to install anything — just send a message on the MeshCore app and the bot will reply with current weather conditions instantly!</p>
+            </div>
+
+            <div class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#how-to-send">How to Send Commands</a></li>
+                    <li><a href="#command-syntax">Command Syntax</a></li>
+                    <li><a href="#what-you-get">What You'll Get Back</a></li>
+                    <li><a href="#tips">Tips &amp; Tricks</a></li>
+                    <li><a href="#common-issues">Common Issues</a></li>
+                    <li><a href="#next-steps">Next Steps</a></li>
+                </ul>
+            </div>
+
+            <h2 id="how-to-send"><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"> How to Send Commands</h2>
+
+            <div class="highlight">
+                <p><strong>Step 1:</strong> <img src="img/emoji/1f4f1.svg" alt="📱" class="emoji-icon"> Open your MeshCore app or client</p>
+                <p><strong>Step 2:</strong> <img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"> Type your weather command</p>
+                <p><strong>Step 3:</strong> Send the message on any channel where the bot is listening</p>
+            </div>
+
+            <p>That's it! The bot will respond with current weather conditions for your requested location.</p>
+
+            <h2 id="command-syntax"><img src="img/emoji/1f324.svg" alt="🌤️" class="emoji-icon"> Command Syntax</h2>
+            <p>Use either <code>wx</code> or <code>weather</code> followed by a location:</p>
+
+            <div class="command-example">
+                <div class="command">wx [location]</div>
+            </div>
+            <div class="command-example">
+                <div class="command">weather [location]</div>
+            </div>
+
+            <h3>Examples</h3>
+            <div class="command-example">
+                <div class="command">wx London</div>
+            </div>
+            <div class="command-example">
+                <div class="command">wx Manchester</div>
+            </div>
+            <div class="command-example">
+                <div class="command">wx New York USA</div>
+            </div>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f4a1.svg" alt="💡" class="emoji-icon"> Case Insensitive</h3>
+                <p>Commands are case-insensitive — <code>WX London</code>, <code>wx london</code>, and <code>Wx London</code> all work exactly the same.</p>
+            </div>
+
+            <h2 id="what-you-get"><img src="img/emoji/1f321.svg" alt="🌡️" class="emoji-icon"> What You'll Get Back</h2>
+            <p>The bot replies with current weather conditions including:</p>
+            <ul>
+                <li>Current temperature and conditions</li>
+                <li>"Feels like" temperature</li>
+                <li>Humidity percentage</li>
+                <li>Wind speed and direction</li>
+            </ul>
+
+            <h3>Example Response</h3>
+            <div class="command-example">
+                <div class="command">wx London</div>
+                <div class="output">
+London, GB<br>
+Partly cloudy<br>
+Temp: 14.2°C (feels 12.8°C)<br>
+Humid: 72%<br>
+Wind: 18 km/h at 230°
+                </div>
+            </div>
+
+            <h2 id="tips"><img src="img/emoji/1f4a1.svg" alt="💡" class="emoji-icon"> Tips &amp; Tricks</h2>
+
+            <div class="info-box success">
+                <h3>Disambiguation with Country Codes</h3>
+                <p>Some city names exist in multiple countries. Add a country code to get the right one:</p>
+                <div class="command-example" style="margin-top: 1rem;">
+                    <div class="command">wx York UK</div>
+                    <div class="output">York, GB (United Kingdom)</div>
+                </div>
+                <div class="command-example">
+                    <div class="command">wx York USA</div>
+                    <div class="output">York, US (United States)</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f30d.svg" alt="🌍" class="emoji-icon"> What Locations Work?</h3>
+                <ul style="margin-bottom: 0;">
+                    <li><strong>City names</strong> — <code>wx Sheffield</code>, <code>wx Tokyo</code></li>
+                    <li><strong>City + country</strong> — <code>wx Paris FR</code>, <code>wx Sydney AU</code></li>
+                    <li><strong>UK postcodes</strong> — <code>wx S1 2HH</code>, <code>wx S71</code></li>
+                    <li><strong>Landmarks</strong> — many well-known places work too</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3><img src="img/emoji/1f4e1.svg" alt="📡" class="emoji-icon"> Any Channel Works</h3>
+                <p>Commands work on <strong>any channel</strong> the bot is monitoring. You don't need to be on a specific channel — just send on whatever channel you normally use.</p>
+            </div>
+
+            <h2 id="common-issues"><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"> Common Issues</h2>
+            <p>Not getting a response? Check the following:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Issue</th>
+                        <th>What to Check</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>No response at all</td>
+                        <td>Is the bot running/online? Ask a network admin to check.</td>
+                    </tr>
+                    <tr>
+                        <td>Location not found</td>
+                        <td>Check the spelling, or try adding a country code (e.g. <code>wx York UK</code>)</td>
+                    </tr>
+                    <tr>
+                        <td>Wrong location returned</td>
+                        <td>Use a country code to disambiguate (e.g. <code>wx Springfield USA</code>)</td>
+                    </tr>
+                    <tr>
+                        <td>Command not recognised</td>
+                        <td>Make sure there is a space after <code>wx</code> — <code>wxLondon</code> won't work</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>For more detailed help, see the <a href="troubleshooting.html">Troubleshooting Guide</a>.</p>
+
+            <h2 id="next-steps"><img src="img/emoji/1f680.svg" alt="🚀" class="emoji-icon"> Next Steps</h2>
+
+            <div class="quick-links">
+                <a href="getting-started.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/1f680.svg" alt="🚀" class="emoji-icon"></span>
+                    <h3>Getting Started</h3>
+                    <p>Want to host your own weather bot? Start here.</p>
+                </a>
+
+                <a href="commands.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/2328.svg" alt="⌨️" class="emoji-icon"></span>
+                    <h3>Commands Reference</h3>
+                    <p>Full command reference including all options and formats.</p>
+                </a>
+
+                <a href="troubleshooting.html" class="quick-link-card">
+                    <span class="icon"><img src="img/emoji/1f527.svg" alt="🔧" class="emoji-icon"></span>
+                    <h3>Troubleshooting</h3>
+                    <p>Having problems? Find solutions here.</p>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024-2026 MCWB - MeshCore Weather Bot</p>
+        <p>
+            <a href="https://github.com/hostyorkshire/MCWB">GitHub</a> • 
+            <a href="https://github.com/hostyorkshire/MCWB/blob/main/LICENSE">MIT License</a> • 
+            <a href="https://open-meteo.com/">Powered by Open-Meteo</a>
+        </p>
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
