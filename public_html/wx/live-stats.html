@@ -410,6 +410,13 @@
             }
         }
 
+        // Sanitize user-supplied strings before inserting into innerHTML
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = String(str == null ? '' : str);
+            return div.innerHTML;
+        }
+
         // Fetch and render bot status
         async function fetchStatus() {
             try {
@@ -433,7 +440,7 @@
                 statusCard.className = 'stat-card';
                 statusCard.innerHTML = `
                     <div class="stat-label">Status</div>
-                    <div class="stat-value"><span class="status-indicator status-${data.status === 'running' ? 'online' : 'offline'}"></span>${data.status || 'Unknown'}</div>
+                    <div class="stat-value"><span class="status-indicator status-${data.status === 'running' ? 'online' : 'offline'}"></span>${escapeHtml(data.status || 'Unknown')}</div>
                 `;
                 statsGrid.appendChild(statusCard);
                 
@@ -441,7 +448,7 @@
                 lastUpdateCard.className = 'stat-card';
                 lastUpdateCard.innerHTML = `
                     <div class="stat-label">Last Updated</div>
-                    <div class="stat-value" style="font-size: 1.2rem;">${formatRelativeTime(data.last_updated)}</div>
+                    <div class="stat-value" style="font-size: 1.2rem;">${escapeHtml(formatRelativeTime(data.last_updated))}</div>
                 `;
                 statsGrid.appendChild(lastUpdateCard);
                 
@@ -481,8 +488,8 @@
                     const statCard = document.createElement('div');
                     statCard.className = 'stat-card';
                     statCard.innerHTML = `
-                        <div class="stat-label">${card.label}</div>
-                        <div class="stat-value">${card.value}</div>
+                        <div class="stat-label">${escapeHtml(card.label)}</div>
+                        <div class="stat-value">${escapeHtml(card.value)}</div>
                     `;
                     statsGrid.appendChild(statCard);
                 });
@@ -590,8 +597,8 @@
                         const item = document.createElement('li');
                         item.className = 'channel-item';
                         item.innerHTML = `
-                            <span class="channel-name">${channel.name}</span>
-                            <span class="channel-time">${formatRelativeTime(channel.last_used)}</span>
+                            <span class="channel-name">${escapeHtml(channel.name)}</span>
+                            <span class="channel-time">${escapeHtml(formatRelativeTime(channel.last_used))}</span>
                         `;
                         channelList.appendChild(item);
                     });
@@ -701,8 +708,8 @@
                         const item = document.createElement('li');
                         item.className = 'user-item';
                         item.innerHTML = `
-                            <span class="user-name">${user.user}</span>
-                            <span class="user-time">${formatRelativeTime(user.timestamp)}</span>
+                            <span class="user-name">${escapeHtml(user.user)}</span>
+                            <span class="user-time">${escapeHtml(formatRelativeTime(user.timestamp))}</span>
                         `;
                         userList.appendChild(item);
                     });
@@ -1112,12 +1119,12 @@
                         const nameCard = document.createElement('div');
                         nameCard.className = 'stat-card';
                         // Show tunnel URL if available and tunnel name looks generic
-                        const displayName = data.tunnel_url && data.tunnel_name && data.tunnel_name.toUpperCase() === 'NAME' 
-                            ? data.tunnel_url 
-                            : data.tunnel_name;
+                        const isGenericName = data.tunnel_url && data.tunnel_name && data.tunnel_name.toUpperCase() === 'NAME';
+                        const displayName = isGenericName ? data.tunnel_url : data.tunnel_name;
+                        const labelText = isGenericName ? 'URL' : 'Name';
                         nameCard.innerHTML = `
-                            <div class="stat-label">Tunnel ${data.tunnel_url && data.tunnel_name.toUpperCase() === 'NAME' ? 'URL' : 'Name'}</div>
-                            <div class="stat-value" style="font-size: 1.2rem;">${displayName}</div>
+                            <div class="stat-label">Tunnel ${labelText}</div>
+                            <div class="stat-value" style="font-size: 1.2rem;">${escapeHtml(displayName)}</div>
                         `;
                         statsGrid.appendChild(nameCard);
                     }
@@ -1127,7 +1134,7 @@
                         connCard.className = 'stat-card';
                         connCard.innerHTML = `
                             <div class="stat-label">Active Connections</div>
-                            <div class="stat-value">${data.connections}</div>
+                            <div class="stat-value">${escapeHtml(data.connections)}</div>
                         `;
                         statsGrid.appendChild(connCard);
                     }
@@ -1137,7 +1144,7 @@
                         uptimeCard.className = 'stat-card';
                         uptimeCard.innerHTML = `
                             <div class="stat-label">Uptime</div>
-                            <div class="stat-value" style="font-size: 1.5rem;">${data.uptime}</div>
+                            <div class="stat-value" style="font-size: 1.5rem;">${escapeHtml(data.uptime)}</div>
                         `;
                         statsGrid.appendChild(uptimeCard);
                     }
@@ -1162,8 +1169,8 @@
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error';
             errorDiv.innerHTML = `
-                <p>⚠️ Unable to fetch ${title}</p>
-                <small>${error.message}</small>
+                <p>⚠️ Unable to fetch ${escapeHtml(title)}</p>
+                <small>${escapeHtml(error.message)}</small>
             `;
             container.replaceChildren(errorDiv);
         }

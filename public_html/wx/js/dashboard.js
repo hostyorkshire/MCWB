@@ -5,6 +5,13 @@ let autoRefreshEnabled = true;
 let refreshInterval = null;
 let isLiveMode = false;
 
+// Sanitize user-supplied strings before inserting into innerHTML
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str == null ? '' : str);
+    return div.innerHTML;
+}
+
 // ============================================================================
 // CONFIGURATION: Update this with your Cloudflare Tunnel URL
 // ============================================================================
@@ -103,7 +110,7 @@ function showLiveMode(apiUrl) {
         demoWarning.innerHTML = `
             <h3><img src="img/emoji/2705.svg" alt="✅" class="emoji-icon"> Live Dashboard Connected</h3>
             <p>Successfully connected to your bot instance!</p>
-            <p style="margin-top: 1rem;"><strong>API URL:</strong> <code>${apiUrl}</code></p>
+            <p style="margin-top: 1rem;"><strong>API URL:</strong> <code>${escapeHtml(apiUrl)}</code></p>
             <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0.5rem;">
                 Data updates automatically every 10 seconds.
             </p>
