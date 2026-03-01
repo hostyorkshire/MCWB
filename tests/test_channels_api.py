@@ -50,12 +50,13 @@ def test_channels_api():
         logs_dir.mkdir()
         channels_file = logs_dir / "channels.json"
 
-        # Write test data
+        # Write test data (channel_idx 3 has no name and should be filtered out)
         test_data = {
             "channels": [
                 {"channel_idx": 0, "channel_name": None},
                 {"channel_idx": 1, "channel_name": "weather"},
                 {"channel_idx": 2, "channel_name": "alerts"},
+                {"channel_idx": 3, "channel_name": None},
             ],
             "last_updated": "2026-02-24T23:00:00",
         }
@@ -82,7 +83,7 @@ def test_channels_api():
                         elif ch.get("channel_idx") == 0:
                             formatted_channels.append("#public")
                         else:
-                            formatted_channels.append(f"#channel{ch.get('channel_idx')}")
+                            continue
 
                     return web_dashboard.jsonify(
                         {"channels": formatted_channels, "last_updated": data.get("last_updated")}
@@ -101,8 +102,11 @@ def test_channels_api():
         assert "#public" in data["channels"]
         assert "#weather" in data["channels"]
         assert "#alerts" in data["channels"]
+        assert "#channel3" not in data["channels"]
+        assert not any("unnamed" in ch for ch in data["channels"])
         assert data["last_updated"] == "2026-02-24T23:00:00"
         print("✓ Returns formatted channel list with # prefix")
+        print("✓ Unnamed channels (channel_idx != 0, no name) are excluded")
         print(f"  Channels: {', '.join(data['channels'])}")
 
     print()
