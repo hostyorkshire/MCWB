@@ -296,18 +296,18 @@ When you run the weather bot with the `-d` (debug) flag, you'll see various log 
 
 #### Normal Startup Messages
 ```
-[2026-02-21 05:24:49] MeshCore [WX_BOT]: Mapped channel 'weather' to channel_idx 1
-[2026-02-21 05:24:49] MeshCore [WX_BOT]: Channel filter set to: 'weather'
-[2026-02-21 05:24:49] MeshCore [WX_BOT]: LoRa connected on /dev/ttyUSB1 at 115200 baud
-[2026-02-21 05:24:49] MeshCore [WX_BOT]: MeshCore started
+[2024-02-21 05:24:49] MeshCore [WX_BOT]: Mapped channel 'weather' to channel_idx 1
+[2024-02-21 05:24:49] MeshCore [WX_BOT]: Channel filter set to: 'weather'
+[2024-02-21 05:24:49] MeshCore [WX_BOT]: LoRa connected on /dev/ttyUSB1 at 115200 baud
+[2024-02-21 05:24:49] MeshCore [WX_BOT]: MeshCore started
 ```
 ✅ These are good - they mean the bot started successfully.
 
 #### Protocol Messages
 ```
-[2026-02-21 05:24:49] MeshCore [WX_BOT]: MeshCore: device time requested, responding…
-[2026-02-21 05:25:12] MeshCore [WX_BOT]: MeshCore: message acknowledgment received
-[2026-02-21 05:25:13] MeshCore [WX_BOT]: MeshCore: message queue empty
+[2024-02-21 05:24:49] MeshCore [WX_BOT]: MeshCore: device time requested, responding…
+[2024-02-21 05:25:12] MeshCore [WX_BOT]: MeshCore: message acknowledgment received
+[2024-02-21 05:25:13] MeshCore [WX_BOT]: MeshCore: message queue empty
 ```
 ✅ These are normal - the bot is communicating with the LoRa radio.
 
@@ -322,13 +322,13 @@ If you see NO log messages at all after commands are sent, see the troubleshooti
 When someone sends "wx London" to the bot, you should see:
 
 ```
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: Binary frame: CHANNEL_MSG_V3 on channel_idx 2
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from USER1 on channel_idx 2: wx London
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: Channel filter check: default=False, matching=False, unnamed=True → will_process=True (filter: 'weather')
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: Received message from USER1: wx London
-[2026-02-21 05:25:30] WeatherBot: Processing message from USER1: wx London
-[2026-02-21 05:25:30] WeatherBot: Weather request for location: London
-[2026-02-21 05:25:30] WeatherBot: Replying on channel_idx 2: Weather for London, GB...
+[2024-02-21 05:25:30] MeshCore [WX_BOT]: Binary frame: CHANNEL_MSG_V3 on channel_idx 2
+[2024-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from USER1 on channel_idx 2: wx London
+[2024-02-21 05:25:30] MeshCore [WX_BOT]: Channel filter check: default=False, matching=False, unnamed=True → will_process=True (filter: 'weather')
+[2024-02-21 05:25:30] MeshCore [WX_BOT]: Received message from USER1: wx London
+[2024-02-21 05:25:30] WeatherBot: Processing message from USER1: wx London
+[2024-02-21 05:25:30] WeatherBot: Weather request for location: London
+[2024-02-21 05:25:30] WeatherBot: Replying on channel_idx 2: Weather for London, GB...
 ```
 
 If you don't see these messages, it means:
@@ -411,11 +411,11 @@ Look for:
 
 **Symptoms**:
 ```
-[2026-02-21 05:24:49] MeshCore [WX_BOT]: MeshCore started
+[2024-02-21 05:24:49] MeshCore [WX_BOT]: MeshCore started
 Weather Bot started. Send 'wx [location]' to get weather.
 Listening for messages...
-[2026-02-21 05:25:12] MeshCore [WX_BOT]: MeshCore: message queue empty
-[2026-02-21 05:25:13] MeshCore [WX_BOT]: MeshCore: message queue empty
+[2024-02-21 05:25:12] MeshCore [WX_BOT]: MeshCore: message queue empty
+[2024-02-21 05:25:13] MeshCore [WX_BOT]: MeshCore: message queue empty
 ```
 
 **Diagnosis**: The bot is working correctly and waiting for messages. No one has sent a command yet.
@@ -426,9 +426,9 @@ Listening for messages...
 
 **Symptoms**:
 ```
-[2026-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from USER1: hello world
-[2026-02-21 05:25:30] WeatherBot: Processing message from USER1: hello world
-[2026-02-21 05:25:30] WeatherBot: Not a weather command: hello world
+[2024-02-21 05:25:30] MeshCore [WX_BOT]: LoRa RX channel msg from USER1: hello world
+[2024-02-21 05:25:30] WeatherBot: Processing message from USER1: hello world
+[2024-02-21 05:25:30] WeatherBot: Not a weather command: hello world
 ```
 
 **Diagnosis**: The bot received the message but it doesn't match the "wx [location]" pattern.
