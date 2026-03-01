@@ -300,9 +300,6 @@ def api_channels():
         return jsonify({"channels": [], "last_updated": None})
 
     try:
-        import json
-        from datetime import datetime
-
         with open(channels_file, "r") as f:
             data = json.load(f)
             # Format channel names with # prefix for display
