@@ -110,6 +110,8 @@ class StatsTracker:
     def get_stats(self):
         """Get current stats"""
         with self.lock:
+            # Reload from file to get latest data written by weather bot
+            self.stats = self._load_stats()
             return self.stats.copy()
 
     def get_recent_hourly(self, hours=24):
