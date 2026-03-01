@@ -1420,6 +1420,11 @@ class WeatherBot:
 
             lines.append(f"{date_short}: {condition} {tmin}-{tmax}°C")
 
+        lat = location_data.get("latitude")
+        lon = location_data.get("longitude")
+        if lat is not None and lon is not None:
+            lines.append(f"https://maps.google.com/?q={lat},{lon}")
+
         return "\n".join(lines)
 
     def _get_weather(self, location: str, country: str = None, user: str = None) -> str:
