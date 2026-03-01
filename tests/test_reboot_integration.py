@@ -7,8 +7,9 @@ Tests the complete flow of detecting and sending reboot notifications
 import os
 import sys
 import time
-from unittest.mock import Mock, patch, MagicMock
-from weather_bot import WeatherBot, STATE_FILE, REBOOT_NOTIFY_MESSAGE
+from unittest.mock import MagicMock, Mock, patch
+
+from weather_bot import REBOOT_NOTIFY_MESSAGE, STATE_FILE, WeatherBot
 
 
 def test_integration_first_run():
@@ -25,13 +26,13 @@ def test_integration_first_run():
     bot = WeatherBot(debug=True, reboot_notify=True, weather_channel_idx=1)
 
     # Mock serial connection to avoid hardware dependency
-    with patch.object(bot, '_connect') as mock_connect:
+    with patch.object(bot, "_connect") as mock_connect:
         mock_connect.return_value = True
         bot._ser = Mock()
         bot._ser.is_open = False  # Prevent listener thread from running
 
         # Mock the channel message send method
-        with patch.object(bot, '_send_channel_msg') as mock_send:
+        with patch.object(bot, "_send_channel_msg") as mock_send:
             # Simulate the initialization sequence from run()
             bot._send_reboot_notification()
             bot._mark_running()
@@ -62,13 +63,13 @@ def test_integration_restart():
     bot = WeatherBot(debug=True, reboot_notify=True, weather_channel_idx=1)
 
     # Mock serial connection
-    with patch.object(bot, '_connect') as mock_connect:
+    with patch.object(bot, "_connect") as mock_connect:
         mock_connect.return_value = True
         bot._ser = Mock()
         bot._ser.is_open = False  # Prevent listener thread from running
 
         # Mock the channel message send method
-        with patch.object(bot, '_send_channel_msg') as mock_send:
+        with patch.object(bot, "_send_channel_msg") as mock_send:
             # Simulate the initialization sequence from run()
             bot._send_reboot_notification()
             bot._mark_running()
@@ -99,13 +100,13 @@ def test_integration_disabled():
     bot = WeatherBot(debug=True, reboot_notify=False, weather_channel_idx=1)
 
     # Mock serial connection
-    with patch.object(bot, '_connect') as mock_connect:
+    with patch.object(bot, "_connect") as mock_connect:
         mock_connect.return_value = True
         bot._ser = Mock()
         bot._ser.is_open = False
 
         # Mock the channel message send method
-        with patch.object(bot, '_send_channel_msg') as mock_send:
+        with patch.object(bot, "_send_channel_msg") as mock_send:
             # Simulate the initialization sequence from run()
             bot._send_reboot_notification()
             bot._mark_running()
@@ -134,12 +135,12 @@ def test_integration_multiple_restarts():
 
         bot = WeatherBot(debug=False, reboot_notify=True, weather_channel_idx=1)
 
-        with patch.object(bot, '_connect') as mock_connect:
+        with patch.object(bot, "_connect") as mock_connect:
             mock_connect.return_value = True
             bot._ser = Mock()
             bot._ser.is_open = False
 
-            with patch.object(bot, '_send_channel_msg') as mock_send:
+            with patch.object(bot, "_send_channel_msg") as mock_send:
                 is_reboot = bot._is_reboot()
                 bot._send_reboot_notification()
                 bot._mark_running()
@@ -181,6 +182,7 @@ def main():
     except Exception as e:
         print(f"\n✗ Integration test failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

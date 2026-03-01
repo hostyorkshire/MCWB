@@ -33,7 +33,7 @@ def main():
     print("Expected: Bot processes and responds\n")
 
     # Simulate valid message
-    valid_payload = bytes([0x88, 0, 1, 1, 0, 0, 0, 0]) + b'M3UXC: Wx barnsley'
+    valid_payload = bytes([0x88, 0, 1, 1, 0, 0, 0, 0]) + b"M3UXC: Wx barnsley"
     channel_idx, text = bot._parse_channel_message(valid_payload)
 
     if channel_idx is not None:
@@ -49,7 +49,7 @@ def main():
     print("Expected: Bot detects encryption and logs helpful diagnostic\n")
 
     # Simulate encrypted message (channel_idx > 7 is a signature of encryption)
-    encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b'garbled'
+    encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b"garbled"
     channel_idx, text = bot._parse_channel_message(encrypted_payload)
 
     if channel_idx is None:
@@ -78,13 +78,15 @@ def main():
     print("Expected: Bot detects and logs as encrypted/invalid\n")
 
     # Simulate V3 format with invalid channel
-    v3_invalid = bytes([0x11, 25, 0, 0, 99, 0, 0, 0, 0, 0, 0]) + b'test'
+    v3_invalid = bytes([0x11, 25, 0, 0, 99, 0, 0, 0, 0, 0, 0]) + b"test"
     # This would be caught in _dispatch
     code = v3_invalid[0]
     if code == 0x11:  # RESP_CHANNEL_MSG_V3
         channel_idx = v3_invalid[4]
         if not (0 <= channel_idx <= 7):
-            bot._log(f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted")
+            bot._log(
+                f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted"
+            )
             print("\n✓ SUCCESS: V3 invalid channel correctly detected")
 
     print("\n" + "=" * 70)

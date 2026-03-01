@@ -10,10 +10,10 @@ import time
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call, patch
 
 import requests
-from requests.exceptions import ConnectionError, Timeout, RequestException
+from requests.exceptions import ConnectionError, RequestException, Timeout
 
 from weather_bot import WeatherBot, api_request_with_retry
 
@@ -106,7 +106,7 @@ def test_api_retry_timeout_progression():
     timeouts = []
 
     def capture_timeout(*args, **kwargs):
-        timeouts.append(kwargs.get('timeout'))
+        timeouts.append(kwargs.get("timeout"))
         if len(timeouts) < 3:
             raise Timeout("Request timed out")
         return MagicMock(status_code=200)
@@ -136,9 +136,7 @@ def test_weather_bot_uses_retry():
     # Test geocode_location with retry
     with patch("weather_bot.api_request_with_retry") as mock_retry:
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "results": [{"name": "York", "latitude": 53.9, "longitude": -1.1}]
-        }
+        mock_response.json.return_value = {"results": [{"name": "York", "latitude": 53.9, "longitude": -1.1}]}
         mock_retry.return_value = mock_response
 
         try:
@@ -151,9 +149,7 @@ def test_weather_bot_uses_retry():
     # Test get_weather with retry
     with patch("weather_bot.api_request_with_retry") as mock_retry:
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "current": {"temperature_2m": 15, "weather_code": 1}
-        }
+        mock_response.json.return_value = {"current": {"temperature_2m": 15, "weather_code": 1}}
         mock_retry.return_value = mock_response
 
         result = bot.get_weather(53.9, -1.1)
@@ -163,9 +159,7 @@ def test_weather_bot_uses_retry():
     # Test get_outlook with retry
     with patch("weather_bot.api_request_with_retry") as mock_retry:
         mock_response = MagicMock()
-        mock_response.json.return_value = {
-            "daily": {"time": ["2024-01-01"], "weather_code": [1]}
-        }
+        mock_response.json.return_value = {"daily": {"time": ["2024-01-01"], "weather_code": [1]}}
         mock_retry.return_value = mock_response
 
         result = bot.get_outlook(53.9, -1.1)
@@ -230,6 +224,7 @@ def main():
             print(f"❌ ERROR: {test.__name__}")
             print(f"   {e}")
             import traceback
+
             traceback.print_exc()
             print()
             failed += 1

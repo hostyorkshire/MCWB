@@ -300,18 +300,18 @@ def test_postcode_detection():
     bot = WeatherBot(debug=False)
 
     test_cases = [
-        ("S1 2HH", True),      # Full postcode with space
-        ("S12HH", True),       # Full postcode without space
-        ("S71", True),         # Partial postcode (outward code)
-        ("S1", True),          # Partial postcode (short)
-        ("SW1A 1AA", True),    # Complex full postcode
-        ("SW1A", True),        # Complex partial postcode
-        ("M1 1AE", True),      # Manchester postcode
-        ("LS1 5DY", True),     # Leeds postcode
-        ("London", False),     # City name
-        ("York", False),       # City name
+        ("S1 2HH", True),  # Full postcode with space
+        ("S12HH", True),  # Full postcode without space
+        ("S71", True),  # Partial postcode (outward code)
+        ("S1", True),  # Partial postcode (short)
+        ("SW1A 1AA", True),  # Complex full postcode
+        ("SW1A", True),  # Complex partial postcode
+        ("M1 1AE", True),  # Manchester postcode
+        ("LS1 5DY", True),  # Leeds postcode
+        ("London", False),  # City name
+        ("York", False),  # City name
         ("Leeds LS1", False),  # City + partial postcode (should not match)
-        ("wx S1", False),      # Command prefix (should not match)
+        ("wx S1", False),  # Command prefix (should not match)
     ]
 
     for text, expected in test_cases:

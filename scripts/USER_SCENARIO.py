@@ -33,7 +33,7 @@ def simulate_user_scenario():
     print("\n[06:17:35] RX code=0x08 len=27")
 
     # Simulate the working message
-    valid_payload = bytes([0x08, 0, 1, 1, 0, 0, 0, 0]) + b'M3UXC: Wx barnsley '
+    valid_payload = bytes([0x08, 0, 1, 1, 0, 0, 0, 0]) + b"M3UXC: Wx barnsley "
     channel_idx, text = bot._parse_channel_message(valid_payload)
 
     if channel_idx is not None:
@@ -54,7 +54,7 @@ def simulate_user_scenario():
     print("\n[06:17:36] RX code=0x88 len=41")
 
     # Simulate the encrypted message that showed as "Mj#s*;(�%WPWD"
-    encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b'garbled'
+    encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b"garbled"
     channel_idx, text = bot._parse_channel_message(encrypted_payload)
 
     print("[06:17:36] channel_idx=1 message without SenderName: prefix, using sender='channel'")

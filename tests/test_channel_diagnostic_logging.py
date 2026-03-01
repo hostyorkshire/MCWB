@@ -5,6 +5,7 @@ Tests that helpful debug messages are shown when encrypted/invalid messages are 
 """
 
 import sys
+
 from weather_bot import WeatherBot
 
 
@@ -18,7 +19,7 @@ def test_valid_message_parsing():
 
     # Valid old format message: channel_idx=0
     # Payload format: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
-    valid_payload = bytes([0x88, 0, 1, 1, 0, 0, 0, 0]) + b'M3UXC: Wx barnsley'
+    valid_payload = bytes([0x88, 0, 1, 1, 0, 0, 0, 0]) + b"M3UXC: Wx barnsley"
     channel_idx, text = bot._parse_channel_message(valid_payload)
 
     assert channel_idx == 0, f"Expected channel_idx=0, got {channel_idx}"
@@ -39,7 +40,7 @@ def test_encrypted_message_detection():
 
     # Encrypted message: channel_idx > 7 (invalid)
     # Payload format: code(1) + channel_idx(1) + other bytes...
-    encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b'garbled data'
+    encrypted_payload = bytes([0x88, 129, 42, 35, 115, 42, 59, 40]) + b"garbled data"
     channel_idx, text = bot._parse_channel_message(encrypted_payload)
 
     assert channel_idx is None, f"Expected None for encrypted message, got {channel_idx}"
@@ -82,7 +83,7 @@ def test_multiple_channels():
         # Old format payload: code(1) + channel_idx(1) + path_len(1) + txt_type(1) + timestamp(4) + text
         # To avoid V3 detection heuristic 3 (reserved bytes = 0x00), use non-zero values
         # for path_len and txt_type
-        valid_payload = bytes([0x88, idx, 1, 1, 0, 0, 0, 0]) + f'User: Wx test{idx}'.encode()
+        valid_payload = bytes([0x88, idx, 1, 1, 0, 0, 0, 0]) + f"User: Wx test{idx}".encode()
         channel_idx, text = bot._parse_channel_message(valid_payload)
 
         assert channel_idx == idx, f"Expected channel_idx={idx}, got {channel_idx}"
@@ -102,7 +103,7 @@ def test_v3_format_invalid_channel():
 
     # V3 format: code(1) + SNR(1) + reserved(2) + channel_idx(1) + ...
     # Use invalid channel_idx (> 7) at position 4
-    v3_invalid = bytes([0x11, 25, 0, 0, 99, 0, 0, 0, 0, 0, 0]) + b'test'
+    v3_invalid = bytes([0x11, 25, 0, 0, 99, 0, 0, 0, 0, 0, 0]) + b"test"
 
     # Simulate _dispatch calling this for V3 messages
     payload = v3_invalid
@@ -111,7 +112,9 @@ def test_v3_format_invalid_channel():
         channel_idx = payload[4]
         print(f"V3 message with channel_idx={channel_idx}")
         if not (0 <= channel_idx <= 7):
-            bot._log(f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted")
+            bot._log(
+                f"V3 message with invalid channel_idx={channel_idx} (valid range: 0-7) - likely encrypted or corrupted"
+            )
 
     print("✓ V3 format invalid channel detected and logged")
     print()
@@ -154,11 +157,13 @@ def main():
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     except Exception as e:
         print(f"\n✗ Error during testing: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

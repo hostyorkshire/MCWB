@@ -12,7 +12,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from pathlib import Path
 from unittest.mock import patch
-from weather_bot import WeatherBot, WEATHER_CHANNEL_FILE, ANNOUNCE_MESSAGE
+
+from weather_bot import ANNOUNCE_MESSAGE, WEATHER_CHANNEL_FILE, WeatherBot
 
 
 def cleanup():
@@ -53,7 +54,9 @@ def test_explicit_config_channel_1():
 
     # Verify announcement went to channel 1
     assert len(sent_messages) == 1, "Should send 1 announcement"
-    assert sent_messages[0]["channel_idx"] == 1, f"Announcement should go to channel 1, got {sent_messages[0]['channel_idx']}"
+    assert (
+        sent_messages[0]["channel_idx"] == 1
+    ), f"Announcement should go to channel 1, got {sent_messages[0]['channel_idx']}"
 
     print("  ✓ Announcement channel is channel_idx=1")
     print("  ✓ Announcements will go to #weather channel (channel 1)")
@@ -197,10 +200,12 @@ if __name__ == "__main__":
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
     except Exception as e:
         print(f"\n✗ Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

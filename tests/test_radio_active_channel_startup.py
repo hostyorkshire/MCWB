@@ -50,16 +50,16 @@ def test_uses_radio_active_channel_when_available():
     _cleanup()
 
     # Simulate channels.json with activity on channel 1
-    _write_channels_json([
-        {"channel_idx": 0, "channel_name": None, "last_used": time.time() - 100},
-        {"channel_idx": 1, "channel_name": "weather", "last_used": time.time()},
-    ])
+    _write_channels_json(
+        [
+            {"channel_idx": 0, "channel_name": None, "last_used": time.time() - 100},
+            {"channel_idx": 1, "channel_name": "weather", "last_used": time.time()},
+        ]
+    )
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
-    assert bot._announce_channel_idx == 1, (
-        f"Expected channel_idx=1 from channels.json, got {bot._announce_channel_idx}"
-    )
+    assert bot._announce_channel_idx == 1, f"Expected channel_idx=1 from channels.json, got {bot._announce_channel_idx}"
     assert bot._weather_channel_detected is True, "Should mark channel as detected"
     print("  ✓ Bot uses radio active channel_idx=1 from channels.json")
 
@@ -76,17 +76,19 @@ def test_most_recently_active_channel_preferred():
     _cleanup()
 
     now = time.time()
-    _write_channels_json([
-        {"channel_idx": 0, "channel_name": None, "last_used": now - 10},
-        {"channel_idx": 2, "channel_name": None, "last_used": now - 50},
-        {"channel_idx": 3, "channel_name": None, "last_used": now - 5},   # most recent
-    ])
+    _write_channels_json(
+        [
+            {"channel_idx": 0, "channel_name": None, "last_used": now - 10},
+            {"channel_idx": 2, "channel_name": None, "last_used": now - 50},
+            {"channel_idx": 3, "channel_name": None, "last_used": now - 5},  # most recent
+        ]
+    )
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
-    assert bot._announce_channel_idx == 3, (
-        f"Expected most recently active channel_idx=3, got {bot._announce_channel_idx}"
-    )
+    assert (
+        bot._announce_channel_idx == 3
+    ), f"Expected most recently active channel_idx=3, got {bot._announce_channel_idx}"
     print("  ✓ Bot selected most recently active channel_idx=3")
 
     _cleanup()
@@ -102,16 +104,18 @@ def test_explicit_config_overrides_radio_active_channel():
     _cleanup()
 
     # channels.json has channel 1
-    _write_channels_json([
-        {"channel_idx": 1, "channel_name": "weather", "last_used": time.time()},
-    ])
+    _write_channels_json(
+        [
+            {"channel_idx": 1, "channel_name": "weather", "last_used": time.time()},
+        ]
+    )
 
     # Explicit config set to 5
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=5)
 
-    assert bot._announce_channel_idx == 5, (
-        f"Explicit config should override channels.json, expected 5, got {bot._announce_channel_idx}"
-    )
+    assert (
+        bot._announce_channel_idx == 5
+    ), f"Explicit config should override channels.json, expected 5, got {bot._announce_channel_idx}"
     print("  ✓ Explicit weather_channel_idx=5 takes precedence over channels.json channel 1")
 
     _cleanup()
@@ -127,18 +131,18 @@ def test_falls_back_to_persisted_when_no_non_default_radio_channels():
     _cleanup()
 
     # channels.json has only channel 0 (default)
-    _write_channels_json([
-        {"channel_idx": 0, "channel_name": None, "last_used": time.time()},
-    ])
+    _write_channels_json(
+        [
+            {"channel_idx": 0, "channel_name": None, "last_used": time.time()},
+        ]
+    )
     # Persisted channel from previous session
     WEATHER_CHANNEL_FILE.parent.mkdir(parents=True, exist_ok=True)
     WEATHER_CHANNEL_FILE.write_text("4")
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
-    assert bot._announce_channel_idx == 4, (
-        f"Should fall back to persisted channel 4, got {bot._announce_channel_idx}"
-    )
+    assert bot._announce_channel_idx == 4, f"Should fall back to persisted channel 4, got {bot._announce_channel_idx}"
     print("  ✓ Falls back to persisted channel_idx=4 (channels.json only has default channel)")
 
     _cleanup()
@@ -155,9 +159,7 @@ def test_falls_back_to_zero_when_no_channels_anywhere():
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
-    assert bot._announce_channel_idx == 0, (
-        f"Should default to channel_idx=0, got {bot._announce_channel_idx}"
-    )
+    assert bot._announce_channel_idx == 0, f"Should default to channel_idx=0, got {bot._announce_channel_idx}"
     print("  ✓ Defaults to channel_idx=0 when no channel history exists")
 
     _cleanup()
@@ -181,9 +183,9 @@ def test_corrupt_channels_json_handled_gracefully():
 
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)
 
-    assert bot._announce_channel_idx == 2, (
-        f"Corrupt channels.json should fall back to persisted channel 2, got {bot._announce_channel_idx}"
-    )
+    assert (
+        bot._announce_channel_idx == 2
+    ), f"Corrupt channels.json should fall back to persisted channel 2, got {bot._announce_channel_idx}"
     print("  ✓ Corrupt channels.json handled gracefully, using persisted channel_idx=2")
 
     _cleanup()
@@ -210,10 +212,12 @@ if __name__ == "__main__":
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
     except Exception as e:
         print(f"\n✗ Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

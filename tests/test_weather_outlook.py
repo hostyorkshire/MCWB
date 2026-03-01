@@ -219,7 +219,7 @@ def test_outlook_includes_country_code():
         return False
 
     # Check that no comma is present in the header (first line)
-    first_line = response_no_country.split('\n')[0]
+    first_line = response_no_country.split("\n")[0]
     if ", " in first_line:
         print("❌ FAIL: Outlook without country code should not have comma")
         return False

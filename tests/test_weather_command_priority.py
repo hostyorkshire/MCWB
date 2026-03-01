@@ -114,13 +114,15 @@ def test_successive_weather_commands():
 
         geocoding_york = MagicMock()
         geocoding_york.json.return_value = {
-            "results": [{
-                "name": "York",
-                "country": "United Kingdom",
-                "country_code": "GB",
-                "latitude": 53.9599,
-                "longitude": -1.0873,
-            }]
+            "results": [
+                {
+                    "name": "York",
+                    "country": "United Kingdom",
+                    "country_code": "GB",
+                    "latitude": 53.9599,
+                    "longitude": -1.0873,
+                }
+            ]
         }
 
         weather_york = MagicMock()
@@ -200,6 +202,7 @@ def main():
         except Exception as e:
             print(f"\n❌ Exception in {test.__name__}: {e}")
             import traceback
+
             traceback.print_exc()
             failed += 1
 

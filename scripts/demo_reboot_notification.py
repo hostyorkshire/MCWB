@@ -9,7 +9,8 @@ reboot notification feature works.
 import os
 import sys
 import time
-from weather_bot import STATE_FILE, REBOOT_NOTIFY_MESSAGE
+
+from weather_bot import REBOOT_NOTIFY_MESSAGE, STATE_FILE
 
 
 def print_header(title):
@@ -22,9 +23,9 @@ def print_header(title):
 def check_state():
     """Check and display the current state"""
     if os.path.exists(STATE_FILE):
-        with open(STATE_FILE, 'r') as f:
+        with open(STATE_FILE, "r") as f:
             timestamp = f.read().strip()
-        time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(timestamp)))
+        time_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
         print(f"State file exists: {STATE_FILE}")
         print(f"  Last marked running at: {time_str}")
         return True
@@ -48,7 +49,7 @@ def simulate_bot_start(run_number):
         print("   ✓ First run - no reboot notification needed")
 
     print("\n3. Marking bot as running...")
-    with open(STATE_FILE, 'w') as f:
+    with open(STATE_FILE, "w") as f:
         f.write(f"{int(time.time())}\n")
     print("   ✓ State file created/updated")
 

@@ -64,7 +64,9 @@ def test_announcement_goes_to_weather_channel():
     assert len(sent_messages) == 1, f"Expected 1 announcement, got {len(sent_messages)}"
     announcement = sent_messages[0]
 
-    assert announcement["channel_idx"] == 1, f"Announcement should be sent to channel_idx=1, but was sent to {announcement['channel_idx']}"
+    assert (
+        announcement["channel_idx"] == 1
+    ), f"Announcement should be sent to channel_idx=1, but was sent to {announcement['channel_idx']}"
     assert announcement["msg"] == ANNOUNCE_MESSAGE, "Announcement should contain correct message"
 
     print("  ✓ Announcement sent to correct channel (channel_idx=1)")
@@ -117,7 +119,9 @@ def test_announcement_channel_not_default():
     assert len(sent_messages) == 1, f"Expected 1 announcement, got {len(sent_messages)}"
     announcement = sent_messages[0]
 
-    assert announcement["channel_idx"] == 2, f"Announcement should be sent to channel_idx=2, got {announcement['channel_idx']}"
+    assert (
+        announcement["channel_idx"] == 2
+    ), f"Announcement should be sent to channel_idx=2, got {announcement['channel_idx']}"
     assert announcement["channel_idx"] != 0, "Announcement should NOT be sent to default channel (idx=0)"
 
     print("  ✓ Announcement sent to channel_idx=2 (NOT default)")
@@ -172,7 +176,9 @@ def test_announcement_channel_defaults_to_zero_when_not_configured():
     assert len(sent_messages) == 1, f"Expected 1 announcement, got {len(sent_messages)}"
     announcement = sent_messages[0]
 
-    assert announcement["channel_idx"] == 0, f"Announcement should default to channel_idx=0, got {announcement['channel_idx']}"
+    assert (
+        announcement["channel_idx"] == 0
+    ), f"Announcement should default to channel_idx=0, got {announcement['channel_idx']}"
 
     print("  ✓ Without configuration, announcement defaults to channel_idx=0")
     print("  ⚠️  WARNING: This may not be the #weather channel!")

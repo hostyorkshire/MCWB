@@ -2,13 +2,15 @@
 """
 Test LED board variant configuration
 """
+
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import unittest
-from weather_bot import WeatherBot, LEDController
+
+from weather_bot import LEDController, WeatherBot
 
 
 class TestLEDVariants(unittest.TestCase):
@@ -40,12 +42,7 @@ class TestLEDVariants(unittest.TestCase):
 
     def test_custom_pins(self):
         """Test custom GPIO pin configuration"""
-        bot = WeatherBot(
-            enable_leds=True,
-            led_blue_pin=2,
-            led_green_pin=4,
-            led_red_pin=5
-        )
+        bot = WeatherBot(enable_leds=True, led_blue_pin=2, led_green_pin=4, led_red_pin=5)
         self.assertTrue(bot.led_controller.enabled)
         self.assertEqual(bot.led_controller.blue_pin, 2)
         self.assertEqual(bot.led_controller.green_pin, 4)
@@ -53,12 +50,7 @@ class TestLEDVariants(unittest.TestCase):
 
     def test_custom_pins_override_variant(self):
         """Test that custom pins override board variant settings"""
-        bot = WeatherBot(
-            enable_leds=True,
-            led_board_variant="dollatek",
-            led_blue_pin=2,
-            led_green_pin=4
-        )
+        bot = WeatherBot(enable_leds=True, led_board_variant="dollatek", led_blue_pin=2, led_green_pin=4)
         self.assertTrue(bot.led_controller.enabled)
         self.assertEqual(bot.led_controller.blue_pin, 2)  # Overridden
         self.assertEqual(bot.led_controller.green_pin, 4)  # Overridden

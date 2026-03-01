@@ -25,14 +25,14 @@ def test_no_pending_outlook_state():
     bot._ser = MagicMock()
 
     # Verify no pending outlook tracking exists
-    if not hasattr(bot, '_pending_outlook'):
+    if not hasattr(bot, "_pending_outlook"):
         print("✅ PASS: No pending outlook state management (immediate send)")
     else:
         print("❌ FAIL: Bot still has pending outlook state tracking")
         return False
 
     # Verify no timeout configuration exists
-    if not hasattr(bot, '_outlook_timeout'):
+    if not hasattr(bot, "_outlook_timeout"):
         print("✅ PASS: No outlook timeout configuration (not needed)")
     else:
         print("❌ FAIL: Bot still has outlook timeout configuration")

@@ -10,7 +10,8 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pathlib import Path
-from weather_bot import WeatherBot, WEATHER_CHANNEL_FILE
+
+from weather_bot import WEATHER_CHANNEL_FILE, WeatherBot
 
 
 def cleanup():
@@ -171,10 +172,12 @@ if __name__ == "__main__":
     except AssertionError as e:
         print(f"\n✗ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
     except Exception as e:
         print(f"\n✗ Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

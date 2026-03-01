@@ -32,12 +32,10 @@ def test_filter_channel_indicators():
         location, country = WeatherBot._parse_command(command)
 
         assert location == expected_location, (
-            f"Command '{command}' should extract location '{expected_location}', "
-            f"but got '{location}'"
+            f"Command '{command}' should extract location '{expected_location}', " f"but got '{location}'"
         )
         assert country == expected_country, (
-            f"Command '{command}' should extract country '{expected_country}', "
-            f"but got '{country}'"
+            f"Command '{command}' should extract country '{expected_country}', " f"but got '{country}'"
         )
 
         print(f"  ✓ '{command}' -> location='{location}', country={country}")
