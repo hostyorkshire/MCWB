@@ -14,6 +14,7 @@ from unittest.mock import MagicMock  # noqa: E402
 
 from weather_bot import WeatherBot  # noqa: E402
 
+
 def simulate_frame_codes():
     """Simulate receiving the problematic frame codes"""
     print("=" * 70)
