@@ -35,7 +35,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # File paths and state management constants
 # ---------------------------------------------------------------------------
-STATE_FILE = "/var/tmp/mcwb_state.txt"  # State file for reboot detection (persists across reboots)
+STATE_FILE = str(Path.home() / ".mcwb_state.txt")  # State file for reboot detection (persists across reboots)
 REBOOT_NOTIFY_MESSAGE = "MCWBv2 weather bot has restarted and is now online."
 ANNOUNCE_TIMESTAMP_FILE = Path("logs/.last_announce")  # Timestamp file for periodic announcements
 WEATHER_CHANNEL_FILE = Path("logs/.last_weather_channel")  # Persisted weather channel index for announcements

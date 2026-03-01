@@ -519,7 +519,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="MCWB Web Dashboard")
-    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")  # nosec B104
     parser.add_argument("--port", type=int, default=5000, help="Port to bind to (default: 5000)")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--ssl", action="store_true", help="Enable HTTPS with SSL certificate")
@@ -543,7 +543,7 @@ def main():
     print()
     print("🌐 Dashboard will be accessible at:")
     print(f"   • Local:   {protocol}://localhost:{args.port}")
-    if args.host == "0.0.0.0" and local_ip:
+    if args.host == "0.0.0.0" and local_ip:  # nosec B104
         print(f"   • Network: {protocol}://{local_ip}:{args.port}")
         print()
         if args.ssl:
