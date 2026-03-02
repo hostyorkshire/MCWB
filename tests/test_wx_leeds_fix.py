@@ -125,7 +125,7 @@ def test_wx_leeds_command():
                 print("✅ Recognized as weather command!")
                 print(f"   Parsed location: '{location}'")
 
-                if location.lower() == "leeds":
+                if location[0].lower() == "leeds":
                     print("✅ Location correctly parsed as 'leeds'!")
                     print()
                     print("=" * 70)

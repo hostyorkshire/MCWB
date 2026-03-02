@@ -29,8 +29,8 @@ def test_announcement_goes_to_weather_channel():
     if os.path.exists(ANNOUNCE_TIMESTAMP_FILE):
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
 
-    # Simulate old announcement (5 hours ago) so announcement will be sent
-    old_time = time.time() - (5 * 60 * 60)
+    # Simulate old announcement (past ANNOUNCE_INTERVAL) so announcement will be sent
+    old_time = time.time() - (ANNOUNCE_INTERVAL + 3600)
 
     # Create bot with weather_channel_idx=1 (typical #weather channel)
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=1)
@@ -38,7 +38,7 @@ def test_announcement_goes_to_weather_channel():
 
     print("  Configured weather_channel_idx: 1")
     print(f"  Internal _announce_channel_idx: {bot._announce_channel_idx}")
-    print("  Simulated last announcement: 5 hours ago")
+    print("  Simulated last announcement: past ANNOUNCE_INTERVAL")
 
     # Track all messages sent with their channel indices
     sent_messages = []
@@ -89,7 +89,7 @@ def test_announcement_channel_not_default():
         os.remove(ANNOUNCE_TIMESTAMP_FILE)
 
     # Simulate old announcement to trigger announcement on startup
-    old_time = time.time() - (5 * 60 * 60)
+    old_time = time.time() - (ANNOUNCE_INTERVAL + 3600)
 
     # Create bot with weather_channel_idx=2 (NOT default channel)
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True, weather_channel_idx=2)
@@ -146,7 +146,7 @@ def test_announcement_channel_defaults_to_zero_when_not_configured():
         os.remove(CHANNELS_FILE)
 
     # Simulate old announcement
-    old_time = time.time() - (5 * 60 * 60)
+    old_time = time.time() - (ANNOUNCE_INTERVAL + 3600)
 
     # Create bot WITHOUT weather_channel_idx configured
     bot = WeatherBot(node_id="test_bot", debug=False, announce=True)

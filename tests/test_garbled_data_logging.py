@@ -4,19 +4,19 @@ Test to verify that garbled LoRa data is NOT logged with "LoRa RX:"
 This addresses the issue where corrupted data was showing up in logs.
 """
 
+import html
+import logging
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import io
-from contextlib import redirect_stdout
 from unittest.mock import MagicMock
 
 from meshcore import MeshCore, MeshCoreMessage
 
 
-def test_garbled_data_not_logged():
+def test_garbled_data_not_logged(caplog):
     """Test that garbled data doesn't show up in LoRa RX logs"""
     print("=" * 60)
     print("TEST: Garbled Data Logging Fix")
@@ -31,8 +31,6 @@ def test_garbled_data_not_logged():
     # Simulate the exact problematic data from the issue
     garbled_data = "7v7^Aȟn%'qx/~(:+v&lt;_̼f}#DFjH.9R\"c6Kc bfO39.s,[jn[rH_Zb&gt;SF)=7.d&gt;D8"
     # After HTML unescaping, this becomes:
-    import html
-
     garbled_data_unescaped = html.unescape(garbled_data)
 
     # Create a valid message for comparison
@@ -55,15 +53,14 @@ def test_garbled_data_not_logged():
     mock_serial.readline.side_effect = lambda: readline_side_effect()
     mesh._serial = mock_serial
 
-    # Capture stdout to check what gets logged
-    captured_output = io.StringIO()
-    with redirect_stdout(captured_output):
+    # Capture log records to check what gets logged
+    with caplog.at_level(logging.INFO, logger="meshcore"):
         mesh._listen_loop()
 
-    output = captured_output.getvalue()
+    output = caplog.text
 
     # Check results
-    print(f"\nCaptured output:\n{output}")
+    print(f"\nCaptured log output:\n{output}")
 
     # The garbled data (either escaped or unescaped) should NOT appear in "LoRa RX:" logs
     garbled_in_lora_rx = False

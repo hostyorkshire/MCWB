@@ -38,9 +38,9 @@ def test_channels_api():
 
     # Verify channel formatting with # prefix
     for channel in data["channels"]:
-        assert channel.startswith("#"), f"Channel '{channel}' should start with #"
+        assert channel["name"].startswith("#"), f"Channel '{channel['name']}' should start with #"
     print("✓ All channels have # prefix")
-    print(f"  Channels: {', '.join(data['channels']) if data['channels'] else 'none'}")
+    print(f"  Channels: {', '.join(ch['name'] for ch in data['channels']) if data['channels'] else 'none'}")
 
     # Test with mock data
     print("\n2. Testing with mock channels file...")
