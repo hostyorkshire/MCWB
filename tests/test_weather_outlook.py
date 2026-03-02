@@ -160,7 +160,13 @@ def test_outlook_format():
         print("❌ FAIL: Dates not in expected short format")
         return False
 
-    # Link has been removed from outlook
+    # Check that Google Maps link is included
+    if "https://maps.google.com/?q=53.9599,-1.0873" in response:
+        print("✅ PASS: Response includes Google Maps link with coordinates")
+    else:
+        print("❌ FAIL: Response missing Google Maps link")
+        return False
+
     print("✅ PASS: Response format is correct")
 
     return True
@@ -195,6 +201,12 @@ def test_outlook_includes_country_code():
         print("❌ FAIL: GB outlook missing country code")
         return False
 
+    if "https://maps.google.com/?q=53.9599,-1.0873" in response_gb:
+        print("✅ PASS: GB outlook includes Google Maps link")
+    else:
+        print("❌ FAIL: GB outlook missing Google Maps link")
+        return False
+
     # Test with York, US
     location_data_us = {"name": "York", "country_code": "US", "latitude": 39.9626, "longitude": -76.7277}
     response_us = bot.format_outlook_response(location_data_us, outlook_data)
@@ -205,6 +217,12 @@ def test_outlook_includes_country_code():
         print("✅ PASS: US outlook includes 'York, US 3-day:'")
     else:
         print("❌ FAIL: US outlook missing country code")
+        return False
+
+    if "https://maps.google.com/?q=39.9626,-76.7277" in response_us:
+        print("✅ PASS: US outlook includes Google Maps link")
+    else:
+        print("❌ FAIL: US outlook missing Google Maps link")
         return False
 
     # Test with location without country code
