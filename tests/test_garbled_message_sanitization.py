@@ -60,9 +60,7 @@ def test_garbled_sender_sanitization(caplog):
     output = caplog.text
 
     # Verify sender is sanitized
-    assert (
-        "\\x02" in output or "\\x03" in output or "\\x" in output
-    ), "Control characters in sender should be escaped"
+    assert "\\x02" in output or "\\x03" in output or "\\x" in output, "Control characters in sender should be escaped"
 
     # Verify raw control characters are not present
     assert (
