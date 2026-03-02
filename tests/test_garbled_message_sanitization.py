@@ -4,89 +4,70 @@ Test that garbled/encrypted messages are properly sanitized in logs.
 This prevents terminal corruption from control characters and binary data.
 """
 
+import io
+import logging
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import io
-
 from weather_bot import WeatherBot
 
 
-def test_garbled_message_sanitization():
+def test_garbled_message_sanitization(caplog):
     """Test that garbled messages with control characters are sanitized in debug logs."""
 
     # Create bot with debug mode enabled
     bot = WeatherBot(port=None, debug=True)
 
-    # Capture stdout to check log output
-    captured_output = io.StringIO()
-    sys.stdout = captured_output
+    # Simulate receiving a garbled message with control characters
+    # This mimics encrypted data from another channel
+    garbled_text = "\x01gF\x15K3(~\x12=\u0227cMC"
+    channel_idx = 0
 
-    try:
-        # Simulate receiving a garbled message with control characters
-        # This mimics encrypted data from another channel
-        garbled_text = "\x01gF\x15K3(~\x12=\u0227cMC"
-        channel_idx = 0
-
-        # Call the internal handler (this would normally be called by _dispatch)
+    # Capture log records at INFO level
+    with caplog.at_level(logging.INFO):
         bot._handle_channel_message(garbled_text, channel_idx)
 
-        # Get the logged output
-        output = captured_output.getvalue()
+    output = caplog.text
 
-        # Verify that control characters are escaped in the output
-        # The output should contain literal "\x01" not the actual control character
-        assert "\\x01" in output or "\\x" in output, "Control characters should be escaped with \\xNN notation"
+    # Verify that control characters are escaped in the output
+    # The output should contain literal "\x01" not the actual control character
+    assert "\\x01" in output or "\\x" in output, "Control characters should be escaped with \\xNN notation"
 
-        # Verify that the raw binary \x01 byte is NOT in the output
-        # (this would indicate unsanitized output)
-        assert "\x01" not in output, "Raw control character \\x01 should not appear in output"
+    # Verify that the raw binary \x01 byte is NOT in the output
+    # (this would indicate unsanitized output)
+    assert "\x01" not in output, "Raw control character \\x01 should not appear in output"
 
-        # Verify we don't have the literal bell/alert character
-        assert "\x07" not in output, "Raw control character \\x07 should not appear in output"
+    # Verify we don't have the literal bell/alert character
+    assert "\x07" not in output, "Raw control character \\x07 should not appear in output"
 
-        print("✓ Test passed: Garbled messages are properly sanitized")
-        return True
-
-    finally:
-        # Restore stdout
-        sys.stdout = sys.__stdout__
+    print("✓ Test passed: Garbled messages are properly sanitized")
 
 
-def test_garbled_sender_sanitization():
+def test_garbled_sender_sanitization(caplog):
     """Test that garbled sender names are sanitized in logs."""
 
     bot = WeatherBot(port=None, debug=True)
 
-    captured_output = io.StringIO()
-    sys.stdout = captured_output
+    # Simulate a message with garbled sender name (before colon)
+    garbled_sender_text = "\x02\x03GarbledSender\x07: Hello World"
+    channel_idx = 0
 
-    try:
-        # Simulate a message with garbled sender name (before colon)
-        garbled_sender_text = "\x02\x03GarbledSender\x07: Hello World"
-        channel_idx = 0
-
+    with caplog.at_level(logging.INFO):
         bot._handle_channel_message(garbled_sender_text, channel_idx)
 
-        output = captured_output.getvalue()
+    output = caplog.text
 
-        # Verify sender is sanitized
-        assert (
-            "\\x02" in output or "\\x03" in output or "\\x" in output
-        ), "Control characters in sender should be escaped"
+    # Verify sender is sanitized
+    assert "\\x02" in output or "\\x03" in output or "\\x" in output, "Control characters in sender should be escaped"
 
-        # Verify raw control characters are not present
-        assert (
-            "\x02" not in output and "\x03" not in output and "\x07" not in output
-        ), "Raw control characters should not appear in sender output"
+    # Verify raw control characters are not present
+    assert (
+        "\x02" not in output and "\x03" not in output and "\x07" not in output
+    ), "Raw control characters should not appear in sender output"
 
-        print("✓ Test passed: Garbled sender names are properly sanitized")
-        return True
-
-    finally:
-        sys.stdout = sys.__stdout__
+    print("✓ Test passed: Garbled sender names are properly sanitized")
 
 
 def test_weather_command_output_sanitization():

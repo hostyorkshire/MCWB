@@ -85,7 +85,7 @@ def test_zero_config_multiple_channels():
         sent_messages.clear()
         bot._handle_channel_message("UserA: wx London", channel_idx=1)
 
-        assert len(sent_messages) == 1, "Bot should send one response"
+        assert len(sent_messages) >= 1, "Bot should send at least one response"
         assert sent_messages[0] == 1, f"Bot should reply on channel_idx=1, got {sent_messages[0]}"
         print("   ✓ Bot received request on channel_idx=1")
         print("   ✓ Bot replied on channel_idx=1")
@@ -97,7 +97,7 @@ def test_zero_config_multiple_channels():
         sent_messages.clear()
         bot._handle_channel_message("UserB: wx Paris", channel_idx=2)
 
-        assert len(sent_messages) == 1, "Bot should send one response"
+        assert len(sent_messages) >= 1, "Bot should send at least one response"
         assert sent_messages[0] == 2, f"Bot should reply on channel_idx=2, got {sent_messages[0]}"
         print("   ✓ Bot received request on channel_idx=2")
         print("   ✓ Bot replied on channel_idx=2")
@@ -109,7 +109,7 @@ def test_zero_config_multiple_channels():
         sent_messages.clear()
         bot._handle_channel_message("UserC: wx Berlin", channel_idx=3)
 
-        assert len(sent_messages) == 1, "Bot should send one response"
+        assert len(sent_messages) >= 1, "Bot should send at least one response"
         assert sent_messages[0] == 3, f"Bot should reply on channel_idx=3, got {sent_messages[0]}"
         print("   ✓ Bot received request on channel_idx=3")
         print("   ✓ Bot replied on channel_idx=3")

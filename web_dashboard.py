@@ -519,7 +519,9 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="MCWB Web Dashboard")
-    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)")  # nosec B104
+    parser.add_argument(
+        "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0 for network access)"
+    )  # nosec B104
     parser.add_argument("--port", type=int, default=5000, help="Port to bind to (default: 5000)")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--ssl", action="store_true", help="Enable HTTPS with SSL certificate")

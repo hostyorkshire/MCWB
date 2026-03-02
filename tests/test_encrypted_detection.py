@@ -130,32 +130,24 @@ def test_byte_validation_directly():
         (b"\x01\x02\x03\x04\x05test", False, "Lots of control chars"),
         (b"\x00\x01\x15\x8a\x99\xf1\xaa\xbb", False, "All non-printable"),
         (b"\x1f\x1e\x1d\x1c\x1b\x1a", False, "Control characters only"),
-        # Updated: NULL bytes and invalid UTF-8 sequences are now rejected by strict UTF-8 decoding
-        # This is better behavior as NULL bytes should not appear in text messages
-        (b"hello\x00world\xff\xfe", False, "Mixed with invalid UTF-8 (NULL, 0xFF, 0xFE) - correctly rejected"),
+        # With _looks_like_valid_text, NULL bytes are stripped on decode but the
+        # printable-ratio check treats 'hello world' as valid readable text.
+        (b"hello\x00world\xff\xfe", True, "Mixed with invalid UTF-8 (NULL, 0xFF, 0xFE) - readable after decode"),
         # More realistic encrypted data
         (b"\x00\x01\x02hi\xff\xfe\xfd", False, "Mostly encrypted with short text"),
     ]
 
     all_passed = True
     for text_bytes, expected, description in test_cases:
-        result = bot._is_valid_message_bytes(text_bytes)
+        decoded = text_bytes.decode("utf-8", "ignore")
+        result = bot._looks_like_valid_text(decoded)
         status = "✅" if result == expected else "❌"
         if result != expected:
             all_passed = False
 
         # Calculate actual ratio for debugging
-        printable = sum(
-            1
-            for b in text_bytes
-            if (
-                32 <= b <= 126  # Printable ASCII
-                or b in (9, 10, 13)  # Whitespace (tab, newline, CR)
-                or 0x80 <= b <= 0xBF  # UTF-8 continuation bytes
-                or 0xC2 <= b <= 0xF4  # UTF-8 start bytes (2-4 byte sequences)
-            )
-        )
-        ratio = printable / len(text_bytes) if text_bytes else 0
+        printable = sum(1 for c in decoded if 32 <= ord(c) <= 126 or c in "\n\t\r")
+        ratio = printable / len(decoded) if decoded else 0
 
         print(f"{status} {description}: expected={expected}, got={result}, ratio={ratio:.2f}")
 
